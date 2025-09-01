@@ -18,6 +18,7 @@ class Area
 		/* CONSTRUCTORS */
 		Area();
 		Area(const std::string &name, size_t height, size_t width);
+		Area(const std::string& name, const std::string& map, const size_t width);
 		Area(const Area &other);
 
 		/* GETTERS */
@@ -25,6 +26,7 @@ class Area
 		size_t get_height() const { return height; }
 		size_t get_width() const { return width; }
 		size_t get_size() const { return height * width; }
+		std::vector<Cell> get_cells() const { return cells; }
 
 		/* TESTING */
 		void print_area() const;

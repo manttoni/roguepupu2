@@ -6,18 +6,51 @@
 #include <cassert>
 #include <iostream>
 
-/* CONSTRUCTORS */
-Area::Area(const std::string &name, const size_t height, const size_t width) : name(name), height(height), width(width)
+/* HELPERS */
+std::vector<Cell> randomize_cells(const size_t size, size_t wall_percentage)
 {
-	for (size_t i = 0; i < width * height; ++i)
+	std::vector<Cell> randomized;
+	for (size_t i = 0; i < size; ++i)
 	{
-		int r = Random::randint(0, 100);
+		size_t r = Random::randint(0, 100);
 		std::string type;
-		if (r < 30)
+		if (r < wall_percentage)
 			type = "wall";
 		else
 			type = "floor";
+		randomized.push_back(Cell(i, type));
+	}
+	return randomized;
+}
 
+/* CONSTRUCTORS */
+Area::Area(const std::string &name, const size_t height, const size_t width) : name(name), height(height), width(width)
+{
+	std::vector<Cell> path;
+	while (path.size() == 0)
+	{
+		cells = randomize_cells(get_size(), 30);
+		path = find_path(cells[0], cells[get_size() - 1]);
+	}
+	std::cout << name << " created. Path length: " << path.size() << std::endl;
+}
+
+// constructor using premade map
+Area::Area(const std::string& name, const std::string& map, const size_t width) : name(name), height(map.size() / width), width(width)
+{
+	for (size_t i = 0; i < map.size(); ++i)
+	{
+		std::string type;
+		char c = map[i];
+		switch (c)
+		{
+			case 'f':
+				type = "floor";
+				break;
+			case 'w':
+				type = "wall";
+				break;
+		}
 		cells.push_back(Cell(i, type));
 	}
 }
