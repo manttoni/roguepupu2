@@ -32,7 +32,7 @@ class Area
 		void print_area();
 
 		/* CELL TO CELL */
-		std::vector<Cell> find_path(const Cell &start, const Cell &end);
+		std::vector<Cell> find_path(const Cell &start, const Cell &end, const bool water = false);
 		double distance(const Cell &start, const Cell &end) const;
 		std::vector<Cell*> get_neighbors(const Cell &middle);
 		bool has_access(const Cell &from, const Cell &to) const;

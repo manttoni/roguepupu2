@@ -13,7 +13,7 @@ Area::Area(const size_t height, const size_t width) : height(height), width(widt
 	for (size_t i = 0; i < get_size(); ++i)
 	{
 		std::string type;
-		if (Random::randint(0, 10) < 3)
+		if (Random::randint(0, 10) <= 10)
 			type = "wall";
 		else
 			type = "floor";
@@ -42,9 +42,9 @@ Area::Area(const std::string& map, const size_t width) : height(map.size() / wid
 }
 
 /* CELL TO CELL */
-std::vector<Cell> Area::find_path(const Cell &start, const Cell &end)
+std::vector<Cell> Area::find_path(const Cell &start, const Cell &end, const bool water)
 {
-	if (start.is_blocked())
+	if (start.is_blocked() && !water)
 		return {};
 	std::vector<Cell> open_set = {start};
 	std::map<Cell, Cell> came_from;
@@ -69,7 +69,7 @@ std::vector<Cell> Area::find_path(const Cell &start, const Cell &end)
 			std::vector<Cell> path;
 			path.push_back(current);
 			while (current != start)
-			{	// assign the cell where we got to to current
+			{	// assign the cell from where we got to to current
 				current = came_from[current];
 				path.push_back(current);
 			}
@@ -77,21 +77,21 @@ std::vector<Cell> Area::find_path(const Cell &start, const Cell &end)
 		}
 
 		Utils::remove_element(open_set, current);
-		for (Cell* neighbor_ptr : get_neighbors(current))
+		for (Cell* neighbor : get_neighbors(current))
 		{
-			Cell neighbor = *neighbor_ptr;
-			if (!has_access(current, neighbor))
+			if (!water && !has_access(current, *neighbor))
 				continue;
-			const double tentative_g_score = g_score[current] + distance(current, neighbor);
-			if (g_score.count(neighbor) == 0)
-				g_score[neighbor] = std::numeric_limits<double>::infinity();
-			if (tentative_g_score < g_score[neighbor])
+			double tentative_g_score = g_score[current] + distance(current, *neighbor);
+			if (water) tentative_g_score += neighbor->get_rock_thickness();
+			if (g_score.count(*neighbor) == 0)
+				g_score[*neighbor] = std::numeric_limits<double>::infinity();
+			if (tentative_g_score < g_score[*neighbor])
 			{
-				came_from[neighbor] = current;
-				g_score[neighbor] = tentative_g_score;
-				f_score[neighbor] = tentative_g_score + distance(neighbor, end);
-				if (!Utils::contains(open_set, neighbor))
-					open_set.push_back(neighbor);
+				came_from[*neighbor] = current;
+				g_score[*neighbor] = tentative_g_score;
+				f_score[*neighbor] = tentative_g_score + distance(*neighbor, end);
+				if (!Utils::contains(open_set, *neighbor))
+					open_set.push_back(*neighbor);
 			}
 		}
 	}
@@ -100,13 +100,16 @@ std::vector<Cell> Area::find_path(const Cell &start, const Cell &end)
 
 void Area::print_area() // for testing
 {
-	std::vector<Cell> path = find_path(cells[0], cells[get_size() - 1]);
+	size_t random_id = Random::randint(0, get_size() - 1);
+	std::vector<Cell> path3 = find_path(cells[Random::randint(0, get_size() - 1)], cells[random_id], true);
+	std::vector<Cell> path2 = find_path(cells[Random::randint(0, get_size() - 1)], cells[random_id], true);
+	std::vector<Cell> path = find_path(cells[Random::randint(0, get_size() - 1)], cells[random_id], true);
 	std::cout << std::string(width * 2 + 1, '=') << std::endl;
 	for (size_t i = 0; i < height * width; ++i)
 	{
 		if (i % width == 0)
 			std::cout << "|";
-		if (Utils::contains(path, cells[i]))
+		if (Utils::contains(path, cells[i]) || Utils::contains(path2, cells[i]) || Utils::contains(path3, cells[i]))
 			std::cout << Colors::GREEN;
 		std::cout << cells[i] << Colors::RESET;
 		if (i % width == width - 1)

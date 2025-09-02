@@ -8,6 +8,7 @@ class Cell
 		size_t id; // also position in Area.cells vector
 		std::string type;
 		bool blocked;
+		int rock_thickness = 0;
 
 	public:
 		/* CONSTRUCTORS */
@@ -19,6 +20,7 @@ class Cell
 		size_t get_id() const { return id; }
 		bool is_blocked() const { return blocked; }
 		std::string get_type() const { return type; }
+		int get_rock_thickness() const { return rock_thickness; }
 
 		/* OVERLOADS */
 		bool operator==(const Cell &other) const;
