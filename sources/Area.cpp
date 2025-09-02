@@ -6,37 +6,23 @@
 #include <cassert>
 #include <iostream>
 
-/* HELPERS */
-std::vector<Cell> randomize_cells(const size_t size, size_t wall_percentage)
+/* CONSTRUCTORS */
+// this one randomizes cells then does cellular automata thing
+Area::Area(const size_t height, const size_t width) : height(height), width(width)
 {
-	std::vector<Cell> randomized;
-	for (size_t i = 0; i < size; ++i)
+	for (size_t i = 0; i < get_size(); ++i)
 	{
-		size_t r = Random::randint(0, 100);
 		std::string type;
-		if (r < wall_percentage)
+		if (Random::randint(0, 10) < 3)
 			type = "wall";
 		else
 			type = "floor";
-		randomized.push_back(Cell(i, type));
+		cells.push_back(Cell(i, type));
 	}
-	return randomized;
-}
-
-/* CONSTRUCTORS */
-Area::Area(const std::string &name, const size_t height, const size_t width) : name(name), height(height), width(width)
-{
-	std::vector<Cell> path;
-	while (path.size() == 0)
-	{
-		cells = randomize_cells(get_size(), 30);
-		path = find_path(cells[0], cells[get_size() - 1]);
-	}
-	std::cout << name << " created. Path length: " << path.size() << std::endl;
 }
 
 // constructor using premade map
-Area::Area(const std::string& name, const std::string& map, const size_t width) : name(name), height(map.size() / width), width(width)
+Area::Area(const std::string& map, const size_t width) : height(map.size() / width), width(width)
 {
 	for (size_t i = 0; i < map.size(); ++i)
 	{
@@ -56,8 +42,10 @@ Area::Area(const std::string& name, const std::string& map, const size_t width) 
 }
 
 /* CELL TO CELL */
-std::vector<Cell> Area::find_path(const Cell &start, const Cell &end) const
+std::vector<Cell> Area::find_path(const Cell &start, const Cell &end)
 {
+	if (start.is_blocked())
+		return {};
 	std::vector<Cell> open_set = {start};
 	std::map<Cell, Cell> came_from;
 
@@ -89,8 +77,9 @@ std::vector<Cell> Area::find_path(const Cell &start, const Cell &end) const
 		}
 
 		Utils::remove_element(open_set, current);
-		for (const Cell &neighbor : get_neighbors(current))
+		for (Cell* neighbor_ptr : get_neighbors(current))
 		{
+			Cell neighbor = *neighbor_ptr;
 			if (!has_access(current, neighbor))
 				continue;
 			const double tentative_g_score = g_score[current] + distance(current, neighbor);
@@ -109,14 +98,10 @@ std::vector<Cell> Area::find_path(const Cell &start, const Cell &end) const
 	return {};
 }
 
-void Area::print_area() const // for testing
+void Area::print_area() // for testing
 {
 	std::vector<Cell> path = find_path(cells[0], cells[get_size() - 1]);
-	std::cout
-		<< std::string((width * 2 - name.size()) / 2, '=')
-		<< " " << name << " "
-		<< std::string((width * 2 - name.size()) / 2, '=')
-		<< std::endl;
+	std::cout << std::string(width * 2 + 1, '=') << std::endl;
 	for (size_t i = 0; i < height * width; ++i)
 	{
 		if (i % width == 0)
@@ -145,12 +130,12 @@ double Area::distance(const Cell &start, const Cell &end) const
 	return std::hypot(start_y - end_y, start_x - end_x);
 }
 
-std::vector<Cell> Area::get_neighbors(const Cell &middle) const
+std::vector<Cell*> Area::get_neighbors(const Cell &middle)
 {
-	std::vector<Cell> neighbors;
+	std::vector<Cell*> neighbors;
 	size_t middle_id = middle.get_id();
 	size_t middle_y = middle_id / width;
-	size_t middle_x = middle_id % height;
+	size_t middle_x = middle_id % width;
 
 	for (int dy = -1; dy <= 1; ++dy)
 	{
@@ -161,11 +146,12 @@ std::vector<Cell> Area::get_neighbors(const Cell &middle) const
 
 			int ny = middle_y + dy;
 			int nx = middle_x + dx;
-			if (ny < 0 || nx < 0 || ny >= static_cast<int>(height) || nx >= static_cast<int>(width))
+			if (ny < 0 || ny >= static_cast<int>(height) ||
+				nx < 0 || nx >= static_cast<int>(width))
 				continue; // out of bounds
 
 			size_t nid = ny * width + nx;
-			neighbors.push_back(cells[nid]);
+			neighbors.push_back(&cells[nid]);
 		}
 	}
 

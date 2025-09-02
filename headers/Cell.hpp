@@ -16,8 +16,9 @@ class Cell
 		Cell(const Cell &other);
 
 		/* GETTERS */
-		size_t get_id() const;
-		bool is_blocked() const;
+		size_t get_id() const { return id; }
+		bool is_blocked() const { return blocked; }
+		std::string get_type() const { return type; }
 
 		/* OVERLOADS */
 		bool operator==(const Cell &other) const;

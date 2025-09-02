@@ -24,17 +24,6 @@ Cell::Cell(const Cell &other)
 	blocked = other.blocked;
 }
 
-/* GETTERS */
-size_t Cell::get_id() const
-{
-	return id;
-}
-
-bool Cell::is_blocked() const
-{
-	return blocked;
-}
-
 /* OVERLOADS */
 
 bool Cell::operator==(const Cell &other) const

@@ -42,15 +42,15 @@ const std::map<std::string, size_t> test_maps =
 void test_pathfinding()
 {
 	Log::log("Testing pathfinding");
-	for (const auto& [map, path_size] : test_maps)
+	for (const auto& [map, expected_path_size] : test_maps)
 	{
-		Area test("test", map, 25);
-		const auto& cells = test.get_cells();
-		const auto& path = test.find_path(cells[0], cells[test.get_size() - 1]);
+		Area test_area(map, 25);
+		const auto& cells = test_area.get_cells();
+		const auto& path = test_area.find_path(cells[0], cells[test_area.get_size() - 1]);
 
-		assert(test.get_size() == map.size());
+		assert(test_area.get_size() == map.size());
 		assert(cells.size() == map.size());
-		assert(path.size() == path_size);
+		assert(path.size() == expected_path_size);
 	}
 	Log::log("Pathfinding tests succesful");
 }

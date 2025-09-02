@@ -17,8 +17,8 @@ class Area
 	public:
 		/* CONSTRUCTORS */
 		Area();
-		Area(const std::string &name, size_t height, size_t width);
-		Area(const std::string& name, const std::string& map, const size_t width);
+		Area(size_t height, size_t width);
+		Area(const std::string& map, const size_t width);
 		Area(const Area &other);
 
 		/* GETTERS */
@@ -29,11 +29,11 @@ class Area
 		std::vector<Cell> get_cells() const { return cells; }
 
 		/* TESTING */
-		void print_area() const;
+		void print_area();
 
 		/* CELL TO CELL */
-		std::vector<Cell> find_path(const Cell &start, const Cell &end) const;
+		std::vector<Cell> find_path(const Cell &start, const Cell &end);
 		double distance(const Cell &start, const Cell &end) const;
-		std::vector<Cell> get_neighbors(const Cell &middle) const;
+		std::vector<Cell*> get_neighbors(const Cell &middle);
 		bool has_access(const Cell &from, const Cell &to) const;
 };
