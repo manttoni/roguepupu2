@@ -122,20 +122,22 @@ double Area::distance(const Cell &start, const Cell &end) const
 	size_t start_id = start.get_id();
 	size_t end_id = end.get_id();
 
-	size_t start_y = start_id / width;
-	size_t start_x = start_id % width;
-	size_t end_y = end_id / width;
-	size_t end_x = end_id % width;
+	int start_y = start_id / width;
+	int start_x = start_id % width;
+	int end_y = end_id / width;
+	int end_x = end_id % width;
 
 	return std::hypot(start_y - end_y, start_x - end_x);
 }
 
 std::vector<Cell*> Area::get_neighbors(const Cell &middle)
 {
+	assert(middle.get_id() < get_size());
 	std::vector<Cell*> neighbors;
 	size_t middle_id = middle.get_id();
 	size_t middle_y = middle_id / width;
 	size_t middle_x = middle_id % width;
+	assert(middle_y < height && middle_x < width);
 
 	for (int dy = -1; dy <= 1; ++dy)
 	{
@@ -146,12 +148,14 @@ std::vector<Cell*> Area::get_neighbors(const Cell &middle)
 
 			int ny = middle_y + dy;
 			int nx = middle_x + dx;
+			assert(ny < static_cast<int>(height) + 1 && nx < static_cast<int>(width) + 1);
 			if (ny < 0 || ny >= static_cast<int>(height) ||
 				nx < 0 || nx >= static_cast<int>(width))
 				continue; // out of bounds
 
 			size_t nid = ny * width + nx;
 			neighbors.push_back(&cells[nid]);
+			assert(distance(middle, cells[nid]) < 2);
 		}
 	}
 
