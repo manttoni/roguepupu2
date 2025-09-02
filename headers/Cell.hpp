@@ -29,4 +29,7 @@ class Cell
 		Cell &operator=(const Cell &other);
 		friend std::ostream &operator<<(std::ostream &os, const Cell &cell);
 
+		/* MODIFY CELL */
+		void erode(const int amount);
+
 };

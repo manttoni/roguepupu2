@@ -36,4 +36,8 @@ class Area
 		double distance(const Cell &start, const Cell &end) const;
 		std::vector<Cell*> get_neighbors(const Cell &middle);
 		bool has_access(const Cell &from, const Cell &to) const;
+		std::vector<Cell*> get_nearby_cells(const Cell& middle, const int r);
+
+		/* COUNTING CELLS */
+		size_t count_cells(const std::string& type) const;
 };

@@ -7,17 +7,25 @@
 #include <iostream>
 
 /* CONSTRUCTORS */
-// this one randomizes cells then does cellular automata thing
 Area::Area(const size_t height, const size_t width) : height(height), width(width)
 {
+	// world of solid rock exists at start
 	for (size_t i = 0; i < get_size(); ++i)
+		cells.push_back(Cell(i, "wall"));
+
+	// water erodes rock to create passages
+	for (size_t i = 0; i < 5; ++i)
 	{
-		std::string type;
-		if (Random::randint(0, 10) <= 10)
-			type = "wall";
-		else
-			type = "floor";
-		cells.push_back(Cell(i, type));
+		auto path = find_path(cells[Random::randint(0, get_size() - 1)], cells[Random::randint(0, get_size() - 1)], true);
+		for (Cell& c : path)
+		{
+			if (c.get_type() != "wall")
+				continue;
+			int rock_thickness = c.get_rock_thickness();
+			auto nearby_cells = get_nearby_cells(c, rock_thickness); // if eroded rock was very thick, it affected a larger area
+			for (Cell* nearby : nearby_cells)
+				nearby->erode(rock_thickness); // thicker stone might survive
+		}
 	}
 }
 
@@ -100,17 +108,11 @@ std::vector<Cell> Area::find_path(const Cell &start, const Cell &end, const bool
 
 void Area::print_area() // for testing
 {
-	size_t random_id = Random::randint(0, get_size() - 1);
-	std::vector<Cell> path3 = find_path(cells[Random::randint(0, get_size() - 1)], cells[random_id], true);
-	std::vector<Cell> path2 = find_path(cells[Random::randint(0, get_size() - 1)], cells[random_id], true);
-	std::vector<Cell> path = find_path(cells[Random::randint(0, get_size() - 1)], cells[random_id], true);
 	std::cout << std::string(width * 2 + 1, '=') << std::endl;
 	for (size_t i = 0; i < height * width; ++i)
 	{
 		if (i % width == 0)
 			std::cout << "|";
-		if (Utils::contains(path, cells[i]) || Utils::contains(path2, cells[i]) || Utils::contains(path3, cells[i]))
-			std::cout << Colors::GREEN;
 		std::cout << cells[i] << Colors::RESET;
 		if (i % width == width - 1)
 			std::cout << "|" << std::endl;
@@ -131,6 +133,33 @@ double Area::distance(const Cell &start, const Cell &end) const
 	int end_x = end_id % width;
 
 	return std::hypot(start_y - end_y, start_x - end_x);
+}
+
+std::vector<Cell*> Area::get_nearby_cells(const Cell &middle, const int r)
+{
+	std::vector<Cell*> nearby;
+	size_t middle_id = middle.get_id();
+	int middle_y = middle_id / width;
+	int middle_x = middle_id % width;
+
+	for (int dy = -r; dy <= r; ++dy)
+	{
+		for (int dx = -r; dx <= r; ++dx)
+		{
+			int ny = middle_y + dy;
+			int nx = middle_x + dx;
+			if (ny < 0 || ny >= static_cast<int>(height) ||
+				nx < 0 || nx >= static_cast<int>(width))
+				continue; // out of bounds
+						  //
+			size_t nid = ny * width + nx;
+			if (distance(middle, cells[nid]) > r)
+				continue;
+			nearby.push_back(&cells[nid]);
+		}
+	}
+
+	return nearby;
 }
 
 std::vector<Cell*> Area::get_neighbors(const Cell &middle)
@@ -198,4 +227,15 @@ bool Area::has_access(const Cell &from, const Cell &to) const
 	if (corner1.is_blocked() || corner2.is_blocked())
 		return false;
 	return true;
+}
+
+size_t Area::count_cells(const std::string& type) const
+{
+	size_t count = 0;
+	for (size_t i = 0; i < get_size(); ++i)
+	{
+		if (cells[i].get_type() == type)
+			count++;
+	}
+	return count;
 }

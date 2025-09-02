@@ -11,7 +11,7 @@ Cell::Cell(const size_t id, const std::string &type) : id(id), type(type)
 {
 	if (type == "wall")
 	{
-		rock_thickness = Random::randint(1, 10);
+		rock_thickness = Random::randint(1, 4);
 		blocked = true;
 	}
 	else if (type == "floor")
@@ -59,8 +59,21 @@ Cell &Cell::operator=(const Cell &other)
 
 std::ostream &operator<<(std::ostream &os, const Cell &cell)
 {
-	if (cell.type == "wall") assert(cell.rock_thickness > 0);
+	if (cell.type == "floor")
+		os << Colors::BLACK;
 	os << cell.type.front() << Colors::RESET;
 	return os;
 }
 
+void Cell::erode(const int amount)
+{
+	if (type != "wall")
+		return;
+	if (rock_thickness > 0)
+		rock_thickness -= amount;
+	if (rock_thickness > 0)
+		return;
+	rock_thickness = 0;
+	type = "floor";
+	blocked = false;
+}
