@@ -29,15 +29,19 @@ class Area
 		std::vector<Cell> get_cells() const { return cells; }
 
 		/* TESTING */
-		void print_area();
+		void print_area(std::vector<std::vector<Cell>> paths = {});
 
 		/* CELL TO CELL */
 		std::vector<Cell> find_path(const Cell &start, const Cell &end, const bool water = false);
 		double distance(const Cell &start, const Cell &end) const;
+		double distance(const size_t start_id, const size_t end_id) const;
 		std::vector<Cell*> get_neighbors(const Cell &middle);
 		bool has_access(const Cell &from, const Cell &to) const;
 		std::vector<Cell*> get_nearby_cells(const Cell& middle, const int r);
 
 		/* COUNTING CELLS */
 		size_t count_cells(const std::string& type) const;
+
+		/* AREA GENERATION */
+		std::pair<size_t, size_t> get_stream() const;
 };

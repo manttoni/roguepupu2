@@ -15,6 +15,7 @@
 #include <chrono>
 #include "Area.hpp"
 #include "Cell.hpp"
+#include "PerlinNoise.hpp"
 
 namespace Utils
 {
@@ -54,6 +55,14 @@ namespace Log
 	}
 }
 
+namespace Math
+{
+	inline double map(double x, double a, double b, double c, double d)
+	{
+		return c + (x - a) * (d - c) / (b - a);
+	}
+}
+
 namespace Random
 {
 	inline std::mt19937 &rng()
@@ -67,6 +76,19 @@ namespace Random
 	{
 		std::uniform_int_distribution<> dist(min, max);
 		return dist(rng());
+	}
+
+	inline double randreal(const double min, const double max)
+	{
+		std::uniform_real_distribution<> dist(min, max);
+		return dist(rng());
+	}
+
+	inline double noise(double y, double x, double f, int o)
+	{
+		static const siv::PerlinNoise::seed_type seed = randint(10000, 99999);
+		const siv::PerlinNoise perlin{ seed };
+		return perlin.octave2D_01(x * f, y * f, o);
 	}
 }
 

@@ -13,7 +13,7 @@ class Cell
 	public:
 		/* CONSTRUCTORS */
 		Cell();
-		Cell(const size_t id, const std::string &type);
+		Cell(const size_t id, const std::string &type, const int rock_thickness = 0);
 		Cell(const Cell &other);
 
 		/* GETTERS */

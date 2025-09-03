@@ -3,6 +3,7 @@
 #include <map>
 #include <string>
 #include <cassert>
+#include "Utils.hpp"
 
 /* TEST MAPS */
 // key = map as string, value = length of path from top left to bot right
@@ -55,8 +56,15 @@ void test_pathfinding()
 	Log::log("Pathfinding tests succesful");
 }
 
+void test_utils()
+{
+	assert(Random::randreal(0.1, 0.2) <= 0.2);
+	assert(Math::map(1, 0, 1, 1, 10) == 10);
+}
+
 void test()
 {
 	test_pathfinding();
+	test_utils();
 	Log::log("All tests succesful");
 }
