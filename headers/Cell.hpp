@@ -5,7 +5,7 @@
 class Cell
 {
 	private:
-		size_t id; // also position in Area.cells vector
+		size_t id;
 		std::string type;
 		bool blocked;
 		int rock_thickness = 0;
@@ -13,7 +13,7 @@ class Cell
 	public:
 		/* CONSTRUCTORS */
 		Cell();
-		Cell(const size_t id, const std::string &type, const int rock_thickness = 0);
+		Cell(const size_t id, const std::string &type);
 		Cell(const Cell &other);
 
 		/* GETTERS */
@@ -30,6 +30,6 @@ class Cell
 		friend std::ostream &operator<<(std::ostream &os, const Cell &cell);
 
 		/* MODIFY CELL */
-		void erode(const int amount);
+		void reduce_thickness(const int amount);
 
 };

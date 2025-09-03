@@ -2,35 +2,16 @@
 #include <cmath>
 #include <cassert>
 #include <iostream>
-#include "Area.hpp"
+#include "Cave.hpp"
 #include "Cell.hpp"
 #include "Utils.hpp"
 
-std::pair<size_t, size_t> Area::get_stream() const
-{
-	const int margin = 5;
-	const double min_distance = distance(margin * height + margin, (height - margin) * width + (width - margin)) / 2;
-
-	std::pair<size_t, size_t> stream;
-	stream.first = Random::randint(margin, height - margin) * width + Random::randint(margin, width - margin);
-	stream.second = stream.first;
-	while (distance(stream.first, stream.second) < min_distance)
-		stream.second = Random::randint(margin, height - margin) * width + Random::randint(margin, width - margin);
-	return stream;
-}
-
-
 /* CONSTRUCTORS */
-Area::Area(const size_t height, const size_t width) : height(height), width(width)
-{
+Cave::Cave(const std::vector<Cell>& cells) : cells(cells) {}
 
-	// world of solid rock with thickness from Perlin noise
-	const double frequency = 0.1;
-	const int octaves = 8;
-	const int max_rock_thickness = 9; // affects also cave width, so can be used as margin
-//	const double space = Random::randreal(0.25, 0.5); // at start its 0, fully open is 1
-	const size_t source_count = 1;//Random::randint(1, 2);
-	const size_t sink_count = 1;//Random::randint(2, 4);
+// delete this
+Cave::Cave(const size_t height, const size_t width) : height(height), width(width)
+{
 
 	for (size_t i = 0; i < get_size(); ++i)
 	{
@@ -62,7 +43,7 @@ Area::Area(const size_t height, const size_t width) : height(height), width(widt
 			if (c.get_type() != "rock")
 				continue;
 			int rock_thickness = c.get_rock_thickness();
-			auto nearby_cells = get_nearby_cells(c, rock_thickness); // if eroded rock is very thick, it affects a larger area
+			auto nearby_cells = get_nearby_cells(c, rock_thickness); // if eroded rock is very thick, it affects a larger cave
 			for (Cell* nearby : nearby_cells)
 				nearby->erode(rock_thickness);
 		}
@@ -73,11 +54,11 @@ Area::Area(const size_t height, const size_t width) : height(height), width(widt
 		cells[source] = Cell(source, "stream_source");
 	for (const size_t sink : sinks)
 		cells[sink] = Cell(sink, "stream_sink");
-	print_area(stream_paths);
+	print_cave(stream_paths);
 }
 
 // constructor using premade map
-Area::Area(const std::string& map, const size_t width) : height(map.size() / width), width(width)
+Cave::Cave(const std::string& map, const size_t width) : height(map.size() / width), width(width)
 {
 	for (size_t i = 0; i < map.size(); ++i)
 	{
@@ -97,9 +78,9 @@ Area::Area(const std::string& map, const size_t width) : height(map.size() / wid
 }
 
 /* CELL TO CELL */
-std::vector<Cell> Area::find_path(const Cell &start, const Cell &end, const bool water)
+std::vector<Cell> Cave::find_path(const Cell &start, const Cell &end)
 {
-	if (start.is_blocked() && !water)
+	if (start.is_blocked())
 		return {};
 	std::vector<Cell> open_set = {start};
 	std::map<Cell, Cell> came_from;
@@ -119,8 +100,7 @@ std::vector<Cell> Area::find_path(const Cell &start, const Cell &end, const bool
 		}
 
 		if (current == end)
-		{
-			// found optimal path from start to end
+		{	// found optimal path from start to end
 			std::vector<Cell> path;
 			path.push_back(current);
 			while (current != start)
@@ -134,10 +114,9 @@ std::vector<Cell> Area::find_path(const Cell &start, const Cell &end, const bool
 		Utils::remove_element(open_set, current);
 		for (Cell* neighbor : get_neighbors(current))
 		{
-			if (!water && !has_access(current, *neighbor))
+			if (!has_access(current, *neighbor))
 				continue;
-			double tentative_g_score = g_score[current] + (water ? neighbor->get_rock_thickness() : distance(current, *neighbor));
-			if (water) neighbor->erode(1);
+			double tentative_g_score = g_score[current] + distance(current, *neighbor);
 			if (g_score.count(*neighbor) == 0)
 				g_score[*neighbor] = std::numeric_limits<double>::infinity();
 			if (tentative_g_score < g_score[*neighbor])
@@ -153,7 +132,7 @@ std::vector<Cell> Area::find_path(const Cell &start, const Cell &end, const bool
 	return {};
 }
 
-void Area::print_area(std::vector<std::vector<Cell>> paths) // for testing
+void Cave::print_cave(std::vector<std::vector<Cell>> paths) // for testing
 {
 	std::cout << std::string(width * 2 + 1, '=') << std::endl;
 	for (size_t i = 0; i < height * width; ++i)
@@ -179,14 +158,14 @@ void Area::print_area(std::vector<std::vector<Cell>> paths) // for testing
 	std::cout << std::string(width * 2 + 1, '=') << std::endl;
 }
 
-double Area::distance(const Cell &start, const Cell &end) const
+double Cave::distance(const Cell &start, const Cell &end) const
 {
 	size_t start_id = start.get_id();
 	size_t end_id = end.get_id();
 	return distance(start_id, end_id);
 }
 
-double Area::distance(const size_t start_id, const size_t end_id) const
+double Cave::distance(const size_t start_id, const size_t end_id) const
 {
 	int start_y = start_id / width;
 	int start_x = start_id % width;
@@ -196,7 +175,7 @@ double Area::distance(const size_t start_id, const size_t end_id) const
 	return std::hypot(start_y - end_y, start_x - end_x);
 }
 
-std::vector<Cell*> Area::get_nearby_cells(const Cell &middle, const int r)
+std::vector<Cell*> Cave::get_nearby_cells(const Cell &middle, const int r)
 {
 	std::vector<Cell*> nearby;
 	size_t middle_id = middle.get_id();
@@ -223,7 +202,7 @@ std::vector<Cell*> Area::get_nearby_cells(const Cell &middle, const int r)
 	return nearby;
 }
 
-std::vector<Cell*> Area::get_neighbors(const Cell &middle)
+std::vector<Cell*> Cave::get_neighbors(const Cell &middle)
 {
 	assert(middle.get_id() < get_size());
 	std::vector<Cell*> neighbors;
@@ -265,7 +244,7 @@ std::vector<Cell*> Area::get_neighbors(const Cell &middle)
 	return neighbors;
 }
 
-bool Area::has_access(const Cell &from, const Cell &to) const
+bool Cave::has_access(const Cell &from, const Cell &to) const
 {
 	if (to.is_blocked()) // can't move to "to"
 		return false;
@@ -290,13 +269,3 @@ bool Area::has_access(const Cell &from, const Cell &to) const
 	return true;
 }
 
-size_t Area::count_cells(const std::string& type) const
-{
-	size_t count = 0;
-	for (size_t i = 0; i < get_size(); ++i)
-	{
-		if (cells[i].get_type() == type)
-			count++;
-	}
-	return count;
-}

@@ -73,14 +73,15 @@ std::ostream &operator<<(std::ostream &os, const Cell &cell)
 	return os;
 }
 
-void Cell::erode(const int amount)
+void Cell::reduce_thickness(const int amount)
 {
 	if (type != "rock")
-		return;
+		return; // for now only rock can weaken
+
+	rock_thickness -= amount;
 	if (rock_thickness > 0)
-		rock_thickness -= Random::randint(amount - 1, amount);
-	if (rock_thickness > 0)
 		return;
+
 	rock_thickness = 0;
 	type = "floor";
 	blocked = false;

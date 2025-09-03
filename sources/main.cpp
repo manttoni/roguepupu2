@@ -1,6 +1,7 @@
 #include <iostream>
 #include "PerlinNoise.hpp"
-#include "Area.hpp"
+#include "Cave.hpp"
+#include "CaveGenerator.hpp"
 #include "Testing.hpp"
 
 /*void test_perlin()
@@ -23,7 +24,10 @@ int main(void)
 {
 	Log::log("Running main");
 	test();
-	Area area(60, 60);
+	Cave first_level = CaveGenerator::generate_cave();
+	Cave second_level = CaveGenerator::generate_cave(first_level);
+	first_level.print_cave();
+	second_level.print_cave();
 	Log::log("Run succesful\n");
 	return 0;
 }
