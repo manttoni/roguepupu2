@@ -13,13 +13,12 @@ class Cave
 		size_t width;
 		std::vector<Cell> cells;
 		size_t level;
-		int seed;
+		size_t seed;
 
 	public:
 		/* CONSTRUCTORS */
 		Cave();
-		Cave(const std::vector<Cell>& cells);
-		Cave(size_t height, size_t width);
+		Cave(const size_t height, const size_t width, const std::vector<Cell>& cells, const size_t level, const size_t seed);
 		Cave(const std::string& map, const size_t width);
 		Cave(const Cave &other);
 
@@ -34,9 +33,10 @@ class Cave
 		/* SETTERS */
 		void set_level(const size_t level) { this->level = level; }
 		void set_seed(const int seed) { this->seed = seed; }
+		void set_cells(const std::vector<Cell>& cells) { this->cells = cells; }
 
 		/* TESTING */
-		void print_cave(std::vector<std::vector<Cell>> paths = {});
+		void print_cave();
 
 		/* CELL TO CELL */
 		std::vector<Cell> find_path(const Cell &start, const Cell &end);

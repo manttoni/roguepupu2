@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <ncurses.h>
 #include "PerlinNoise.hpp"
 #include "Cell.hpp"
 #include "Stream.hpp"
@@ -10,10 +11,11 @@ class CaveGenerator
 {
 	private:
 		/* CAVE SIZE */
-		static constexpr size_t WIDTH = 120;
-		static constexpr size_t HEIGHT = 60;
-		static constexpr size_t SIZE = WIDTH * HEIGHT; // generates caves of this size
-		static constexpr size_t MARGIN = 18; // if distance to edges less than this increase ROCK_DENSITY
+		size_t height;
+		size_t width;
+		size_t size; // generates caves of this size
+		static constexpr size_t MARGIN_PERCENT = 15;
+		size_t margin; // if distance to edges less than this increase ROCK_DENSITY
 		static constexpr size_t EDGE_WEIGH_MULT = 3;
 
 		/* ROCK */
@@ -21,7 +23,7 @@ class CaveGenerator
 		static constexpr size_t PERLIN_OCTAVES = 8; // some value for random generator (Perlin)
 		static constexpr size_t ROCK_DENSITY = 9; // max density of rock
 		double rock_formation_chance = 0.1; // chance to leave formations when eroding
-		std::vector<Cell> form_rock(const Cave& cave);
+		std::vector<Cell> form_rock(const size_t level);
 
 		/* WATER */
 		double min_stream_length = 10; // distance from any source to any sink
@@ -44,8 +46,14 @@ class CaveGenerator
 
 		/* DEBUG */
 		void print_cells(const std::vector<Cell>& cells);
+
+		/* GENERATOR ATTRIBUTES */
+		size_t seed;
+
 	public:
-		Cave generate_cave(const size_t level);
+		CaveGenerator();
+		void generate_cave(const size_t level);
+		Cave get_cave(const size_t level);
 
 };
 

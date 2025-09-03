@@ -1,4 +1,5 @@
 #include <iostream>
+#include "UI.hpp"
 #include "PerlinNoise.hpp"
 #include "Cave.hpp"
 #include "CaveGenerator.hpp"
@@ -20,13 +21,18 @@
 	}
 }*/
 
+void run()
+{
+	UI::init_ncurses();
+	UI::start_menu();
+	UI::end_ncurses();
+}
+
 int main(void)
 {
 	Log::log("Running main");
 	test();
-	CaveGenerator cg;
-	Cave first_level = cg.generate_cave(1);
-	first_level.print_cave();
+	run();
 	Log::log("Run succesful\n");
 	return 0;
 }

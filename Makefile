@@ -2,7 +2,7 @@
 CXX := c++
 CXXFLAGS := -Wall -Wextra -Werror -g -Iheaders -MMD -MP -O0
 
-LDFLAGS := -lm
+LDFLAGS := -lncurses -lm
 
 # Directories
 SRC_DIR := sources

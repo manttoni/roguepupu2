@@ -2,54 +2,20 @@
 #include <cmath>
 #include <cassert>
 #include <iostream>
+#include <ncurses.h>
 #include "Cave.hpp"
 #include "Cell.hpp"
 #include "Utils.hpp"
+#include "UI.hpp"
 
 /* CONSTRUCTORS */
-Cave::Cave() : height(0), width(0), level(0), seed(0) {}
-Cave::Cave(const std::vector<Cell>& cells) : cells(cells) {}
+Cave::Cave()
+	: height(0), width(0), cells({}), level(0), seed(0) {}
+Cave::Cave(const size_t height, const size_t width, const std::vector<Cell>& cells, const size_t level, const size_t seed)
+	: height(height), width(width), cells(cells), level(level), seed(seed) {}
+Cave::Cave(const Cave& other)
+	: height(other.height), width(other.width), cells(other.cells), level(other.level), seed(other.seed) {}
 
-// delete this
-/*Cave::Cave(const size_t height, const size_t width) : height(height), width(width)
-{
-	// water erodes rock to create passages
-	std::vector<size_t> sources, sinks;
-	for (size_t i = 0; i < source_count; ++i)
-		sources.push_back(Random::randint(max_rock_thickness, height - max_rock_thickness) * width + Random::randint(max_rock_thickness, width - max_rock_thickness));
-	for (size_t i = 0; i < sink_count; ++i)
-		sinks.push_back(Random::randint(max_rock_thickness, height - max_rock_thickness) * width + Random::randint(max_rock_thickness, width - max_rock_thickness));
-	std::vector<std::vector<Cell>> stream_paths;
-	for (const size_t source : sources)
-	{
-		for (const size_t sink : sinks)
-		{
-			stream_paths.push_back(find_path(cells[source], cells[sink], true));
-		}
-	}
-//	while((double)count_cells("floor") / count_cells("rock") < space && streams.size() < max_streams)
-	//for (size_t i = 0; i < stream_count; ++i)
-	for (auto& path : stream_paths)
-	{
-		for (Cell& c : path)
-		{
-			if (c.get_type() != "rock")
-				continue;
-			int rock_thickness = c.get_rock_thickness();
-			auto nearby_cells = get_nearby_cells(c, rock_thickness); // if eroded rock is very thick, it affects a larger cave
-			for (Cell* nearby : nearby_cells)
-				nearby->erode(rock_thickness);
-		}
-	}
-
-	// mark stream start and end on map
-	for (const size_t source : sources)
-		cells[source] = Cell(source, "stream_source");
-	for (const size_t sink : sinks)
-		cells[sink] = Cell(sink, "stream_sink");
-	print_cave(stream_paths);
-}
-*/
 // constructor using premade map
 Cave::Cave(const std::string& map, const size_t width) : height(map.size() / width), width(width)
 {
@@ -125,30 +91,32 @@ std::vector<Cell> Cave::find_path(const Cell &start, const Cell &end)
 	return {};
 }
 
-void Cave::print_cave(std::vector<std::vector<Cell>> paths) // for testing
+// print with ncurses for testing purposes
+void Cave::print_cave()
 {
-	std::cout << std::string(width * 2 + 1, '=') << std::endl;
-	for (size_t i = 0; i < height * width; ++i)
+	init_color(COLOR_BLUE, 0, 0, 1000);
+	init_color(COLOR_RED, 1000, 0, 0);
+	for (int i = 1; i <= 9; ++i)
 	{
-		if (i % width == 0)
-			std::cout << "|";
-		if (cells[i].get_type() == "floor")
-			std::cout << Colors::BLACK;
-
-		// check if is on a stream path
-		for (const auto& path : paths)
-			for (const auto& cell : path)
-				if (cell.get_id() == i)
-					std::cout << Colors::BLUE;
-
-
-		std::cout << cells[i] << Colors::RESET;
-		if (i % width == width - 1)
-			std::cout << "|" << std::endl;
-		else
-			std::cout << " ";
+		// Interpolate RGB
+		int r = (i - 1) * 1000 / 8;
+		int g = 0;
+		int b = 1000 - (i - 1) * 1000 / 8;
+		init_color(i + 10, r, g, b);      // new color index (10-18)
+		init_pair(i, i + 10, COLOR_BLACK); // foreground = gradient, background = black
 	}
-	std::cout << std::string(width * 2 + 1, '=') << std::endl;
+	//clear();
+	erase();
+	for (size_t i = 0; i < get_size(); ++i)
+	{
+		int density = static_cast<int>(std::round(cells[i].get_density()));
+		attron(COLOR_PAIR(density));
+		UI::print(density);
+		attroff(COLOR_PAIR(density));
+		if (i % width == width - 1)
+			UI::println();
+	}
+	refresh();
 }
 
 double Cave::distance(const Cell &start, const Cell &end) const

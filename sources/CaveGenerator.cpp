@@ -1,63 +1,48 @@
 #include <vector>
 #include <iomanip>
+#include <ncurses.h>
 #include "Cell.hpp"
 #include "Utils.hpp"
 #include "CaveGenerator.hpp"
 #include "Cave.hpp"
 
+CaveGenerator::CaveGenerator()
+	: height(LINES - 1), width(COLS - 1), size(height * width)
+{
+	margin = static_cast<size_t>(width * MARGIN_PERCENT / 100);
+	seed = Random::randint(10000, 99999);
+}
+
 // returns cells with type rock and a density
-std::vector<Cell> CaveGenerator::form_rock(const Cave& cave)
+std::vector<Cell> CaveGenerator::form_rock(const size_t level)
 {
 	std::vector<Cell> cells;
-	for (size_t i = 0; i < SIZE; ++i)
+	for (size_t i = 0; i < size; ++i)
 	{
-		size_t y = i / WIDTH;
-		size_t x = i % WIDTH;
-		double perlin = Random::noise3D(y, x, cave.get_level(), PERLIN_FREQUENCY, cave.get_seed());
-		size_t distance_to_edge =
-			std::min(
-			std::min(x, y),
-			std::min(WIDTH - x - 1, HEIGHT - y - 1));
+		size_t y = i / width;
+		size_t x = i % width;
+		double perlin = Random::noise3D(y, x, level, PERLIN_FREQUENCY, seed);
+		size_t distance_to_edge = std::min(std::min(x, y), std::min(width - x - 1, height - y - 1));
 		double edge_weigh = 1; // close to edges rock is denser
-		if (distance_to_edge <= MARGIN)
-			edge_weigh = Math::map(MARGIN - distance_to_edge, 0, MARGIN, 1, EDGE_WEIGH_MULT);
-		const double mapped = Math::map(perlin, 0, 1, 1, ROCK_DENSITY * edge_weigh);
+		if (distance_to_edge <= margin)
+			edge_weigh = Math::map(margin - distance_to_edge, 0, margin, 1, EDGE_WEIGH_MULT);
+		double density = Math::map(ROCK_DENSITY * edge_weigh, 1, EDGE_WEIGH_MULT * ROCK_DENSITY, 1, 9);
+		const double mapped = Math::map(perlin, 0, 1, 1, density);
 		cells.push_back(Cell(i, "rock", mapped));
 	}
 	return cells;
 }
 
-void CaveGenerator::print_cells(const std::vector<Cell>& cells)
+void CaveGenerator::generate_cave(const size_t level)
 {
-	const char* colors[9] = {
-    "\033[38;5;21m",  // 1 - dark blue
-    "\033[38;5;27m",  // 2
-    "\033[38;5;33m",  // 3
-    "\033[38;5;39m",  // 4 - cyan-ish
-    "\033[38;5;45m",  // 5
-    "\033[38;5;51m",  // 6
-    "\033[38;5;82m",  // 7 - green
-    "\033[38;5;226m", // 8 - yellow
-    "\033[38;5;196m"  // 9 - red
-	};
-	for (size_t i = 0; i < SIZE; ++i)
-	{
-		int dens = static_cast<int>(std::round(Math::map(cells[i].get_density(), 1, EDGE_WEIGH_MULT * ROCK_DENSITY, 1, 9)));
-		if (dens < 1) dens = 1;
-		if (dens > 9) dens = 9;
-		std::cout << colors[dens] << std::setw(2) << dens;
-		if (i % WIDTH == WIDTH - 1)
-			std::cout << std::endl;
-	}
+	std::vector<Cell> cells = form_rock(level);
+	Cave cave(height, width, cells, level, seed);
+	caves.push_back(cave);
 }
 
-Cave CaveGenerator::generate_cave(const size_t level)
+Cave CaveGenerator::get_cave(const size_t level)
 {
-	Cave cave;
-	cave.set_level(level);
-	cave.set_seed(Random::randint(10000,99999));
-
-	std::vector<Cell> cells = form_rock(cave);
-	print_cells(cells);
-	return cave;
+	if (level > caves.size())
+		generate_cave(level);
+	return caves[level - 1];
 }
