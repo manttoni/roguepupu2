@@ -21,14 +21,22 @@ std::vector<Cell> CaveGenerator::form_rock(const size_t level)
 	{
 		size_t y = i / width;
 		size_t x = i % width;
+
+		// [0,1]
 		double perlin = Random::noise3D(y, x, level, PERLIN_FREQUENCY, seed);
+
+		// distance to closest edge
 		size_t distance_to_edge = std::min(std::min(x, y), std::min(width - x - 1, height - y - 1));
-		double edge_weigh = 1; // close to edges rock is denser
-		if (distance_to_edge <= margin)
-			edge_weigh = Math::map(margin - distance_to_edge, 0, margin, 1, EDGE_WEIGH_MULT);
-		double density = Math::map(ROCK_DENSITY * edge_weigh, 1, EDGE_WEIGH_MULT * ROCK_DENSITY, 1, 9);
-		const double mapped = Math::map(perlin, 0, 1, 1, density);
-		cells.push_back(Cell(i, "rock", mapped));
+
+		// if close enough, make rock denser
+		double edge_weight =
+			distance_to_edge <= margin
+			? Math::map(margin - distance_to_edge, 0, margin, 1, EDGE_WEIGH_MULT)
+			: 1;
+
+		// map perlin [0,1] * edge_weight [1,EDGE_WEIGH_MULT] to [1,9]
+		double density = Math::map(perlin * edge_weight, 0, EDGE_WEIGH_MULT, 1, 9);
+		cells.push_back(Cell(i, "rock", density));
 	}
 	return cells;
 }
