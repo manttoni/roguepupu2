@@ -45,11 +45,11 @@ void test_pathfinding()
 	Log::log("Testing pathfinding");
 	for (const auto& [map, expected_path_size] : test_maps)
 	{
-		Area test_area(map, 25);
-		const auto& cells = test_area.get_cells();
-		const auto& path = test_area.find_path(cells[0], cells[test_area.get_size() - 1]);
+		Cave test_cave(map, 25);
+		const auto& cells = test_cave.get_cells();
+		const auto& path = test_cave.find_path(cells[0], cells[test_cave.get_size() - 1]);
 
-		assert(test_area.get_size() == map.size());
+		assert(test_cave.get_size() == map.size());
 		assert(cells.size() == map.size());
 		assert(path.size() == expected_path_size);
 	}

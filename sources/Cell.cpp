@@ -7,7 +7,7 @@
 /* CONSTRUCTORS */
 Cell::Cell() : id(SIZE_MAX), type("unknown"), blocked(true) {}
 
-Cell::Cell(const size_t id, const std::string &type, const int rock_thickness) : id(id), type(type), rock_thickness(rock_thickness)
+Cell::Cell(const size_t id, const std::string &type, const double density) : id(id), type(type), density(density)
 {
 	if (type == "rock")
 		blocked = true;
@@ -26,7 +26,7 @@ Cell::Cell(const Cell &other)
 	id = other.id;
 	type = other.type;
 	blocked = other.blocked;
-	rock_thickness = other.rock_thickness;
+	density = other.density;
 }
 
 /* OVERLOADS */
@@ -53,7 +53,7 @@ Cell &Cell::operator=(const Cell &other)
 		type = other.type;
 		blocked = other.blocked;
 		id = other.id;
-		rock_thickness = other.rock_thickness;
+		density = other.density;
 	}
 	return *this;
 }
@@ -63,7 +63,7 @@ std::ostream &operator<<(std::ostream &os, const Cell &cell)
 	if (cell.type == "floor")
 		os << 'f';
 	else if (cell.type == "rock")
-		os << cell.rock_thickness;
+		os << cell.density;
 	else if (cell.type == "stream_source")
 		os << '^';
 	else if (cell.type == "stream_sink")
@@ -73,15 +73,19 @@ std::ostream &operator<<(std::ostream &os, const Cell &cell)
 	return os;
 }
 
-void Cell::erode(const int amount)
+void Cell::reduce_density(const double amount)
 {
 	if (type != "rock")
+		return; // for now only rock can weaken
+
+	if (amount < density)
+	{
+		density -= amount;
 		return;
-	if (rock_thickness > 0)
-		rock_thickness -= Random::randint(amount - 1, amount);
-	if (rock_thickness > 0)
-		return;
-	rock_thickness = 0;
+	}
+	// rock has been destroyed
+	density = 0;
+
 	type = "floor";
 	blocked = false;
 }

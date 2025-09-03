@@ -1,6 +1,8 @@
 #include <iostream>
+#include "UI.hpp"
 #include "PerlinNoise.hpp"
-#include "Area.hpp"
+#include "Cave.hpp"
+#include "CaveGenerator.hpp"
 #include "Testing.hpp"
 
 /*void test_perlin()
@@ -19,11 +21,18 @@
 	}
 }*/
 
+void run()
+{
+	UI::init_ncurses();
+	UI::start_menu();
+	UI::end_ncurses();
+}
+
 int main(void)
 {
 	Log::log("Running main");
 	test();
-	Area area(60, 60);
+	run();
 	Log::log("Run succesful\n");
 	return 0;
 }
