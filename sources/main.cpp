@@ -24,10 +24,9 @@ int main(void)
 {
 	Log::log("Running main");
 	test();
-	Cave first_level = CaveGenerator::generate_cave();
-	Cave second_level = CaveGenerator::generate_cave(first_level);
+	CaveGenerator cg;
+	Cave first_level = cg.generate_cave(1);
 	first_level.print_cave();
-	second_level.print_cave();
 	Log::log("Run succesful\n");
 	return 0;
 }

@@ -7,19 +7,12 @@
 #include "Utils.hpp"
 
 /* CONSTRUCTORS */
+Cave::Cave() : height(0), width(0), level(0), seed(0) {}
 Cave::Cave(const std::vector<Cell>& cells) : cells(cells) {}
 
 // delete this
-Cave::Cave(const size_t height, const size_t width) : height(height), width(width)
+/*Cave::Cave(const size_t height, const size_t width) : height(height), width(width)
 {
-
-	for (size_t i = 0; i < get_size(); ++i)
-	{
-		double perlin = Random::noise(i / width, i % width, frequency, octaves);
-		int mapped = Math::map(perlin, 0, 1, 1, max_rock_thickness);
-		cells.push_back(Cell(i, "rock", mapped));
-	}
-
 	// water erodes rock to create passages
 	std::vector<size_t> sources, sinks;
 	for (size_t i = 0; i < source_count; ++i)
@@ -56,7 +49,7 @@ Cave::Cave(const size_t height, const size_t width) : height(height), width(widt
 		cells[sink] = Cell(sink, "stream_sink");
 	print_cave(stream_paths);
 }
-
+*/
 // constructor using premade map
 Cave::Cave(const std::string& map, const size_t width) : height(map.size() / width), width(width)
 {

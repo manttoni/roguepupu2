@@ -13,7 +13,7 @@
 #include <sstream>
 #include <ctime>
 #include <chrono>
-#include "Area.hpp"
+#include "Cave.hpp"
 #include "Cell.hpp"
 #include "PerlinNoise.hpp"
 
@@ -84,11 +84,11 @@ namespace Random
 		return dist(rng());
 	}
 
-	inline double noise(double y, double x, double f, int o)
+	inline double noise3D(double x, double y, double z, double f, int seed)
 	{
-		static const siv::PerlinNoise::seed_type seed = randint(10000, 99999);
-		const siv::PerlinNoise perlin{ seed };
-		return perlin.octave2D_01(x * f, y * f, o);
+		static const siv::PerlinNoise::seed_type perlin_seed = seed;
+		const siv::PerlinNoise perlin{ perlin_seed };
+		return perlin.octave3D_01(x * f, y * f, z * f, 8);
 	}
 }
 

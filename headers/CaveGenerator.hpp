@@ -10,15 +10,18 @@ class CaveGenerator
 {
 	private:
 		/* CAVE SIZE */
-		size_t size = 60 * 60; // generates caves of this size
-		size_t margin = 5; // try to keep a margin around edges or use max_rock_thickness instead
+		static constexpr size_t WIDTH = 120;
+		static constexpr size_t HEIGHT = 60;
+		static constexpr size_t SIZE = WIDTH * HEIGHT; // generates caves of this size
+		static constexpr size_t MARGIN = 18; // if distance to edges less than this increase ROCK_DENSITY
+		static constexpr size_t EDGE_WEIGH_MULT = 3;
 
 		/* ROCK */
-		double frequency = 0.1 // change smoothness of rock thickness randomization
+		static constexpr double PERLIN_FREQUENCY = 0.1; // change smoothness of rock thickness randomization
+		static constexpr size_t PERLIN_OCTAVES = 8; // some value for random generator (Perlin)
+		static constexpr size_t ROCK_DENSITY = 9; // max density of rock
 		double rock_formation_chance = 0.1; // chance to leave formations when eroding
-		int octaves = 8; // some value for random generator (Perlin)
-		int max_rock_thickness = 5; // thicker walls result in bigger caves
-		std::vector<Cell> form_rock();
+		std::vector<Cell> form_rock(const Cave& cave);
 
 		/* WATER */
 		double min_stream_length = 10; // distance from any source to any sink
@@ -39,9 +42,10 @@ class CaveGenerator
 		/* CAVE NETWORK */
 		std::vector<Cave> caves;
 
+		/* DEBUG */
+		void print_cells(const std::vector<Cell>& cells);
 	public:
-		CaveGenerator();
-		Cave generate_cave(); // generate first level
-		Cave generate_cave(const Cave& cave); // generate next level
+		Cave generate_cave(const size_t level);
 
-}
+};
+
