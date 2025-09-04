@@ -8,7 +8,7 @@ class Cell
 		size_t id;
 		std::string type;
 		bool blocked;
-		double density = 0;
+		double density;
 
 	public:
 		/* CONSTRUCTORS */
@@ -27,9 +27,7 @@ class Cell
 		bool operator!=(const Cell &other) const;
 		bool operator<(const Cell &other) const;
 		Cell &operator=(const Cell &other);
-		friend std::ostream &operator<<(std::ostream &os, const Cell &cell);
 
 		/* MODIFY CELL */
 		void reduce_density(const double amount);
-
 };

@@ -6,17 +6,18 @@
 #include "CaveGenerator.hpp"
 #include "Cave.hpp"
 
-CaveGenerator::CaveGenerator()
-	: height(LINES - 1), width(COLS - 1), size(height * width)
+CaveGenerator::CaveGenerator(const size_t height, const size_t width)
+	: height(height), width(width), size(height * width)
 {
 	margin = static_cast<size_t>(width * MARGIN_PERCENT / 100);
 	seed = Random::randint(10000, 99999);
 }
 
-// returns cells with type rock and a density
+// returns cells with type rock and a density [1,9]
 std::vector<Cell> CaveGenerator::form_rock(const size_t level)
 {
 	std::vector<Cell> cells;
+	cells.reserve(size);
 	for (size_t i = 0; i < size; ++i)
 	{
 		size_t y = i / width;
@@ -41,6 +42,7 @@ std::vector<Cell> CaveGenerator::form_rock(const size_t level)
 	return cells;
 }
 
+// generate a cave and store it in vector
 void CaveGenerator::generate_cave(const size_t level)
 {
 	std::vector<Cell> cells = form_rock(level);
@@ -48,9 +50,11 @@ void CaveGenerator::generate_cave(const size_t level)
 	caves.push_back(cave);
 }
 
+// generate all z levels until reaches target
 Cave CaveGenerator::get_cave(const size_t level)
 {
-	if (level > caves.size())
-		generate_cave(level);
+	while (caves.size() < level)
+		generate_cave(caves.size() + 1);
+
 	return caves[level - 1];
 }

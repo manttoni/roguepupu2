@@ -17,6 +17,7 @@
 #include "Cell.hpp"
 #include "PerlinNoise.hpp"
 
+// remove this and replace with c++20 versions
 namespace Utils
 {
 	template <typename T>
@@ -65,7 +66,7 @@ namespace Math
 
 namespace Random
 {
-	inline std::mt19937 &rng()
+	inline std::mt19937& rng()
 	{
 		static std::random_device rd;
 		static std::mt19937 gen(rd());
@@ -90,28 +91,5 @@ namespace Random
 		const siv::PerlinNoise perlin{ perlin_seed };
 		return perlin.octave3D_01(x * f, y * f, z * f, 8);
 	}
-}
-
-namespace Colors {
-    // Basic ANSI 8 colors
-    constexpr char RESET[]   = "\033[0m";
-    constexpr char RED[]     = "\033[31m";
-    constexpr char GREEN[]   = "\033[32m";
-    constexpr char YELLOW[]  = "\033[33m";
-    constexpr char BLUE[]    = "\033[34m";
-    constexpr char MAGENTA[] = "\033[35m";
-    constexpr char CYAN[]    = "\033[36m";
-    constexpr char WHITE[]   = "\033[37m";
-	constexpr char BLACK[] = "\033[30m";
-
-    // Bright variants
-    constexpr char BRIGHT_RED[]   = "\033[91m";
-    constexpr char BRIGHT_GREEN[] = "\033[92m";
-
-    // True color example function
-    inline std::string rgb(int r, int g, int b) {
-        return "\033[38;2;" + std::to_string(r) + ";" +
-               std::to_string(g) + ";" + std::to_string(b) + "m";
-    }
 }
 

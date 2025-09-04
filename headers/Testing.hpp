@@ -42,7 +42,6 @@ const std::map<std::string, size_t> test_maps =
 /* TESTING PATHFINDING ALGORITHM */
 void test_pathfinding()
 {
-	Log::log("Testing pathfinding");
 	for (const auto& [map, expected_path_size] : test_maps)
 	{
 		Cave test_cave(map, 25);
@@ -53,18 +52,17 @@ void test_pathfinding()
 		assert(cells.size() == map.size());
 		assert(path.size() == expected_path_size);
 	}
-	Log::log("Pathfinding tests succesful");
 }
 
 void test_utils()
 {
 	assert(Random::randreal(0.1, 0.2) <= 0.2);
 	assert(Math::map(1, 0, 1, 1, 10) == 10);
+	assert(Math::map(0,0,1,1,10) == 1);
 }
 
 void test()
 {
 	test_pathfinding();
 	test_utils();
-	Log::log("All tests succesful");
 }

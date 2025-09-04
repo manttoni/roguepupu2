@@ -37,6 +37,7 @@ Cave::Cave(const std::string& map, const size_t width) : height(map.size() / wid
 }
 
 /* CELL TO CELL */
+// uses A* to find walkable path from start to end
 std::vector<Cell> Cave::find_path(const Cell &start, const Cell &end)
 {
 	if (start.is_blocked())
@@ -113,10 +114,7 @@ void Cave::print_cave()
 		attron(COLOR_PAIR(density));
 		UI::print(density);
 		attroff(COLOR_PAIR(density));
-		if (i % width == width - 1)
-			UI::println();
 	}
-	refresh();
 }
 
 double Cave::distance(const Cell &start, const Cell &end) const
@@ -136,6 +134,7 @@ double Cave::distance(const size_t start_id, const size_t end_id) const
 	return std::hypot(start_y - end_y, start_x - end_x);
 }
 
+// return all cells within a radius
 std::vector<Cell*> Cave::get_nearby_cells(const Cell &middle, const int r)
 {
 	std::vector<Cell*> nearby;
@@ -163,6 +162,7 @@ std::vector<Cell*> Cave::get_nearby_cells(const Cell &middle, const int r)
 	return nearby;
 }
 
+// return adjacent cells, also diagonal
 std::vector<Cell*> Cave::get_neighbors(const Cell &middle)
 {
 	assert(middle.get_id() < get_size());
@@ -191,20 +191,10 @@ std::vector<Cell*> Cave::get_neighbors(const Cell &middle)
 			assert(distance(middle, cells[nid]) < 2);
 		}
 	}
-
-	if (width == 25 && height == 25)
-	{
-		if (middle_id == 0)
-			assert(neighbors.size() == 3);
-		if (middle_id == 25)
-			assert(neighbors.size() == 5);
-		if (middle_id == 26)
-			assert(neighbors.size() == 8);
-	}
-
 	return neighbors;
 }
 
+// can someone walk from to. Has to go around corners
 bool Cave::has_access(const Cell &from, const Cell &to) const
 {
 	if (to.is_blocked()) // can't move to "to"

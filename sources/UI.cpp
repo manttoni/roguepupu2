@@ -23,6 +23,10 @@ namespace UI
 	{
 		wprintw(stdscr, "%s", chptr);
 	}
+	void print(const std::string& str)
+	{
+		print(stdscr, str);
+	}
 	void println(WINDOW *window, const std::string& str)
 	{
 		wprintw(window, "%s\n", str.c_str());
@@ -54,15 +58,17 @@ namespace UI
 
 	void test_cave_generator()
 	{
-		CaveGenerator cg;
+		CaveGenerator cg(LINES, COLS);
 		size_t current_level = 1;
-		print("Press up or down to change level");
 		refresh();
 		int input = 0;
 		while (input != KEY_ESCAPE)
 		{
 			Cave current_cave = cg.get_cave(current_level);
 			current_cave.print_cave();
+			move(0, 0);
+			print("UP/DOWN/ESC | Current level: " + std::to_string(current_level));
+			refresh();
 			input = getch();
 			switch (input)
 			{

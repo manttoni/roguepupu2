@@ -45,10 +45,4 @@ class Cave
 		std::vector<Cell*> get_neighbors(const Cell &middle);
 		std::vector<Cell*> get_nearby_cells(const Cell& middle, const int r);
 		bool has_access(const Cell &from, const Cell &to) const;
-
-		/* COUNTING CELLS */
-		size_t count_cells(const std::string& type) const;
-
-		/* cave GENERATION */
-		std::pair<size_t, size_t> get_stream() const;
 };
