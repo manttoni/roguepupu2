@@ -32,11 +32,10 @@ std::vector<Cell> CaveGenerator::form_rock(const size_t level)
 
 		// if close enough, make rock denser
 		double edge_weight =
-			distance_to_edge <= margin
+			distance_to_edge <= margin && margin != 0
 			? Math::map(margin - distance_to_edge, 0, margin, 1, EDGE_WEIGH_MULT)
 			: 1;
 
-		if (margin == 0) edge_weight = 1;
 
 		// map perlin [0,1] * edge_weight [1,EDGE_WEIGH_MULT] to [1,9]
 		double density = Math::map(perlin * edge_weight, 0, EDGE_WEIGH_MULT, 1, 9);

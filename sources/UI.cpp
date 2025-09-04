@@ -54,6 +54,7 @@ namespace UI
 	{
 		(void) sig;
 		end_ncurses();
+		std::exit(sig);
 	}
 
 	void init_ncurses()
@@ -68,6 +69,7 @@ namespace UI
 		curs_set(0);
 		keypad(stdscr, TRUE);
 		start_color();
+		set_escdelay(25);
 	}
 
 	void test_cave_generator()
@@ -116,10 +118,9 @@ namespace UI
 				case KEY_SRIGHT:
 					octave++;
 					break;
-
 			}
 
-			if ((input != KEY_UP && input!= KEY_DOWN) || input == 0)
+			if ((input != KEY_UP && input!= KEY_DOWN) || input == 0 || input == KEY_RESIZE)
 				cg = CaveGenerator(LINES, COLS, smoothness, seed, margin_percent, octave);
 			Cave current_cave = cg.get_cave(current_level);
 			current_cave.print_cave();
@@ -128,7 +129,9 @@ namespace UI
 			println(std::format("      LEFT/RIGHT | smoothness: {:0.3f} ", smoothness));
 			println(std::format(" PAGEDOWN/PAGEUP |   margin_%: {:<6}", margin_percent));
 			println(std::format("SHIFT LEFT/RIGHT |    octaves: {:<6}", octave));
-			println(std::format("       0 = reset | ESC = quit  {:<6}", ""));
+			println(std::format("      CTRL +/-/0 = resize      {:<6}", ""));
+			println(std::format("               0 = reset       {:<6}", ""));
+			println(std::format("             ESC = quit        {:<6}", ""));
 			refresh();
 			input = getch();
 			flushinp();
