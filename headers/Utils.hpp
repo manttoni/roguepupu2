@@ -85,11 +85,11 @@ namespace Random
 		return dist(rng());
 	}
 
-	inline double noise3D(double x, double y, double z, double f, int seed)
+	inline double noise3D(double x, double y, double z, double f, int seed, int octave)
 	{
 		static const siv::PerlinNoise::seed_type perlin_seed = seed;
 		const siv::PerlinNoise perlin{ perlin_seed };
-		return perlin.octave3D_01(x * f, y * f, z * f, 8);
+		return perlin.octave3D_01(x * f, y * f, z * f, octave);
 	}
 }
 

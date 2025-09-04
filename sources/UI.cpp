@@ -43,7 +43,7 @@ namespace UI
 	void println(WINDOW *window, const std::string& str)
 	{
 		wprintw(window, "%s", str.c_str());
-		waddch(window, '\n');
+		move(curs_y(window) + 1, 0);
 	}
 	void print(WINDOW *window, const std::string& str)
 	{
@@ -72,25 +72,25 @@ namespace UI
 
 	void test_cave_generator()
 	{
-		size_t current_level = 1;
-		double smoothness = 0.1;
-		size_t margin_percent = 15;
-		size_t seed = Random::randint(10000, 99999);
-		CaveGenerator cg(LINES, COLS, smoothness, seed, margin_percent);
+		size_t current_level = 1, margin_percent = 1, seed = 1;
+		int octave = 1;
+		double smoothness = 1;
+		CaveGenerator cg;
 		refresh();
 		int input = 0;
 		while (input != KEY_ESCAPE)
 		{
-			Cave current_cave = cg.get_cave(current_level);
-			current_cave.print_cave();
-			move(0, 0);
-			println(std::format("    UP/DOWN |      level: {:<6}", current_level));
-			println(std::format(" LEFT/RIGHT | smoothness: {:0.3f} ", smoothness));
-			println(std::format("NPAGE/PPAGE |   margin_%: {:<6}", margin_percent));
-			refresh();
-			input = getch();
+
 			switch (input)
 			{
+				case 0:
+				case '0':
+					current_level = 1;
+					smoothness = 0.1;
+					margin_percent = 15;
+					seed = Random::randint(10000, 99999);
+					octave = 8;
+					break;
 				case KEY_UP:
 					if (current_level > 1)
 						current_level--;
@@ -100,21 +100,37 @@ namespace UI
 					break;
 				case KEY_LEFT:
 					smoothness -= 0.01;
-					cg = CaveGenerator(LINES, COLS, smoothness, seed, margin_percent);
 					break;
 				case KEY_RIGHT:
 					smoothness += 0.01;
-					cg = CaveGenerator(LINES, COLS, smoothness, seed, margin_percent);
 					break;
 				case KEY_NPAGE:
 					margin_percent--;
-					cg = CaveGenerator(LINES, COLS, smoothness, seed, margin_percent);
 					break;
 				case KEY_PPAGE:
 					margin_percent++;
-					cg = CaveGenerator(LINES, COLS, smoothness, seed, margin_percent);
 					break;
+				case KEY_SLEFT:
+					octave--;
+					break;
+				case KEY_SRIGHT:
+					octave++;
+					break;
+
 			}
+
+			if ((input != KEY_UP && input!= KEY_DOWN) || input == 0)
+				cg = CaveGenerator(LINES, COLS, smoothness, seed, margin_percent, octave);
+			Cave current_cave = cg.get_cave(current_level);
+			current_cave.print_cave();
+			move(0, 0);
+			println(std::format("         UP/DOWN |      level: {:<6}", current_level));
+			println(std::format("      LEFT/RIGHT | smoothness: {:0.3f} ", smoothness));
+			println(std::format(" PAGEDOWN/PAGEUP |   margin_%: {:<6}", margin_percent));
+			println(std::format("SHIFT LEFT/RIGHT |    octaves: {:<6}", octave));
+			println(std::format("       0 = reset | ESC = quit  {:<6}", ""));
+			refresh();
+			input = getch();
 			flushinp();
 		}
 	}
@@ -139,7 +155,7 @@ namespace UI
 			{
 				if (i == selected)
 					wattron(menu, A_REVERSE);
-				println(menu, "  " + choices[i]);
+				print(menu, "  " + choices[i] + "\n");
 				if (i == selected)
 					wattroff(menu, A_REVERSE);
 			}

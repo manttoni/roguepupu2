@@ -6,8 +6,10 @@
 #include "CaveGenerator.hpp"
 #include "Cave.hpp"
 
-CaveGenerator::CaveGenerator(const size_t height, const size_t width, const double smoothness, const size_t seed, const size_t margin_percent)
-	: height(height), width(width), size(height * width), smoothness(smoothness), seed(seed)
+CaveGenerator::CaveGenerator()
+	: height(0), width(0), size(0), smoothness(0), seed(0), octaves(0), margin(0) {}
+CaveGenerator::CaveGenerator(const size_t height, const size_t width, const double smoothness, const size_t seed, const size_t margin_percent, const int octaves)
+	: height(height), width(width), size(height * width), smoothness(smoothness), seed(seed), octaves(octaves)
 {
 	margin = static_cast<size_t>(width * margin_percent / 100);
 }
@@ -23,7 +25,7 @@ std::vector<Cell> CaveGenerator::form_rock(const size_t level)
 		size_t x = i % width;
 
 		// [0,1]
-		double perlin = Random::noise3D(y, x, level, smoothness, seed);
+		double perlin = Random::noise3D(y, x, level, smoothness, seed, octaves);
 
 		// distance to closest edge
 		size_t distance_to_edge = std::min(std::min(x, y), std::min(width - x - 1, height - y - 1));
@@ -33,6 +35,8 @@ std::vector<Cell> CaveGenerator::form_rock(const size_t level)
 			distance_to_edge <= margin
 			? Math::map(margin - distance_to_edge, 0, margin, 1, EDGE_WEIGH_MULT)
 			: 1;
+
+		if (margin == 0) edge_weight = 1;
 
 		// map perlin [0,1] * edge_weight [1,EDGE_WEIGH_MULT] to [1,9]
 		double density = Math::map(perlin * edge_weight, 0, EDGE_WEIGH_MULT, 1, 9);
