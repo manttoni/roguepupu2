@@ -3,6 +3,7 @@
 #include <vector>
 #include <stdexcept>
 #include <csignal>
+#include <format>
 #include "UI.hpp"
 #include "CaveGenerator.hpp"
 #include "Cave.hpp"
@@ -11,13 +12,20 @@
 
 namespace UI
 {
+	int curs_y(WINDOW *window = stdscr)
+	{
+		int y, x;
+		getyx(window, y, x);
+		return y;
+	}
 	void print(const int i)
 	{
 		wprintw(stdscr, "%d", i);
 	}
 	void println(const char* chptr)
 	{
-		wprintw(stdscr, "%s\n", chptr);
+		wprintw(stdscr, "%s", chptr);
+		waddch(stdscr, '\n');
 	}
 	void print(const char* chptr)
 	{
@@ -27,9 +35,15 @@ namespace UI
 	{
 		print(stdscr, str);
 	}
+	void println(const std::string& str)
+	{
+		print(stdscr, str);
+		move(curs_y() + 1, 0);
+	}
 	void println(WINDOW *window, const std::string& str)
 	{
-		wprintw(window, "%s\n", str.c_str());
+		wprintw(window, "%s", str.c_str());
+		waddch(window, '\n');
 	}
 	void print(WINDOW *window, const std::string& str)
 	{
@@ -58,8 +72,11 @@ namespace UI
 
 	void test_cave_generator()
 	{
-		CaveGenerator cg(LINES, COLS);
 		size_t current_level = 1;
+		double smoothness = 0.1;
+		size_t margin_percent = 15;
+		size_t seed = Random::randint(10000, 99999);
+		CaveGenerator cg(LINES, COLS, smoothness, seed, margin_percent);
 		refresh();
 		int input = 0;
 		while (input != KEY_ESCAPE)
@@ -67,7 +84,9 @@ namespace UI
 			Cave current_cave = cg.get_cave(current_level);
 			current_cave.print_cave();
 			move(0, 0);
-			print("UP/DOWN/ESC | Current level: " + std::to_string(current_level));
+			println(std::format("    UP/DOWN |      level: {:<6}", current_level));
+			println(std::format(" LEFT/RIGHT | smoothness: {:0.3f} ", smoothness));
+			println(std::format("NPAGE/PPAGE |   margin_%: {:<6}", margin_percent));
 			refresh();
 			input = getch();
 			switch (input)
@@ -78,6 +97,22 @@ namespace UI
 					break;
 				case KEY_DOWN:
 					current_level++;
+					break;
+				case KEY_LEFT:
+					smoothness -= 0.01;
+					cg = CaveGenerator(LINES, COLS, smoothness, seed, margin_percent);
+					break;
+				case KEY_RIGHT:
+					smoothness += 0.01;
+					cg = CaveGenerator(LINES, COLS, smoothness, seed, margin_percent);
+					break;
+				case KEY_NPAGE:
+					margin_percent--;
+					cg = CaveGenerator(LINES, COLS, smoothness, seed, margin_percent);
+					break;
+				case KEY_PPAGE:
+					margin_percent++;
+					cg = CaveGenerator(LINES, COLS, smoothness, seed, margin_percent);
 					break;
 			}
 			flushinp();

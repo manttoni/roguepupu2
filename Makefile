@@ -1,6 +1,6 @@
 # Compiler and flags
 CXX := c++
-CXXFLAGS := -Wall -Wextra -Werror -g -Iheaders -MMD -MP -O3
+CXXFLAGS := -Wall -Wextra -Werror -g -Iheaders -MMD -MP -O3 -std=c++20
 
 LDFLAGS := -lncurses -lm
 

@@ -6,11 +6,10 @@
 #include "CaveGenerator.hpp"
 #include "Cave.hpp"
 
-CaveGenerator::CaveGenerator(const size_t height, const size_t width)
-	: height(height), width(width), size(height * width)
+CaveGenerator::CaveGenerator(const size_t height, const size_t width, const double smoothness, const size_t seed, const size_t margin_percent)
+	: height(height), width(width), size(height * width), smoothness(smoothness), seed(seed)
 {
-	margin = static_cast<size_t>(width * MARGIN_PERCENT / 100);
-	seed = Random::randint(10000, 99999);
+	margin = static_cast<size_t>(width * margin_percent / 100);
 }
 
 // returns cells with type rock and a density [1,9]
@@ -24,7 +23,7 @@ std::vector<Cell> CaveGenerator::form_rock(const size_t level)
 		size_t x = i % width;
 
 		// [0,1]
-		double perlin = Random::noise3D(y, x, level, PERLIN_FREQUENCY, seed);
+		double perlin = Random::noise3D(y, x, level, smoothness, seed);
 
 		// distance to closest edge
 		size_t distance_to_edge = std::min(std::min(x, y), std::min(width - x - 1, height - y - 1));

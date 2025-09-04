@@ -95,18 +95,11 @@ std::vector<Cell> Cave::find_path(const Cell &start, const Cell &end)
 // print with ncurses for testing purposes
 void Cave::print_cave()
 {
-	init_color(COLOR_BLUE, 0, 0, 1000);
-	init_color(COLOR_RED, 1000, 0, 0);
-	for (int i = 1; i <= 9; ++i)
+	for (size_t i = 0; i <= 9; ++i)
 	{
-		// Interpolate RGB
-		int r = (i - 1) * 1000 / 8;
-		int g = 0;
-		int b = 1000 - (i - 1) * 1000 / 8;
-		init_color(i + 10, r, g, b);      // new color index (10-18)
-		init_pair(i, i + 10, COLOR_BLACK); // foreground = gradient, background = black
+		init_color(i + 10, i * 100, i * 100, i * 100);
+		init_pair(i, i + 10, COLOR_BLACK);
 	}
-	//clear();
 	erase();
 	for (size_t i = 0; i < get_size(); ++i)
 	{
