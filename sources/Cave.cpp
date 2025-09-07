@@ -92,24 +92,6 @@ std::vector<Cell> Cave::find_path(const Cell &start, const Cell &end)
 	return {};
 }
 
-// print with ncurses for testing purposes
-void Cave::print_cave()
-{
-	for (size_t i = 0; i <= 9; ++i)
-	{
-		init_color(i + 10, i * 100, i * 100, i * 100);
-		init_pair(i, i + 10, COLOR_BLACK);
-	}
-	erase();
-	for (size_t i = 0; i < get_size(); ++i)
-	{
-		int density = static_cast<int>(std::round(cells[i].get_density()));
-		attron(COLOR_PAIR(density));
-		UI::print(density);
-		attroff(COLOR_PAIR(density));
-	}
-}
-
 double Cave::distance(const Cell &start, const Cell &end) const
 {
 	size_t start_id = start.get_id();

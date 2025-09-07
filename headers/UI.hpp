@@ -1,6 +1,8 @@
 #pragma once
-
+#include <string>
 #include <ncurses.h>
+
+#define KEY_ESCAPE 27
 
 namespace UI
 {
@@ -18,4 +20,9 @@ namespace UI
 	void init_ncurses();
 	void start_menu();
 	void end_ncurses();
+}
+
+namespace CaveView
+{
+	void cave_generator();
 }

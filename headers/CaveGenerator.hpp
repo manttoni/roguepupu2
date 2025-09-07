@@ -4,7 +4,6 @@
 #include <ncurses.h>
 #include "PerlinNoise.hpp"
 #include "Cell.hpp"
-#include "Stream.hpp"
 #include "Cave.hpp"
 
 class CaveGenerator
@@ -18,18 +17,19 @@ class CaveGenerator
 		size_t height;
 		size_t width;
 		size_t size; // generates caves of this size
-		double smoothness; // smaller values give smoother densities, 1 is weird
-		size_t seed;
+		double frequency; // smaller values give smoother densities, 1 is weird
+		int seed;
 		std::vector<Cave> caves;
 		int octaves;
-		size_t margin; // if distance to edges less than this increase ROCK_DENSITY
+		int margin; // if distance to edges less than this increase ROCK_DENSITY
 
 		std::vector<Cell> form_rock(const size_t level);
 
 	public:
 		CaveGenerator();
-		CaveGenerator(const size_t height, const size_t width, const double smoothness, const size_t seed, const size_t margin_percent, const int octaves);
-		//CaveGenerator(const CaveGenerator& other);
+		CaveGenerator(const size_t height, const size_t width, const double frequency, const int seed, const int margin_percent, const int octaves);
+		CaveGenerator(const CaveGenerator& other);
+		CaveGenerator operator=(const CaveGenerator& other);
 		void generate_cave(const size_t level);
 		Cave get_cave(const size_t level);
 

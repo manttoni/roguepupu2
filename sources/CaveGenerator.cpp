@@ -7,11 +7,38 @@
 #include "Cave.hpp"
 
 CaveGenerator::CaveGenerator()
-	: height(0), width(0), size(0), smoothness(0), seed(0), octaves(0), margin(0) {}
-CaveGenerator::CaveGenerator(const size_t height, const size_t width, const double smoothness, const size_t seed, const size_t margin_percent, const int octaves)
-	: height(height), width(width), size(height * width), smoothness(smoothness), seed(seed), octaves(octaves)
+	: height(0), width(0), size(0), frequency(0), seed(0), octaves(0), margin(0) {}
+CaveGenerator::CaveGenerator(const size_t height, const size_t width, const double frequency, const int seed, const int margin_percent, const int octaves)
+	: height(height), width(width), size(height * width), frequency(frequency), seed(seed), octaves(octaves)
 {
 	margin = static_cast<size_t>(width * margin_percent / 100);
+}
+CaveGenerator::CaveGenerator(const CaveGenerator& other)
+{
+	height = other.height;
+	width = other.width;
+	size = other.size;
+	frequency = other.frequency;
+	seed = other.seed;
+	caves = other.caves;
+	octaves = other.octaves;
+	margin = other.margin;
+
+}
+CaveGenerator CaveGenerator::operator=(const CaveGenerator& other)
+{
+	if (this != &other)
+	{
+		height = other.height;
+		width = other.width;
+		size = other.size;
+		frequency = other.frequency;
+		seed = other.seed;
+		caves = other.caves;
+		octaves = other.octaves;
+		margin = other.margin;
+	}
+	return *this;
 }
 
 // returns cells with type rock and a density [1,9]
@@ -25,10 +52,10 @@ std::vector<Cell> CaveGenerator::form_rock(const size_t level)
 		size_t x = i % width;
 
 		// [0,1]
-		double perlin = Random::noise3D(y, x, level, smoothness, seed, octaves);
+		double perlin = Random::noise3D(y, x, level, frequency, seed, octaves);
 
 		// distance to closest edge
-		size_t distance_to_edge = std::min(std::min(x, y), std::min(width - x - 1, height - y - 1));
+		int distance_to_edge = std::min(std::min(x, y), std::min(width - x - 1, height - y - 1));
 
 		// if close enough, make rock denser
 		double edge_weight =
