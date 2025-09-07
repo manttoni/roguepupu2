@@ -21,6 +21,7 @@ class Menu
 		Menu operator=(const Menu& other) = delete;
 		~Menu();
 
+		WINDOW* get_window() const { return window; }
 		std::any get_value(const std::string& str) const;
 		void loop();
 		bool get_flag() const { return flag; }

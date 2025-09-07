@@ -34,8 +34,8 @@ std::any Menu::get_value(const std::string& str) const
 {
 	for (size_t i = 0; i < elements.size(); ++i)
 	{
-		Log::log(elements[i]->get_type() + " " + elements[i]->MenuElt::get_text());
-		if (elements[i]->get_type() == "number" && elements[i]->MenuElt::get_text() == str)
+		if (elements[i]->get_type() == MenuElt::Type::NUMBER
+			&& elements[i]->MenuElt::get_text() == str)
 			return elements[i]->get_value();
 	}
 	throw std::runtime_error("Not found");
@@ -48,20 +48,19 @@ void Menu::loop()
 	int input = 0;
 	while (input != KEY_ESCAPE)
 	{
-		if (loop_cb != nullptr)
-			loop_cb();
+		if (loop_cb != nullptr) loop_cb();
 		flag = false;
-		werase(window);
-		wmove(window, 1, 0);
+		wmove(window, 1, 0); // if boxed
 		for (size_t i = 0; i < elements.size(); ++i)
 		{
 			if (i == selected)
 				wattron(window, A_REVERSE);
-			UI::print(window, "  " + elements[i]->get_text() + "\n");
+			UI::print(window, "  " + elements[i]->get_text() + "\n"); // spaces if boxed
 			if (i == selected)
 				wattroff(window, A_REVERSE);
 		}
-		box(window, 0, 0);
+		box(window, 0, 0); // if boxed
+		refresh();
 		wrefresh(window);
 		flushinp();
 		input = getch();
@@ -71,11 +70,11 @@ void Menu::loop()
 				selected = selected == elements.size() - 1 ? selected : selected + 1;
 				break;
 			case KEY_UP:
-				selected = selected == 0 ? 0 : selected - 1;
+				selected = selected == 0 ? selected : selected - 1;
 				break;
 			case KEY_LEFT:
 			case KEY_RIGHT:
-				if (elements[selected]->get_type() == "number")
+				if (elements[selected]->get_type() == MenuElt::Type::NUMBER)
 				{
 					if (input == KEY_RIGHT) elements[selected]->increment();
 					if (input == KEY_LEFT) elements[selected]->decrement();
@@ -84,9 +83,12 @@ void Menu::loop()
 				}
 				break;
 			case '\n':
-				if (elements[selected]->get_type() == "button")
+				if (elements[selected]->get_type() == MenuElt::Type::BUTTON)
 					elements[selected]->callback();
 				break;
 		}
 	}
+	werase(window);
+	wrefresh(window);
+	refresh();
 }

@@ -4,18 +4,26 @@
 
 class MenuElt
 {
+	public:
+		enum class Type
+		{
+			NUMBER,
+			BUTTON,
+			NONE,
+		};
 	protected:
 		std::string text;
 
 	private:
-		std::string type;
+		Type type;
 
 	public:
 		MenuElt();
-		MenuElt(const std::string& text, const std::string& type);
+		MenuElt(const std::string& text, const Type type);
 		virtual ~MenuElt() = default;
 
-		std::string get_type() const { return type; }
+
+		Type get_type() const { return type; }
 
 		virtual std::string get_text() const { return text; }
 		virtual size_t get_size() const = 0;

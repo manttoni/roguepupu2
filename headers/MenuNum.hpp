@@ -17,13 +17,13 @@ class MenuNum : public MenuElt
 
 	public:
 		MenuNum()
-			: MenuElt("", "number"), limits({T{}, T{}}), value(T{}), delta(T{}) {}
+			: MenuElt("", MenuElt::Type::NUMBER), limits({T{}, T{}}), value(T{}), delta(T{}) {}
 		MenuNum(
 			const std::string& text,
 			const std::pair<T, T>& limits = {std::numeric_limits<T>::lowest(), std::numeric_limits<T>::max()},
 			const T value = T{0},
 			const T delta = T{1}
-		)	: MenuElt(text, "number"), limits(limits), value(value), delta(delta)
+		)	: MenuElt(text, MenuElt::Type::NUMBER), limits(limits), value(value), delta(delta)
 		{
 			if (limits.first > limits.second)
 				std::swap(this->limits.first, this->limits.second);

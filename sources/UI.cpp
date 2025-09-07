@@ -124,6 +124,7 @@ namespace CaveView
 	{
 		static CaveGenerator cg;
 		Menu& settings = get_settings();
+		overlay(settings.get_window(), stdscr);
 		if (settings.get_flag() == true) // have to fix this
 		{
 			cg = CaveGenerator(LINES, COLS,
@@ -140,7 +141,7 @@ namespace CaveView
 			init_color(i + 10, i * 100, i * 100, i * 100);
 			init_pair(i, i + 10, COLOR_BLACK);
 		}
-		erase();
+		//erase();
 		move(0, 0);
 		for (size_t i = 0; i < cells.size(); ++i)
 		{
@@ -149,13 +150,14 @@ namespace CaveView
 			UI::print(density);
 			attroff(COLOR_PAIR(density));
 		}
-		refresh();
+		//refresh();
 	}
 
 	void cave_generator()
 	{
 		Menu& settings = get_settings();
 		settings.loop();
+		erase();
 	}
 
 

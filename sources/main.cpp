@@ -15,7 +15,7 @@ void run()
 	elements.push_back(std::make_unique<MenuBtn>("CaveGenerator", CaveView::cave_generator));
 	elements.push_back(std::make_unique<MenuBtn>("Quit", UI::end_ncurses));
 	Menu start_menu(std::move(elements));
-	refresh();
+	//refresh();
 	start_menu.loop();
 }
 
