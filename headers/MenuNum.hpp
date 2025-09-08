@@ -38,9 +38,9 @@ class MenuNum : public MenuElt
 		{
 			std::stringstream ss;
 				ss << text << " ";
-			ss << (value - delta < limits.first ? "" : "< ");
+			ss << (value - delta < limits.first ? "  " : "< ");
 			ss << value;
-			ss << (value + delta > limits.second ? "" : " >");
+			ss << (value + delta > limits.second ? "  " : " >");
 			return ss.str();
 		}
 		size_t get_size() const override

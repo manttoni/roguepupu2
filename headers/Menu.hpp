@@ -1,28 +1,31 @@
 #pragma once
 #include <vector>
 #include <ncurses.h>
+#include <panel.h>
 #include <memory>
+#include "Utils.hpp"
 #include "MenuElt.hpp"
 
 class Menu
 {
 	private:
-		size_t starty, startx;
-		size_t height, width;
-		WINDOW *window;
+		PANEL* panel;
 		std::vector<std::unique_ptr<MenuElt>> elements;
+		size_t height, width; // calculated automatically, no override atm
+		Screen::Coord start;
 		void (*loop_cb)(); // call every loop
-		bool flag = true;
+
+		void loop();
 
 	public:
 		Menu();
-		Menu(std::vector<std::unique_ptr<MenuElt>> elements, void (*loop_cb)() = nullptr, const size_t start_idx = 0);
-		Menu(const Menu& other) = delete;
-		Menu operator=(const Menu& other) = delete;
+		Menu(	std::vector<std::unique_ptr<MenuElt>> elements,
+				const Screen::Coord& start,
+				void (*loop_cb)() = nullptr);
+		Menu(const Menu& other);
+		Menu& operator=(Menu&& other);
 		~Menu();
 
-		WINDOW* get_window() const { return window; }
+		void show(); // push panel to top, start loop()
 		std::any get_value(const std::string& str) const;
-		void loop();
-		bool get_flag() const { return flag; }
 };

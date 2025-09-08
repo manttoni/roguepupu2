@@ -23,6 +23,10 @@ namespace UI
 		getyx(window, y, x);
 		return y;
 	}
+	void print(WINDOW* window, int i)
+	{
+		wprintw(window, "%d", i);
+	}
 	void print(const int i)
 	{
 		wprintw(stdscr, "%d", i);
@@ -85,9 +89,50 @@ namespace UI
 
 namespace CaveView
 {
-	void draw_cave();
+	Menu settings;
+	PANEL* cave_panel;
 
-	auto init_elements()
+	void draw_cave()
+	{
+		WINDOW* cave_window = panel_window(cave_panel);
+		static CaveGenerator cg;
+
+		auto current =
+			std::make_tuple(
+				std::any_cast<double>(settings.get_value("Frequency")),
+				std::any_cast<int>(settings.get_value("Seed")),
+				std::any_cast<int>(settings.get_value("Margin %")),
+				std::any_cast<int>(settings.get_value("Octaves")));
+		static auto prev = std::make_tuple(-1.0, -1, -1, -1);
+
+		if (current != prev)
+		{
+			prev = current;
+			cg = CaveGenerator(
+					Screen::height(),
+					Screen::width(),
+					std::get<0>(current),
+					std::get<1>(current),
+					std::get<2>(current),
+					std::get<3>(current));
+		}
+		int level = std::any_cast<int>(settings.get_value("Level"));
+		Cave c = cg.get_cave(level);
+		const std::vector<Cell> cells = c.get_cells();
+
+		wmove(cave_window, 0, 0);
+		for (size_t i = 0; i < cells.size(); ++i)
+		{
+			int density = static_cast<int>(std::round(cells[i].get_density()));
+			wattron(cave_window, COLOR_PAIR(density));
+			UI::print(cave_window, density);
+			wattroff(cave_window, COLOR_PAIR(density));
+		}
+		update_panels();
+		doupdate();
+	}
+
+	void cave_generator()
 	{
 		std::vector<std::unique_ptr<MenuElt>> elements;
 		elements.push_back(std::make_unique<MenuNum<int>>(
@@ -110,55 +155,18 @@ namespace CaveView
 				"Margin %",
 				std::pair<int, int>{0, 100},
 				15));
-		return elements;
-	}
+		settings = Menu(std::move(elements), {0, 0}, draw_cave);
+		cave_panel = new_panel(newwin(Screen::height(), Screen::width(), 0, 0));
 
-	auto& get_settings()
-	{
-		static auto elements = init_elements();
-		static Menu settings(std::move(elements), draw_cave, 0);
-		return settings;
-	}
-
-	void draw_cave()
-	{
-		static CaveGenerator cg;
-		Menu& settings = get_settings();
-		overlay(settings.get_window(), stdscr);
-		if (settings.get_flag() == true) // have to fix this
-		{
-			cg = CaveGenerator(LINES, COLS,
-					std::any_cast<double>(settings.get_value("Frequency")),
-					std::any_cast<int>(settings.get_value("Seed")),
-					std::any_cast<int>(settings.get_value("Margin %")),
-					std::any_cast<int>(settings.get_value("Octaves")));
-		}
-		int level = std::any_cast<int>(settings.get_value("Level"));
-		Cave c = cg.get_cave(level);
-		const std::vector<Cell> cells = c.get_cells();
+		// Colors for densities
 		for (size_t i = 0; i <= 9; ++i)
 		{
 			init_color(i + 10, i * 100, i * 100, i * 100);
 			init_pair(i, i + 10, COLOR_BLACK);
 		}
-		//erase();
-		move(0, 0);
-		for (size_t i = 0; i < cells.size(); ++i)
-		{
-			int density = static_cast<int>(std::round(cells[i].get_density()));
-			attron(COLOR_PAIR(density));
-			UI::print(density);
-			attroff(COLOR_PAIR(density));
-		}
-		//refresh();
+
+		// move cave_panel on top, that's where cave will be drawn. Settings menu will put itself on top
+		top_panel(cave_panel);
+		settings.show();
 	}
-
-	void cave_generator()
-	{
-		Menu& settings = get_settings();
-		settings.loop();
-		erase();
-	}
-
-
 } // CaveView

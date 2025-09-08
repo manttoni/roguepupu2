@@ -13,9 +13,22 @@
 #include <sstream>
 #include <ctime>
 #include <chrono>
+#include <ncurses.h>
 #include "Cave.hpp"
 #include "Cell.hpp"
 #include "PerlinNoise.hpp"
+
+namespace Screen
+{
+	struct Coord { size_t y, x; };
+
+	inline size_t height()	{ return static_cast<size_t>(LINES); }
+	inline size_t width()	{ return static_cast<size_t>(COLS); }
+
+	inline Coord middle()		{ return {height() / 2, width() / 2 }; }
+	inline Coord top_left()	{ return {0, 0}; }
+	inline Coord top()			{ return {0, width() / 2}; }
+} // namespace Screen
 
 // remove this and replace with c++20 versions
 namespace Utils
@@ -61,6 +74,26 @@ namespace Math
 	inline double map(double x, double a, double b, double c, double d)
 	{
 		return c + (x - a) * (d - c) / (b - a);
+	}
+
+	// increment safely
+	template <typename T> void increment(T& value, const T& max_limit)
+	{
+		if (value > max_limit - T{1})
+		{
+			value = max_limit;
+			return;
+		}
+		value = value + T{1};
+	}
+	template <typename T> void decrement(T& value, const T& min_limit)
+	{
+		if (value < min_limit + T{1})
+		{
+			value = min_limit;
+			return;
+		}
+		value = value - T{1};
 	}
 }
 
