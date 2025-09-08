@@ -36,8 +36,10 @@ Menu::~Menu()
 {
 	if (panel != nullptr)
 	{
-		delwin(panel_window(panel));
+		WINDOW* window = panel_window(panel);
 		del_panel(panel);
+		if (window)
+			delwin(window);
 	}
 }
 
@@ -97,10 +99,11 @@ void Menu::loop()
 		if (loop_cb != nullptr)
 			loop_cb();
 
-		top_panel(panel); // whenever loop is active, it should be visible
+		// whenever loop is active, it should be visible
+		top_panel(panel);
 
 		// print elements
-		wmove(window, 1, 0); // because of box()
+		wmove(window, 1, 0); // because of box() start at y = 1
 		for (size_t i = 0; i < elements.size(); ++i)
 		{
 			if (i == selected) wattron(window, A_REVERSE);

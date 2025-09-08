@@ -10,11 +10,26 @@
 
 /* CONSTRUCTORS */
 Cave::Cave()
-	: height(0), width(0), cells({}), level(0), seed(0) {}
+	: height(0), width(0), cells({}), level(0), seed(0), water_start(0), water_end(0) {}
 Cave::Cave(const size_t height, const size_t width, const std::vector<Cell>& cells, const size_t level, const size_t seed)
-	: height(height), width(width), cells(cells), level(level), seed(seed) {}
+	: height(height), width(width), cells(cells), level(level), seed(seed), water_start(0), water_end(0) {}
 Cave::Cave(const Cave& other)
-	: height(other.height), width(other.width), cells(other.cells), level(other.level), seed(other.seed) {}
+	: height(other.height), width(other.width), cells(other.cells), level(other.level), seed(other.seed), water_start(other.water_start), water_end(other.water_end) {}
+
+Cave& Cave::operator=(const Cave& other)
+{
+	if (this == &other)
+		return *this;
+
+	height = other.height;
+	width = other.width;
+	cells = other.cells;
+	level = other.level;
+	seed = other.seed;
+	water_start = other.water_start;
+	water_end = other.water_end;
+	return *this;
+}
 
 // constructor using premade map
 Cave::Cave(const std::string& map, const size_t width) : height(map.size() / width), width(width)

@@ -14,6 +14,7 @@ class Cave
 		std::vector<Cell> cells;
 		size_t level;
 		size_t seed;
+		size_t water_start, water_end;
 
 	public:
 		/* CONSTRUCTORS */
@@ -21,6 +22,7 @@ class Cave
 		Cave(const size_t height, const size_t width, const std::vector<Cell>& cells, const size_t level, const size_t seed);
 		Cave(const std::string& map, const size_t width);
 		Cave(const Cave &other);
+		Cave& operator=(const Cave& other);
 
 		/* GETTERS */
 		size_t get_height() const { return height; }
@@ -29,11 +31,15 @@ class Cave
 		std::vector<Cell> get_cells() const { return cells; }
 		size_t get_level() const { return level; }
 		int get_seed() const { return seed; }
+		size_t get_water_start() const { return water_start; }
+		size_t get_water_end() const { return water_end; }
 
 		/* SETTERS */
 		void set_level(const size_t level) { this->level = level; }
 		void set_seed(const int seed) { this->seed = seed; }
 		void set_cells(const std::vector<Cell>& cells) { this->cells = cells; }
+		void set_water_start(const size_t water_start) { this->water_start = water_start; }
+		void set_water_end(const size_t water_end) { this->water_end = water_end; }
 
 		/* TESTING */
 		void print_cave();

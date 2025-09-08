@@ -124,12 +124,17 @@ namespace CaveView
 		for (size_t i = 0; i < cells.size(); ++i)
 		{
 			int density = static_cast<int>(std::round(cells[i].get_density()));
-			wattron(cave_window, COLOR_PAIR(density));
-			UI::print(cave_window, density);
-			wattroff(cave_window, COLOR_PAIR(density));
+			if (density > 0 && density <= 9)
+			{
+				wattron(cave_window, COLOR_PAIR(density));
+				UI::print(cave_window, density);
+				wattroff(cave_window, COLOR_PAIR(density));
+			}
+			else
+				UI::print(cave_window, " ");
 		}
-		update_panels();
-		doupdate();
+		//update_panels();
+		//doupdate();
 	}
 
 	void cave_generator()
