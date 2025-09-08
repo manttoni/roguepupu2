@@ -97,6 +97,8 @@ void Menu::loop()
 		if (loop_cb != nullptr)
 			loop_cb();
 
+		top_panel(panel); // whenever loop is active, it should be visible
+
 		// print elements
 		wmove(window, 1, 0); // because of box()
 		for (size_t i = 0; i < elements.size(); ++i)
