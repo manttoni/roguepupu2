@@ -24,5 +24,6 @@ namespace UI
 
 namespace CaveView
 {
+	void draw_cave();
 	void cave_generator();
 }

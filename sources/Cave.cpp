@@ -9,12 +9,35 @@
 #include "UI.hpp"
 
 /* CONSTRUCTORS */
-Cave::Cave()
-	: height(0), width(0), cells({}), level(0), seed(0), water_start(0), water_end(0) {}
-Cave::Cave(const size_t height, const size_t width, const std::vector<Cell>& cells, const size_t level, const size_t seed)
-	: height(height), width(width), cells(cells), level(level), seed(seed), water_start(0), water_end(0) {}
-Cave::Cave(const Cave& other)
-	: height(other.height), width(other.width), cells(other.cells), level(other.level), seed(other.seed), water_start(other.water_start), water_end(other.water_end) {}
+// DEFAULT
+Cave::Cave() :
+	height(0),
+	width(0),
+	cells({}),
+	level(0),
+	seed(0),
+	source(0),
+	sink(0) {}
+
+// CANVAS IN CAVEGENERATOR
+Cave::Cave(const size_t level, const size_t height, const size_t width, const size_t seed) :
+	height(height),
+	width(width),
+	cells(std::vector<Cell>(height * width)),
+	level(level),
+	seed(seed),
+	source(0),
+	sink(0) {}
+
+// COPY
+Cave::Cave(const Cave& other) :
+	height(other.height),
+	width(other.width),
+	cells(other.cells),
+	level(other.level),
+	seed(other.seed),
+	source(other.source),
+	sink(other.sink) {}
 
 Cave& Cave::operator=(const Cave& other)
 {
@@ -26,8 +49,8 @@ Cave& Cave::operator=(const Cave& other)
 	cells = other.cells;
 	level = other.level;
 	seed = other.seed;
-	water_start = other.water_start;
-	water_end = other.water_end;
+	source = other.source;
+	sink = other.sink;
 	return *this;
 }
 
@@ -36,15 +59,15 @@ Cave::Cave(const std::string& map, const size_t width) : height(map.size() / wid
 {
 	for (size_t i = 0; i < map.size(); ++i)
 	{
-		std::string type;
+		Cell::Type type;
 		char c = map[i];
 		switch (c)
 		{
 			case 'f':
-				type = "floor";
+				type = Cell::Type::FLOOR;
 				break;
 			case 'w':
-				type = "rock";
+				type = Cell::Type::ROCK;
 				break;
 		}
 		cells.push_back(Cell(i, type));
@@ -53,54 +76,54 @@ Cave::Cave(const std::string& map, const size_t width) : height(map.size() / wid
 
 /* CELL TO CELL */
 // uses A* to find walkable path from start to end
-std::vector<Cell> Cave::find_path(const Cell &start, const Cell &end)
+std::vector<size_t> Cave::find_path(const size_t start, const size_t end)
 {
-	if (start.is_blocked())
+	if (cells[start].is_blocked())
 		return {};
-	std::vector<Cell> open_set = {start};
-	std::map<Cell, Cell> came_from;
+	std::vector<size_t> open_set = { start };
+	std::map<size_t, size_t> came_from;
+	std::map<size_t, double> g_score;
+	std::map<size_t, double> f_score;
 
-	std::map<Cell, double> g_score;
-	std::map<Cell, double> f_score;
 	g_score[start] = 0;
 	f_score[start] = distance(start, end);
 
 	while (!open_set.empty())
 	{
-		Cell current = open_set[0];
-		for (const Cell &cell : open_set)
+		size_t current_idx = open_set[0];
+		for (const size_t cell_idx : open_set)
 		{	// all open_set elements have f_score mapped
-			if (f_score[cell] < f_score[current])
-				current = cell;
+			if (f_score[cell_idx] < f_score[current_idx])
+				current_idx = cell_idx;
 		}
 
-		if (current == end)
+		if (current_idx == end)
 		{	// found optimal path from start to end
-			std::vector<Cell> path;
-			path.push_back(current);
-			while (current != start)
+			std::vector<size_t> path;
+			path.push_back(current_idx);
+			while (current_idx != start)
 			{	// assign the cell from where we got to to current
-				current = came_from[current];
-				path.push_back(current);
+				current_idx = came_from[current_idx];
+				path.push_back(current_idx);
 			}
 			return path;
 		}
 
-		Utils::remove_element(open_set, current);
-		for (Cell* neighbor : get_neighbors(current))
+		Utils::remove_element(open_set, current_idx);
+		for (const size_t neighbor_idx : get_nearby_ids(current_idx, 1.5))
 		{
-			if (!has_access(current, *neighbor))
+			if (!has_access(current_idx, neighbor_idx))
 				continue;
-			double tentative_g_score = g_score[current] + distance(current, *neighbor);
-			if (g_score.count(*neighbor) == 0)
-				g_score[*neighbor] = std::numeric_limits<double>::infinity();
-			if (tentative_g_score < g_score[*neighbor])
+			double tentative_g_score = g_score[current_idx] + distance(current_idx, neighbor_idx);
+			if (g_score.count(neighbor_idx) == 0)
+				g_score[neighbor_idx] = std::numeric_limits<double>::infinity();
+			if (tentative_g_score < g_score[neighbor_idx])
 			{
-				came_from[*neighbor] = current;
-				g_score[*neighbor] = tentative_g_score;
-				f_score[*neighbor] = tentative_g_score + distance(*neighbor, end);
-				if (!Utils::contains(open_set, *neighbor))
-					open_set.push_back(*neighbor);
+				came_from[neighbor_idx] = current_idx;
+				g_score[neighbor_idx] = tentative_g_score;
+				f_score[neighbor_idx] = tentative_g_score + distance(neighbor_idx, end);
+				if (!Utils::contains(open_set, neighbor_idx))
+					open_set.push_back(neighbor_idx);
 			}
 		}
 	}
@@ -109,8 +132,8 @@ std::vector<Cell> Cave::find_path(const Cell &start, const Cell &end)
 
 double Cave::distance(const Cell &start, const Cell &end) const
 {
-	size_t start_id = start.get_id();
-	size_t end_id = end.get_id();
+	size_t start_id = start.get_idx();
+	size_t end_id = end.get_idx();
 	return distance(start_id, end_id);
 }
 
@@ -128,7 +151,7 @@ double Cave::distance(const size_t start_id, const size_t end_id) const
 std::vector<Cell*> Cave::get_nearby_cells(const Cell &middle, const int r)
 {
 	std::vector<Cell*> nearby;
-	size_t middle_id = middle.get_id();
+	size_t middle_id = middle.get_idx();
 	int middle_y = middle_id / width;
 	int middle_x = middle_id % width;
 
@@ -152,12 +175,43 @@ std::vector<Cell*> Cave::get_nearby_cells(const Cell &middle, const int r)
 	return nearby;
 }
 
+// use with r = 1.5 to get neighbors
+std::vector<size_t> Cave::get_nearby_ids(const size_t& middle, const double r)
+{
+	std::vector<size_t> neighbors;
+	size_t middle_y = middle / width;
+	size_t middle_x = middle % width;
+
+	for (int dy = - std::ceil(r); dy <= std::ceil(r); ++dy)
+	{
+		for (int dx = - std::ceil(r); dx <= std::ceil(r); ++dx)
+		{
+			if (dy == 0 && dx == 0)
+				continue; // middle
+
+			int ny = middle_y + dy;
+			int nx = middle_x + dx;
+
+			if (ny < 0 || ny >= static_cast<int>(height) ||
+				nx < 0 || nx >= static_cast<int>(width))
+				continue;
+
+			size_t nid = ny * width + nx;
+			if (distance(middle, nid) > r)
+				continue;
+			neighbors.push_back(nid);
+		}
+	}
+
+	return neighbors;
+}
+
 // return adjacent cells, also diagonal
 std::vector<Cell*> Cave::get_neighbors(const Cell &middle)
 {
-	assert(middle.get_id() < get_size());
+	assert(middle.get_idx() < get_size());
 	std::vector<Cell*> neighbors;
-	size_t middle_id = middle.get_id();
+	size_t middle_id = middle.get_idx();
 	size_t middle_y = middle_id / width;
 	size_t middle_x = middle_id % width;
 	assert(middle_y < height && middle_x < width);
@@ -185,15 +239,17 @@ std::vector<Cell*> Cave::get_neighbors(const Cell &middle)
 }
 
 // can someone walk from to. Has to go around corners
-bool Cave::has_access(const Cell &from, const Cell &to) const
+bool Cave::has_access(const size_t from_idx, const size_t to_idx) const
 {
+	auto from = cells[from_idx];
+	auto to = cells[to_idx];
 	if (to.is_blocked()) // can't move to "to"
 		return false;
 
-	size_t fy = from.get_id() / width;
-	size_t fx = from.get_id() % width;
-	size_t ty = to.get_id() / width;
-	size_t tx = to.get_id() % width;
+	size_t fy = from.get_idx() / width;
+	size_t fx = from.get_idx() % width;
+	size_t ty = to.get_idx() / width;
+	size_t tx = to.get_idx() % width;
 
 	if (abs(fy - ty) > 1 || abs(fx - tx) > 1) // is not a neighbor
 		return false;

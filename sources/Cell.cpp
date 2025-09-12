@@ -6,18 +6,18 @@
 
 /* CONSTRUCTORS */
 Cell::Cell()
-	: id(SIZE_MAX), type("default"), blocked(true), density(0) {}
+	: idx(SIZE_MAX), type(Type::NONE), blocked(true), density(0) {}
 
-Cell::Cell(const size_t id, const std::string &type, const double density)
-	: id(id), type(type), density(density)
+Cell::Cell(const size_t idx, const Type &type, const double density)
+	: idx(idx), type(type), density(density)
 {
-	if (type == "rock")
+	if (type == Type::ROCK)
 		blocked = true;
-	else if (type == "floor")
+	else if (type == Type::FLOOR)
 		blocked = false;
-	else if (type == "stream_source")
+	else if (type == Type::SOURCE)
 		blocked = false;
-	else if (type == "stream_sink")
+	else if (type == Type::SINK)
 		blocked = false;
 	else
 		throw std::runtime_error("Check cell types");
@@ -25,7 +25,7 @@ Cell::Cell(const size_t id, const std::string &type, const double density)
 
 Cell::Cell(const Cell &other)
 {
-	id = other.id;
+	idx = other.idx;
 	type = other.type;
 	blocked = other.blocked;
 	density = other.density;
@@ -34,17 +34,17 @@ Cell::Cell(const Cell &other)
 /* OVERLOADS */
 bool Cell::operator==(const Cell &other) const
 {
-	return id == other.id;
+	return idx == other.idx;
 }
 
 bool Cell::operator!=(const Cell &other) const
 {
-	return id != other.id;
+	return idx != other.idx;
 }
 
 bool Cell::operator<(const Cell &other) const
 {
-	return id < other.id;
+	return idx < other.idx;
 }
 
 Cell &Cell::operator=(const Cell &other)
@@ -53,7 +53,7 @@ Cell &Cell::operator=(const Cell &other)
 	{
 		type = other.type;
 		blocked = other.blocked;
-		id = other.id;
+		idx = other.idx;
 		density = other.density;
 	}
 	return *this;
@@ -61,7 +61,7 @@ Cell &Cell::operator=(const Cell &other)
 
 void Cell::reduce_density(const double amount)
 {
-	if (type != "rock")
+	if (type != Type::ROCK)
 		return; // for now only rock can weaken
 
 	if (amount < density)
@@ -69,9 +69,9 @@ void Cell::reduce_density(const double amount)
 		density -= amount;
 		return;
 	}
+
 	// rock has been destroyed
 	density = 0;
-
-	type = "floor";
+	type = Type::FLOOR;
 	blocked = false;
 }

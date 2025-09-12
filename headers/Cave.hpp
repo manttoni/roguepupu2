@@ -9,17 +9,16 @@
 class Cave
 {
 	private:
-		size_t height;
-		size_t width;
+		size_t height, width;
 		std::vector<Cell> cells;
 		size_t level;
 		size_t seed;
-		size_t water_start, water_end;
+		size_t source, sink; // water flow
 
 	public:
 		/* CONSTRUCTORS */
 		Cave();
-		Cave(const size_t height, const size_t width, const std::vector<Cell>& cells, const size_t level, const size_t seed);
+		Cave(const size_t level, const size_t height, const size_t width, const size_t seed);
 		Cave(const std::string& map, const size_t width);
 		Cave(const Cave &other);
 		Cave& operator=(const Cave& other);
@@ -28,27 +27,39 @@ class Cave
 		size_t get_height() const { return height; }
 		size_t get_width() const { return width; }
 		size_t get_size() const { return height * width; }
-		std::vector<Cell> get_cells() const { return cells; }
+		//std::vector<Cell> get_cells() const { return cells; }
+		std::vector<Cell>& get_cells() { return cells; }
 		size_t get_level() const { return level; }
 		int get_seed() const { return seed; }
-		size_t get_water_start() const { return water_start; }
-		size_t get_water_end() const { return water_end; }
+		size_t get_source() const { return source; }
+		size_t get_sink() const { return sink; }
 
 		/* SETTERS */
 		void set_level(const size_t level) { this->level = level; }
 		void set_seed(const int seed) { this->seed = seed; }
 		void set_cells(const std::vector<Cell>& cells) { this->cells = cells; }
-		void set_water_start(const size_t water_start) { this->water_start = water_start; }
-		void set_water_end(const size_t water_end) { this->water_end = water_end; }
+		void set_source(const size_t source)
+		{
+			this->source = source;
+			cells[source].set_type(Cell::Type::SOURCE);
+			cells[source].set_blocked(false);
+		}
+		void set_sink(const size_t sink)
+		{
+			this->sink = sink;
+			cells[sink].set_type(Cell::Type::SINK);
+			cells[source].set_blocked(false);
+		}
 
 		/* TESTING */
 		void print_cave();
 
 		/* CELL TO CELL */
-		std::vector<Cell> find_path(const Cell &start, const Cell &end);
+		std::vector<size_t> find_path(const size_t start, const size_t end);
 		double distance(const Cell &start, const Cell &end) const;
 		double distance(const size_t start_id, const size_t end_id) const;
 		std::vector<Cell*> get_neighbors(const Cell &middle);
+		std::vector<size_t> get_nearby_ids(const size_t& middle, const double r);
 		std::vector<Cell*> get_nearby_cells(const Cell& middle, const int r);
-		bool has_access(const Cell &from, const Cell &to) const;
+		bool has_access(const size_t from_idx, const size_t to_idx) const;
 };

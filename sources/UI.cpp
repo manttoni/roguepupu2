@@ -118,8 +118,9 @@ namespace CaveView
 		}
 		int level = std::any_cast<int>(settings.get_value("Level"));
 		Cave c = cg.get_cave(level);
-		const std::vector<Cell> cells = c.get_cells();
+		const auto& cells = c.get_cells();
 
+		// print densities and tunnels
 		wmove(cave_window, 0, 0);
 		for (size_t i = 0; i < cells.size(); ++i)
 		{
@@ -133,8 +134,30 @@ namespace CaveView
 			else
 				UI::print(cave_window, " ");
 		}
-		//update_panels();
-		//doupdate();
+
+		// print water things
+		// start printing in blue
+		init_pair(42, COLOR_BLUE, COLOR_BLACK);
+		wattron(cave_window, COLOR_PAIR(42));
+
+		// draw path of water
+		auto path = c.find_path(c.get_source(), c.get_sink());
+		assert(!path.empty());
+		for (size_t i = 0; i < path.size(); ++i)
+		{
+			size_t idx = path[i];
+			size_t idx_y = idx / c.get_width();
+			size_t idx_x = idx % c.get_width();
+			if (i == 0)
+				mvwaddch(cave_window, idx_y, idx_x, '^');
+			else if (i == path.size() - 1)
+				mvwaddch(cave_window, idx_y, idx_x, 'v');
+			else
+				mvwaddch(cave_window, idx_y, idx_x, '~');
+		}
+
+		// stop printing in blue
+		wattroff(cave_window, COLOR_PAIR(COLOR_BLUE));
 	}
 
 	void cave_generator()

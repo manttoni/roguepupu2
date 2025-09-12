@@ -14,21 +14,22 @@ class CaveGenerator
 		static constexpr double ROCK_FORMATION_CHANCE = 0.1; // chance to leave formations when eroding
 		static constexpr bool   STRONG_EROSION = true; // also erodes rock while flowing
 
+		Cave canvas;
+		std::vector<Cave> caves;
+
 		size_t height;
 		size_t width;
 		size_t size;
+
 		double frequency;
 		int seed;
 		int octaves;
 		int margin;
-		std::vector<Cave> caves;
 
-		// form rock using perlin noise as density
-		std::vector<Cell> form_rock(const size_t level);
+		void form_rock();
+		void form_tunnels();
 
-		// form a cave using "water simulation"
-		// It calculates the path of least resistance and widens it
-		std::vector<Cell> find_water_path(Cave& cave);
+		std::vector<size_t> find_water_path();
 
 	public:
 		CaveGenerator();

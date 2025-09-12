@@ -46,7 +46,7 @@ void test_pathfinding()
 	{
 		Cave test_cave(map, 25);
 		const auto& cells = test_cave.get_cells();
-		const auto& path = test_cave.find_path(cells[0], cells[test_cave.get_size() - 1]);
+		const auto& path = test_cave.find_path(0, test_cave.get_size() - 1);
 
 		assert(test_cave.get_size() == map.size());
 		assert(cells.size() == map.size());
