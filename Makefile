@@ -37,6 +37,7 @@ clean:
 
 fclean: clean
 	rm -f $(BIN)
+	rm -rf logs/
 
 re: fclean all
 

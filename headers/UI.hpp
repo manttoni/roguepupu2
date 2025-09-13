@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <ncurses.h>
+#include <panel.h>
 
 #define KEY_ESCAPE 27
 
@@ -26,4 +27,5 @@ namespace CaveView
 {
 	void draw_cave();
 	void cave_generator();
+	extern PANEL* cave_panel;
 }

@@ -90,7 +90,7 @@ namespace UI
 namespace CaveView
 {
 	Menu settings;
-	PANEL* cave_panel;
+	PANEL* cave_panel = nullptr;
 
 	void draw_cave()
 	{
@@ -102,8 +102,11 @@ namespace CaveView
 				std::any_cast<double>(settings.get_value("Frequency")),
 				std::any_cast<int>(settings.get_value("Seed")),
 				std::any_cast<int>(settings.get_value("Margin %")),
-				std::any_cast<int>(settings.get_value("Octaves")));
-		static auto prev = std::make_tuple(-1.0, -1, -1, -1);
+				std::any_cast<int>(settings.get_value("Octaves")),
+				std::any_cast<double>(settings.get_value("A")),
+				std::any_cast<double>(settings.get_value("B")),
+				std::any_cast<double>(settings.get_value("C")));
+		static auto prev = std::make_tuple(-1.0, -1, -1, -1, -1.0, -1.0, -1.0);
 
 		if (current != prev)
 		{
@@ -114,7 +117,10 @@ namespace CaveView
 					std::get<0>(current),
 					std::get<1>(current),
 					std::get<2>(current),
-					std::get<3>(current));
+					std::get<3>(current),
+					std::get<4>(current),
+					std::get<5>(current),
+					std::get<6>(current));
 		}
 		int level = std::any_cast<int>(settings.get_value("Level"));
 		Cave c = cg.get_cave(level);
@@ -149,9 +155,9 @@ namespace CaveView
 			size_t idx_y = idx / c.get_width();
 			size_t idx_x = idx % c.get_width();
 			if (i == 0)
-				mvwaddch(cave_window, idx_y, idx_x, '^');
-			else if (i == path.size() - 1)
 				mvwaddch(cave_window, idx_y, idx_x, 'v');
+			else if (i == path.size() - 1)
+				mvwaddch(cave_window, idx_y, idx_x, '^');
 			else
 				mvwaddch(cave_window, idx_y, idx_x, '~');
 		}
@@ -183,6 +189,18 @@ namespace CaveView
 				"Margin %",
 				std::pair<int, int>{0, 100},
 				15));
+		elements.push_back(std::make_unique<MenuNum<double>>(
+				"A",
+				std::pair<double, double>{0.1,10},
+				0.1, 0.1));
+		elements.push_back(std::make_unique<MenuNum<double>>(
+				"B",
+				std::pair<double, double>{0.1, 10},
+				0.1, 0.1));
+		elements.push_back(std::make_unique<MenuNum<double>>(
+				"C",
+				std::pair<double, double>{0.1, 10},
+				0.1, 0.1));
 		settings = Menu(std::move(elements), {0, 0}, draw_cave);
 		cave_panel = new_panel(newwin(Screen::height(), Screen::width(), 0, 0));
 

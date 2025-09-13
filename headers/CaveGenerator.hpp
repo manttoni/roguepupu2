@@ -9,10 +9,8 @@
 class CaveGenerator
 {
 	private:
-		static constexpr size_t EDGE_WEIGH_MULT = 3;
+		static constexpr size_t EDGE_WEIGH_MULT = 1;
 		static constexpr size_t MAX_ROCK_DENSITY = 9; // max density of rock
-		static constexpr double ROCK_FORMATION_CHANCE = 0.1; // chance to leave formations when eroding
-		static constexpr bool   STRONG_EROSION = true; // also erodes rock while flowing
 
 		Cave canvas;
 		std::vector<Cave> caves;
@@ -25,6 +23,10 @@ class CaveGenerator
 		int seed;
 		int octaves;
 		int margin;
+		std::mt19937 rng;
+		double erosion_a;	// This makes branches
+		double erosion_b;	// Smooth cave
+		double erosion_c;	// Smooth cave
 
 		void form_rock();
 		void form_tunnels();
@@ -33,7 +35,15 @@ class CaveGenerator
 
 	public:
 		CaveGenerator();
-		CaveGenerator(const size_t height, const size_t width, const double frequency, const int seed, const int margin_percent, const int octaves);
+		CaveGenerator(	const size_t height,
+						const size_t width,
+						const double frequency,
+						const int seed,
+						const int margin_percent,
+						const int octaves,
+						const double A,
+						const double B,
+						const double C);
 		CaveGenerator(const CaveGenerator& other);
 		CaveGenerator operator=(const CaveGenerator& other);
 
