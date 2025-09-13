@@ -192,7 +192,7 @@ namespace CaveView
 		elements.push_back(std::make_unique<MenuNum<double>>(
 				"A",
 				std::pair<double, double>{0.1,10},
-				0.1, 0.1));
+				2, 0.1));
 		elements.push_back(std::make_unique<MenuNum<double>>(
 				"B",
 				std::pair<double, double>{0.1, 10},

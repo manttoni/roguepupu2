@@ -241,15 +241,14 @@ std::vector<Cell*> Cave::get_neighbors(const Cell &middle)
 // can someone walk from to. Has to go around corners
 bool Cave::has_access(const size_t from_idx, const size_t to_idx) const
 {
-	auto from = cells[from_idx];
 	auto to = cells[to_idx];
 	if (to.is_blocked()) // can't move to "to"
 		return false;
 
-	size_t fy = from.get_idx() / width;
-	size_t fx = from.get_idx() % width;
-	size_t ty = to.get_idx() / width;
-	size_t tx = to.get_idx() % width;
+	size_t fy = from_idx / width;
+	size_t fx = from_idx % width;
+	size_t ty = to_idx / width;
+	size_t tx = to_idx % width;
 
 	if (abs(fy - ty) > 1 || abs(fx - tx) > 1) // is not a neighbor
 		return false;

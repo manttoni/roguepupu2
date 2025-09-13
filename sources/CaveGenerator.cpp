@@ -155,6 +155,7 @@ void CaveGenerator::form_rock()
 		cells[i].set_type(Cell::Type::ROCK);
 		cells[i].set_density(density);
 		cells[i].set_blocked(true);
+		cells[i].set_idx(i);
 	}
 }
 

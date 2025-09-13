@@ -36,6 +36,7 @@ class Cell
 		void set_type(const Cell::Type type) { this->type = type; }
 		void set_blocked(const bool b) { this->blocked = b; }
 		void set_density(const double d) { this->density = d; }
+		void set_idx(const size_t i) { this->idx = i; }
 
 		/* OVERLOADS */
 		bool operator==(const Cell &other) const;
