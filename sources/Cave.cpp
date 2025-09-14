@@ -176,7 +176,7 @@ std::vector<Cell*> Cave::get_nearby_cells(const Cell &middle, const int r)
 }
 
 // use with r = 1.5 to get neighbors
-std::vector<size_t> Cave::get_nearby_ids(const size_t& middle, const double r)
+std::vector<size_t> Cave::get_nearby_ids(const size_t& middle, const double r) const
 {
 	std::vector<size_t> neighbors;
 	size_t middle_y = middle / width;

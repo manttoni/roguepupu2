@@ -9,6 +9,11 @@
 #include "CaveGenerator.hpp"
 #include "Testing.hpp"
 
+void quit()
+{
+	UI::instance().end();
+}
+
 void run()
 {
 	// Main menu (will organize panels when it becomes clearer)
@@ -16,7 +21,7 @@ void run()
 	// init menu elements (MenuElt)
 	std::vector<std::unique_ptr<MenuElt>> elements;
 	elements.push_back(std::make_unique<MenuBtn>("CaveGenerator", CaveView::cave_generator));
-	elements.push_back(std::make_unique<MenuBtn>("Quit", UI::end_ncurses));
+	elements.push_back(std::make_unique<MenuBtn>("Quit", quit));
 
 	// init menu with previous elements, and a position
 	Menu main_menu(std::move(elements), Screen::middle());
@@ -27,10 +32,10 @@ void run()
 
 int main(void)
 {
-	UI::init_ncurses();
+	UI::instance().init();
 	test();
 	run();
-	UI::end_ncurses();
+	quit();
 	std::cout << "Success" << std::endl;
 	return 0;
 }

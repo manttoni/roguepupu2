@@ -175,7 +175,7 @@ void CaveGenerator::generate_cave(const size_t level)
 		std::uniform_int_distribution<size_t> dist(0, size - 1);
 		canvas.set_sink(dist(rng)); // for now, sink is a random point
 	}
-	while (canvas.distance(canvas.get_source(), canvas.get_sink()) < width / 4);
+	while (canvas.distance(canvas.get_source(), canvas.get_sink()) < width / 2);
 
 	// "paint" rock with different densities
 	form_rock();

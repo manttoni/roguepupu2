@@ -99,27 +99,19 @@ void Menu::loop()
 		if (loop_cb != nullptr)
 			loop_cb();
 
-		// whenever loop is active, it should be visible
-		top_panel(panel);
+		UI::instance().set_panel(panel);
 
 		// print elements
 		wmove(window, 1, 0); // because of box() start at y = 1
 		for (size_t i = 0; i < elements.size(); ++i)
 		{
-			if (i == selected) wattron(window, A_REVERSE);
-			UI::print(window, "  " + elements[i]->get_text() + "\n"); // spaces bcs of box()
-			if (i == selected) wattroff(window, A_REVERSE);
+			if (i == selected) UI::instance().enable(A_REVERSE);
+			UI::instance().println("  " + elements[i]->get_text()); // spaces bcs of box()
+			if (i == selected) UI::instance().disable(A_REVERSE);
 		}
 		box(window, 0, 0);
 
-		// print debug info
-		wmove(window, 0, 2);
-		int wy, wx;
-		getmaxyx(window, wy, wx);
-		UI::print(window, " " + std::to_string(wy) + " * " + std::to_string(wx) + " ");
-
-		update_panels();
-		doupdate();
+		UI::instance().update();
 
 		// process input
 		flushinp();

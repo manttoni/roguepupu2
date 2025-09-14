@@ -27,7 +27,7 @@ class Cave
 		size_t get_height() const { return height; }
 		size_t get_width() const { return width; }
 		size_t get_size() const { return height * width; }
-		//std::vector<Cell> get_cells() const { return cells; }
+		const std::vector<Cell>& get_cells() const { return cells; }
 		std::vector<Cell>& get_cells() { return cells; }
 		size_t get_level() const { return level; }
 		int get_seed() const { return seed; }
@@ -59,7 +59,7 @@ class Cave
 		double distance(const Cell &start, const Cell &end) const;
 		double distance(const size_t start_id, const size_t end_id) const;
 		std::vector<Cell*> get_neighbors(const Cell &middle);
-		std::vector<size_t> get_nearby_ids(const size_t& middle, const double r);
+		std::vector<size_t> get_nearby_ids(const size_t& middle, const double r) const;
 		std::vector<Cell*> get_nearby_cells(const Cell& middle, const int r);
 		bool has_access(const size_t from_idx, const size_t to_idx) const;
 };

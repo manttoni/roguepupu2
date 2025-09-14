@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include "Color.hpp"
 
 class Cell
 {
@@ -19,6 +20,7 @@ class Cell
 		Type type;
 		bool blocked;
 		double density;
+		Color glow;
 
 	public:
 		/* CONSTRUCTORS */
@@ -37,6 +39,9 @@ class Cell
 		void set_blocked(const bool b) { this->blocked = b; }
 		void set_density(const double d) { this->density = d; }
 		void set_idx(const size_t i) { this->idx = i; }
+
+		void reset_glow() { glow = Color(0, 0, 0); }
+		void add_glow(const Color& color) { glow = glow + color; }
 
 		/* OVERLOADS */
 		bool operator==(const Cell &other) const;

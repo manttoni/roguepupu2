@@ -71,6 +71,10 @@ namespace Log
 
 namespace Math
 {
+	template <typename T> static inline T clamp(const T& value, const T& min, const T& max)
+	{
+		return std::min(max, std::max(min, value));
+	}
 	inline double map(double x, double a, double b, double c, double d)
 	{
 		return c + (x - a) * (d - c) / (b - a);

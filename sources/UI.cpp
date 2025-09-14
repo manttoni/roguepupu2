@@ -15,76 +15,32 @@
 #include "MenuNum.hpp"
 #include "MenuBtn.hpp"
 
-namespace UI
+void UI::print(const std::string& str)
 {
-	int curs_y(WINDOW *window = stdscr)
-	{
-		int y, x;
-		getyx(window, y, x);
-		return y;
-	}
-	void print(WINDOW* window, int i)
-	{
-		wprintw(window, "%d", i);
-	}
-	void print(const int i)
-	{
-		wprintw(stdscr, "%d", i);
-	}
-	void println(const char* chptr)
-	{
-		wprintw(stdscr, "%s", chptr);
-		waddch(stdscr, '\n');
-	}
-	void print(const char* chptr)
-	{
-		wprintw(stdscr, "%s", chptr);
-	}
-	void print(const std::string& str)
-	{
-		print(stdscr, str);
-	}
-	void println(const std::string& str)
-	{
-		print(stdscr, str);
-		move(curs_y() + 1, 0);
-	}
-	void println(WINDOW *window, const std::string& str)
-	{
-		wprintw(window, "%s", str.c_str());
-		move(curs_y(window) + 1, 0);
-	}
-	void print(WINDOW *window, const std::string& str)
-	{
-		wprintw(window, "%s", str.c_str());
-	}
-
-	void handle_signal(int sig)
-	{
-		(void) sig;
-		end_ncurses();
-		std::exit(sig);
-	}
-
-	void init_ncurses()
-	{
-		initscr();
-		std::signal(SIGSEGV, handle_signal);
-		std::signal(SIGABRT, handle_signal);
-		std::signal(SIGFPE, handle_signal);
-		std::signal(SIGINT, handle_signal);
-		atexit(end_ncurses);
-		noecho();
-		curs_set(0);
-		keypad(stdscr, TRUE);
-		start_color();
-		set_escdelay(25);
-	}
-	void end_ncurses()
-	{
-		endwin();
-		std::exit(0);
-	}
+	wprintw(panel_window(panel), "%s", str.c_str());
+}
+void UI::println(const std::string& str)
+{
+	wprintw(panel_window(panel), "%s\n", str.c_str());
+}
+size_t UI::get_curs_y() const
+{
+	int y, x;
+	getyx(panel_window(panel), y, x);
+	(void) x;
+	return y;
+}
+size_t UI::get_curs_x() const
+{
+	int y, x;
+	getyx(panel_window(panel), y, x);
+	(void) y;
+	return x;
+}
+short UI::get_next_color_id()
+{
+	static short id = 10;
+	return ++id;
 }
 
 namespace CaveView
@@ -96,6 +52,7 @@ namespace CaveView
 	{
 		WINDOW* cave_window = panel_window(cave_panel);
 		static CaveGenerator cg;
+		UI::instance().set_panel(cave_panel);
 
 		auto current =
 			std::make_tuple(
@@ -133,14 +90,14 @@ namespace CaveView
 			int density = static_cast<int>(std::round(cells[i].get_density()));
 			if (density > 0 && density <= 9)
 			{
-				wattron(cave_window, COLOR_PAIR(density));
-				UI::print(cave_window, density);
-				wattroff(cave_window, COLOR_PAIR(density));
+				UI::instance().enable(COLOR_PAIR(density));
+				UI::instance().print(std::to_string(density));
+				UI::instance().disable(COLOR_PAIR(density));
 			}
 			else
-				UI::print(cave_window, " ");
+				UI::instance().print(" ");
 		}
-
+/*
 		// print water things
 		// start printing in blue
 		init_pair(42, COLOR_BLUE, COLOR_BLACK);
@@ -163,7 +120,7 @@ namespace CaveView
 		}
 
 		// stop printing in blue
-		wattroff(cave_window, COLOR_PAIR(COLOR_BLUE));
+		wattroff(cave_window, COLOR_PAIR(COLOR_BLUE));*/
 	}
 
 	void cave_generator()
