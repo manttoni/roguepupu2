@@ -10,14 +10,14 @@
 #include "MenuBtn.hpp"
 #include "MenuNum.hpp"
 
-Menu::Menu() : panel(nullptr), start({0, 0}), loop_cb(nullptr)
+Menu::Menu() : panel(nullptr), start({0, 0}), loop_cb(nullptr), read_only(true)
 {
 }
 
 Menu::Menu(	std::vector<std::unique_ptr<MenuElt>> elements_,
 			const Screen::Coord& start,
 			void (*loop_cb)())
-			: elements(std::move(elements_)), start(start), loop_cb(loop_cb)
+			: elements(std::move(elements_)), start(start), loop_cb(loop_cb), read_only(false)
 {
 	// calculate menu size by amount of and longest element
 	height = elements.size() + 2;
@@ -25,9 +25,17 @@ Menu::Menu(	std::vector<std::unique_ptr<MenuElt>> elements_,
 	for (size_t i = 0; i < elements.size(); ++i)
 		width = std::max(elements[i]->get_size() + 4, width);
 
-	// center
-	int y = std::max(0, static_cast<int>(start.y) - static_cast<int>(height) / 2);
-	int x = std::max(0, static_cast<int>(start.x) - static_cast<int>(width) / 2);
+	int y = static_cast<int>(start.y) - static_cast<int>(height) / 2;
+	int x = static_cast<int>(start.x) - static_cast<int>(width) / 2;
+
+	// clamp to screen bounds
+	if (y < 0) y = 0;
+	if (x < 0) x = 0;
+	if (y + height > Screen::height()) y = Screen::height() - height;
+	if (x + width > Screen::width()) x = Screen::width() - width;
+
+	//size_t y = std::min(static_cast<int>(Screen::height()), std::max(0, static_cast<int>(start.y) - static_cast<int>(height) / 2));
+	//size_t x = std::min(static_cast<int>(Screen::width()), std::max(0, static_cast<int>(start.x) - static_cast<int>(width) / 2));
 
 	panel = new_panel(newwin(height, width, y, x));
 }
@@ -56,6 +64,7 @@ Menu& Menu::operator=(Menu&& other)
 	width = other.width;
 	start = other.start;
 	loop_cb = other.loop_cb;
+	read_only = other.read_only;
 
 	return *this;
 }
@@ -72,20 +81,14 @@ std::any Menu::get_value(const std::string& str) const
 	return {};
 }
 
-void Menu::show()
+void Menu::set_value(const std::string& str, std::any value)
 {
-	// make menu visible
-	top_panel(panel);
-	show_panel(panel);
-	update_panels();
-	doupdate();
-
-	loop();
-
-	// hide
-	hide_panel(panel);
-	update_panels();
-	doupdate();
+	for (size_t i = 0; i < elements.size(); ++i)
+	{
+		if (elements[i]->get_type() == MenuElt::Type::NUMBER
+				&& elements[i]->MenuElt::get_text() == str)
+			elements[i]->set_value(value);
+	}
 }
 
 void Menu::loop()
@@ -105,16 +108,16 @@ void Menu::loop()
 		wmove(window, 1, 0); // because of box() start at y = 1
 		for (size_t i = 0; i < elements.size(); ++i)
 		{
-			if (i == selected) UI::instance().enable(A_REVERSE);
+			if (!read_only && i == selected) UI::instance().enable(A_REVERSE);
 			UI::instance().print("  " + elements[i]->get_text() + "\n"); // spaces bcs of box()
-			if (i == selected) UI::instance().disable(A_REVERSE);
+			if (!read_only && i == selected) UI::instance().disable(A_REVERSE);
 		}
 
 		wattron(window, COLOR_PAIR(0));
 		box(window, 0, 0);
 		wattroff(window, COLOR_PAIR(0));
 		UI::instance().update();
-
+		if (read_only) break;
 		// process input
 		flushinp();
 		input = getch();

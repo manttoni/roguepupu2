@@ -4,6 +4,7 @@
 #include <memory>
 #include <any>
 #include <utility>
+#include <climits>
 #include "Utils.hpp"
 #include "UI.hpp"
 #include "Menu.hpp"
@@ -217,6 +218,6 @@ namespace CaveView
 				0.1, 0.1));
 		settings = Menu(std::move(elements), {0, 0}, draw_cave);
 		cave_panel = new_panel(newwin(Screen::height(), Screen::width(), 0, 0));
-		settings.show();
+		settings.loop();
 	}
 } // CaveView

@@ -30,6 +30,13 @@ class MenuNum : public MenuElt
 		}
 
 		std::any get_value() const { return value; }
+		void set_value(std::any value) override
+		{
+			if (value.type() == typeid(T))
+				this->value = std::any_cast<T>(value);
+			else
+				throw std::runtime_error("Couldn't convert std::any to T");
+		}
 		void increment() { value = std::min(value + delta, limits.second); }
 		void decrement() { value = std::max(value - delta, limits.first); }
 

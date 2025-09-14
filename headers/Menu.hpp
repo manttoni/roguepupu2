@@ -14,8 +14,11 @@ class Menu
 		size_t height, width; // calculated automatically, no override atm
 		Screen::Coord start;
 		void (*loop_cb)(); // call every loop
+		bool read_only;
 
-		void loop();
+	public:
+		void set_read_only(const bool value) { read_only = value; }
+
 
 	public:
 		Menu();
@@ -26,6 +29,8 @@ class Menu
 		Menu& operator=(Menu&& other);
 		~Menu();
 
-		void show(); // push panel to top, start loop()
+		void loop();
+		//void show(); // push panel to top, start loop()
 		std::any get_value(const std::string& str) const;
+		void set_value(const std::string& str, std::any value);
 };

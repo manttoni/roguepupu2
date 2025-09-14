@@ -32,4 +32,5 @@ class MenuElt
 		virtual void increment() {}
 		virtual void decrement() {}
 		virtual std::any get_value() const = 0;
+		virtual void set_value(std::any value) {(void) value;};
 };

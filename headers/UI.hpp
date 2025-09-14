@@ -10,6 +10,7 @@
 #include "ColorPair.hpp"
 #include "Color.hpp"
 #include "Cell.hpp"
+#include "Menu.hpp"
 
 #define KEY_ESCAPE 27
 
@@ -27,6 +28,7 @@ class UI
 		PANEL* panel;
 		std::map<short, Color> initialized_colors;
 		std::map<short, ColorPair> initialized_color_pairs;
+		std::map<std::string, Menu*> menus;
 		//ColorPair color_pair;
 	public:
 		PANEL* get_panel() const { return panel; }
@@ -60,6 +62,8 @@ class UI
 		void enable(const chtype attr) { wattron(panel_window(panel), attr); }
 		void disable(const chtype attr) { wattroff(panel_window(panel), attr); }
 		void update() { update_panels(); doupdate(); }
+
+		void add_menu(const std::string& name, Menu* menu) { menus[name] = menu; }
 
 		void init()
 		{
