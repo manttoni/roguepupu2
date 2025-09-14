@@ -78,6 +78,8 @@ Cave::Cave(const std::string& map, const size_t width) : height(map.size() / wid
 // uses A* to find walkable path from start to end
 std::vector<size_t> Cave::find_path(const size_t start, const size_t end)
 {
+	if (start >= get_size() || end >= get_size())
+		throw std::runtime_error("Cave::find_path: invalid arguments");
 	if (cells[start].is_blocked())
 		return {};
 	std::vector<size_t> open_set = { start };
@@ -147,34 +149,6 @@ double Cave::distance(const size_t start_id, const size_t end_id) const
 	return std::hypot(start_y - end_y, start_x - end_x);
 }
 
-// return all cells within a radius
-std::vector<Cell*> Cave::get_nearby_cells(const Cell &middle, const int r)
-{
-	std::vector<Cell*> nearby;
-	size_t middle_id = middle.get_idx();
-	int middle_y = middle_id / width;
-	int middle_x = middle_id % width;
-
-	for (int dy = -r; dy <= r; ++dy)
-	{
-		for (int dx = -r; dx <= r; ++dx)
-		{
-			int ny = middle_y + dy;
-			int nx = middle_x + dx;
-			if (ny < 0 || ny >= static_cast<int>(height) ||
-				nx < 0 || nx >= static_cast<int>(width))
-				continue; // out of bounds
-						  //
-			size_t nid = ny * width + nx;
-			if (distance(middle, cells[nid]) > r)
-				continue;
-			nearby.push_back(&cells[nid]);
-		}
-	}
-
-	return nearby;
-}
-
 // use with r = 1.5 to get neighbors
 std::vector<size_t> Cave::get_nearby_ids(const size_t& middle, const double r) const
 {
@@ -203,38 +177,6 @@ std::vector<size_t> Cave::get_nearby_ids(const size_t& middle, const double r) c
 		}
 	}
 
-	return neighbors;
-}
-
-// return adjacent cells, also diagonal
-std::vector<Cell*> Cave::get_neighbors(const Cell &middle)
-{
-	assert(middle.get_idx() < get_size());
-	std::vector<Cell*> neighbors;
-	size_t middle_id = middle.get_idx();
-	size_t middle_y = middle_id / width;
-	size_t middle_x = middle_id % width;
-	assert(middle_y < height && middle_x < width);
-
-	for (int dy = -1; dy <= 1; ++dy)
-	{
-		for (int dx = -1; dx <= 1; ++dx)
-		{
-			if (dy == 0 && dx == 0)
-				continue; // middle cell itself
-
-			int ny = middle_y + dy;
-			int nx = middle_x + dx;
-			assert(ny < static_cast<int>(height) + 1 && nx < static_cast<int>(width) + 1);
-			if (ny < 0 || ny >= static_cast<int>(height) ||
-				nx < 0 || nx >= static_cast<int>(width))
-				continue; // out of bounds
-
-			size_t nid = ny * width + nx;
-			neighbors.push_back(&cells[nid]);
-			assert(distance(middle, cells[nid]) < 2);
-		}
-	}
 	return neighbors;
 }
 

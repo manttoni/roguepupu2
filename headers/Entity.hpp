@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include "Utils.hpp"
 #include "Effect.hpp"
 
 class Entity

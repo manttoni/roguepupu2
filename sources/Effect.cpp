@@ -1,13 +1,14 @@
 #include "Effect.hpp"
+#include "Cave.hpp"
 
 Effect::Effect() {}
 
 Effect::Effect(
 		const Type type,
-		const Color& color,
+		const short color_id,
 		const size_t duration,
 		const double radius) :
-	type(type), color(color), duration(duration), radius(radius)
+	type(type), color_id(color_id), duration(duration), radius(radius)
 {}
 
 void Effect::trigger(Cave& cave, const size_t idx)
@@ -20,7 +21,7 @@ void Effect::trigger(Cave& cave, const size_t idx)
 		case Type::GLOW:
 			for (size_t i = 0; i < affected.size(); ++i)
 			{
-				cells[i].add_glow(color);
+				cells[i].add_glow(color_id);
 			}
 			break;
 		case Type::NONE:

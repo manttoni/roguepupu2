@@ -27,9 +27,12 @@ class CaveGenerator
 		double erosion_a;	// This makes branches
 		double erosion_b;	// Smooth cave
 		double erosion_c;	// Smooth cave
-
+		size_t fungus_spawn_chance = 1;
 		void form_rock();
 		void form_tunnels();
+		void set_source_sink();
+		void spawn_fungi();
+		void color_cells();
 
 		std::vector<size_t> find_water_path();
 

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Cell.hpp"
-#include "Utils.hpp"
 #include <string>
 #include <vector>
 #include <iostream>
+#include "Cell.hpp"
+#include "Utils.hpp"
 
 class Cave
 {
@@ -48,7 +48,7 @@ class Cave
 		{
 			this->sink = sink;
 			cells[sink].set_type(Cell::Type::SINK);
-			cells[source].set_blocked(false);
+			cells[sink].set_blocked(false);
 		}
 
 		/* TESTING */
@@ -58,8 +58,6 @@ class Cave
 		std::vector<size_t> find_path(const size_t start, const size_t end);
 		double distance(const Cell &start, const Cell &end) const;
 		double distance(const size_t start_id, const size_t end_id) const;
-		std::vector<Cell*> get_neighbors(const Cell &middle);
 		std::vector<size_t> get_nearby_ids(const size_t& middle, const double r) const;
-		std::vector<Cell*> get_nearby_cells(const Cell& middle, const int r);
 		bool has_access(const size_t from_idx, const size_t to_idx) const;
 };

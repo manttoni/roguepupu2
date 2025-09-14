@@ -4,17 +4,15 @@
 
 Color::Color() :
 	r(0), g(0), b(0)
-{}
-Color::Color(const short r, const short g, const short b) :
+{} // does not init color
+Color::Color(const short id, const short r, const short g, const short b) :
+	id(id),
 	r(std::min<short>(1000, std::max<short>(r, 0))),
 	g(std::min<short>(1000, std::max<short>(g, 0))),
 	b(std::min<short>(1000, std::max<short>(b, 0)))
-{
-	id = UI::instance().get_next_color_id();
-	init_color(id, this->r, this->g, this->b);
-}
+{} // COLOR HAS TO BE INITIALIZED BEFORE
 Color::Color(const Color& other) :
-	r(other.r), g(other.g), b(other.b), id(other.id)
+	id(other.id), r(other.r), g(other.g), b(other.b)
 {}
 Color& Color::operator=(const Color& other)
 {
@@ -40,7 +38,3 @@ bool Color::operator!=(const Color& other)
 			b != other.b;
 }
 
-Color Color::operator+(const Color& other) const
-{
-	return Color(r + other.r, g + other.g, b + other.b);
-}

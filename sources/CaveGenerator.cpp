@@ -7,6 +7,7 @@
 #include "CaveGenerator.hpp"
 #include "Cave.hpp"
 #include "UI.hpp"
+#include "Fungus.hpp"
 
 CaveGenerator::CaveGenerator()
 	: height(0), width(0), size(0), frequency(0), seed(0), octaves(0), margin(0) {}
@@ -159,29 +160,112 @@ void CaveGenerator::form_rock()
 	}
 }
 
+void CaveGenerator::set_source_sink()
+{
+	if (canvas.get_level() == 1)
+		canvas.set_source(height / 2 * width + width / 2);
+	else
+		canvas.set_source(caves.back().get_sink()); // sink of last level
+
+	size_t sink_idx;
+	do
+		sink_idx = Random::randsize_t(0, size - 1, rng);
+	while (canvas.distance(canvas.get_source(), sink_idx) < width / 2);
+	canvas.set_sink(sink_idx);
+}
+
+void CaveGenerator::spawn_fungi()
+{
+	const std::vector<Fungus::Type> fungus_types = {Fungus::Type::GLOWING};
+	for (size_t i = 0; i < size; ++i)
+	{
+		if (Random::randsize_t(0, 100, rng) > fungus_spawn_chance)
+			continue;
+
+		auto& cells = canvas.get_cells();
+		Cell cell = cells[i];
+
+		for (const Fungus::Type type : fungus_types)
+		{
+			Fungus fungus(type);
+			if (fungus.get_affinity() == cell.get_type())
+			{
+				switch (type)
+				{
+					case Fungus::Type::COUNT:
+					case Fungus::Type::NONE:
+						break;
+					case Fungus::Type::GLOWING:
+					{
+						// Glowing mushrooms grow next to rock cells if there is space (floor)
+						const auto& neighbor_ids = canvas.get_nearby_ids(i, 1.5);
+						for (const size_t nidx : neighbor_ids)
+						{
+							if (cells[nidx].get_type() == Cell::Type::FLOOR)
+							{
+								cells[nidx].add_entity(fungus);
+								continue;
+							}
+						}
+						break;
+					}
+					default:
+						break;
+				}
+			}
+		}
+	}
+}
+
+void CaveGenerator::color_cells()
+{
+	std::map<size_t, short> density_color_pair_ids;
+	short black_id = UI::instance().add_color(0, 0, 0);
+	short black_pair_id = UI::instance().add_color_pair(black_id, black_id);
+	short blue_id = UI::instance().add_color(0, 0, 1000);
+	short blue_pair_id = UI::instance().add_color_pair(blue_id, black_id);
+	for (size_t i = 1; i <= 9; ++i)
+	{
+		short val = i * 100;
+		short color_id = UI::instance().add_color(val, val, val);
+		density_color_pair_ids[i] = UI::instance().add_color_pair(color_id, black_id);
+	}
+
+	auto& cells = canvas.get_cells();
+	for (Cell& cell : cells)
+	{
+		switch (cell.get_type())
+		{
+			case Cell::Type::NONE:
+				break;
+			case Cell::Type::ROCK:
+			{
+				const size_t density = static_cast<size_t>(std::ceil(cell.get_density()));
+				cell.set_color_pair_id(density_color_pair_ids[density]);
+				break;
+			}
+			case Cell::Type::FLOOR:
+				cell.set_color_pair_id(black_pair_id);
+				break;
+			case Cell::Type::SOURCE:
+				cell.set_color_pair_id(blue_pair_id);
+				break;
+			case Cell::Type::SINK:
+				cell.set_color_pair_id(blue_pair_id);
+				break;
+		}
+	}
+}
+
 void CaveGenerator::generate_cave(const size_t level)
 {
-	// deterministic seed
 	rng.seed(seed + level);
-
-	// reset canvas. It will also select points for water source and sink
 	canvas = Cave(level, height, width, seed);
-
-	// Set water source and sink
-	if (level == 1)	canvas.set_source(height / 2 * width + width / 2);
-	else			canvas.set_source(caves.back().get_sink()); // sink of last level
-	do
-	{
-		std::uniform_int_distribution<size_t> dist(0, size - 1);
-		canvas.set_sink(dist(rng)); // for now, sink is a random point
-	}
-	while (canvas.distance(canvas.get_source(), canvas.get_sink()) < width / 2);
-
-	// "paint" rock with different densities
 	form_rock();
-
-	// "paint" tunnels using water erosion simulation
+	set_source_sink();
 	form_tunnels();
+	spawn_fungi();
+	color_cells();
 
 	// don't copy, just move
 	caves.push_back(std::move(canvas));

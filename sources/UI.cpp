@@ -1,20 +1,22 @@
 #include <ncurses.h>
 #include <string>
 #include <vector>
-#include <stdexcept>
-#include <csignal>
-#include <format>
 #include <memory>
 #include <any>
 #include <utility>
+#include "Utils.hpp"
 #include "UI.hpp"
-#include "CaveGenerator.hpp"
-#include "Cave.hpp"
 #include "Menu.hpp"
 #include "MenuElt.hpp"
-#include "MenuNum.hpp"
 #include "MenuBtn.hpp"
+#include "MenuNum.hpp"
+#include "Utils.hpp"
+#include "CaveGenerator.hpp"
 
+void UI::print(const char ch)
+{
+	wprintw(panel_window(panel), "%c", ch);
+}
 void UI::print(const std::string& str)
 {
 	wprintw(panel_window(panel), "%s", str.c_str());
@@ -39,8 +41,68 @@ size_t UI::get_curs_x() const
 }
 short UI::get_next_color_id()
 {
-	static short id = 10;
-	return ++id;
+	static short id = 8;
+	if (id == COLORS)
+	{
+		Log::log("Color ids all used");
+		id = 8;
+	}
+	return id++;
+}
+short UI::get_next_color_pair_id()
+{
+	static short id = 1;
+	if (id == COLOR_PAIRS)
+	{
+		Log::log("Color pair ids all used");
+		id = 1;
+	}
+	return id++;
+}
+int UI::color_initialized(const short r, const short g, const short b) const
+{
+	for (const auto& [id, color] : initialized_colors)
+	{
+		if (color.get_r() == r && color.get_g() == g && color.get_b() == b)
+			return id;
+	}
+	return -1;
+}
+int UI::color_pair_initialized(const Color& fg, const Color& bg) const
+{
+	for (const auto& [id, color_pair] : initialized_color_pairs)
+	{
+		if (color_pair.get_fg() == fg && color_pair.get_bg() == bg)
+			return id;
+	}
+	return -1;
+}
+// initializes color if not yet initialized
+// returns id of the color
+short UI::add_color(const short r, const short g, const short b)
+{
+	short color_id = color_initialized(r, g, b);
+	if (color_id != -1)
+		return color_id;
+	color_id = get_next_color_id();
+	init_color(color_id, r, g, b);
+	initialized_colors[color_id] = Color(color_id, r, g, b);
+	Log::log("Color initialized with id(" + std::to_string(color_id) + "): " + std::to_string(r) + " " + std::to_string(g) + " " + std::to_string(b));
+	return color_id;
+}
+short UI::add_color_pair(const short fg_id, const short bg_id)
+{
+	// doesnt check if id is initialized
+	const Color& fg = initialized_colors[fg_id];
+	const Color& bg = initialized_colors[bg_id];
+	short pair_id = color_pair_initialized(fg, bg);
+	if (pair_id != -1)
+		return pair_id;
+	pair_id = get_next_color_pair_id();
+	init_pair(pair_id, fg_id, bg_id);
+	initialized_color_pairs[pair_id] = ColorPair(pair_id, fg, bg);
+	Log::log("Color pair initialized with id(" + std::to_string(pair_id) + "): " + std::to_string(fg_id) + ", " + std::to_string(bg_id));
+	return pair_id;
 }
 
 namespace CaveView
@@ -79,23 +141,18 @@ namespace CaveView
 					std::get<5>(current),
 					std::get<6>(current));
 		}
+
 		int level = std::any_cast<int>(settings.get_value("Level"));
 		Cave c = cg.get_cave(level);
 		const auto& cells = c.get_cells();
 
-		// print densities and tunnels
 		wmove(cave_window, 0, 0);
 		for (size_t i = 0; i < cells.size(); ++i)
 		{
-			int density = static_cast<int>(std::round(cells[i].get_density()));
-			if (density > 0 && density <= 9)
-			{
-				UI::instance().enable(COLOR_PAIR(density));
-				UI::instance().print(std::to_string(density));
-				UI::instance().disable(COLOR_PAIR(density));
-			}
-			else
-				UI::instance().print(" ");
+			const Cell& cell = cells[i];
+			UI::instance().enable(COLOR_PAIR(cell.get_color_pair_id()));
+			UI::instance().print(cell.get_char());
+			UI::instance().disable(COLOR_PAIR(cell.get_color_pair_id()));
 		}
 /*
 		// print water things
@@ -160,16 +217,6 @@ namespace CaveView
 				0.1, 0.1));
 		settings = Menu(std::move(elements), {0, 0}, draw_cave);
 		cave_panel = new_panel(newwin(Screen::height(), Screen::width(), 0, 0));
-
-		// Colors for densities
-		for (size_t i = 0; i <= 9; ++i)
-		{
-			init_color(i + 10, i * 100, i * 100, i * 100);
-			init_pair(i, i + 10, COLOR_BLACK);
-		}
-
-		// move cave_panel on top, that's where cave will be drawn. Settings menu will put itself on top
-		top_panel(cave_panel);
 		settings.show();
 	}
 } // CaveView

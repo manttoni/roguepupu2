@@ -14,8 +14,6 @@
 #include <ctime>
 #include <chrono>
 #include <ncurses.h>
-#include "Cave.hpp"
-#include "Cell.hpp"
 #include "PerlinNoise.hpp"
 
 namespace Screen
@@ -124,16 +122,10 @@ namespace Random
 	}
 
 	// SIZE_T
-	inline size_t randsize_t(const size_t min, const size_t max, const size_t seed)
-	{
-		std::mt19937 gen(seed);
-		std::uniform_int_distribution<size_t> dist(min, max);
-		return dist(gen);
-	}
-	inline size_t randsize_t(const size_t min, const size_t max)
+	inline size_t randsize_t(const size_t min, const size_t max, std::mt19937& rng_obj = rng())
 	{
 		std::uniform_int_distribution<size_t> dist(min, max);
-		return dist(rng());
+		return dist(rng_obj);
 	}
 
 	// DOUBLE

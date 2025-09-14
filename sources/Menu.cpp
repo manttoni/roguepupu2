@@ -106,11 +106,13 @@ void Menu::loop()
 		for (size_t i = 0; i < elements.size(); ++i)
 		{
 			if (i == selected) UI::instance().enable(A_REVERSE);
-			UI::instance().println("  " + elements[i]->get_text()); // spaces bcs of box()
+			UI::instance().print("  " + elements[i]->get_text() + "\n"); // spaces bcs of box()
 			if (i == selected) UI::instance().disable(A_REVERSE);
 		}
-		box(window, 0, 0);
 
+		wattron(window, COLOR_PAIR(0));
+		box(window, 0, 0);
+		wattroff(window, COLOR_PAIR(0));
 		UI::instance().update();
 
 		// process input

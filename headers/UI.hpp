@@ -3,7 +3,13 @@
 #include <ncurses.h>
 #include <panel.h>
 #include <csignal>
+#include <map>
+#include <memory>
+#include <any>
+#include <utility>
 #include "ColorPair.hpp"
+#include "Color.hpp"
+#include "Cell.hpp"
 
 #define KEY_ESCAPE 27
 
@@ -19,9 +25,13 @@ class UI
 
 	private:
 		PANEL* panel;
+		std::map<short, Color> initialized_colors;
+		std::map<short, ColorPair> initialized_color_pairs;
 		//ColorPair color_pair;
 	public:
 		PANEL* get_panel() const { return panel; }
+		int color_initialized(const short r, const short g, const short b) const;
+		int color_pair_initialized(const Color& fg, const Color& bg) const;
 		//ColorPair get_color_pair() const { return color_pair; }
 
 	public:
@@ -34,6 +44,7 @@ class UI
 		void set_panel(PANEL* panel) { this->panel = panel; top_panel(panel); }
 		//void set_color(const ColorPair color_pair) { this->color_pair = color_pair; }
 
+		void print(const char ch);
 		void print(const std::string& str);
 		void println(const std::string& str);
 
@@ -41,6 +52,10 @@ class UI
 		size_t get_curs_x() const;
 
 		short get_next_color_id();
+		short get_next_color_pair_id();
+
+		short add_color(const short r, const short g, const short b);
+		short add_color_pair(const short fg_id, const short bg_id);
 
 		void enable(const chtype attr) { wattron(panel_window(panel), attr); }
 		void disable(const chtype attr) { wattroff(panel_window(panel), attr); }
