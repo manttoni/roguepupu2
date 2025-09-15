@@ -1,5 +1,5 @@
 #include <string>
 #include "Creature.hpp"
 
-Creature::Creature() : Entity("default") {}
-Creature::Creature(const std::string& name) : Entity(name) {}
+Creature::Creature() : Entity("default", 0) {}
+Creature::Creature(const std::string& name) : Entity(name, 0) {}

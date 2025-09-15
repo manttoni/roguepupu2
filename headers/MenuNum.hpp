@@ -4,6 +4,7 @@
 #include <string>
 #include <limits>
 #include <sstream>
+#include <sstream>
 #include <any>
 #include "MenuElt.hpp"
 
@@ -35,7 +36,13 @@ class MenuNum : public MenuElt
 			if (value.type() == typeid(T))
 				this->value = std::any_cast<T>(value);
 			else
-				throw std::runtime_error("Couldn't convert std::any to T");
+			{
+				std::stringstream ss;
+				ss << "MenuNum::set_value(" << std::any_cast<std::string>(value) << ")\n";
+				ss << "Couldn't convert std::any to T\n";
+				ss << "value.type() = " << std::string(value.type().name()) << " | typeid(T) = " << std::string(typeid(T).name()) << std::endl;
+				throw std::runtime_error(ss.str());
+			}
 		}
 		void increment() { value = std::min(value + delta, limits.second); }
 		void decrement() { value = std::max(value - delta, limits.first); }

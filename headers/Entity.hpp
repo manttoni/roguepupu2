@@ -7,14 +7,13 @@ class Entity
 {
 	private:
 		std::string name;
+		short color_pair_id;
 		char ch;
 	public:
 		std::string get_name() const {
 			return name;
 		}
 		void set_name(const std::string& name) {
-			if (this->name.front() == ch)
-				ch = name.front();
 			this->name = name;
 		}
 		auto get_char() const {
@@ -23,6 +22,7 @@ class Entity
 		void set_char(const char ch) {
 			this->ch = ch;
 		}
+		auto get_color_pair_id() const { return color_pair_id; }
 
 	private:
 		std::vector<Effect> effects; // f.e. blue glow from a fungus
@@ -37,10 +37,9 @@ class Entity
 			effects.push_back(effect);
 		}
 
-
 	public:
 		Entity();
-		Entity(const std::string& name);
+		Entity(const std::string& name, const short color_pair_id);
 
 
 };

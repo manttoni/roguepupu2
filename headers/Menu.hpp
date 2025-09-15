@@ -18,6 +18,8 @@ class Menu
 
 	public:
 		void set_read_only(const bool value) { read_only = value; }
+		bool get_read_only() const { return read_only; }
+		PANEL* get_panel() const { return panel; }
 
 
 	public:
@@ -26,11 +28,12 @@ class Menu
 				const Screen::Coord& start,
 				void (*loop_cb)() = nullptr);
 		Menu(const Menu& other);
-		Menu& operator=(Menu&& other);
+		Menu& operator=(Menu&& other) noexcept;
 		~Menu();
 
 		void loop();
-		//void show(); // push panel to top, start loop()
+
+		// MenuNum
 		std::any get_value(const std::string& str) const;
 		void set_value(const std::string& str, std::any value);
 };

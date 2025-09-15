@@ -1,9 +1,9 @@
-#include "Cell.hpp"
-#include "Utils.hpp"
 #include <string>
 #include <stdexcept>
 #include <ostream>
-
+#include "UI.hpp"
+#include "Cell.hpp"
+#include "Utils.hpp"
 /* CONSTRUCTORS */
 Cell::Cell()
 	: idx(SIZE_MAX), type(Type::NONE), blocked(true), density(0) {}
@@ -30,6 +30,7 @@ Cell::Cell(const Cell &other)
 	blocked = other.blocked;
 	density = other.density;
 	color_pair_id = other.color_pair_id;
+	entities = other.entities;
 }
 
 /* OVERLOADS */
@@ -57,6 +58,7 @@ Cell &Cell::operator=(const Cell &other)
 		idx = other.idx;
 		density = other.density;
 		color_pair_id = other.color_pair_id;
+		entities = other.entities;
 	}
 	return *this;
 }
@@ -80,6 +82,13 @@ void Cell::reduce_density(const double amount)
 
 char Cell::get_char() const
 {
+	if (!entities.empty())
+	{	// change entity each main loop to show all entities in same cell
+		size_t size = entities.size();
+		size_t ln = UI::instance().loop_number();
+		Entity e = entities[ln % size];
+		return e.get_char();
+	}
 	switch (type)
 	{
 		case Type::ROCK:
@@ -103,8 +112,12 @@ void Cell::add_glow(const short glow_id)
 
 short Cell::get_color_pair_id() const
 {
-	//if (glow.empty())
+	size_t size = entities.size();
+	if (size == 0)
 		return color_pair_id;
+	size_t ln = UI::instance().loop_number();
+	Entity e = entities[ln % size];
+	return e.get_color_pair_id();
 /*
 	const
 	const Color& fg = color_pair.get_fg();

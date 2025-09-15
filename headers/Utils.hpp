@@ -27,6 +27,8 @@ namespace Screen
 	inline Coord top_left()		{ return {0, 0}; }
 	inline Coord top()			{ return {0, width() / 2}; }
 	inline Coord botleft()		{ return {height(), 0}; }
+	inline Coord topright()		{ return {0, width()}; }
+	inline Coord topleft()		{ return {0, 0}; }
 } // namespace Screen
 
 // remove this and replace with c++20 versions

@@ -25,6 +25,7 @@ Menu::Menu(	std::vector<std::unique_ptr<MenuElt>> elements_,
 	for (size_t i = 0; i < elements.size(); ++i)
 		width = std::max(elements[i]->get_size() + 4, width);
 
+
 	int y = static_cast<int>(start.y) - static_cast<int>(height) / 2;
 	int x = static_cast<int>(start.x) - static_cast<int>(width) / 2;
 
@@ -34,14 +35,15 @@ Menu::Menu(	std::vector<std::unique_ptr<MenuElt>> elements_,
 	if (y + height > Screen::height()) y = Screen::height() - height;
 	if (x + width > Screen::width()) x = Screen::width() - width;
 
-	//size_t y = std::min(static_cast<int>(Screen::height()), std::max(0, static_cast<int>(start.y) - static_cast<int>(height) / 2));
-	//size_t x = std::min(static_cast<int>(Screen::width()), std::max(0, static_cast<int>(start.x) - static_cast<int>(width) / 2));
-
-	panel = new_panel(newwin(height, width, y, x));
+	WINDOW* window = newwin(height, width, y, x);
+	assert(window != nullptr);
+	panel = new_panel(window);
+	assert(panel != nullptr);
 }
 
 Menu::~Menu()
 {
+	/*
 	if (panel != nullptr)
 	{
 		WINDOW* window = panel_window(panel);
@@ -49,15 +51,16 @@ Menu::~Menu()
 		if (window)
 			delwin(window);
 	}
+	*/
 }
 
-Menu& Menu::operator=(Menu&& other)
+Menu& Menu::operator=(Menu&& other) noexcept
 {
 	if (this == &other)
 		return *this;
 
 	panel = other.panel;
-	other.panel = nullptr;
+	//other.panel = nullptr;
 
 	elements = std::move(other.elements);
 	height = other.height;
@@ -87,22 +90,28 @@ void Menu::set_value(const std::string& str, std::any value)
 	{
 		if (elements[i]->get_type() == MenuElt::Type::NUMBER
 				&& elements[i]->MenuElt::get_text() == str)
+		{
 			elements[i]->set_value(value);
+			return;
+		}
 	}
+	throw std::runtime_error("MenuNum name not found: " + str);
 }
 
 void Menu::loop()
 {
+	assert(panel != nullptr);
 	WINDOW *window = panel_window(panel);
 	size_t selected = 0;
-	int input = 0;
-	while (input != KEY_ESCAPE)
+	int key = 0;
+	while (key != KEY_ESCAPE)
 	{
 		// call loop_callback
 		if (loop_cb != nullptr)
 			loop_cb();
 
 		UI::instance().set_panel(panel);
+		top_panel(panel);
 
 		// print elements
 		wmove(window, 1, 0); // because of box() start at y = 1
@@ -113,15 +122,11 @@ void Menu::loop()
 			if (!read_only && i == selected) UI::instance().disable(A_REVERSE);
 		}
 
-		wattron(window, COLOR_PAIR(0));
 		box(window, 0, 0);
-		wattroff(window, COLOR_PAIR(0));
 		UI::instance().update();
 		if (read_only) break;
-		// process input
-		flushinp();
-		input = getch();
-		switch (input)
+		key = UI::instance().input();
+		switch (key)
 		{
 			case KEY_DOWN:
 				Math::increment(selected, elements.size() - 1);
@@ -133,13 +138,15 @@ void Menu::loop()
 			case KEY_RIGHT:
 				if (elements[selected]->get_type() == MenuElt::Type::NUMBER)
 				{
-					if (input == KEY_RIGHT) elements[selected]->increment();
-					if (input == KEY_LEFT) elements[selected]->decrement();
+					if (key == KEY_RIGHT) elements[selected]->increment();
+					if (key == KEY_LEFT) elements[selected]->decrement();
 				}
 				break;
 			case '\n':
 				if (elements[selected]->get_type() == MenuElt::Type::BUTTON)
 					elements[selected]->callback();
+				break;
+			default:
 				break;
 		}
 	}

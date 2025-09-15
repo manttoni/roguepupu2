@@ -15,16 +15,14 @@ class Fungus : public Entity
 		struct Info
 		{
 			Cell::Type cell_type;
-			std::string_view name;
+			std::string name;
+			short color_pair_id;
+			char ch;
 		};
 		static const std::map<Type, Info> LUT;
-		Cell::Type get_affinity(Type type) const { return LUT.at(type).cell_type; }
-		Cell::Type get_affinity() const { return get_affinity(fungus_type); }
-		std::string get_name(Type type) const { return std::string(LUT.at(type).name); }
-		std::string get_name() const { return get_name(fungus_type); }
 
 	private:
-		Type fungus_type;
+		Type type;
 
 	public:
 		Fungus();

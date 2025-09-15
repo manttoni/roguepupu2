@@ -180,6 +180,18 @@ std::vector<size_t> Cave::get_nearby_ids(const size_t& middle, const double r) c
 	return neighbors;
 }
 
+bool Cave::neighbor_has_type(const size_t idx, const Cell::Type type) const
+{
+	const auto& neighbors = get_nearby_ids(idx, 1.5);
+	for (const auto& cell_idx : neighbors)
+	{
+		const auto& cell = cells[cell_idx];
+		if (cell.get_type() == type)
+			return true;
+	}
+	return false;
+}
+
 // can someone walk from to. Has to go around corners
 bool Cave::has_access(const size_t from_idx, const size_t to_idx) const
 {

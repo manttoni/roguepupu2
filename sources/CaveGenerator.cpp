@@ -12,11 +12,18 @@
 CaveGenerator::CaveGenerator()
 	: height(0), width(0), size(0), frequency(0), seed(0), octaves(0), margin(0) {}
 
-CaveGenerator::CaveGenerator(const size_t height, const size_t width, const double frequency, const int seed, const int margin_percent, const int octaves, const double A, const double B, const double C)
-	: height(height), width(width), size(height * width), frequency(frequency), seed(seed), octaves(octaves), rng(seed), erosion_a(A), erosion_b(B), erosion_c(C)
+CaveGenerator::CaveGenerator(
+		const size_t height,
+		const size_t width,
+		const double frequency,
+		const int seed,
+		const int margin_percent,
+		const int octaves,
+		const double A, const double B, const double C,
+		const size_t fungus_spawn_chance)
+	: height(height), width(width), size(height * width), frequency(frequency), seed(seed), octaves(octaves), rng(seed), erosion_a(A), erosion_b(B), erosion_c(C), fungus_spawn_chance(fungus_spawn_chance)
 {
 	margin = static_cast<size_t>(height * margin_percent / 100);
-	//rng.seed(seed);
 }
 CaveGenerator::CaveGenerator(const CaveGenerator& other)
 {
@@ -31,6 +38,7 @@ CaveGenerator::CaveGenerator(const CaveGenerator& other)
 	erosion_a = other.erosion_a;
 	erosion_b = other.erosion_b;
 	erosion_c = other.erosion_c;
+	fungus_spawn_chance = other.fungus_spawn_chance;
 }
 
 CaveGenerator CaveGenerator::operator=(const CaveGenerator& other)
@@ -48,6 +56,7 @@ CaveGenerator CaveGenerator::operator=(const CaveGenerator& other)
 		erosion_a = other.erosion_a;
 		erosion_b = other.erosion_b;
 		erosion_c = other.erosion_c;
+		fungus_spawn_chance = other.fungus_spawn_chance;
 	}
 	return *this;
 }
@@ -176,54 +185,23 @@ void CaveGenerator::set_source_sink()
 
 void CaveGenerator::spawn_fungi()
 {
-	const std::vector<Fungus::Type> fungus_types = {Fungus::Type::GLOWING};
+	auto& cells = canvas.get_cells();
 	for (size_t i = 0; i < size; ++i)
 	{
 		if (Random::randsize_t(0, 100, rng) > fungus_spawn_chance)
 			continue;
 
-		auto& cells = canvas.get_cells();
-		Cell cell = cells[i];
-
-		for (const Fungus::Type type : fungus_types)
-		{
-			Fungus fungus(type);
-			if (fungus.get_affinity() == cell.get_type())
-			{
-				switch (type)
-				{
-					case Fungus::Type::COUNT:
-					case Fungus::Type::NONE:
-						break;
-					case Fungus::Type::GLOWING:
-					{
-						// Glowing mushrooms grow next to rock cells if there is space (floor)
-						const auto& neighbor_ids = canvas.get_nearby_ids(i, 1.5);
-						for (const size_t nidx : neighbor_ids)
-						{
-							if (cells[nidx].get_type() == Cell::Type::FLOOR)
-							{
-								cells[nidx].add_entity(fungus);
-								continue;
-							}
-						}
-						break;
-					}
-					default:
-						break;
-				}
-			}
-		}
+		Cell& cell = cells[i];
+		if (cell.get_type() == Cell::Type::FLOOR
+				&& canvas.neighbor_has_type(i, Cell::Type::ROCK))
+			cell.add_entity(Fungus(Fungus::Type::GLOWING));
 	}
 }
 
 void CaveGenerator::color_cells()
 {
-	std::map<size_t, short> density_color_pair_ids;
 	short black_id = UI::instance().add_color(0, 0, 0);
-	short black_pair_id = UI::instance().add_color_pair(black_id, black_id);
-	short blue_id = UI::instance().add_color(0, 0, 1000);
-	short blue_pair_id = UI::instance().add_color_pair(blue_id, black_id);
+	std::map<size_t, short> density_color_pair_ids;
 	for (size_t i = 1; i <= 9; ++i)
 	{
 		short val = i * 100;
@@ -245,13 +223,13 @@ void CaveGenerator::color_cells()
 				break;
 			}
 			case Cell::Type::FLOOR:
-				cell.set_color_pair_id(black_pair_id);
+				cell.set_color_pair_id(0);
 				break;
 			case Cell::Type::SOURCE:
-				cell.set_color_pair_id(blue_pair_id);
+				cell.set_color_pair_id(0);
 				break;
 			case Cell::Type::SINK:
-				cell.set_color_pair_id(blue_pair_id);
+				cell.set_color_pair_id(0);
 				break;
 		}
 	}

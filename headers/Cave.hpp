@@ -60,4 +60,5 @@ class Cave
 		double distance(const size_t start_id, const size_t end_id) const;
 		std::vector<size_t> get_nearby_ids(const size_t& middle, const double r) const;
 		bool has_access(const size_t from_idx, const size_t to_idx) const;
+		bool neighbor_has_type(const size_t middle, const Cell::Type type) const;
 };
