@@ -80,7 +80,7 @@ std::vector<size_t> Cave::find_path(const size_t start, const size_t end)
 {
 	if (start >= get_size() || end >= get_size())
 		throw std::runtime_error("Cave::find_path: invalid arguments");
-	if (cells[start].is_blocked())
+	if (cells[start].blocks_movement())
 		return {};
 	std::vector<size_t> open_set = { start };
 	std::map<size_t, size_t> came_from;
@@ -196,7 +196,7 @@ bool Cave::neighbor_has_type(const size_t idx, const Cell::Type type) const
 bool Cave::has_access(const size_t from_idx, const size_t to_idx) const
 {
 	auto to = cells[to_idx];
-	if (to.is_blocked()) // can't move to "to"
+	if (to.blocks_movement()) // can't move to "to"
 		return false;
 
 	size_t fy = from_idx / width;
@@ -214,7 +214,7 @@ bool Cave::has_access(const size_t from_idx, const size_t to_idx) const
 	// there is access diagonally if there is no corner to go around
 	const Cell corner1 = cells[fy * width + tx];
 	const Cell corner2 = cells[ty * width + fx];
-	if (corner1.is_blocked() || corner2.is_blocked())
+	if (corner1.blocks_movement() || corner2.blocks_movement())
 		return false;
 	return true;
 }

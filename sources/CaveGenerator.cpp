@@ -164,7 +164,6 @@ void CaveGenerator::form_rock()
 		double density = Math::map(perlin * edge_weight, 0, EDGE_WEIGH_MULT, 1, 9);
 		cells[i].set_type(Cell::Type::ROCK);
 		cells[i].set_density(density);
-		cells[i].set_blocked(true);
 		cells[i].set_idx(i);
 	}
 }
@@ -183,8 +182,12 @@ void CaveGenerator::set_source_sink()
 	canvas.set_sink(sink_idx);
 }
 
+// Glowing fungi grow next to walls
+// Woody fungi grow if there is enough space
 void CaveGenerator::spawn_fungi()
 {
+	const double WOODY_RADIUS = 5;
+	const double WOODY_SPACE_RATIO = 0.75;
 	auto& cells = canvas.get_cells();
 	for (size_t i = 0; i < size; ++i)
 	{
@@ -192,9 +195,23 @@ void CaveGenerator::spawn_fungi()
 			continue;
 
 		Cell& cell = cells[i];
-		if (cell.get_type() == Cell::Type::FLOOR
-				&& canvas.neighbor_has_type(i, Cell::Type::ROCK))
-			cell.add_entity(Fungus(Fungus::Type::GLOWING));
+		if (cell.get_type() == Cell::Type::FLOOR)
+		{
+			if (canvas.neighbor_has_type(i, Cell::Type::ROCK))
+			{
+				cell.add_entity(Fungus(Fungus::Type::GLOWING));
+				continue;
+			}
+			const auto& nearby = canvas.get_nearby_ids(i, WOODY_RADIUS);
+			double space = 0;
+			for (const auto& idx : nearby)
+				if (!cells[idx].blocks_movement())
+					space++;
+			double a = 3.14 * WOODY_RADIUS * WOODY_RADIUS;
+			if (space / a > WOODY_SPACE_RATIO)
+				cell.add_entity(Fungus(Fungus::Type::WOODY));
+		}
+
 	}
 }
 

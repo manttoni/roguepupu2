@@ -28,8 +28,10 @@ class UI
 		static inline short BLACK;
 		static inline short BLUE;
 		static inline short LIGHT_BLUE;
+		static inline short ORANGE;
 		static inline short MEDIUM_BLUE;
 		static inline short GLOWING_FUNGUS;
+		static inline short WOODY_FUNGUS;
 		static inline short DEFAULT;
 
 	private:

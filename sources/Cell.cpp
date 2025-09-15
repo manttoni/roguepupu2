@@ -6,28 +6,16 @@
 #include "Utils.hpp"
 /* CONSTRUCTORS */
 Cell::Cell()
-	: idx(SIZE_MAX), type(Type::NONE), blocked(true), density(0) {}
+	: idx(SIZE_MAX), type(Type::NONE), density(0) {}
 
 Cell::Cell(const size_t idx, const Type &type, const double density)
 	: idx(idx), type(type), density(density)
-{
-	if (type == Type::ROCK)
-		blocked = true;
-	else if (type == Type::FLOOR)
-		blocked = false;
-	else if (type == Type::SOURCE)
-		blocked = false;
-	else if (type == Type::SINK)
-		blocked = false;
-	else
-		throw std::runtime_error("Check cell types");
-}
+{}
 
 Cell::Cell(const Cell &other)
 {
 	idx = other.idx;
 	type = other.type;
-	blocked = other.blocked;
 	density = other.density;
 	color_pair_id = other.color_pair_id;
 	entities = other.entities;
@@ -55,7 +43,6 @@ Cell &Cell::operator=(const Cell &other)
 	if (this != &other)
 	{
 		type = other.type;
-		blocked = other.blocked;
 		idx = other.idx;
 		density = other.density;
 		color_pair_id = other.color_pair_id;
@@ -79,7 +66,6 @@ void Cell::reduce_density(const double amount)
 	// rock has been destroyed
 	density = 0;
 	type = Type::FLOOR;
-	blocked = false;
 }
 
 char Cell::get_char() const
@@ -151,4 +137,28 @@ short Cell::get_color_pair_id() const
 	short pair_id = UI::instance().add_color_pair(fg_id, bg_id);
 
 	return pair_id;
+}
+
+bool Cell::blocks_movement() const
+{
+	if (type == Type::ROCK)
+		return true;
+
+	for (const auto& ent : entities)
+		if (ent.blocks_movement())
+			return true;
+
+	return false;
+}
+
+bool Cell::blocks_vision() const
+{
+	if (type == Type::ROCK)
+		return true;
+
+	for (const auto& ent : entities)
+		if (ent.blocks_vision())
+			return true;
+
+	return false;
 }

@@ -20,12 +20,10 @@ class Cell
 	private:
 		size_t idx;
 		Type type;
-		bool blocked;
 		double density;
 		short color_pair_id;
 		std::map<short, size_t> glow; // key is id of color of glow, value is the amount of that glow from multiple sources
 		std::vector<Entity> entities;
-		char ch;
 
 	public:
 		/* CONSTRUCTORS */
@@ -35,7 +33,6 @@ class Cell
 
 		/* GETTERS */
 		size_t get_idx() const { return idx; }
-		bool is_blocked() const { return blocked; }
 		Type get_type() const { return type; }
 		double get_density() const { return density; }
 		short get_color_pair_id() const;
@@ -44,10 +41,8 @@ class Cell
 
 		/* SETTERS */
 		void set_type(const Cell::Type type) { this->type = type; }
-		void set_blocked(const bool b) { this->blocked = b; }
 		void set_density(const double d) { this->density = d; }
 		void set_idx(const size_t i) { this->idx = i; }
-		void set_char(const char ch) { this->ch = ch; }
 		void set_color_pair_id(const short color_pair_id) { this->color_pair_id = color_pair_id; }
 
 		/* LIGHTS */
@@ -68,5 +63,6 @@ class Cell
 		void reduce_density(const double amount);
 
 		/* CELL FEATURES */
-		bool blocks_vision() const { return type == Type::ROCK; }
+		bool blocks_vision() const;
+		bool blocks_movement() const;
 };

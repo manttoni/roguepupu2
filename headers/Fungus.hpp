@@ -10,6 +10,7 @@ class Fungus : public Entity
 		{
 			NONE = 0,
 			GLOWING,
+			WOODY,
 			COUNT,
 		};
 		struct Info

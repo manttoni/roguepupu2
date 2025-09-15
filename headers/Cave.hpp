@@ -42,13 +42,11 @@ class Cave
 		{
 			this->source = source;
 			cells[source].set_type(Cell::Type::SOURCE);
-			cells[source].set_blocked(false);
 		}
 		void set_sink(const size_t sink)
 		{
 			this->sink = sink;
 			cells[sink].set_type(Cell::Type::SINK);
-			cells[sink].set_blocked(false);
 		}
 
 		/* TESTING */

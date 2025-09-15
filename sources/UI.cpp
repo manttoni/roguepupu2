@@ -153,9 +153,11 @@ void UI::init_colors()
 	BLUE = add_color(0, 0, 500);
 	LIGHT_BLUE = add_color(0, 0, 100);
 	MEDIUM_BLUE = add_color(0, 0, 500);
+	ORANGE = add_color(1000, 666, 0);
 
 	// Pairs
 	GLOWING_FUNGUS = add_color_pair(MEDIUM_BLUE, BLACK);
+	WOODY_FUNGUS = add_color_pair(ORANGE, BLACK);
 	DEFAULT = add_color_pair(WHITE, BLACK);
 }
 

@@ -19,23 +19,28 @@ Fungus::Info Fungus::get_info(const Fungus::Type type)
 		{
 			Fungus::Type::GLOWING,
 			{
-				"Glowing mushroom",
+				"Glowing fungus",
 				UI::instance().GLOWING_FUNGUS,
 				'*',
 				Effect(Effect::Type::GLOW, UI::instance().LIGHT_BLUE, 5)
+			}
+		},
+		{
+			Fungus::Type::WOODY,
+			{
+				"Wooden fungus",
+				UI::instance().WOODY_FUNGUS,
+				'$',
+				Effect()
 			}
 		}
 	};
 	return LUT[type];
 }
 
-Fungus::Fungus() :
-	Entity("default", 0),
-	type(Type::NONE)
-{}
+Fungus::Fungus() {}
 Fungus::Fungus(const Type type) :
-	Entity(	get_info(type).name,
-			get_info(type).color_pair_id),
+	Entity(get_info(type).name, get_info(type).color_pair_id),
 	type(type)
 {
 	switch (type)
@@ -43,6 +48,9 @@ Fungus::Fungus(const Type type) :
 		case Type::GLOWING:
 			Entity::set_char(get_info(type).ch);
 			Entity::add_effect(get_info(type).effect);
+			break;
+		case Type::WOODY:
+			Entity::set_char(get_info(type).ch);
 			break;
 		default:
 			break;

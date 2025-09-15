@@ -38,8 +38,13 @@ class Entity
 		}
 
 	public:
+		bool blocks_movement() const;
+		bool blocks_vision() const;
+
+	public:
 		Entity();
 		Entity(const std::string& name, const short color_pair_id);
+
 
 
 };
