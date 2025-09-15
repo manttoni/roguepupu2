@@ -3,41 +3,47 @@
 #include "Fungus.hpp"
 #include "UI.hpp"
 
-const std::map<Fungus::Type, Fungus::Info> Fungus::LUT = {
+Fungus::Info Fungus::get_info(const Fungus::Type type)
+{
+	static std::map<Fungus::Type, Fungus::Info> LUT =
 	{
-		Fungus::Type::NONE,
 		{
-			Cell::Type::NONE,
-			"default",
-			0,
-			'?'
-		}
-	},
-	{
-		Fungus::Type::GLOWING,
+			Fungus::Type::NONE,
+			{
+				"default",
+				0,
+				'?',
+				Effect()
+			}
+		},
 		{
-			Cell::Type::ROCK,
-			"Glowing mushroom",
-			UI::instance().GLOWING_FUNGUS,
-			'*'
+			Fungus::Type::GLOWING,
+			{
+				"Glowing mushroom",
+				0,
+				//UI::instance().GLOWING_FUNGUS,
+				'*',
+				Effect(Effect::Type::GLOW, UI::instance().LIGHT_BLUE, 5)
+			}
 		}
-	}
-};
+	};
+	return LUT[type];
+}
 
 Fungus::Fungus() :
 	Entity("default", 0),
 	type(Type::NONE)
 {}
 Fungus::Fungus(const Type type) :
-	Entity(	LUT.at(type).name,
-			UI::instance().GLOWING_FUNGUS),
-			//LUT.at(type).color_pair_id),
+	Entity(	get_info(type).name,
+			get_info(type).color_pair_id),
 	type(type)
 {
 	switch (type)
 	{
 		case Type::GLOWING:
-			Entity::set_char(LUT.at(type).ch);
+			Entity::set_char(get_info(type).ch);
+			Entity::add_effect(get_info(type).effect);
 			break;
 		default:
 			break;

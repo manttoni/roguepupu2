@@ -13,3 +13,5 @@ Entity::Entity(const std::string& name, const short color_pair_id) :
 {
 	Log::log("Entity created: " + name + " " + std::to_string(color_pair_id));
 }
+
+

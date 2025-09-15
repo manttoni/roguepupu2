@@ -219,3 +219,17 @@ bool Cave::has_access(const size_t from_idx, const size_t to_idx) const
 	return true;
 }
 
+void Cave::reset_effects()
+{
+	for (auto& cell : cells)
+		cell.reset_effects();
+	for (auto& cell : cells)
+	{
+		if (cell.get_entities().empty())
+			continue;
+
+		for (auto& entity : cell.get_entities())
+			for (auto& effect : entity.get_effects())
+				effect.trigger(*this, cell.get_idx());
+	}
+}

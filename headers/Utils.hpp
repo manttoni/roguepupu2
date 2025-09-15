@@ -56,7 +56,7 @@ namespace Log
 		std::tm tm = *std::localtime(&time);
 
 		std::ostringstream oss;
-		oss << std::put_time(&tm, "[%d.%m-%Y %H:%M:%S]");
+		oss << std::put_time(&tm, "[%d.%m.%Y %H:%M:%S]");
 		return oss.str();
 	}
 

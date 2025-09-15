@@ -14,12 +14,12 @@ class Fungus : public Entity
 		};
 		struct Info
 		{
-			Cell::Type cell_type;
 			std::string name;
 			short color_pair_id;
 			char ch;
+			Effect effect;
 		};
-		static const std::map<Type, Info> LUT;
+		Info get_info(const Type type);
 
 	private:
 		Type type;

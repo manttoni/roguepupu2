@@ -26,6 +26,7 @@ class UI
 		short add_color_pair(const short fg_id, const short bg_id);
 		static inline short BLACK;
 		static inline short BLUE;
+		static inline short LIGHT_BLUE;
 		static inline short GLOWING_FUNGUS;
 
 	private:
@@ -49,6 +50,8 @@ class UI
 		size_t loop_number() const { return ln; }
 		short color_initialized(const short r, const short g, const short b);
 		short color_pair_initialized(const Color& fg, const Color& bg);
+		Color get_color(const short color_id) const { return initialized_colors.at(color_id); }
+		ColorPair get_color_pair(const short color_pair_id) { return initialized_color_pairs[color_pair_id]; }
 		//ColorPair get_color_pair() const { return color_pair; }
 
 

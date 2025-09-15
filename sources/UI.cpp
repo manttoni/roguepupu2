@@ -80,8 +80,11 @@ short UI::color_pair_initialized(const Color& fg, const Color& bg)
 }
 // initializes color if not yet initialized
 // returns id of the color
-short UI::add_color(const short r, const short g, const short b)
+short UI::add_color(short r, short g, short b)
 {
+	r = Math::clamp(r, static_cast<short>(0), static_cast<short>(1000));
+	g = Math::clamp(g, static_cast<short>(0), static_cast<short>(1000));
+	b = Math::clamp(b, static_cast<short>(0), static_cast<short>(1000));
 	short color_id = color_initialized(r, g, b);
 	if (color_id != -1)
 		return color_id;
@@ -113,8 +116,6 @@ int UI::input()
 {
 	Menu& debug = menus.at("debug");
 	debug.loop();
-	//Menu& cell_info = menus.at("cell_info");
-	//cell_info.loop();
 
 	instance().update();
 	flushinp();
@@ -135,7 +136,8 @@ int UI::input()
 			size_t mouse_idx = event.y * Screen::width() + event.x;
 			const Cave* cave = CaveView::current_cave;
 			assert(mouse_idx < cave->get_size());
-			const Cell& selected_cell = cave->get_cells()[mouse_idx];
+			const auto& cells = cave->get_cells();
+			const Cell& selected_cell = cells[mouse_idx];
 			CaveView::show_cell_info(selected_cell);
 		}
 	}
@@ -148,6 +150,7 @@ void UI::init_colors()
 	// Colors
 	BLACK = add_color(0, 0, 0);
 	BLUE = add_color(0, 0, 500);
+	LIGHT_BLUE = add_color(0, 0, 100);
 
 	// Pairs
 	GLOWING_FUNGUS = add_color_pair(BLUE, BLACK);
@@ -176,6 +179,7 @@ void UI::init_menus()
 	cell_info_elements.push_back(std::make_unique<MenuNum<size_t>>("Index"));
 	cell_info_elements.push_back(std::make_unique<MenuNum<double>>("Density", std::pair<double, double>(0.0, 9.0)));
 	cell_info_elements.push_back(std::make_unique<MenuNum<int>>("Color pair"));
+	cell_info_elements.push_back(std::make_unique<MenuNum<size_t>>("Glow stacks"));
 	menus["cell_info"] = Menu(std::move(cell_info_elements), Screen::topright());
 	menus["cell_info"].set_read_only(true);
 }
@@ -220,6 +224,10 @@ namespace CaveView
 		cell_info.set_value("Index", cell.get_idx());
 		cell_info.set_value("Density", cell.get_density());
 		cell_info.set_value("Color pair", static_cast<int>(cell.get_color_pair_id()));
+		size_t stacks = 0;
+		for (const auto& [color_id, stack_amount] : cell.get_glow())
+			stacks += stack_amount;
+		cell_info.set_value("Glow stacks", stacks);
 		cell_info.loop();
 	}
 
@@ -259,6 +267,7 @@ namespace CaveView
 
 		int level = std::any_cast<int>(settings.get_value("Level"));
 		current_cave = &cg.get_cave(level);
+		current_cave->reset_effects();
 		const auto& cells = current_cave->get_cells();
 
 		wmove(cave_window, 0, 0);

@@ -40,6 +40,7 @@ class Cell
 		double get_density() const { return density; }
 		short get_color_pair_id() const;
 		char get_char() const;
+		auto get_glow() const { return glow; }
 
 		/* SETTERS */
 		void set_type(const Cell::Type type) { this->type = type; }
@@ -50,7 +51,7 @@ class Cell
 		void set_color_pair_id(const short color_pair_id) { this->color_pair_id = color_pair_id; }
 
 		/* LIGHTS */
-		void reset_glow() { glow.clear(); }
+		void reset_effects();
 		void add_glow(const short glow_id);
 
 		/* ENTITIES */

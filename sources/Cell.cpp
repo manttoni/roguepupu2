@@ -31,6 +31,7 @@ Cell::Cell(const Cell &other)
 	density = other.density;
 	color_pair_id = other.color_pair_id;
 	entities = other.entities;
+	glow = other.glow;
 }
 
 /* OVERLOADS */
@@ -59,6 +60,7 @@ Cell &Cell::operator=(const Cell &other)
 		density = other.density;
 		color_pair_id = other.color_pair_id;
 		entities = other.entities;
+		glow = other.glow;
 	}
 	return *this;
 }
@@ -110,34 +112,45 @@ void Cell::add_glow(const short glow_id)
 	glow[glow_id]++;
 }
 
+void Cell::reset_effects()
+{
+	// reset glow
+	glow.clear();
+}
+
 short Cell::get_color_pair_id() const
 {
+	short ret = color_pair_id;
 	size_t size = entities.size();
-	if (size == 0)
-		return color_pair_id;
-	size_t ln = UI::instance().loop_number();
-	Entity e = entities[ln % size];
-	return e.get_color_pair_id();
-/*
-	const
-	const Color& fg = color_pair.get_fg();
-	const Color& bg = color_pair.get_bg();
+	if (size > 0)
+	{
+		size_t ln = UI::instance().loop_number();
+		Entity e = entities[ln % size];
+		ret = e.get_color_pair_id();
+	}
+
+
+	ColorPair cp = UI::instance().get_color_pair(ret);
+
+	const Color& fg = cp.get_fg();
+	const Color& bg = cp.get_bg();
 	const short fgr = fg.get_r();
 	const short fgg = fg.get_g();
 	const short fgb = fg.get_b();
 	const short bgr = bg.get_r();
 	const short bgg = bg.get_g();
 	const short bgb = bg.get_b();
-	const short glow_r, glow_g, glow_b;
-	for (const auto& [glow_color, count] : glow)
+	short glow_r = 0, glow_g = 0, glow_b = 0;
+	for (const auto& [glow_color_id, count] : glow)
 	{
-		glow_r = glow_color.get_r() * count;
-		glow_g = glow_color.get_g() * count;
-		glow_b = glow_color.get_b() * count;
+		Color glow_color = UI::instance().get_color(glow_color_id);
+		glow_r += glow_color.get_r() * count;
+		glow_g += glow_color.get_g() * count;
+		glow_b += glow_color.get_b() * count;
 	}
-	short fg_id = add_color(fgr + glow_r, fgg + glow_g, fgb + glow_b);
-	short bg_id = add_color(bgr + glow_R, bgg + glow_g, bgb + glow_b);
-	short pair_id = add_color_pair(fg_id, bg_id);
+	short fg_id = UI::instance().add_color(fgr + glow_r, fgg + glow_g, fgb + glow_b);
+	short bg_id = UI::instance().add_color(bgr + glow_r, bgg + glow_g, bgb + glow_b);
+	short pair_id = UI::instance().add_color_pair(fg_id, bg_id);
 
-	return pair_id;*/
+	return pair_id;
 }
