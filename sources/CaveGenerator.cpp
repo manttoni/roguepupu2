@@ -20,7 +20,7 @@ CaveGenerator::CaveGenerator(
 		const int margin_percent,
 		const int octaves,
 		const double A, const double B, const double C,
-		const size_t fungus_spawn_chance)
+		const double fungus_spawn_chance)
 	: height(height), width(width), size(height * width), frequency(frequency), seed(seed), octaves(octaves), rng(seed), erosion_a(A), erosion_b(B), erosion_c(C), fungus_spawn_chance(fungus_spawn_chance)
 {
 	margin = static_cast<size_t>(height * margin_percent / 100);
@@ -187,11 +187,14 @@ void CaveGenerator::set_source_sink()
 void CaveGenerator::spawn_fungi()
 {
 	const double WOODY_RADIUS = 5;
-	const double WOODY_SPACE_RATIO = 0.75;
+	const double WOODY_SPACE_RATIO = 0.90;
+	const double FUNGUS_FREQUENCY = 0.1;
+	const size_t FUNGUS_OCTAVES = 1;
 	auto& cells = canvas.get_cells();
 	for (size_t i = 0; i < size; ++i)
 	{
-		if (Random::randsize_t(0, 100, rng) > fungus_spawn_chance)
+		if (Random::noise3D(i / width, i % width, canvas.get_level(), FUNGUS_FREQUENCY, seed, FUNGUS_OCTAVES) > fungus_spawn_chance
+			|| Random::randsize_t(0, 100, rng) >= fungus_spawn_chance * 100)
 			continue;
 
 		Cell& cell = cells[i];

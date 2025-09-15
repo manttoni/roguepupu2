@@ -27,7 +27,7 @@ class CaveGenerator
 		double erosion_a;	// This makes branches
 		double erosion_b;	// Smooth cave
 		double erosion_c;	// Smooth cave
-		size_t fungus_spawn_chance;
+		double fungus_spawn_chance;
 		void form_rock();
 		void form_tunnels();
 		void set_source_sink();
@@ -47,7 +47,7 @@ class CaveGenerator
 						const double A,
 						const double B,
 						const double C,
-						const size_t fungus_spawn_chance);
+						const double fungus_spawn_chance);
 		CaveGenerator(const CaveGenerator& other);
 		CaveGenerator operator=(const CaveGenerator& other);
 

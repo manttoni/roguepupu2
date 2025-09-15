@@ -251,8 +251,8 @@ namespace CaveView
 				std::any_cast<double>(settings.get_value("A")),
 				std::any_cast<double>(settings.get_value("B")),
 				std::any_cast<double>(settings.get_value("C")),
-				std::any_cast<size_t>(settings.get_value("fungus spawn chance")));
-		static auto prev = std::make_tuple(-1.0, -1, -1, -1, -1.0, -1.0, -1.0, 0);
+				std::any_cast<double>(settings.get_value("fungus spawn chance")));
+		static auto prev = std::make_tuple(-1.0, -1, -1, -1, -1.0, -1.0, -1.0, 0.0);
 
 		if (current != prev)
 		{
@@ -320,10 +320,10 @@ namespace CaveView
 				"C",
 				std::pair<double, double>{0.1, 10},
 				0.1, 0.1));
-		elements.push_back(std::make_unique<MenuNum<size_t>>(
+		elements.push_back(std::make_unique<MenuNum<double>>(
 				"fungus spawn chance",
-				std::pair<size_t, size_t>{0, 100},
-				1));
+				std::pair<double, double>{0, 1},
+				0.1, 0.01));
 		settings = Menu(std::move(elements), {0, 0}, draw_cave);
 		cave_panel = new_panel(newwin(Screen::height(), Screen::width(), 0, 0));
 		top_panel(cave_panel);
