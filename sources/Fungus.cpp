@@ -11,7 +11,7 @@ Fungus::Info Fungus::get_info(const Fungus::Type type)
 			Fungus::Type::NONE,
 			{
 				"default",
-				0,
+				UI::instance().DEFAULT,
 				'?',
 				Effect()
 			}
@@ -20,8 +20,7 @@ Fungus::Info Fungus::get_info(const Fungus::Type type)
 			Fungus::Type::GLOWING,
 			{
 				"Glowing mushroom",
-				0,
-				//UI::instance().GLOWING_FUNGUS,
+				UI::instance().GLOWING_FUNGUS,
 				'*',
 				Effect(Effect::Type::GLOW, UI::instance().LIGHT_BLUE, 5)
 			}

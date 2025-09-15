@@ -24,10 +24,13 @@ class UI
 	public:
 		short add_color(const short r, const short g, const short b);
 		short add_color_pair(const short fg_id, const short bg_id);
+		static inline short WHITE;
 		static inline short BLACK;
 		static inline short BLUE;
 		static inline short LIGHT_BLUE;
+		static inline short MEDIUM_BLUE;
 		static inline short GLOWING_FUNGUS;
+		static inline short DEFAULT;
 
 	private:
 		static void handle_signal(int sig)

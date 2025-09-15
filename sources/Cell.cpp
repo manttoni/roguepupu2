@@ -120,18 +120,16 @@ void Cell::reset_effects()
 
 short Cell::get_color_pair_id() const
 {
-	short ret = color_pair_id;
+	short base = color_pair_id;
 	size_t size = entities.size();
 	if (size > 0)
 	{
 		size_t ln = UI::instance().loop_number();
 		Entity e = entities[ln % size];
-		ret = e.get_color_pair_id();
+		base = e.get_color_pair_id();
 	}
 
-
-	ColorPair cp = UI::instance().get_color_pair(ret);
-
+	ColorPair cp = UI::instance().get_color_pair(base);
 	const Color& fg = cp.get_fg();
 	const Color& bg = cp.get_bg();
 	const short fgr = fg.get_r();

@@ -223,13 +223,13 @@ void CaveGenerator::color_cells()
 				break;
 			}
 			case Cell::Type::FLOOR:
-				cell.set_color_pair_id(0);
+				cell.set_color_pair_id(UI::instance().DEFAULT);
 				break;
 			case Cell::Type::SOURCE:
-				cell.set_color_pair_id(0);
+				cell.set_color_pair_id(UI::instance().DEFAULT);
 				break;
 			case Cell::Type::SINK:
-				cell.set_color_pair_id(0);
+				cell.set_color_pair_id(UI::instance().DEFAULT);
 				break;
 		}
 	}
