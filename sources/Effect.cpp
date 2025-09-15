@@ -21,6 +21,8 @@ void Effect::trigger(Cave& cave, const size_t idx)
 			Log::log("Glow effect color:" + std::to_string(color_id) + " radius: " + std::to_string(radius));
 			for (size_t i = 0; i < affected.size(); ++i)
 			{
+				if (!cave.has_vision(idx, affected[i]))
+					continue;
 				cells[affected[i]].add_glow(color_id);
 			}
 			break;

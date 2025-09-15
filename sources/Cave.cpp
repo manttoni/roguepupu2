@@ -233,3 +233,43 @@ void Cave::reset_effects()
 				effect.trigger(*this, cell.get_idx());
 	}
 }
+
+bool Cave::has_vision(size_t start, size_t end) const
+{
+	int x0 = static_cast<int>(start % width);
+	int y0 = static_cast<int>(start / width);
+	int x1 = static_cast<int>(end % width);
+	int y1 = static_cast<int>(end / width);
+
+	int dx = abs(x1 - x0);
+	int dy = abs(y1 - y0);
+
+	int sx = x0 < x1 ? 1 : -1;
+	int sy = y0 < y1 ? 1 : -1;
+
+	int err = dx - dy;
+
+	while (true)
+	{
+		size_t idx = y0 * width + x0;
+
+		if (x0 == x1 && y0 == y1)
+			break;
+		if (cells[idx].blocks_vision())
+			return false;
+		int e2 = 2 * err;
+		if (e2 > -dy)
+		{
+			err -= dy;
+			x0 += sx;
+		}
+		if (e2 < dx)
+		{
+			err += dx;
+			y0 += sy;
+		}
+	}
+
+	return true;
+}
+

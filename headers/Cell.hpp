@@ -66,4 +66,7 @@ class Cell
 
 		/* MODIFY CELL */
 		void reduce_density(const double amount);
+
+		/* CELL FEATURES */
+		bool blocks_vision() const { return type == Type::ROCK; }
 };
