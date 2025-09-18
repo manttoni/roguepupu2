@@ -21,20 +21,6 @@ class UI
 			static UI inst;
 			return inst;
 		}
-	public:
-		short add_color(const short r, const short g, const short b);
-		short add_color_pair(const short fg_id, const short bg_id);
-		static inline short WHITE;
-		static inline short BLACK;
-		static inline short BLUE;
-		static inline short LIGHT_BLUE;
-		static inline short ORANGE;
-		static inline short MEDIUM_BLUE;
-		static inline short GLOWING_FUNGUS;
-		static inline short WOODY_FUNGUS;
-		static inline short DEFAULT;
-
-	private:
 		static void handle_signal(int sig)
 		{
 			(void) sig;
@@ -42,46 +28,103 @@ class UI
 			std::exit(sig);
 		}
 
+
+	/* PERMANENT COLORS */
+	private:
+		const std::map<std::string, std::array<short, 3>> color_rgb = {
+			{"white",		{1000, 1000, 1000}},
+			{"black",		{0, 0, 0}},
+			{"light_blue",	{0, 0, 100}},
+			{"orange",		{1000, 500, 0}},
+			{"medium_blue",	{0, 0, 500}}
+		}
+		const std::map<std::string, std::array<std::string, 2>> color_pair_fgbg = {
+			{"glowing_fungus",	{"medium_blue", "black"}},
+			{"woody_fungus",	{"orange", "black"}},
+			{"default",			{"black", "white"}}
+		}
+		std::map<std::string, Color> colors;
+		std::map<std::string, ColorPairs> pairs;
+	public:
+		short get_color_id(const std::string& label) { return colors[label].get_id(); }
+		short get_pair_id(const std::string& label) { return pairs[label].get_id(); }
+		Color get_color(const std::string& label) { return colors[label]; }
+		ColorPair get_pair(const std::string& label) { return pairs[label]; }
+
+	/* TEMPORARY COLORS */
+	private:
+		// these hold initialized colors/pairs
+		std::map<short, Color> temp_colors;
+		std::map<short, ColorPair> temp_pairs;
+		void clear_temp_colors();
+	public:
+		// get a usable color/pair id with rgb values/ids of initialized colors
+		short get_temp_color_id(const short r, const short g, const short b);
+		short get_temp_pair_id(const short fg_id, const short bg_id);
+
+	/* ALL COLORS */
+	private:
+		short get_next_color_id();
+		short get_next_color_pair_id();
+
+	public:
+		Color get_color(const short color_id) const;
+		ColorPair get_pair(const short pair_id) const;
+
+	// sketch
+
+	/* INPUT */
+	private:
+		std::vector<InputWindow> input_windows;
+	public:
+		InputWindow& get_input_window(const std::string& label);
+		void add_input_window(const InputWindow& input_window);
+		void set_input_window(const std::string& label);
+		int print();
+
+	/* OUTPUT */
+	private:
+		std::vector<OutputWindow> output_windows;
+	public:
+		OutputWindow& get_output_window(const std::string& label);
+		void add_output_window(const OutputWindow& output_window);
+		void set_output_window(const std::string& label);
+
+	//asd
+	/* OUTPUT */
 	private:
 		PANEL* panel;
-		std::map<short, Color> initialized_colors;
-		std::map<short, ColorPair> initialized_color_pairs;
-		std::map<std::string, Menu> menus;
-		size_t ln;
-		//ColorPair color_pair;
 	public:
-		Menu& get_menu(const std::string& name) { return menus.at(name); }
-		PANEL* get_panel() const { return panel; }
-		size_t loop_number() const { return ln; }
-		short color_initialized(const short r, const short g, const short b);
-		short color_pair_initialized(const Color& fg, const Color& bg);
-		Color get_color(const short color_id) const { return initialized_colors.at(color_id); }
-		ColorPair get_color_pair(const short color_pair_id) { return initialized_color_pairs[color_pair_id]; }
-		//ColorPair get_color_pair() const { return color_pair; }
-
-
-
 		void set_panel(PANEL* panel) { this->panel = panel; }
-		//void set_color(const ColorPair color_pair) { this->color_pair = color_pair; }
+		PANEL* get_panel() const { return panel; }
 
 		void print(const char ch);
 		void print(const std::string& str);
 		void println(const std::string& str);
 
-		int input(); // wrapper for getch
-
 		size_t get_curs_y() const;
 		size_t get_curs_x() const;
 
-		short get_next_color_id();
-		short get_next_color_pair_id();
+		void enable_attr(const chtype attr) { wattron(panel_window(panel), attr); }
+		void disable_attr(const chtype attr) { wattroff(panel_window(panel), attr); }
+
+	/* INPUT */
+	public:
+		int input();
 
 
-		void enable(const chtype attr) { wattron(panel_window(panel), attr); }
-		void disable(const chtype attr) { wattroff(panel_window(panel), attr); }
+		std::map<std::string, Menu> menus;
+		size_t ln;
+	public:
+		Menu& get_menu(const std::string& name) { return menus.at(name); }
+		size_t loop_number() const { return ln; }
+
+
+
 		void update() { update_panels(); doupdate(); }
 
-
+	/* INIT */
+	public:
 		void init_colors();
 		void init_menus();
 		void init();

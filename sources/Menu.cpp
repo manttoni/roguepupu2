@@ -117,9 +117,9 @@ void Menu::loop()
 		wmove(window, 1, 0); // because of box() start at y = 1
 		for (size_t i = 0; i < elements.size(); ++i)
 		{
-			if (!read_only && i == selected) UI::instance().enable(A_REVERSE);
+			if (!read_only && i == selected) UI::instance().enable_attr(A_REVERSE);
 			UI::instance().print("  " + elements[i]->get_text() + "\n"); // spaces bcs of box()
-			if (!read_only && i == selected) UI::instance().disable(A_REVERSE);
+			if (!read_only && i == selected) UI::instance().disable_attr(A_REVERSE);
 		}
 
 		box(window, 0, 0);

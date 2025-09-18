@@ -1,4 +1,4 @@
-#include <ncurses.h>
+#include <ncursesw/ncurses.h>
 #include <string>
 #include <vector>
 #include <memory>
@@ -191,6 +191,7 @@ void UI::init_menus()
 void UI::init()
 {
 	ln = 0;
+	setlocale(LC_ALL, "");
 	initscr();
 	Log::log("initscr() width:" + std::to_string(Screen::width()) + " height:" + std::to_string(Screen::height()));
 	init_menus();
@@ -279,9 +280,9 @@ namespace CaveView
 		for (size_t i = 0; i < cells.size(); ++i)
 		{
 			const Cell& cell = cells[i];
-			UI::instance().enable(COLOR_PAIR(cell.get_color_pair_id()));
+			UI::instance().enable_attr(COLOR_PAIR(cell.get_color_pair_id()));
 			UI::instance().print(cell.get_char());
-			UI::instance().disable(COLOR_PAIR(cell.get_color_pair_id()));
+			UI::instance().disable_attr(COLOR_PAIR(cell.get_color_pair_id()));
 		}
 	}
 
@@ -323,7 +324,7 @@ namespace CaveView
 		elements.push_back(std::make_unique<MenuNum<double>>(
 				"fungus spawn chance",
 				std::pair<double, double>{0, 1},
-				0.1, 0.01));
+				0.25, 0.01));
 		settings = Menu(std::move(elements), {0, 0}, draw_cave);
 		cave_panel = new_panel(newwin(Screen::height(), Screen::width(), 0, 0));
 		top_panel(cave_panel);
