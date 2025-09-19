@@ -9,8 +9,10 @@
 #include "Cave.hpp"
 #include "CaveGenerator.hpp"
 #include "Testing.hpp"
+
 void run()
 {
+	Log::log("--- Run started ---");
 	UI::instance().get_menu("main").loop();
 }
 

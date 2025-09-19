@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include "Entity.hpp"
+#include "Utils.hpp"
 
 class Cell
 {
@@ -22,7 +23,7 @@ class Cell
 		Type type;
 		double density;
 		short color_pair_id;
-		std::map<short, size_t> glow; // key is id of color of glow, value is the amount of that glow from multiple sources
+		std::map<short, size_t> glow; // color_id : stacks
 		std::vector<Entity> entities;
 
 	public:
@@ -50,7 +51,12 @@ class Cell
 		void add_glow(const short glow_id);
 
 		/* ENTITIES */
-		void add_entity(const Entity& ent) { entities.push_back(ent); }
+		void add_entity(const Entity& ent) {
+			size_t size = entities.size();
+			entities.push_back(ent);
+			Log::log("Entity added");
+			assert(entities.size() == size + 1);
+		}
 		auto get_entities() const { return entities; }
 
 		/* OVERLOADS */

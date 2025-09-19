@@ -39,18 +39,16 @@ Fungus::Info Fungus::get_info(const Fungus::Type type)
 }
 
 Fungus::Fungus() {}
-Fungus::Fungus(const Type type) :
-	Entity(get_info(type).name, get_info(type).color_pair_id),
+Fungus::Fungus(const Type type, Cell* cell) :
+	Entity(get_info(type).name, get_info(type).color_pair_id, get_info(type).ch, cell),
 	type(type)
 {
 	switch (type)
 	{
 		case Type::GLOWING:
-			Entity::set_char(get_info(type).ch);
 			Entity::add_effect(get_info(type).effect);
 			break;
 		case Type::WOODY:
-			Entity::set_char(get_info(type).ch);
 			break;
 		default:
 			break;

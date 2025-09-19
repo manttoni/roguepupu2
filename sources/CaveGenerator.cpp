@@ -10,7 +10,11 @@
 #include "Fungus.hpp"
 
 CaveGenerator::CaveGenerator()
-	: height(0), width(0), size(0), frequency(0), seed(0), octaves(0), margin(0) {}
+	: height(100), width(100), size(height * width),
+	frequency(0.1), seed(Random::randsize_t(10000, 99999)), octaves(8),
+	rng(seed), erosion_a(2.0), erosion_b(0.1), erosion_c(0.1),
+	fungus_spawn_chance(0.5)
+{}
 
 CaveGenerator::CaveGenerator(
 		const size_t height,
@@ -153,13 +157,15 @@ void CaveGenerator::form_rock()
 		size_t y = i / width;
 		size_t x = i % width;
 		double perlin = Random::noise3D(y, x, level, frequency, seed, octaves);
-		int distance_to_edge = std::min(std::min(x, y), std::min(width - x - 1, height - y - 1));
+		//int distance_to_edge = std::min(std::min(x, y), std::min(width - x - 1, height - y - 1));
 
 		// if close enough, make rock denser
-		double edge_weight =
+		/*double edge_weight =
 			distance_to_edge <= margin && margin != 0
 			? Math::map(margin - distance_to_edge, 0, margin, 1, EDGE_WEIGH_MULT)
-			: 1;
+			: 1;*/
+
+		double edge_weight = 1;
 
 		double density = Math::map(perlin * edge_weight, 0, EDGE_WEIGH_MULT, 1, 9);
 		cells[i].set_type(Cell::Type::ROCK);
@@ -202,7 +208,7 @@ void CaveGenerator::spawn_fungi()
 		{
 			if (canvas.neighbor_has_type(i, Cell::Type::ROCK))
 			{
-				cell.add_entity(Fungus(Fungus::Type::GLOWING));
+				cell.add_entity(Fungus(Fungus::Type::GLOWING, &cell));
 				continue;
 			}
 			const auto& nearby = canvas.get_nearby_ids(i, WOODY_RADIUS);
@@ -212,7 +218,7 @@ void CaveGenerator::spawn_fungi()
 					space++;
 			double a = 3.14 * WOODY_RADIUS * WOODY_RADIUS;
 			if (space / a > WOODY_SPACE_RATIO)
-				cell.add_entity(Fungus(Fungus::Type::WOODY));
+				cell.add_entity(Fungus(Fungus::Type::WOODY, &cell));
 		}
 
 	}

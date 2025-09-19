@@ -3,12 +3,14 @@
 #include <string>
 #include "Effect.hpp"
 
+class Cell;
 class Entity
 {
 	private:
 		std::string name;
 		short color_pair_id;
 		char ch;
+		Cell* cell;
 	public:
 		std::string get_name() const {
 			return name;
@@ -23,6 +25,9 @@ class Entity
 			this->ch = ch;
 		}
 		auto get_color_pair_id() const { return color_pair_id; }
+		auto get_cell() { return cell; }
+		void set_cell(Cell* cell) { this->cell = cell; }
+		size_t get_idx() const;
 
 	private:
 		std::vector<Effect> effects; // f.e. blue glow from a fungus
@@ -43,7 +48,7 @@ class Entity
 
 	public:
 		Entity();
-		Entity(const std::string& name, const short color_pair_id);
+		Entity(const std::string& name, const short color_pair_id, const char ch, Cell* cell);
 
 
 

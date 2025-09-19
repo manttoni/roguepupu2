@@ -10,5 +10,5 @@ class Creature : public Entity
 	public:
 		Creature();
 		~Creature() {}
-		Creature(const std::string& name);
+		Creature(const std::string& name, const short color_id, const char ch = '\0', Cell* cell = nullptr);
 };

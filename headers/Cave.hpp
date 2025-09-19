@@ -26,7 +26,7 @@ class Cave
 		/* GETTERS */
 		size_t get_height() const { return height; }
 		size_t get_width() const { return width; }
-		size_t get_size() const { return height * width; }
+		size_t get_size() const { return cells.size(); }
 		const std::vector<Cell>& get_cells() const { return cells; }
 		std::vector<Cell>& get_cells() { return cells; }
 		size_t get_level() const { return level; }

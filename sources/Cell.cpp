@@ -108,6 +108,7 @@ short Cell::get_color_pair_id() const
 {
 	short base = color_pair_id;
 	size_t size = entities.size();
+	Log::log(std::to_string(size));
 	if (size > 0)
 	{
 		size_t ln = UI::instance().loop_number();

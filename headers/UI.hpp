@@ -15,7 +15,21 @@
 #define KEY_ESCAPE 27
 
 class UI
-{	public:
+{
+	public:
+		enum class Mode
+		{
+			CAVE_VIEW,
+			GAME,
+			MAIN,
+		};
+	private:
+		Mode mode;
+	public:
+		void set_mode(const Mode mode) { this->mode = mode; }
+		Mode get_mode() const { return mode; }
+
+	public:
 		static UI& instance()
 		{
 			static UI inst;
@@ -42,8 +56,21 @@ class UI
 			std::exit(sig);
 		}
 
+	public:
+		enum class Panel
+		{
+			MAIN,
+			LOG,
+		};
 	private:
-		PANEL* panel;
+		std::map<Panel, PANEL*> panels;
+	public:
+		void add_panel(const Panel p, PANEL* panel) { panels[p] = panel; }
+		PANEL* get_panel(const Panel p) { return panels[p]; }
+
+
+	private:
+		PANEL* current_panel;
 		std::map<short, Color> initialized_colors;
 		std::map<short, ColorPair> initialized_color_pairs;
 		std::map<std::string, Menu> menus;
@@ -51,7 +78,8 @@ class UI
 		//ColorPair color_pair;
 	public:
 		Menu& get_menu(const std::string& name) { return menus.at(name); }
-		PANEL* get_panel() const { return panel; }
+		void set_current_panel(PANEL* current_panel) { this->current_panel = current_panel; }
+		PANEL* get_current_panel() const { return current_panel; }
 		size_t loop_number() const { return ln; }
 		short color_initialized(const short r, const short g, const short b);
 		short color_pair_initialized(const Color& fg, const Color& bg);
@@ -61,7 +89,6 @@ class UI
 
 
 
-		void set_panel(PANEL* panel) { this->panel = panel; }
 		//void set_color(const ColorPair color_pair) { this->color_pair = color_pair; }
 
 		void print(const char ch);
@@ -77,8 +104,8 @@ class UI
 		short get_next_color_pair_id();
 
 
-		void enable(const chtype attr) { wattron(panel_window(panel), attr); }
-		void disable(const chtype attr) { wattroff(panel_window(panel), attr); }
+		void enable_attr(const chtype attr) { wattron(panel_window(current_panel), attr); }
+		void disable_attr(const chtype attr) { wattroff(panel_window(current_panel), attr); }
 		void update() { update_panels(); doupdate(); }
 
 

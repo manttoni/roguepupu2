@@ -13,30 +13,31 @@
 #include "MenuNum.hpp"
 #include "Utils.hpp"
 #include "CaveGenerator.hpp"
+#include "Game.hpp"
 
 void UI::print(const char ch)
 {
-	wprintw(panel_window(panel), "%c", ch);
+	wprintw(panel_window(current_panel), "%c", ch);
 }
 void UI::print(const std::string& str)
 {
-	wprintw(panel_window(panel), "%s", str.c_str());
+	wprintw(panel_window(current_panel), "%s", str.c_str());
 }
 void UI::println(const std::string& str)
 {
-	wprintw(panel_window(panel), "%s\n", str.c_str());
+	wprintw(panel_window(current_panel), "%s\n", str.c_str());
 }
 size_t UI::get_curs_y() const
 {
 	int y, x;
-	getyx(panel_window(panel), y, x);
+	getyx(panel_window(current_panel), y, x);
 	(void) x;
 	return y;
 }
 size_t UI::get_curs_x() const
 {
 	int y, x;
-	getyx(panel_window(panel), y, x);
+	getyx(panel_window(current_panel), y, x);
 	(void) y;
 	return x;
 }
@@ -128,7 +129,14 @@ int UI::input()
 	{
 		debug.set_value("Mouse y", event.y);
 		debug.set_value("Mouse x", event.x);
-		if (CaveView::current_cave != nullptr && event.bstate & BUTTON1_CLICKED)
+
+		// If playing, clicks will move and interact
+		// ...
+
+		// If viewing cave, print cell info on click
+		if (UI::instance().get_mode() == UI::Mode::CAVE_VIEW &&
+			CaveView::current_cave != nullptr &&
+			event.bstate & BUTTON1_CLICKED)
 		{
 			assert(static_cast<size_t>(event.y) <= Screen::height());
 			assert(static_cast<size_t>(event.x) <= Screen::width());
@@ -165,6 +173,7 @@ void UI::init_menus()
 {
 	// Main menu
 	std::vector<std::unique_ptr<MenuElt>> elements;
+	elements.push_back(std::make_unique<MenuBtn>("Start game", start_game));
 	elements.push_back(std::make_unique<MenuBtn>("CaveGenerator", CaveView::cave_generator));
 	elements.push_back(std::make_unique<MenuBtn>("Quit", quit));
 	menus["main"] = Menu(std::move(elements), Screen::middle());
@@ -185,6 +194,7 @@ void UI::init_menus()
 	cell_info_elements.push_back(std::make_unique<MenuNum<double>>("Density", std::pair<double, double>(0.0, 9.0)));
 	cell_info_elements.push_back(std::make_unique<MenuNum<int>>("Color pair"));
 	cell_info_elements.push_back(std::make_unique<MenuNum<size_t>>("Glow stacks"));
+	cell_info_elements.push_back(std::make_unique<MenuNum<size_t>>("Entities"));
 	menus["cell_info"] = Menu(std::move(cell_info_elements), Screen::topright());
 	menus["cell_info"].set_read_only(true);
 }
@@ -233,6 +243,7 @@ namespace CaveView
 		for (const auto& [color_id, stack_amount] : cell.get_glow())
 			stacks += stack_amount;
 		cell_info.set_value("Glow stacks", stacks);
+		cell_info.set_value("Entities", cell.get_entities().size());
 		cell_info.loop();
 	}
 
@@ -240,7 +251,7 @@ namespace CaveView
 	{
 		WINDOW* cave_window = panel_window(cave_panel);
 		static CaveGenerator cg;
-		UI::instance().set_panel(cave_panel);
+		UI::instance().set_current_panel(cave_panel);
 
 		auto current =
 			std::make_tuple(
@@ -279,14 +290,15 @@ namespace CaveView
 		for (size_t i = 0; i < cells.size(); ++i)
 		{
 			const Cell& cell = cells[i];
-			UI::instance().enable(COLOR_PAIR(cell.get_color_pair_id()));
+			UI::instance().enable_attr(COLOR_PAIR(cell.get_color_pair_id()));
 			UI::instance().print(cell.get_char());
-			UI::instance().disable(COLOR_PAIR(cell.get_color_pair_id()));
+			UI::instance().disable_attr(COLOR_PAIR(cell.get_color_pair_id()));
 		}
 	}
 
 	void cave_generator()
 	{
+		UI::instance().set_mode(UI::Mode::CAVE_VIEW);
 		std::vector<std::unique_ptr<MenuElt>> elements;
 		elements.push_back(std::make_unique<MenuNum<int>>(
 				"Seed",
@@ -328,5 +340,6 @@ namespace CaveView
 		cave_panel = new_panel(newwin(Screen::height(), Screen::width(), 0, 0));
 		top_panel(cave_panel);
 		settings.loop();
+		UI::instance().set_mode(UI::Mode::MAIN);
 	}
 } // CaveView

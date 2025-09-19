@@ -27,6 +27,6 @@ class Fungus : public Entity
 
 	public:
 		Fungus();
-		Fungus(const Type type);
+		Fungus(const Type type, Cell* cell);
 
 };
