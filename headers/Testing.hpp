@@ -167,8 +167,18 @@ void test_utils()
 	assert(Math::map(0,0,1,1,10) == 1);
 }
 
+void test_get_nearby_ids()
+{
+	std::string map =
+		"ff"
+		"ff";
+	Cave cave(map, 2);
+	assert(cave.get_nearby_ids(0, 2).size() == 3);
+}
+
 void test()
 {
 	test_utils();
 	test_cave();
+	test_get_nearby_ids();
 }

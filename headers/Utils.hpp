@@ -16,6 +16,14 @@
 #include <ncurses.h>
 #include "PerlinNoise.hpp"
 
+enum class Direction
+{
+	DOWN,
+	UP,
+	LEFT,
+	RIGHT
+};
+
 namespace Screen
 {
 	struct Coord { size_t y, x; };
@@ -67,6 +75,7 @@ namespace Log
 			throw std::runtime_error("Can't open " + logfile);
 
 		os << timestamp() << " " << message << std::endl;
+		os.close();
 	}
 }
 

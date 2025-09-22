@@ -13,7 +13,7 @@ CaveGenerator::CaveGenerator()
 	: height(100), width(100), size(height * width),
 	frequency(0.1), seed(Random::randsize_t(10000, 99999)), octaves(8),
 	rng(seed), erosion_a(2.0), erosion_b(0.1), erosion_c(0.1),
-	fungus_spawn_chance(0.5)
+	fungus_spawn_chance(0.25)
 {}
 
 CaveGenerator::CaveGenerator(
@@ -29,14 +29,14 @@ CaveGenerator::CaveGenerator(
 {
 	margin = static_cast<size_t>(height * margin_percent / 100);
 }
-CaveGenerator::CaveGenerator(const CaveGenerator& other)
+CaveGenerator::CaveGenerator(CaveGenerator&& other)
 {
 	height = other.height;
 	width = other.width;
 	size = other.size;
 	frequency = other.frequency;
 	seed = other.seed;
-	caves = other.caves;
+	caves = std::move(other.caves);
 	octaves = other.octaves;
 	margin = other.margin;
 	erosion_a = other.erosion_a;
@@ -45,7 +45,7 @@ CaveGenerator::CaveGenerator(const CaveGenerator& other)
 	fungus_spawn_chance = other.fungus_spawn_chance;
 }
 
-CaveGenerator CaveGenerator::operator=(const CaveGenerator& other)
+CaveGenerator& CaveGenerator::operator=(CaveGenerator&& other)
 {
 	if (this != &other)
 	{
@@ -54,7 +54,7 @@ CaveGenerator CaveGenerator::operator=(const CaveGenerator& other)
 		size = other.size;
 		frequency = other.frequency;
 		seed = other.seed;
-		caves = other.caves;
+		caves = std::move(other.caves);
 		octaves = other.octaves;
 		margin = other.margin;
 		erosion_a = other.erosion_a;
@@ -171,6 +171,7 @@ void CaveGenerator::form_rock()
 		cells[i].set_type(Cell::Type::ROCK);
 		cells[i].set_density(density);
 		cells[i].set_idx(i);
+		cells[i].set_cave(&canvas);
 	}
 }
 
@@ -208,7 +209,7 @@ void CaveGenerator::spawn_fungi()
 		{
 			if (canvas.neighbor_has_type(i, Cell::Type::ROCK))
 			{
-				cell.add_entity(Fungus(Fungus::Type::GLOWING, &cell));
+				cell.add_entity(std::move(std::make_unique<Entity>(Fungus(Fungus::Type::GLOWING, &cell))));
 				continue;
 			}
 			const auto& nearby = canvas.get_nearby_ids(i, WOODY_RADIUS);
@@ -218,7 +219,7 @@ void CaveGenerator::spawn_fungi()
 					space++;
 			double a = 3.14 * WOODY_RADIUS * WOODY_RADIUS;
 			if (space / a > WOODY_SPACE_RATIO)
-				cell.add_entity(Fungus(Fungus::Type::WOODY, &cell));
+				cell.add_entity(std::move(std::make_unique<Entity>(Fungus(Fungus::Type::WOODY, &cell))));
 		}
 
 	}

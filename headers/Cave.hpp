@@ -20,8 +20,8 @@ class Cave
 		Cave();
 		Cave(const size_t level, const size_t height, const size_t width, const size_t seed);
 		Cave(const std::string& map, const size_t width);
-		Cave(const Cave &other);
-		Cave& operator=(const Cave& other);
+		Cave(Cave&& other);
+		Cave& operator=(Cave&& other);
 
 		/* GETTERS */
 		size_t get_height() const { return height; }
@@ -37,7 +37,7 @@ class Cave
 		/* SETTERS */
 		void set_level(const size_t level) { this->level = level; }
 		void set_seed(const int seed) { this->seed = seed; }
-		void set_cells(const std::vector<Cell>& cells) { this->cells = cells; }
+//		void set_cells(const std::vector<Cell>& cells) { this->cells = cells; }
 		void set_source(const size_t source)
 		{
 			this->source = source;
@@ -61,5 +61,6 @@ class Cave
 		bool neighbor_has_type(const size_t middle, const Cell::Type type) const;
 		bool has_vision(const size_t from, const size_t to) const;
 
+		void move(std::unique_ptr<Entity> entity, const Direction d);
 		void reset_effects();
 };

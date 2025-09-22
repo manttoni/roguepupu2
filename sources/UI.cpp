@@ -18,6 +18,7 @@
 void UI::print(const char ch)
 {
 	wprintw(panel_window(current_panel), "%c", ch);
+	Log::log("Printed char: " + ch);
 }
 void UI::print(const std::string& str)
 {
@@ -27,15 +28,17 @@ void UI::println(const std::string& str)
 {
 	wprintw(panel_window(current_panel), "%s\n", str.c_str());
 }
-size_t UI::get_curs_y() const
+/*size_t UI::get_curs_y() const
 {
+	assert(current_panel != nullptr);
 	int y, x;
 	getyx(panel_window(current_panel), y, x);
 	(void) x;
 	return y;
-}
+}*/
 size_t UI::get_curs_x() const
 {
+	assert(current_panel != nullptr);
 	int y, x;
 	getyx(panel_window(current_panel), y, x);
 	(void) y;
@@ -44,6 +47,7 @@ size_t UI::get_curs_x() const
 short UI::get_next_color_id()
 {
 	static short id = 8;
+	assert(COLORS != 0);
 	if (id == COLORS)
 	{
 		Log::log("Color ids all used");
@@ -54,6 +58,7 @@ short UI::get_next_color_id()
 short UI::get_next_color_pair_id()
 {
 	static short id = 1;
+	assert(COLOR_PAIRS != 0);
 	if (id == COLOR_PAIRS)
 	{
 		Log::log("Color pair ids all used");
@@ -159,7 +164,7 @@ void UI::init_colors()
 	WHITE = add_color(1000, 1000, 1000);
 	BLACK = add_color(0, 0, 0);
 	BLUE = add_color(0, 0, 500);
-	LIGHT_BLUE = add_color(0, 0, 100);
+	LIGHT_BLUE = add_color(0, 0, 50);
 	MEDIUM_BLUE = add_color(0, 0, 500);
 	ORANGE = add_color(1000, 666, 0);
 
@@ -185,6 +190,8 @@ void UI::init_menus()
 	debug_elements.push_back(std::make_unique<MenuNum<int>>("Keypress"));
 	debug_elements.push_back(std::make_unique<MenuNum<int>>("Mouse y"));
 	debug_elements.push_back(std::make_unique<MenuNum<int>>("Mouse x"));
+	debug_elements.push_back(std::make_unique<MenuNum<size_t>>("player_y"));
+	debug_elements.push_back(std::make_unique<MenuNum<size_t>>("player_x"));
 	menus["debug"] = Menu(std::move(debug_elements), Screen::botleft());
 	menus["debug"].set_read_only(true);
 
@@ -240,7 +247,7 @@ namespace CaveView
 		cell_info.set_value("Density", cell.get_density());
 		cell_info.set_value("Color pair", static_cast<int>(cell.get_color_pair_id()));
 		size_t stacks = 0;
-		for (const auto& [color_id, stack_amount] : cell.get_glow())
+		for (const auto& [color_id, stack_amount] : cell.get_lights())
 			stacks += stack_amount;
 		cell_info.set_value("Glow stacks", stacks);
 		cell_info.set_value("Entities", cell.get_entities().size());

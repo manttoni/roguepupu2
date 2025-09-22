@@ -11,10 +11,11 @@ class Game
 		CaveGenerator cavegen;
 		void init_cavegen();
 		void init_panels();
-		void draw_cave(Cave& cave) const;
+		void init_player();
+		void draw_cave(Cave& cave);
 		void draw_cell(const Cell& cell) const;
+		Creature& get_player();
 		size_t level;
-		Creature player;
 	public:
 		Game();
 		void start();

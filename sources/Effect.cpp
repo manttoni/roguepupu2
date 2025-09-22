@@ -22,7 +22,7 @@ void Effect::trigger(Cave& cave, const size_t idx)
 			{
 				if (!cave.has_vision(idx, affected[i]))
 					continue;
-				cells[affected[i]].add_glow(color_id);
+				cells[affected[i]].add_light(color_id);
 			}
 			break;
 		case Type::NONE:

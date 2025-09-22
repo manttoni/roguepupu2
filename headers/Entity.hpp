@@ -2,15 +2,14 @@
 
 #include <string>
 #include "Effect.hpp"
+#include "Utils.hpp"
 
 class Cell;
+
 class Entity
 {
 	private:
 		std::string name;
-		short color_pair_id;
-		char ch;
-		Cell* cell;
 	public:
 		std::string get_name() const {
 			return name;
@@ -18,13 +17,30 @@ class Entity
 		void set_name(const std::string& name) {
 			this->name = name;
 		}
+
+	private:
+		short color_pair_id;
+	public:
+		auto get_color_pair_id() const {
+			return color_pair_id;
+		}
+		void set_color_pair_id(const short cp_id) {
+			color_pair_id = cp_id;
+		}
+
+	private:
+		char ch;
+	public:
 		auto get_char() const {
 			return ch;
 		}
 		void set_char(const char ch) {
 			this->ch = ch;
 		}
-		auto get_color_pair_id() const { return color_pair_id; }
+
+	private:
+		Cell* cell;
+	public:
 		auto get_cell() { return cell; }
 		void set_cell(Cell* cell) { this->cell = cell; }
 		size_t get_idx() const;
@@ -48,8 +64,8 @@ class Entity
 
 	public:
 		Entity();
+		virtual ~Entity() = default;
 		Entity(const std::string& name, const short color_pair_id, const char ch, Cell* cell);
-
-
-
+		double move(const Direction d);
+		bool operator==(const Entity& other);
 };

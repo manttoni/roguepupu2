@@ -13,7 +13,6 @@
 Cave::Cave() :
 	height(0),
 	width(0),
-	cells({}),
 	level(0),
 	seed(0),
 	source(0),
@@ -30,23 +29,23 @@ Cave::Cave(const size_t level, const size_t height, const size_t width, const si
 	sink(0) {}
 
 // COPY
-Cave::Cave(const Cave& other) :
+Cave::Cave(Cave&& other) :
 	height(other.height),
 	width(other.width),
-	cells(other.cells),
+	cells(std::move(other.cells)),
 	level(other.level),
 	seed(other.seed),
 	source(other.source),
 	sink(other.sink) {}
 
-Cave& Cave::operator=(const Cave& other)
+Cave& Cave::operator=(Cave&& other)
 {
 	if (this == &other)
 		return *this;
 
 	height = other.height;
 	width = other.width;
-	cells = other.cells;
+	cells = std::move(other.cells);
 	level = other.level;
 	seed = other.seed;
 	source = other.source;
@@ -70,7 +69,7 @@ Cave::Cave(const std::string& map, const size_t width) : height(map.size() / wid
 				type = Cell::Type::ROCK;
 				break;
 		}
-		cells.push_back(Cell(i, type));
+		cells.push_back(Cell(i, type, this));
 	}
 }
 
@@ -195,7 +194,7 @@ bool Cave::neighbor_has_type(const size_t idx, const Cell::Type type) const
 // can someone walk from to. Has to go around corners
 bool Cave::has_access(const size_t from_idx, const size_t to_idx) const
 {
-	auto to = cells[to_idx];
+	const auto& to = cells[to_idx];
 	if (to.blocks_movement()) // can't move to "to"
 		return false;
 
@@ -212,8 +211,8 @@ bool Cave::has_access(const size_t from_idx, const size_t to_idx) const
 		return true;
 
 	// there is access diagonally if there is no corner to go around
-	const Cell corner1 = cells[fy * width + tx];
-	const Cell corner2 = cells[ty * width + fx];
+	const auto& corner1 = cells[fy * width + tx];
+	const auto& corner2 = cells[ty * width + fx];
 	if (corner1.blocks_movement() || corner2.blocks_movement())
 		return false;
 	return true;
@@ -229,7 +228,7 @@ void Cave::reset_effects()
 			continue;
 
 		for (auto& entity : cell.get_entities())
-			for (auto& effect : entity.get_effects())
+			for (auto& effect : entity->get_effects())
 				effect.trigger(*this, cell.get_idx());
 	}
 }
@@ -272,4 +271,5 @@ bool Cave::has_vision(size_t start, size_t end) const
 
 	return true;
 }
+
 

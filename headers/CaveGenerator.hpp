@@ -48,8 +48,8 @@ class CaveGenerator
 						const double B,
 						const double C,
 						const double fungus_spawn_chance);
-		CaveGenerator(const CaveGenerator& other);
-		CaveGenerator operator=(const CaveGenerator& other);
+		CaveGenerator(CaveGenerator&& other);
+		CaveGenerator& operator=(CaveGenerator&& other);
 
 		void generate_cave(const size_t level);
 		Cave& get_cave(const size_t level);

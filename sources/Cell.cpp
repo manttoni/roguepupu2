@@ -8,18 +8,19 @@
 Cell::Cell()
 	: idx(SIZE_MAX), type(Type::NONE), density(0) {}
 
-Cell::Cell(const size_t idx, const Type &type, const double density)
-	: idx(idx), type(type), density(density)
+Cell::Cell(const size_t idx, const Type &type, Cave* cave, const double density)
+	: idx(idx), type(type), cave(cave), density(density)
 {}
 
-Cell::Cell(const Cell &other)
+Cell::Cell(Cell&& other)
 {
 	idx = other.idx;
 	type = other.type;
 	density = other.density;
 	color_pair_id = other.color_pair_id;
-	entities = other.entities;
-	glow = other.glow;
+	entities = std::move(other.entities);
+	lights = other.lights;
+	cave = other.cave;
 }
 
 /* OVERLOADS */
@@ -38,7 +39,7 @@ bool Cell::operator<(const Cell &other) const
 	return idx < other.idx;
 }
 
-Cell &Cell::operator=(const Cell &other)
+Cell& Cell::operator=(Cell&& other)
 {
 	if (this != &other)
 	{
@@ -46,8 +47,9 @@ Cell &Cell::operator=(const Cell &other)
 		idx = other.idx;
 		density = other.density;
 		color_pair_id = other.color_pair_id;
-		entities = other.entities;
-		glow = other.glow;
+		entities = std::move(other.entities);
+		lights = other.lights;
+		cave = other.cave;
 	}
 	return *this;
 }
@@ -74,8 +76,8 @@ char Cell::get_char() const
 	{	// change entity each main loop to show all entities in same cell
 		size_t size = entities.size();
 		size_t ln = UI::instance().loop_number();
-		Entity e = entities[ln % size];
-		return e.get_char();
+		const auto& e = entities[ln % size];
+		return e->get_char();
 	}
 	switch (type)
 	{
@@ -93,27 +95,26 @@ char Cell::get_char() const
 	}
 }
 
-void Cell::add_glow(const short glow_id)
+void Cell::add_light(const short color_id)
 {
-	glow[glow_id]++;
+	lights[color_id]++;
 }
 
 void Cell::reset_effects()
 {
-	// reset glow
-	glow.clear();
+	// reset light
+	lights.clear();
 }
 
 short Cell::get_color_pair_id() const
 {
 	short base = color_pair_id;
 	size_t size = entities.size();
-	Log::log(std::to_string(size));
 	if (size > 0)
 	{
 		size_t ln = UI::instance().loop_number();
-		Entity e = entities[ln % size];
-		base = e.get_color_pair_id();
+		const auto& e = entities[ln % size];
+		base = e->get_color_pair_id();
 	}
 
 	ColorPair cp = UI::instance().get_color_pair(base);
@@ -125,16 +126,16 @@ short Cell::get_color_pair_id() const
 	const short bgr = bg.get_r();
 	const short bgg = bg.get_g();
 	const short bgb = bg.get_b();
-	short glow_r = 0, glow_g = 0, glow_b = 0;
-	for (const auto& [glow_color_id, count] : glow)
+	short light_r = 0, light_g = 0, light_b = 0;
+	for (const auto& [light_color_id, count] : lights)
 	{
-		Color glow_color = UI::instance().get_color(glow_color_id);
-		glow_r += glow_color.get_r() * count;
-		glow_g += glow_color.get_g() * count;
-		glow_b += glow_color.get_b() * count;
+		Color light_color = UI::instance().get_color(light_color_id);
+		light_r += light_color.get_r() * count;
+		light_g += light_color.get_g() * count;
+		light_b += light_color.get_b() * count;
 	}
-	short fg_id = UI::instance().add_color(fgr + glow_r, fgg + glow_g, fgb + glow_b);
-	short bg_id = UI::instance().add_color(bgr + glow_r, bgg + glow_g, bgb + glow_b);
+	short fg_id = UI::instance().add_color(fgr + light_r, fgg + light_g, fgb + light_b);
+	short bg_id = UI::instance().add_color(bgr + light_r, bgg + light_g, bgb + light_b);
 	short pair_id = UI::instance().add_color_pair(fg_id, bg_id);
 
 	return pair_id;
@@ -146,7 +147,7 @@ bool Cell::blocks_movement() const
 		return true;
 
 	for (const auto& ent : entities)
-		if (ent.blocks_movement())
+		if (ent->blocks_movement())
 			return true;
 
 	return false;
@@ -158,8 +159,43 @@ bool Cell::blocks_vision() const
 		return true;
 
 	for (const auto& ent : entities)
-		if (ent.blocks_vision())
+		if (ent->blocks_vision())
 			return true;
 
 	return false;
 }
+/*
+void Cell::move_entity(std::unique_ptr<Entity> entity, const Direction d)
+{
+	auto* cell = entity->get_cell();
+	auto* cave = cell->get_cave();
+	const auto& neighbor_ids = cave->get_nearby_ids(cell->get_idx(), 1.5);
+	int dst = entity->get_idx();
+	switch(d)
+	{
+		case Direction::DOWN:
+			dst += cave->get_width();
+			break;
+		case Direction::UP:
+			dst -= cave->get_width();
+			break;
+		case Direction::LEFT:
+			dst--;
+			break;
+		case Direction::RIGHT:
+			dst++;
+			break;
+	}
+	if (dst < 0 || dst >= static_cast<int>(cave->get_size()))
+		return;
+
+	if (!Utils::contains(neighbor_ids, static_cast<size_t>(dst)))
+		return;
+
+	auto& new_cell = cave->get_cells()[dst];
+	if (new_cell.blocks_movement())
+		return;
+
+	entity->set_cell(&new_cell);
+	new_cell.add_entity(std::move(entity));
+}*/
