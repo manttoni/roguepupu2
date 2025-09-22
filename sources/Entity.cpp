@@ -5,11 +5,8 @@
 #include "Cave.hpp"
 #include "UI.hpp"
 
-Entity::Entity() :
-	name("default"),
-	ch('?')
-{}
-Entity::Entity(const std::string& name, const short color_pair_id, const char ch, Cell* cell) : name(name), color_pair_id(color_pair_id), ch(ch), cell(cell)
+Entity::Entity() : name("default"), color(Color()), ch('?'), cell(nullptr) {}
+Entity::Entity(const std::string& name, const Color& color, const char ch, Cell* cell) : name(name), color(color), ch(ch), cell(cell)
 {
 	if (ch == '\0')
 		this->ch = name.front();
@@ -40,10 +37,17 @@ size_t Entity::get_idx() const
 
 double Entity::move(const Direction d)
 {
-	//Log::log(name + " is moving");
 	auto* cave = cell->get_cave();
+	assert(cell != nullptr);
+	assert(cave != nullptr);
+	assert(cave->get_size() > 0);
+	assert(get_idx() < cave->get_size());
 	const auto& neighbor_ids = cave->get_nearby_ids(get_idx(), 1.5);
-	int dst = get_idx();
+	size_t dst = get_idx();
+	Log::log("entity dst idx: " + std::to_string(dst));
+	Log::log("cave size is: " + std::to_string(cave->get_size()));
+	assert(neighbor_ids.size() >= 3 && neighbor_ids.size() <= 8);
+	assert(dst < cave->get_size());
 	switch(d)
 	{
 		case Direction::DOWN:
@@ -59,22 +63,25 @@ double Entity::move(const Direction d)
 			dst++;
 			break;
 	}
-	if (dst < 0 || dst >= static_cast<int>(cave->get_size()))
+	assert(static_cast<size_t>(dst) < cave->get_size());
+	if (dst >= cave->get_size())
 		return 0;
-	if (!Utils::contains(neighbor_ids, static_cast<size_t>(dst)))
+	if (!Utils::contains(neighbor_ids, dst))
 		return 0;
 
 	auto& new_cell = cave->get_cells()[dst];
 	if (new_cell.blocks_movement())
 		return 0;
 
+
+	Log::log(name + " is moving");
 	// find own ponter
 	std::unique_ptr<Entity> ent_ptr;
 	for (std::unique_ptr<Entity>& entity : cave->get_cells()[get_idx()].get_entities())
 		if (*entity == *this)
 			ent_ptr = std::move(entity);
 
-	const auto& old_cell = *cell;
+	auto& old_cell = *cell;
 	ent_ptr->set_cell(&new_cell);
 	new_cell.add_entity(std::move(ent_ptr));
 
@@ -84,6 +91,18 @@ double Entity::move(const Direction d)
 		auto& debug = UI::instance().get_menu("debug");
 		debug.set_value("player_y", new_cell.get_idx() / cave->get_width());
 		debug.set_value("player_x", new_cell.get_idx() % cave->get_width());
+	}
+
+	// remove empty unique ptr from old cell
+	auto& old_entities = old_cell.get_entities();
+	for (size_t i = 0; i < old_entities.size(); ++i)
+	{
+		auto& entity = old_entities[i];
+		if (!entity)
+		{
+			old_entities.erase(old_entities.begin() + i);
+			break;
+		}
 	}
 
 	return cave->distance(old_cell, new_cell);

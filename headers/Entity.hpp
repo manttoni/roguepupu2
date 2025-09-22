@@ -1,8 +1,9 @@
 #pragma once
 
 #include <string>
-#include "Effect.hpp"
+#include "Light.hpp"
 #include "Utils.hpp"
+#include "Color.hpp"
 
 class Cell;
 
@@ -17,16 +18,11 @@ class Entity
 		void set_name(const std::string& name) {
 			this->name = name;
 		}
-
 	private:
-		short color_pair_id;
+		Color color;
 	public:
-		auto get_color_pair_id() const {
-			return color_pair_id;
-		}
-		void set_color_pair_id(const short cp_id) {
-			color_pair_id = cp_id;
-		}
+		Color get_color() const { return color; }
+		void set_color(const Color& color) { this->color = color; }
 
 	private:
 		char ch;
@@ -46,17 +42,19 @@ class Entity
 		size_t get_idx() const;
 
 	private:
-		std::vector<Effect> effects; // f.e. blue glow from a fungus
+		std::vector<Light> lights; // f.e. blue glow from a fungus
 	public:
-		auto get_effects() const {
-			return effects;
+		auto get_lights() const {
+			return lights;
 		}
-		void set_effects(const std::vector<Effect>& effects) {
-			this->effects = effects;
+		void set_lights(const std::vector<Light>& lights) {
+			this->lights = lights;
 		}
-		void add_effect(const Effect& effect) {
-			effects.push_back(effect);
+		void add_light(const Light& light) {
+			lights.push_back(light);
 		}
+
+
 
 	public:
 		bool blocks_movement() const;
@@ -65,7 +63,7 @@ class Entity
 	public:
 		Entity();
 		virtual ~Entity() = default;
-		Entity(const std::string& name, const short color_pair_id, const char ch, Cell* cell);
+		Entity(const std::string& name, const Color& color, const char ch, Cell* cell);
 		double move(const Direction d);
 		bool operator==(const Entity& other);
 };

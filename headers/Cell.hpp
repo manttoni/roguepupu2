@@ -6,6 +6,8 @@
 #include <map>
 #include "Entity.hpp"
 #include "Utils.hpp"
+#include "Color.hpp"
+#include "ColorPair.hpp"
 
 class Cell
 {
@@ -16,65 +18,67 @@ class Cell
 			FLOOR,	// empty space with a floor
 			SOURCE,	// previous level
 			SINK,	// next level
-			NONE,	// can be anything
+			NONE,	// default
 		};
 
 	private:
 		size_t idx;
-		Type type;
-		Cave* cave;
-		double density;
-		short color_pair_id;
-		std::map<short, size_t> lights; // color_id : stacks
-		std::vector<std::unique_ptr<Entity>> entities;
-
 	public:
-		/* CONSTRUCTORS */
-		Cell();
-		Cell(const size_t idx, const Type& type, Cave* cave, const double density = 0);
-		Cell(Cell&& other);
-
-		/* GETTERS */
 		size_t get_idx() const {
 			return idx;
-		}
-		Type get_type() const {
-			return type;
-		}
-		double get_density() const {
-			return density;
-		}
-		short get_color_pair_id() const;
-		char get_char() const;
-		auto get_lights() const {
-			return lights;
-		}
-		Cave* get_cave() {
-			return cave;
-		}
-
-		/* SETTERS */
-		void set_type(const Cell::Type type) {
-			this->type = type;
-		}
-		void set_density(const double d) {
-			this->density = d;
 		}
 		void set_idx(const size_t i) {
 			this->idx = i;
 		}
-		void set_color_pair_id(const short color_pair_id) {
-			this->color_pair_id = color_pair_id;
+
+	private:
+		Type type;
+	public:
+		Type get_type() const {
+			return type;
+		}
+		void set_type(const Cell::Type type) {
+			this->type = type;
+		}
+
+
+	private:
+		Cave* cave;
+	public:
+		Cave* get_cave() {
+			return cave;
 		}
 		void set_cave(Cave* cave) {
 			this->cave = cave;
 		}
 
-		/* LIGHTS */
-		void reset_effects();
-		void add_light(const short light_id);
+	private:
+		double density;
+	public:
+		void set_density(const double d) {
+			this->density = d;
+		}
+		double get_density() const {
+			return density;
+		}
+		void reduce_density(const double amount);
 
-		/* ENTITIES */
+	private:
+		std::map<Color, size_t> lights;
+	public:
+		auto get_lights() const {
+			return lights;
+		}
+		void add_light(const Color& color) {
+			lights[color]++;
+		}
+		void reset_lights() {
+			lights.clear();
+		}
+
+	private:
+		std::vector<std::unique_ptr<Entity>> entities;
+	public:
 		void add_entity(std::unique_ptr<Entity>&& ent) {
 			entities.push_back(std::move(ent));
 		}
@@ -84,16 +88,28 @@ class Cell
 		auto& get_entities() {
 			return entities;
 		}
-		void move_entity(const Direction d);
+
+	private:
+		Color fg, bg;
+	public:
+		Color get_fg() const { return fg; }
+		Color get_bg() const { return bg; }
+		void set_fg(const Color& fg) { this->fg = fg; }
+		void set_bg(const Color& bg) { this->bg = bg; }
+		ColorPair get_color_pair() const;
+
+	public:
+		Cell();
+		Cell(const size_t idx, const Type& type, Cave* cave, const double density = 0);
+		Cell(Cell&& other);
+
+		char get_char() const;
 
 		/* OVERLOADS */
 		bool operator==(const Cell &other) const;
 		bool operator!=(const Cell &other) const;
 		bool operator<(const Cell &other) const;
 		Cell &operator=(Cell&& other);
-
-		/* MODIFY CELL */
-		void reduce_density(const double amount);
 
 		/* CELL FEATURES */
 		bool blocks_vision() const;

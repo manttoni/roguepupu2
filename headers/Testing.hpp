@@ -174,6 +174,15 @@ void test_get_nearby_ids()
 		"ff";
 	Cave cave(map, 2);
 	assert(cave.get_nearby_ids(0, 2).size() == 3);
+	map =
+		"fff"
+		"fff"
+		"fff";
+	Cave cave2(map, 3);
+	assert(cave2.get_size() == 9);
+	assert(cave2.get_width() == 3);
+	Log::log("Cave2 thing: " + std::to_string(cave.get_nearby_ids(4, 1.5).size()));
+	assert(cave2.get_nearby_ids(4, 1.5).size() == 8);
 }
 
 void test()

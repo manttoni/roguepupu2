@@ -15,10 +15,13 @@
 #include "CaveGenerator.hpp"
 #include "Game.hpp"
 
+void UI::print(const size_t y, const size_t x, const char ch)
+{
+	mvwaddch(panel_window(current_panel), y, x, ch);
+}
 void UI::print(const char ch)
 {
 	wprintw(panel_window(current_panel), "%c", ch);
-	Log::log("Printed char: " + ch);
 }
 void UI::print(const std::string& str)
 {
@@ -28,14 +31,14 @@ void UI::println(const std::string& str)
 {
 	wprintw(panel_window(current_panel), "%s\n", str.c_str());
 }
-/*size_t UI::get_curs_y() const
+size_t UI::get_curs_y() const
 {
 	assert(current_panel != nullptr);
 	int y, x;
 	getyx(panel_window(current_panel), y, x);
 	(void) x;
 	return y;
-}*/
+}
 size_t UI::get_curs_x() const
 {
 	assert(current_panel != nullptr);
@@ -44,86 +47,41 @@ size_t UI::get_curs_x() const
 	(void) y;
 	return x;
 }
-short UI::get_next_color_id()
+short UI::is_initialized_color(const Color& color) const
 {
-	static short id = 8;
-	assert(COLORS != 0);
-	if (id == COLORS)
-	{
-		Log::log("Color ids all used");
-		id = 8;
-	}
-	return id++;
-}
-short UI::get_next_color_pair_id()
-{
-	static short id = 1;
-	assert(COLOR_PAIRS != 0);
-	if (id == COLOR_PAIRS)
-	{
-		Log::log("Color pair ids all used");
-		id = 1;
-	}
-	return id++;
-}
-short UI::color_initialized(const short r, const short g, const short b)
-{
-	for (const auto& [id, color] : initialized_colors)
-	{
-		if (color.get_r() == r && color.get_g() == g && color.get_b() == b)
+	for (const auto& [initialized_color, id] : initialized_colors)
+		if (initialized_color == color)
 			return id;
-	}
 	return -1;
 }
-short UI::color_pair_initialized(const Color& fg, const Color& bg)
+short UI::is_initialized_color_pair(const ColorPair& color_pair) const
 {
-	for (const auto& [id, color_pair] : initialized_color_pairs)
-	{
-		if (color_pair.get_fg() == fg && color_pair.get_bg() == bg)
+	for (const auto& [initialized_color_pair, id] : initialized_color_pairs)
+		if (initialized_color_pair == color_pair)
 			return id;
-	}
 	return -1;
 }
-// initializes color if not yet initialized
-// returns id of the color
-short UI::add_color(short r, short g, short b)
+void UI::enable_color_pair(const ColorPair& color_pair)
 {
-	r = Math::clamp(r, static_cast<short>(0), static_cast<short>(1000));
-	g = Math::clamp(g, static_cast<short>(0), static_cast<short>(1000));
-	b = Math::clamp(b, static_cast<short>(0), static_cast<short>(1000));
-	short color_id = color_initialized(r, g, b);
-	if (color_id != -1)
-		return color_id;
-	color_id = instance().get_next_color_id();
-	init_color(color_id, r, g, b);
-	initialized_colors[color_id] = Color(color_id, r, g, b);
-	menus["debug"].set_value("Colors", initialized_colors.size());
-	Log::log("Color initialized with id(" + std::to_string(color_id) + "): " + std::to_string(r) + " " + std::to_string(g) + " " + std::to_string(b));
-	return color_id;
+	short pair_id = is_initialized_color_pair(color_pair);
+	if (pair_id == -1)
+		pair_id = color_pair.init();
+	wattron(UI::instance().get_current_window(), COLOR_PAIR(pair_id));
 }
-short UI::add_color_pair(const short fg_id, const short bg_id)
+void UI::reset_colors()
 {
-	// doesnt check if id is initialized
-	const Color& fg = initialized_colors[fg_id];
-	const Color& bg = initialized_colors[bg_id];
-	short pair_id = color_pair_initialized(fg, bg);
-	if (pair_id != -1)
-		return pair_id;
-	pair_id = instance().get_next_color_pair_id();
-	init_pair(pair_id, fg_id, bg_id);
-	initialized_color_pairs[pair_id] = ColorPair(pair_id, fg, bg);
-	menus["debug"].set_value("Color pairs", initialized_color_pairs.size());
-	Log::log("Color pair initialized with id(" + std::to_string(pair_id) + "): " + std::to_string(fg_id) + ", " + std::to_string(bg_id));
-	return pair_id;
+	initialized_colors.clear();
+	initialized_color_pairs.clear();
 }
-
 // if read_only is false, loop() will be infinite if called here
 int UI::input()
 {
 	Menu& debug = menus.at("debug");
+	debug.set_value("Colors", initialized_colors.size());
+	debug.set_value("Color pairs", initialized_color_pairs.size());
 	debug.loop();
 
-	instance().update();
+	update();
 	flushinp();
 	int key = getch();
 	ln++; // increase main loop number
@@ -155,23 +113,6 @@ int UI::input()
 		}
 	}
 	return key;
-}
-void UI::init_colors()
-{
-	start_color();
-
-	// Colors
-	WHITE = add_color(1000, 1000, 1000);
-	BLACK = add_color(0, 0, 0);
-	BLUE = add_color(0, 0, 500);
-	LIGHT_BLUE = add_color(0, 0, 50);
-	MEDIUM_BLUE = add_color(0, 0, 500);
-	ORANGE = add_color(1000, 666, 0);
-
-	// Pairs
-	GLOWING_FUNGUS = add_color_pair(MEDIUM_BLUE, BLACK);
-	WOODY_FUNGUS = add_color_pair(ORANGE, BLACK);
-	DEFAULT = add_color_pair(WHITE, BLACK);
 }
 
 void UI::init_menus()
@@ -209,11 +150,10 @@ void UI::init()
 {
 	ln = 0;
 	initscr();
+	start_color();
 	Log::log("initscr() width:" + std::to_string(Screen::width()) + " height:" + std::to_string(Screen::height()));
 	init_menus();
 	Log::log("Menus initialized");
-	init_colors();
-	Log::log("Colors initialized");
 	std::signal(SIGSEGV, handle_signal);
 	std::signal(SIGABRT, handle_signal);
 	std::signal(SIGFPE, handle_signal);
@@ -245,7 +185,6 @@ namespace CaveView
 		Menu& cell_info = UI::instance().get_menu("cell_info");
 		cell_info.set_value("Index", cell.get_idx());
 		cell_info.set_value("Density", cell.get_density());
-		cell_info.set_value("Color pair", static_cast<int>(cell.get_color_pair_id()));
 		size_t stacks = 0;
 		for (const auto& [color_id, stack_amount] : cell.get_lights())
 			stacks += stack_amount;
@@ -259,7 +198,7 @@ namespace CaveView
 		WINDOW* cave_window = panel_window(cave_panel);
 		static CaveGenerator cg;
 		UI::instance().set_current_panel(cave_panel);
-
+		UI::instance().reset_colors();
 		auto current =
 			std::make_tuple(
 				std::any_cast<double>(settings.get_value("Frequency")),
@@ -290,16 +229,16 @@ namespace CaveView
 
 		int level = std::any_cast<int>(settings.get_value("Level"));
 		current_cave = &cg.get_cave(level);
-		current_cave->reset_effects();
+		current_cave->reset_lights();
 		const auto& cells = current_cave->get_cells();
 
 		wmove(cave_window, 0, 0);
 		for (size_t i = 0; i < cells.size(); ++i)
 		{
 			const Cell& cell = cells[i];
-			UI::instance().enable_attr(COLOR_PAIR(cell.get_color_pair_id()));
+			const auto& color_pair = cell.get_color_pair();
+			UI::instance().enable_color_pair(color_pair);
 			UI::instance().print(cell.get_char());
-			UI::instance().disable_attr(COLOR_PAIR(cell.get_color_pair_id()));
 		}
 	}
 

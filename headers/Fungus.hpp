@@ -16,9 +16,9 @@ class Fungus : public Entity
 		struct Info
 		{
 			std::string name;
-			short color_pair_id;
+			Color color;
 			char ch;
-			Effect effect;
+			Light light;
 		};
 		Info get_info(const Type type);
 

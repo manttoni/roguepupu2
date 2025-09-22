@@ -12,14 +12,14 @@
 
 void run()
 {
-	Log::log("--- Run started ---");
 	UI::instance().get_menu("main").loop();
 }
 
 int main(void)
 {
-	UI::instance().init();
+	Log::log("--- Run started ---");
 	test();
+	UI::instance().init();
 	Log::log("Tests passed");
 	run();
 	Log::log("Run completed");

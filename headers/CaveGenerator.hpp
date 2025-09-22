@@ -32,7 +32,7 @@ class CaveGenerator
 		void form_tunnels();
 		void set_source_sink();
 		void spawn_fungi();
-		void color_cells();
+		void set_rock_colors();
 
 		std::vector<size_t> find_water_path();
 

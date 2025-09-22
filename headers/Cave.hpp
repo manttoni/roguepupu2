@@ -61,6 +61,5 @@ class Cave
 		bool neighbor_has_type(const size_t middle, const Cell::Type type) const;
 		bool has_vision(const size_t from, const size_t to) const;
 
-		void move(std::unique_ptr<Entity> entity, const Direction d);
-		void reset_effects();
+		void reset_lights();
 };

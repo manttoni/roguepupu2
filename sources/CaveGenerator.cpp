@@ -171,7 +171,6 @@ void CaveGenerator::form_rock()
 		cells[i].set_type(Cell::Type::ROCK);
 		cells[i].set_density(density);
 		cells[i].set_idx(i);
-		cells[i].set_cave(&canvas);
 	}
 }
 
@@ -225,40 +224,14 @@ void CaveGenerator::spawn_fungi()
 	}
 }
 
-void CaveGenerator::color_cells()
+void CaveGenerator::set_rock_colors()
 {
-	short black_id = UI::instance().add_color(0, 0, 0);
-	std::map<size_t, short> density_color_pair_ids;
-	for (size_t i = 1; i <= 9; ++i)
+	for (auto& cell : canvas.get_cells())
 	{
-		short val = i * 100;
-		short color_id = UI::instance().add_color(val, val, val);
-		density_color_pair_ids[i] = UI::instance().add_color_pair(color_id, black_id);
-	}
-
-	auto& cells = canvas.get_cells();
-	for (Cell& cell : cells)
-	{
-		switch (cell.get_type())
-		{
-			case Cell::Type::NONE:
-				break;
-			case Cell::Type::ROCK:
-			{
-				const size_t density = static_cast<size_t>(std::ceil(cell.get_density()));
-				cell.set_color_pair_id(density_color_pair_ids[density]);
-				break;
-			}
-			case Cell::Type::FLOOR:
-				cell.set_color_pair_id(UI::instance().DEFAULT);
-				break;
-			case Cell::Type::SOURCE:
-				cell.set_color_pair_id(UI::instance().DEFAULT);
-				break;
-			case Cell::Type::SINK:
-				cell.set_color_pair_id(UI::instance().DEFAULT);
-				break;
-		}
+		if (cell.get_type() != Cell::Type::ROCK)
+			continue;
+		const short channel = 100 * static_cast<short>(std::ceil(cell.get_density()));
+		cell.set_fg(Color(channel, channel, channel));
 	}
 }
 
@@ -270,10 +243,13 @@ void CaveGenerator::generate_cave(const size_t level)
 	set_source_sink();
 	form_tunnels();
 	spawn_fungi();
-	color_cells();
+	set_rock_colors();
 
 	// don't copy, just move
 	caves.push_back(std::move(canvas));
+	// set ptr to cave for cells
+	for (auto& cell : caves.back().get_cells())
+		cell.set_cave(&caves.back());
 	return;
 }
 

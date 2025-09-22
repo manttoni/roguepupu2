@@ -7,6 +7,7 @@
 #include "Cell.hpp"
 #include "Utils.hpp"
 #include "UI.hpp"
+#include "Light.hpp"
 
 /* CONSTRUCTORS */
 // DEFAULT
@@ -26,7 +27,8 @@ Cave::Cave(const size_t level, const size_t height, const size_t width, const si
 	level(level),
 	seed(seed),
 	source(0),
-	sink(0) {}
+	sink(0)
+{}
 
 // COPY
 Cave::Cave(Cave&& other) :
@@ -175,7 +177,8 @@ std::vector<size_t> Cave::get_nearby_ids(const size_t& middle, const double r) c
 			neighbors.push_back(nid);
 		}
 	}
-
+	if (middle_y != 0 && middle_y != height - 1 && middle_x != 0 && middle_x != width - 1 && r == 1.5)
+		assert(neighbors.size() == 8);
 	return neighbors;
 }
 
@@ -218,18 +221,18 @@ bool Cave::has_access(const size_t from_idx, const size_t to_idx) const
 	return true;
 }
 
-void Cave::reset_effects()
+void Cave::reset_lights()
 {
 	for (auto& cell : cells)
-		cell.reset_effects();
+		cell.reset_lights();
 	for (auto& cell : cells)
 	{
 		if (cell.get_entities().empty())
 			continue;
 
 		for (auto& entity : cell.get_entities())
-			for (auto& effect : entity->get_effects())
-				effect.trigger(*this, cell.get_idx());
+			for (auto& light : entity->get_lights())
+				light.shine(*this, cell.get_idx());
 	}
 }
 

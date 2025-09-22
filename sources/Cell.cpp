@@ -17,7 +17,8 @@ Cell::Cell(Cell&& other)
 	idx = other.idx;
 	type = other.type;
 	density = other.density;
-	color_pair_id = other.color_pair_id;
+	fg = other.fg;
+	bg = other.bg;
 	entities = std::move(other.entities);
 	lights = other.lights;
 	cave = other.cave;
@@ -46,7 +47,8 @@ Cell& Cell::operator=(Cell&& other)
 		type = other.type;
 		idx = other.idx;
 		density = other.density;
-		color_pair_id = other.color_pair_id;
+		fg = other.fg;
+		bg = other.bg;
 		entities = std::move(other.entities);
 		lights = other.lights;
 		cave = other.cave;
@@ -95,50 +97,34 @@ char Cell::get_char() const
 	}
 }
 
-void Cell::add_light(const short color_id)
+// return foreground and background colors as object
+// foreground can come from entities or natural terrain
+// background comes from color of natural terrain
+ColorPair Cell::get_color_pair() const
 {
-	lights[color_id]++;
-}
+	Color ret_fg, ret_bg;
 
-void Cell::reset_effects()
-{
-	// reset light
-	lights.clear();
-}
-
-short Cell::get_color_pair_id() const
-{
-	short base = color_pair_id;
-	size_t size = entities.size();
-	if (size > 0)
+	// foreground
+	if (entities.size() > 0)
 	{
 		size_t ln = UI::instance().loop_number();
-		const auto& e = entities[ln % size];
-		base = e->get_color_pair_id();
+		const auto& e = entities[ln % entities.size()];
+		ret_fg = e->get_color();
 	}
+	else
+		ret_fg = this->fg;
 
-	ColorPair cp = UI::instance().get_color_pair(base);
-	const Color& fg = cp.get_fg();
-	const Color& bg = cp.get_bg();
-	const short fgr = fg.get_r();
-	const short fgg = fg.get_g();
-	const short fgb = fg.get_b();
-	const short bgr = bg.get_r();
-	const short bgg = bg.get_g();
-	const short bgb = bg.get_b();
-	short light_r = 0, light_g = 0, light_b = 0;
-	for (const auto& [light_color_id, count] : lights)
+	// background
+	ret_bg = this->bg;
+
+	// add light to both
+	for (const auto& [light_color, light_stacks] : lights)
 	{
-		Color light_color = UI::instance().get_color(light_color_id);
-		light_r += light_color.get_r() * count;
-		light_g += light_color.get_g() * count;
-		light_b += light_color.get_b() * count;
+		ret_fg += light_color * light_stacks;
+		ret_bg += light_color * light_stacks;
 	}
-	short fg_id = UI::instance().add_color(fgr + light_r, fgg + light_g, fgb + light_b);
-	short bg_id = UI::instance().add_color(bgr + light_r, bgg + light_g, bgb + light_b);
-	short pair_id = UI::instance().add_color_pair(fg_id, bg_id);
 
-	return pair_id;
+	return ColorPair(ret_fg, ret_bg);
 }
 
 bool Cell::blocks_movement() const
@@ -164,38 +150,4 @@ bool Cell::blocks_vision() const
 
 	return false;
 }
-/*
-void Cell::move_entity(std::unique_ptr<Entity> entity, const Direction d)
-{
-	auto* cell = entity->get_cell();
-	auto* cave = cell->get_cave();
-	const auto& neighbor_ids = cave->get_nearby_ids(cell->get_idx(), 1.5);
-	int dst = entity->get_idx();
-	switch(d)
-	{
-		case Direction::DOWN:
-			dst += cave->get_width();
-			break;
-		case Direction::UP:
-			dst -= cave->get_width();
-			break;
-		case Direction::LEFT:
-			dst--;
-			break;
-		case Direction::RIGHT:
-			dst++;
-			break;
-	}
-	if (dst < 0 || dst >= static_cast<int>(cave->get_size()))
-		return;
 
-	if (!Utils::contains(neighbor_ids, static_cast<size_t>(dst)))
-		return;
-
-	auto& new_cell = cave->get_cells()[dst];
-	if (new_cell.blocks_movement())
-		return;
-
-	entity->set_cell(&new_cell);
-	new_cell.add_entity(std::move(entity));
-}*/
