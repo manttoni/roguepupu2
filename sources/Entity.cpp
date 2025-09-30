@@ -5,12 +5,39 @@
 #include "Cave.hpp"
 #include "UI.hpp"
 
-Entity::Entity() : name("default"), color(Color()), ch('?'), cell(nullptr) {}
-Entity::Entity(const std::string& name, const Color& color, const char ch, Cell* cell) : name(name), color(color), ch(ch), cell(cell)
+Entity::Entity()
+	: type(Type::NONE), name("default"), symbol(L'?'), color(Color(500, 500, 500)), cell(nullptr)
+{}
+Entity::~Entity() {}
+Entity::Entity(	const Type type,
+				const std::string& name,
+				const wchar_t symbol,
+				const Color& color,
+				std::vector<Light> lights)
+	: type(type), name(name), symbol(symbol), color(color), lights(lights)
+{}
+Entity::Entity(const Entity& other) :
+	type(other.type),
+	name(other.name),
+	symbol(other.symbol),
+	color(other.color),
+	cell(other.cell),
+	lights(other.lights)
+{}
+Entity& Entity::operator=(const Entity& other)
 {
-	if (ch == '\0')
-		this->ch = name.front();
+	if (this != &other)
+	{
+		type = other.type;
+		name = other.name;
+		symbol = other.symbol;
+		color = other.color;
+		cell = other.cell;
+		lights = other.lights;
+	}
+	return *this;
 }
+
 bool Entity::operator==(const Entity& other)
 {
 	return name == other.name;
@@ -18,14 +45,14 @@ bool Entity::operator==(const Entity& other)
 
 bool Entity::blocks_movement() const
 {
-	if (ch == '$')
+	if (symbol== L'$')
 		return true;
 	return false;
 }
 
 bool Entity::blocks_vision() const
 {
-	if (ch == '$')
+	if (symbol == L'$')
 		return true;
 	return false;
 }

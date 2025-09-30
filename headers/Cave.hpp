@@ -31,19 +31,19 @@ class Cave
 		std::vector<Cell>& get_cells() { return cells; }
 		size_t get_level() const { return level; }
 		int get_seed() const { return seed; }
-		size_t get_source() const { return source; }
-		size_t get_sink() const { return sink; }
+		size_t get_source_idx() const { return source; }
+		size_t get_sink_idx() const { return sink; }
 
 		/* SETTERS */
 		void set_level(const size_t level) { this->level = level; }
 		void set_seed(const int seed) { this->seed = seed; }
 //		void set_cells(const std::vector<Cell>& cells) { this->cells = cells; }
-		void set_source(const size_t source)
+		void set_source_idx(const size_t source)
 		{
 			this->source = source;
 			cells[source].set_type(Cell::Type::SOURCE);
 		}
-		void set_sink(const size_t sink)
+		void set_sink_idx(const size_t sink)
 		{
 			this->sink = sink;
 			cells[sink].set_type(Cell::Type::SINK);

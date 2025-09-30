@@ -5,7 +5,7 @@
 #include "CaveGenerator.hpp"
 #include "UI.hpp"
 #include "Utils.hpp"
-
+#include "EntityFactory.hpp"
 
 Game::Game() : level(1)
 {
@@ -19,12 +19,10 @@ void Game::init_player()
 {
 	auto& cave = cavegen.get_cave(1);
 	assert(cave.get_size() > 0);
-	const size_t start_idx = cave.get_source();
+	const size_t start_idx = cave.get_source_idx();
 	assert(start_idx < cave.get_size());
 	auto& spawn_cell = cave.get_cells()[start_idx];
-	auto player = std::make_unique<Creature>(Creature("Rabdin", Color(123,456,789), '@', &spawn_cell));
-	if (player != nullptr)
-		Log::log("Player initialized at idx: " + std::to_string(player->get_idx()));
+	auto player = EntityFactory::instance().get_creature("Rabdin");
 	spawn_cell.add_entity(std::move(player));
 
 	// debug info
@@ -51,12 +49,12 @@ void Game::init_panels()
 	Log::log("Game panels initialized");
 }
 
-void Game::draw_cell(const Cell& cell) const
+/*void Game::draw_cell(const Cell& cell) const
 {
 	const auto& color_pair = cell.get_color_pair();
 	UI::instance().enable_color_pair(color_pair);
-	UI::instance().print(cell.get_char());
-}
+	UI::instance().print(cell.get_wchar());
+}*/
 
 void Game::draw_cave(Cave& cave)
 {
@@ -64,7 +62,7 @@ void Game::draw_cave(Cave& cave)
 
 	auto& player = get_player();
 	assert(player.get_name() == "Rabdin");
-	assert(player.get_char() == '@');
+	assert(player.get_symbol() == '@');
 	assert(player.get_vision_range() == 10);
 
 	cave.reset_lights();
@@ -115,8 +113,9 @@ void Game::draw_cave(Cave& cave)
 		//Log::log("Drawing cell: " + std::to_string(y_cell) + ", " + std::to_string(x_cell));
 		const auto& cell = cave.get_cells()[cell_idx];
 		const auto& color_pair = cell.get_color_pair();
+		wchar_t symbol = cell.get_symbol();
 		UI::instance().enable_color_pair(color_pair);
-		UI::instance().print(y, x, cell.get_char());
+		UI::instance().print_wide(y, x, symbol);
 	}
 	UI::instance().update();
 	Log::log("Cave drawn");

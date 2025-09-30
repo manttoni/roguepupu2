@@ -71,7 +71,7 @@ Cave::Cave(const std::string& map, const size_t width) : height(map.size() / wid
 				type = Cell::Type::ROCK;
 				break;
 		}
-		cells.push_back(Cell(i, type, this));
+		cells.push_back(Cell(i, type, this, c));
 	}
 }
 
@@ -221,18 +221,25 @@ bool Cave::has_access(const size_t from_idx, const size_t to_idx) const
 	return true;
 }
 
+/* Updates the light situation in a cave
+ * f.e. a glowing mushroom mightve been destroyed
+ * so its light has to be removed also
+ * */
 void Cave::reset_lights()
 {
 	for (auto& cell : cells)
-		cell.reset_lights();
-	for (auto& cell : cells)
 	{
-		if (cell.get_entities().empty())
-			continue;
+		// no light shines to this cell anymore
+		cell.reset_lights();
 
-		for (auto& entity : cell.get_entities())
+		// reapply lights that shine to this cell
+		for (const auto& entity : cell.get_entities())
+		{
 			for (auto& light : entity->get_lights())
-				light.shine(*this, cell.get_idx());
+			{
+				light.trigger(*this, cell.get_idx());
+			}
+		}
 	}
 }
 

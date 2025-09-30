@@ -3,24 +3,22 @@
 #include <vector>
 #include <cstdint>
 #include "Color.hpp"
+#include "Effect.hpp"
 
 class Cave;
 
-class Light
+class Light : public Effect
 {
 	private:
 		Color color;
-		double radius;
-
 	public:
 		Color get_color() const { return color; }
-		double get_radius() const { return radius; }
 		void set_color(const Color& color) { this->color = color; }
-		void set_radius(const double radius) { this->radius = radius; }
 
 		Light();
-		Light(const Color& color, const double radius);
+		Light(const double radius, const size_t duration, const Color& color);
+		Light(const Light& other);
+		Light& operator=(const Light& other);
 
-		void shine(Cave& cave, const size_t idx);
-
+		void trigger(Cave& cave, const size_t idx) override;
 };

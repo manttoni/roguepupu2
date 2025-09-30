@@ -8,12 +8,13 @@
 #include "Cave.hpp"
 #include "UI.hpp"
 #include "Fungus.hpp"
+#include "EntityFactory.hpp"
 
 CaveGenerator::CaveGenerator()
 	: height(100), width(100), size(height * width),
 	frequency(0.1), seed(Random::randsize_t(10000, 99999)), octaves(8),
 	rng(seed), erosion_a(2.0), erosion_b(0.1), erosion_c(0.1),
-	fungus_spawn_chance(0.25)
+	fungus_spawn_chance(0.45)
 {}
 
 CaveGenerator::CaveGenerator(
@@ -74,8 +75,8 @@ std::vector<size_t> CaveGenerator::find_water_path()
 	assert(erosion_b != 0);
 	assert(erosion_c != 0);
 	auto& cells = canvas.get_cells();
-	size_t start = canvas.get_source();
-	size_t end = canvas.get_sink();
+	size_t start = canvas.get_source_idx();
+	size_t end = canvas.get_sink_idx();
 
 	std::vector<size_t> open_set = { start };
 	std::map<size_t, size_t> came_from;
@@ -142,7 +143,7 @@ std::vector<size_t> CaveGenerator::find_water_path()
 void CaveGenerator::form_tunnels()
 {
 	top_panel(CaveView::cave_panel);
-	while (canvas.find_path(canvas.get_source(), canvas.get_sink()).empty())
+	while (canvas.find_path(canvas.get_source_idx(), canvas.get_sink_idx()).empty())
 	{
 		find_water_path();
 	}
@@ -171,21 +172,24 @@ void CaveGenerator::form_rock()
 		cells[i].set_type(Cell::Type::ROCK);
 		cells[i].set_density(density);
 		cells[i].set_idx(i);
+		cells[i].set_symbol(L'#');
 	}
 }
 
 void CaveGenerator::set_source_sink()
 {
 	if (canvas.get_level() == 1)
-		canvas.set_source(height / 2 * width + width / 2);
+		canvas.set_source_idx(height / 2 * width + width / 2);
 	else
-		canvas.set_source(caves.back().get_sink()); // sink of last level
+		canvas.set_source_idx(caves.back().get_sink_idx()); // sink of last level
 
 	size_t sink_idx;
 	do
 		sink_idx = Random::randsize_t(0, size - 1, rng);
-	while (canvas.distance(canvas.get_source(), sink_idx) < width / 2);
-	canvas.set_sink(sink_idx);
+	while (canvas.distance(canvas.get_source_idx(), sink_idx) < width / 2);
+	canvas.set_sink_idx(sink_idx);
+	canvas.get_cells()[canvas.get_source_idx()].set_symbol(L'^');
+	canvas.get_cells()[sink_idx].set_symbol(L'v');
 }
 
 // Glowing fungi grow next to walls
@@ -197,6 +201,7 @@ void CaveGenerator::spawn_fungi()
 	const double FUNGUS_FREQUENCY = 0.1;
 	const size_t FUNGUS_OCTAVES = 1;
 	auto& cells = canvas.get_cells();
+	const EntityFactory& ef = EntityFactory::instance();
 	for (size_t i = 0; i < size; ++i)
 	{
 		if (Random::noise3D(i / width, i % width, canvas.get_level(), FUNGUS_FREQUENCY, seed, FUNGUS_OCTAVES) > fungus_spawn_chance
@@ -208,7 +213,7 @@ void CaveGenerator::spawn_fungi()
 		{
 			if (canvas.neighbor_has_type(i, Cell::Type::ROCK))
 			{
-				cell.add_entity(std::move(std::make_unique<Entity>(Fungus(Fungus::Type::GLOWING, &cell))));
+				cell.add_entity(ef.get_fungus("glowing"));
 				continue;
 			}
 			const auto& nearby = canvas.get_nearby_ids(i, WOODY_RADIUS);
@@ -218,7 +223,7 @@ void CaveGenerator::spawn_fungi()
 					space++;
 			double a = 3.14 * WOODY_RADIUS * WOODY_RADIUS;
 			if (space / a > WOODY_SPACE_RATIO)
-				cell.add_entity(std::move(std::make_unique<Entity>(Fungus(Fungus::Type::WOODY, &cell))));
+				cell.add_entity(ef.get_fungus("woody"));
 		}
 
 	}

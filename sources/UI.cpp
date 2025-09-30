@@ -1,4 +1,4 @@
-#include <ncurses.h>
+#include <ncursesw/ncurses.h>
 #include <string>
 #include <vector>
 #include <memory>
@@ -15,6 +15,16 @@
 #include "CaveGenerator.hpp"
 #include "Game.hpp"
 
+void UI::print_wide(const size_t y, const size_t x, const wchar_t wc)
+{
+	wchar_t wc_str[2] = { wc, L'\0' };
+	mvwaddwstr(panel_window(current_panel), y, x, wc_str);
+}
+void UI::print_wide(wchar_t wc)
+{
+	wchar_t wc_str[2] = { wc, L'\0' };
+	waddwstr(panel_window(current_panel), wc_str);
+}
 void UI::print(const size_t y, const size_t x, const char ch)
 {
 	mvwaddch(panel_window(current_panel), y, x, ch);
@@ -149,6 +159,7 @@ void UI::init_menus()
 void UI::init()
 {
 	ln = 0;
+	setlocale(LC_ALL, "");
 	initscr();
 	start_color();
 	Log::log("initscr() width:" + std::to_string(Screen::width()) + " height:" + std::to_string(Screen::height()));
@@ -238,7 +249,7 @@ namespace CaveView
 			const Cell& cell = cells[i];
 			const auto& color_pair = cell.get_color_pair();
 			UI::instance().enable_color_pair(color_pair);
-			UI::instance().print(cell.get_char());
+			UI::instance().print(cell.get_symbol());
 		}
 	}
 

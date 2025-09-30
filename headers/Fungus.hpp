@@ -2,31 +2,20 @@
 #include <string>
 #include "Entity.hpp"
 #include "Cell.hpp"
+#include "Effect.hpp"
 
 class Fungus : public Entity
 {
-	public:
-		enum class Type
-		{
-			NONE = 0,
-			GLOWING,
-			WOODY,
-			COUNT,
-		};
-		struct Info
-		{
-			std::string name;
-			Color color;
-			char ch;
-			Light light;
-		};
-		Info get_info(const Type type);
-
 	private:
-		Type type;
 
 	public:
+		Fungus(	const std::string& name,
+				const wchar_t wchar,
+				const Color& color,
+				const std::vector<Light>& lights = {});
 		Fungus();
-		Fungus(const Type type, Cell* cell);
+		~Fungus();
+		Fungus(const Fungus& other);
+		Fungus& operator=(const Fungus& other);
 
 };

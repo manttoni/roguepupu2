@@ -8,8 +8,8 @@
 Cell::Cell()
 	: idx(SIZE_MAX), type(Type::NONE), density(0) {}
 
-Cell::Cell(const size_t idx, const Type &type, Cave* cave, const double density)
-	: idx(idx), type(type), cave(cave), density(density)
+Cell::Cell(const size_t idx, const Type &type, Cave* cave, const wchar_t symbol, const double density)
+	: idx(idx), type(type), cave(cave), symbol(symbol), density(density)
 {}
 
 Cell::Cell(Cell&& other)
@@ -22,6 +22,7 @@ Cell::Cell(Cell&& other)
 	entities = std::move(other.entities);
 	lights = other.lights;
 	cave = other.cave;
+	symbol = other.symbol;
 }
 
 /* OVERLOADS */
@@ -52,6 +53,7 @@ Cell& Cell::operator=(Cell&& other)
 		entities = std::move(other.entities);
 		lights = other.lights;
 		cave = other.cave;
+		symbol = other.symbol;
 	}
 	return *this;
 }
@@ -70,31 +72,7 @@ void Cell::reduce_density(const double amount)
 	// rock has been destroyed
 	density = 0;
 	type = Type::FLOOR;
-}
-
-char Cell::get_char() const
-{
-	if (!entities.empty())
-	{	// change entity each main loop to show all entities in same cell
-		size_t size = entities.size();
-		size_t ln = UI::instance().loop_number();
-		const auto& e = entities[ln % size];
-		return e->get_char();
-	}
-	switch (type)
-	{
-		case Type::ROCK:
-			return static_cast<size_t>(std::ceil(density)) + '0';
-		case Type::FLOOR:
-			return ' ';
-		case Type::SOURCE:
-			return '^';
-		case Type::SINK:
-			return 'v';
-		default:
-			return '?';
-
-	}
+	symbol = L'�';
 }
 
 // return foreground and background colors as object
@@ -151,3 +129,12 @@ bool Cell::blocks_vision() const
 	return false;
 }
 
+wchar_t Cell::get_symbol() const
+{
+	size_t entities_size = entities.size();
+	if (entities_size == 0)
+		return symbol;
+
+	const auto& entity = entities[UI::instance().loop_number() % entities_size];
+	return entity->get_symbol();
+}

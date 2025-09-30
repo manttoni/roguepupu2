@@ -85,6 +85,8 @@ class UI
 		WINDOW* get_current_window() const { return panel_window(current_panel); }
 		size_t loop_number() const { return ln; }
 
+		void print_wide(const size_t y, const size_t x, wchar_t wc);
+		void print_wide(wchar_t wc);
 		void print(const size_t y, const size_t x, const char ch);
 		void print(const char ch);
 		void print(const std::string& str);

@@ -53,6 +53,12 @@ class Cell
 		}
 
 	private:
+		wchar_t symbol;
+	public:
+		wchar_t get_symbol() const;
+		void set_symbol(const wchar_t symbol) { this->symbol = symbol; }
+
+	private:
 		double density;
 	public:
 		void set_density(const double d) {
@@ -80,6 +86,7 @@ class Cell
 		std::vector<std::unique_ptr<Entity>> entities;
 	public:
 		void add_entity(std::unique_ptr<Entity>&& ent) {
+			ent->set_cell(this);
 			entities.push_back(std::move(ent));
 		}
 		const auto& get_entities() const {
@@ -98,9 +105,11 @@ class Cell
 		void set_bg(const Color& bg) { this->bg = bg; }
 		ColorPair get_color_pair() const;
 
+
+
 	public:
 		Cell();
-		Cell(const size_t idx, const Type& type, Cave* cave, const double density = 0);
+		Cell(const size_t idx, const Type& type, Cave* cave, const wchar_t symbol, const double density = 0);
 		Cell(Cell&& other);
 
 		char get_char() const;
@@ -114,4 +123,7 @@ class Cell
 		/* CELL FEATURES */
 		bool blocks_vision() const;
 		bool blocks_movement() const;
+
+		/* EFFECTS */
+		void trigger_effect(Effect& effect);
 };

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <memory>
 #include "Light.hpp"
 #include "Utils.hpp"
 #include "Color.hpp"
@@ -9,7 +10,20 @@ class Cell;
 
 class Entity
 {
-	private:
+	public:
+		enum class Type
+		{
+			NONE,
+			FUNGUS,
+			CREATURE,
+		};
+	protected:
+		Type type;
+	public:
+		Type get_type() const { return type; }
+		void set_type(const Type type) { this->type = type; }
+
+	protected:
 		std::string name;
 	public:
 		std::string get_name() const {
@@ -18,43 +32,33 @@ class Entity
 		void set_name(const std::string& name) {
 			this->name = name;
 		}
-	private:
+
+	protected:
+		wchar_t symbol;
+	public:
+		wchar_t get_symbol() const { return symbol; }
+		void set_symbol(const wchar_t symbol) { this->symbol = symbol; }
+
+	protected:
 		Color color;
 	public:
 		Color get_color() const { return color; }
 		void set_color(const Color& color) { this->color = color; }
 
-	private:
-		char ch;
-	public:
-		auto get_char() const {
-			return ch;
-		}
-		void set_char(const char ch) {
-			this->ch = ch;
-		}
-
-	private:
+	/* The host cells pointer */
+	protected:
 		Cell* cell;
 	public:
 		auto get_cell() { return cell; }
 		void set_cell(Cell* cell) { this->cell = cell; }
 		size_t get_idx() const;
 
-	private:
-		std::vector<Light> lights; // f.e. blue glow from a fungus
+	protected:
+		std::vector<Light> lights;
 	public:
-		auto get_lights() const {
+		auto& get_lights() {
 			return lights;
 		}
-		void set_lights(const std::vector<Light>& lights) {
-			this->lights = lights;
-		}
-		void add_light(const Light& light) {
-			lights.push_back(light);
-		}
-
-
 
 	public:
 		bool blocks_movement() const;
@@ -62,8 +66,16 @@ class Entity
 
 	public:
 		Entity();
-		virtual ~Entity() = default;
-		Entity(const std::string& name, const Color& color, const char ch, Cell* cell);
-		double move(const Direction d);
+		virtual ~Entity() = 0;
+		Entity(	const Type type,
+				const std::string& name,
+				const wchar_t wchar,
+				const Color& color,
+				std::vector<Light> lights = {});
+		Entity(const Entity& other);
+		Entity& operator=(const Entity& other);
 		bool operator==(const Entity& other);
+
+
+		double move(const Direction d);
 };
