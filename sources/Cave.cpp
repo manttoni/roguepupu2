@@ -8,6 +8,7 @@
 #include "Utils.hpp"
 #include "UI.hpp"
 #include "Light.hpp"
+#include "Creature.hpp"
 
 /* CONSTRUCTORS */
 // DEFAULT
@@ -288,4 +289,49 @@ bool Cave::has_vision(size_t start, size_t end) const
 	return true;
 }
 
+// draw cave from perspective of player or other creature
+void Cave::draw(const Creature& player)
+{
+	Log::log("Drawing cave");
+	const size_t player_idx = player.get_idx();
+	reset_lights();
 
+	PANEL* panel = UI::instance().get_panel(UI::Panel::GAME);
+	WINDOW* window = panel_window(panel);
+	werase(window);
+
+	UI::instance().set_current_panel(panel);
+
+	int window_height, window_width;
+	getmaxyx(window, window_height, window_width);
+
+	size_t y_player = player_idx / width;
+	size_t x_player = player_idx % width;
+
+	size_t y_center = window_height / 2;
+	size_t x_center = window_width / 2;
+
+	auto cells_in_vision_range = get_nearby_ids(player_idx, player.get_vision_range());
+	cells_in_vision_range.push_back(player_idx);
+
+	for (const auto& cell_idx : cells_in_vision_range)
+	{
+		size_t y_cell = cell_idx / width;
+		size_t x_cell = cell_idx % width;
+
+		int y = y_center + y_cell - y_player;
+		int x = x_center + x_cell - x_player;
+		if (y < 0 || y >= window_height || x < 0 || x >= window_width)
+			continue;
+		if (!has_vision(player_idx, cell_idx))
+			continue;
+
+		const auto& cell = cells[cell_idx];
+		const auto& color_pair = cell.get_color_pair();
+		wchar_t symbol = cell.get_symbol();
+		UI::instance().enable_color_pair(color_pair);
+		UI::instance().print_wide(y, x, symbol);
+	}
+	UI::instance().update();
+	Log::log("Cave drawn");
+}

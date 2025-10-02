@@ -9,16 +9,13 @@ class Game
 {
 	private:
 		CaveGenerator cavegen;
-		void init_cavegen();
-		void init_panels();
-		void init_player();
-		void draw_cave(Cave& cave);
-		void draw_cell(const Cell& cell) const;
-		Creature& get_player();
-		size_t level;
+		Cave& current_cave;
+		Creature* player;
 	public:
 		Game();
 		void start();
+		double move_with_mouse(const MEVENT& event);
+		void action_menu(const MEVENT& event);
 };
 
 void start_game();

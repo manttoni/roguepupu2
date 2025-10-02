@@ -5,6 +5,7 @@
 #include <iostream>
 #include "Cell.hpp"
 #include "Utils.hpp"
+#include "Creature.hpp"
 
 class Cave
 {
@@ -72,4 +73,6 @@ class Cave
 		void clear_lights();
 		void apply_lights();
 		void reset_lights();
+
+		void draw(const Creature& player);
 };
