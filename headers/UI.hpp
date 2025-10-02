@@ -47,7 +47,7 @@ class UI
 	public:
 		enum class Panel
 		{
-			MAIN,
+			GAME,
 			LOG,
 		};
 	private:
@@ -72,6 +72,12 @@ class UI
 			initialized_color_pairs[color_pair] = color_pair_id;
 		}
 		void reset_colors();
+
+	private:
+		bool show_debug = false;
+	public:
+		void set_show_debug(const bool value) { this->show_debug = value; }
+		void toggle_show_debug() { show_debug = !show_debug; }
 
 
 	private:

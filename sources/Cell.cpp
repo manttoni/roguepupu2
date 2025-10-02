@@ -72,7 +72,8 @@ void Cell::reduce_density(const double amount)
 	// rock has been destroyed
 	density = 0;
 	type = Type::FLOOR;
-	symbol = L'�';
+	symbol = L'▒';
+	bg = Color(35, 40, 30);
 }
 
 // return foreground and background colors as object

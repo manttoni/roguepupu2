@@ -221,18 +221,18 @@ bool Cave::has_access(const size_t from_idx, const size_t to_idx) const
 	return true;
 }
 
-/* Updates the light situation in a cave
- * f.e. a glowing mushroom mightve been destroyed
- * so its light has to be removed also
- * */
-void Cave::reset_lights()
+void Cave::clear_lights()
 {
 	for (auto& cell : cells)
 	{
-		// no light shines to this cell anymore
 		cell.reset_lights();
+	}
+}
 
-		// reapply lights that shine to this cell
+void Cave::apply_lights()
+{
+	for (auto& cell : cells)
+	{
 		for (const auto& entity : cell.get_entities())
 		{
 			for (auto& light : entity->get_lights())
@@ -241,6 +241,12 @@ void Cave::reset_lights()
 			}
 		}
 	}
+}
+
+void Cave::reset_lights()
+{
+	clear_lights();
+	apply_lights();
 }
 
 bool Cave::has_vision(size_t start, size_t end) const

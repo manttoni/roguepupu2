@@ -76,6 +76,9 @@ class Entity
 		Entity& operator=(const Entity& other);
 		bool operator==(const Entity& other);
 
+		// extract own pointer from current cell
+		std::unique_ptr<Entity> extract_self();
 
+		double move(Cell& new_cell);
 		double move(const Direction d);
 };

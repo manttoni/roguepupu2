@@ -96,6 +96,8 @@ class Cell
 			return entities;
 		}
 
+	// Colors of cell itself.
+	// If there is entity, it will have priority over the fg
 	private:
 		Color fg, bg;
 	public:

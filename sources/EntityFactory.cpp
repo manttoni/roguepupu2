@@ -16,7 +16,7 @@ std::unique_ptr<Fungus> EntityFactory::get_fungus(const std::string& name) const
 			"glowing",
 			L'*',
 			Color(0, 0, 500),
-			{ Light(5, SIZE_MAX, Color(50, 0, 100)) }
+			{ Light(5, SIZE_MAX, Color(5, 0, 50)) }
 		},
 		{
 			"woody",
@@ -38,7 +38,7 @@ std::unique_ptr<Creature> EntityFactory::get_creature(const std::string& name) c
 	{
 		{
 			"Rabdin",
-			L'@',
+			L'𖨆',
 			Color(123,456,789),
 			10
 		}

@@ -42,11 +42,19 @@ class Cave
 		{
 			this->source = source;
 			cells[source].set_type(Cell::Type::SOURCE);
+			cells[source].set_density(0);
+			cells[source].set_symbol(L'▴');
+			cells[source].set_bg(Color(40, 45, 35));
+			cells[source].set_fg(Color(1000, 1000, 1000));
 		}
 		void set_sink_idx(const size_t sink)
 		{
 			this->sink = sink;
 			cells[sink].set_type(Cell::Type::SINK);
+			cells[sink].set_density(0);
+			cells[sink].set_symbol(L'▾');
+			cells[sink].set_bg(Color(40, 45, 35));
+			cells[sink].set_fg(Color(1000, 1000, 1000));
 		}
 
 		/* TESTING */
@@ -61,5 +69,7 @@ class Cave
 		bool neighbor_has_type(const size_t middle, const Cell::Type type) const;
 		bool has_vision(const size_t from, const size_t to) const;
 
+		void clear_lights();
+		void apply_lights();
 		void reset_lights();
 };

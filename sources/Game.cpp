@@ -40,8 +40,8 @@ void Game::init_cavegen()
 void Game::init_panels()
 {
 	/* MAIN */
-	PANEL* main = new_panel(newwin(Screen::height(), Screen::width(), 0, 0));
-	UI::instance().add_panel(UI::Panel::MAIN, main);
+	PANEL* game = new_panel(newwin(Screen::height(), Screen::width(), 0, 0));
+	UI::instance().add_panel(UI::Panel::GAME, game);
 
 	/* LOG */
 	//PANEL* log = new_panel(newwin(Screen::height(), Screen::width() / 4, 0, 0));
@@ -49,25 +49,19 @@ void Game::init_panels()
 	Log::log("Game panels initialized");
 }
 
-/*void Game::draw_cell(const Cell& cell) const
-{
-	const auto& color_pair = cell.get_color_pair();
-	UI::instance().enable_color_pair(color_pair);
-	UI::instance().print(cell.get_wchar());
-}*/
-
+// move this away from the game logic
 void Game::draw_cave(Cave& cave)
 {
 	Log::log("Drawing cave");
+	werase(panel_window(UI::instance().get_panel(UI::Panel::GAME)));
 
 	auto& player = get_player();
 	assert(player.get_name() == "Rabdin");
-	assert(player.get_symbol() == '@');
 	assert(player.get_vision_range() == 10);
 
 	cave.reset_lights();
 
-	PANEL* panel = UI::instance().get_panel(UI::Panel::MAIN);
+	PANEL* panel = UI::instance().get_panel(UI::Panel::GAME);
 	assert(panel != nullptr);
 
 	WINDOW* window = panel_window(panel);
@@ -162,6 +156,65 @@ void Game::start()
 				break;
 			case KEY_RIGHT:
 				player.move(Direction::RIGHT);
+				break;
+			case KEY_F(1):
+				UI::instance().toggle_show_debug();
+				break;
+			case KEY_MOUSE:
+			{
+				MEVENT event;
+				if (getmouse(&event) == OK)
+				{
+					if (event.bstate & BUTTON1_CLICKED)
+					{
+						// get window size and starting point on screen
+						WINDOW* game_window = panel_window(UI::instance().get_panel(UI::Panel::GAME));
+						int window_height, window_width, window_starty, window_startx;
+						getmaxyx(game_window, window_height, window_width);
+						getbegyx(game_window, window_starty, window_startx);
+
+						// click coordinate relative to game window
+						int mouse_y = event.y - window_starty;
+						int mouse_x = event.x - window_startx;
+
+						// player/center draw coordinate
+						int window_center_y = window_height / 2;
+						int window_center_x = window_width / 2;
+
+						// distances of click from center
+						int offset_y = mouse_y - window_center_y;
+						int offset_x = mouse_x - window_center_x;
+
+						// player coordinate of cell in cave
+						const size_t player_idx = player.get_idx();
+						int player_y = player_idx / cave.get_width();
+						int player_x = player_idx % cave.get_width();
+
+						// destination coordinate of cell in cave
+						int dest_y = player_y + offset_y;
+						int dest_x = player_x + offset_x;
+						const size_t dest_idx = dest_y * cave.get_width() + dest_x;
+
+						// find path using A* and assert it is not empty
+						auto path = cave.find_path(player_idx, dest_idx);
+
+						// if there is no path, dont do anything
+						if (path.empty())
+							break;
+
+						std::reverse(path.begin(), path.end());
+
+						// move player through all the cells in the path
+						auto& cells = cave.get_cells();
+						for (auto& cell_idx : path)
+						{
+							player.move(cells[cell_idx]);
+							draw_cave(cave);
+							usleep(100000);
+						}
+					}
+				}
+			}
 		}
 	}
 }

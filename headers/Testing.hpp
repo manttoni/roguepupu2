@@ -4,6 +4,8 @@
 #include <string>
 #include <cassert>
 #include "Utils.hpp"
+#include "EntityFactory.hpp"
+#include "Fungus.hpp"
 
 /* TEST MAPS */
 // key = map as string, value = length of path from top left to bot right
@@ -181,8 +183,24 @@ void test_get_nearby_ids()
 	Cave cave2(map, 3);
 	assert(cave2.get_size() == 9);
 	assert(cave2.get_width() == 3);
-	Log::log("Cave2 thing: " + std::to_string(cave.get_nearby_ids(4, 1.5).size()));
 	assert(cave2.get_nearby_ids(4, 1.5).size() == 8);
+}
+
+void test_lights()
+{
+	std::string map =
+		"fff"
+		"fff"
+		"fff";
+	Cave c(map, 3);
+	auto& cells = c.get_cells();
+	cells[4].add_entity(EntityFactory::instance().get_fungus("glowing"));
+	c.reset_lights();
+	for (size_t i = 0; i < 9; ++i)
+	{
+		if (cells[i].get_lights().empty())
+			throw std::runtime_error("test_lights: Cell " + std::to_string(i) + " doesnt have any light as not expected");
+	}
 }
 
 void test()
@@ -190,4 +208,5 @@ void test()
 	test_utils();
 	test_cave();
 	test_get_nearby_ids();
+	test_lights();
 }

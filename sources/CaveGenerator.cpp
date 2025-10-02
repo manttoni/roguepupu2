@@ -172,7 +172,7 @@ void CaveGenerator::form_rock()
 		cells[i].set_type(Cell::Type::ROCK);
 		cells[i].set_density(density);
 		cells[i].set_idx(i);
-		cells[i].set_symbol(L'#');
+		cells[i].set_symbol(L'█');
 	}
 }
 
@@ -186,10 +186,9 @@ void CaveGenerator::set_source_sink()
 	size_t sink_idx;
 	do
 		sink_idx = Random::randsize_t(0, size - 1, rng);
-	while (canvas.distance(canvas.get_source_idx(), sink_idx) < width / 2);
+	while
+		(canvas.distance(canvas.get_source_idx(), sink_idx) < width / 2);
 	canvas.set_sink_idx(sink_idx);
-	canvas.get_cells()[canvas.get_source_idx()].set_symbol(L'^');
-	canvas.get_cells()[sink_idx].set_symbol(L'v');
 }
 
 // Glowing fungi grow next to walls

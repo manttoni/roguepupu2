@@ -17,11 +17,13 @@
 
 void UI::print_wide(const size_t y, const size_t x, const wchar_t wc)
 {
+	assert(wcwidth(wc) == 1);
 	wchar_t wc_str[2] = { wc, L'\0' };
 	mvwaddwstr(panel_window(current_panel), y, x, wc_str);
 }
 void UI::print_wide(wchar_t wc)
 {
+	assert(wcwidth(wc) == 1);
 	wchar_t wc_str[2] = { wc, L'\0' };
 	waddwstr(panel_window(current_panel), wc_str);
 }
@@ -86,42 +88,25 @@ void UI::reset_colors()
 // if read_only is false, loop() will be infinite if called here
 int UI::input()
 {
-	Menu& debug = menus.at("debug");
-	debug.set_value("Colors", initialized_colors.size());
-	debug.set_value("Color pairs", initialized_color_pairs.size());
-	debug.loop();
-
 	update();
 	flushinp();
 	int key = getch();
-	ln++; // increase main loop number
-	debug.set_value("Keypress", key);
 
-	MEVENT event;
-	if (key == KEY_MOUSE && getmouse(&event) == OK)
+	if (show_debug == true)
 	{
-		debug.set_value("Mouse y", event.y);
-		debug.set_value("Mouse x", event.x);
-
-		// If playing, clicks will move and interact
-		// ...
-
-		// If viewing cave, print cell info on click
-		if (UI::instance().get_mode() == UI::Mode::CAVE_VIEW &&
-			CaveView::current_cave != nullptr &&
-			event.bstate & BUTTON1_CLICKED)
+		Menu& debug = menus.at("debug");
+		debug.set_value("Keypress", key);
+		debug.set_value("Colors", initialized_colors.size());
+		debug.set_value("Color pairs", initialized_color_pairs.size());
+		debug.loop();
+		MEVENT event;
+		if (key == KEY_MOUSE && getmouse(&event) == OK)
 		{
-			assert(static_cast<size_t>(event.y) <= Screen::height());
-			assert(static_cast<size_t>(event.x) <= Screen::width());
-
-			size_t mouse_idx = event.y * Screen::width() + event.x;
-			const Cave* cave = CaveView::current_cave;
-			assert(mouse_idx < cave->get_size());
-			const auto& cells = cave->get_cells();
-			const Cell& selected_cell = cells[mouse_idx];
-			CaveView::show_cell_info(selected_cell);
+			debug.set_value("Mouse y", event.y);
+			debug.set_value("Mouse x", event.x);
 		}
 	}
+
 	return key;
 }
 
@@ -130,7 +115,7 @@ void UI::init_menus()
 	// Main menu
 	std::vector<std::unique_ptr<MenuElt>> elements;
 	elements.push_back(std::make_unique<MenuBtn>("Start game", start_game));
-	elements.push_back(std::make_unique<MenuBtn>("CaveGenerator", CaveView::cave_generator));
+	elements.push_back(std::make_unique<MenuBtn>("CaveGenerator (broken)", CaveView::cave_generator));
 	elements.push_back(std::make_unique<MenuBtn>("Quit", quit));
 	menus["main"] = Menu(std::move(elements), Screen::middle());
 
