@@ -3,4 +3,5 @@ logs/
 *.o
 *.swp
 roguepupu2
-
+*.txt
+gitrepo.sh

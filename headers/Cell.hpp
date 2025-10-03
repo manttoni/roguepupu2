@@ -108,7 +108,7 @@ class Cell
 		ColorPair get_color_pair() const;
 
 	private:
-		bool seen;
+		bool seen = false;
 	public:
 		bool is_seen() const { return seen; }
 		void set_seen(const bool seen) { this->seen = seen; }

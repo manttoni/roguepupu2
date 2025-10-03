@@ -198,7 +198,7 @@ bool Cave::neighbor_has_type(const size_t idx, const Cell::Type type) const
 // can someone walk from to. Has to go around corners
 bool Cave::has_access(const size_t from_idx, const size_t to_idx) const
 {
-	if (from_idx > cells.size() || to_idx > cells.size())
+	if (from_idx >= cells.size() || to_idx >= cells.size())
 		return false;
 	const auto& to = cells[to_idx];
 	if (to.blocks_movement()) // can't move to "to"

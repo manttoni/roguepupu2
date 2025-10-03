@@ -49,13 +49,19 @@ Color& Color::operator+=(const Color& other)
 	b = std::min(b + other.b, 1000);
 	return *this;
 }
-Color Color::operator*(const short scalar) const
+Color Color::operator*(const int scalar) const
 {
 	return Color(
 		static_cast<short>(std::min(r * scalar, 1000)),
 		static_cast<short>(std::min(g * scalar, 1000)),
-		static_cast<short>(std::min(b * scalar, 1000))
-		);
+		static_cast<short>(std::min(b * scalar, 1000)));
+}
+Color Color::operator/(const int scalar) const
+{
+	return Color(
+		static_cast<short>(std::min(r / scalar, 1000)),
+		static_cast<short>(std::min(g / scalar, 1000)),
+		static_cast<short>(std::min(b / scalar, 1000)));
 }
 
 short Color::init() const

@@ -21,7 +21,8 @@ class Color
 		bool operator!=(const Color& other) const;
 		bool operator<(const Color& other) const;
 		Color& operator+=(const Color& other);
-		Color operator*(const short scalar) const;
+		Color operator*(const int scalar) const;
+		Color operator/(const int scalar) const;
 
 		short init() const;
 };

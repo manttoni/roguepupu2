@@ -23,6 +23,7 @@ Cell::Cell(Cell&& other)
 	lights = other.lights;
 	cave = other.cave;
 	symbol = other.symbol;
+	seen = other.seen;
 }
 
 /* OVERLOADS */
@@ -54,6 +55,7 @@ Cell& Cell::operator=(Cell&& other)
 		lights = other.lights;
 		cave = other.cave;
 		symbol = other.symbol;
+		seen = other.seen;
 	}
 	return *this;
 }

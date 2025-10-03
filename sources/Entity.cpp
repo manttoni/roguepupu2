@@ -79,7 +79,7 @@ std::unique_ptr<Entity> Entity::extract_self()
 
 double Entity::move(Cell& new_cell)
 {
-	// find own ponter(self)
+	// find own pointer(self)
 	std::unique_ptr<Entity> self = extract_self();
 
 	// move self to new cell
@@ -91,6 +91,8 @@ double Entity::move(Cell& new_cell)
 	return cell->get_cave()->distance(old_cell, new_cell);
 }
 
+/*
+// currently not in use, maybe never will be
 double Entity::move(const Direction d)
 {
 	// find the destination Cell
@@ -122,5 +124,5 @@ double Entity::move(const Direction d)
 		return 0;
 	return move(new_cell);
 }
-
+*/
 
