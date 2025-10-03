@@ -68,7 +68,7 @@ class Cave
 		std::vector<size_t> get_nearby_ids(const size_t& middle, const double r) const;
 		bool has_access(const size_t from_idx, const size_t to_idx) const;
 		bool neighbor_has_type(const size_t middle, const Cell::Type type) const;
-		bool has_vision(const size_t from, const size_t to) const;
+		bool has_vision(const size_t from, const size_t to, const double vision_range = 0) const;
 
 		void clear_lights();
 		void apply_lights();

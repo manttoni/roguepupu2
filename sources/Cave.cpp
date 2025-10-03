@@ -198,6 +198,8 @@ bool Cave::neighbor_has_type(const size_t idx, const Cell::Type type) const
 // can someone walk from to. Has to go around corners
 bool Cave::has_access(const size_t from_idx, const size_t to_idx) const
 {
+	if (from_idx > cells.size() || to_idx > cells.size())
+		return false;
 	const auto& to = cells[to_idx];
 	if (to.blocks_movement()) // can't move to "to"
 		return false;
@@ -250,8 +252,10 @@ void Cave::reset_lights()
 	apply_lights();
 }
 
-bool Cave::has_vision(size_t start, size_t end) const
+bool Cave::has_vision(const size_t start, const size_t end, const double vision_range) const
 {
+	if (vision_range > 0 && distance(start, end) > vision_range)
+		return false;
 	int x0 = static_cast<int>(start % width);
 	int y0 = static_cast<int>(start / width);
 	int x1 = static_cast<int>(end % width);
@@ -311,11 +315,9 @@ void Cave::draw(const Creature& player)
 	size_t y_center = window_height / 2;
 	size_t x_center = window_width / 2;
 
-	auto cells_in_vision_range = get_nearby_ids(player_idx, player.get_vision_range());
-	cells_in_vision_range.push_back(player_idx);
-
-	for (const auto& cell_idx : cells_in_vision_range)
+	for (auto& cell : cells)
 	{
+		const size_t cell_idx = cell.get_idx();
 		size_t y_cell = cell_idx / width;
 		size_t x_cell = cell_idx % width;
 
@@ -323,15 +325,24 @@ void Cave::draw(const Creature& player)
 		int x = x_center + x_cell - x_player;
 		if (y < 0 || y >= window_height || x < 0 || x >= window_width)
 			continue;
-		if (!has_vision(player_idx, cell_idx))
-			continue;
 
-		const auto& cell = cells[cell_idx];
-		const auto& color_pair = cell.get_color_pair();
+		auto color_pair = cell.get_color_pair();
+
+		if (!has_vision(player_idx, cell_idx, player.get_vision_range()))
+		{
+			if (cell.is_seen()) // "ghost" cell if it was seen before
+				color_pair = ColorPair(Color(123, 123, 123), Color(0, 0, 0));
+			else
+				continue;
+		}
+
 		wchar_t symbol = cell.get_symbol();
 		UI::instance().enable_color_pair(color_pair);
 		UI::instance().print_wide(y, x, symbol);
+		cell.set_seen(true);
+
 	}
+
 	UI::instance().update();
 	Log::log("Cave drawn");
 }

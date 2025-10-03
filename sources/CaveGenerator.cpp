@@ -11,9 +11,9 @@
 #include "EntityFactory.hpp"
 
 CaveGenerator::CaveGenerator()
-	: height(100), width(100), size(height * width),
+	: height(200), width(200), size(height * width),
 	frequency(0.1), seed(Random::randsize_t(10000, 99999)), octaves(8),
-	rng(seed), erosion_a(2.0), erosion_b(0.1), erosion_c(0.1),
+	rng(seed), erosion_a(2.0), erosion_b(0.001), erosion_c(0.001),
 	fungus_spawn_chance(0.45)
 {}
 
@@ -71,9 +71,6 @@ CaveGenerator& CaveGenerator::operator=(CaveGenerator&& other)
 // optimize later to use the indices instead of cells
 std::vector<size_t> CaveGenerator::find_water_path()
 {
-	assert(erosion_a != 0);
-	assert(erosion_b != 0);
-	assert(erosion_c != 0);
 	auto& cells = canvas.get_cells();
 	size_t start = canvas.get_source_idx();
 	size_t end = canvas.get_sink_idx();
@@ -113,7 +110,7 @@ std::vector<size_t> CaveGenerator::find_water_path()
 		Utils::remove_element(open_set, current_idx);
 		for (const size_t neighbor_idx : canvas.get_nearby_ids(current_idx, 1.5))
 		{
-			double tentative_g_score = g_score[current_idx] + cells[neighbor_idx].get_density();
+			double tentative_g_score = g_score[current_idx] + cells[neighbor_idx].get_density() * cells[neighbor_idx].get_density();
 
 			// if neighbor doesnt have a g_score, init it to inf
 			if (g_score.count(neighbor_idx) == 0)

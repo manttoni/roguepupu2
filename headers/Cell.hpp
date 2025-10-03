@@ -107,6 +107,12 @@ class Cell
 		void set_bg(const Color& bg) { this->bg = bg; }
 		ColorPair get_color_pair() const;
 
+	private:
+		bool seen;
+	public:
+		bool is_seen() const { return seen; }
+		void set_seen(const bool seen) { this->seen = seen; }
+
 
 
 	public:
