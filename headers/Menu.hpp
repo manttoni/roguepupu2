@@ -12,15 +12,16 @@ class Menu
 		PANEL* panel;
 		std::vector<std::unique_ptr<MenuElt>> elements;
 		size_t height, width; // calculated automatically, no override atm
-		Screen::Coord start;
 		void (*loop_cb)(); // call every loop
 		bool read_only;
+		int get_mouse_selection() const;
 
 	public:
 		void set_read_only(const bool value) { read_only = value; }
 		bool get_read_only() const { return read_only; }
 		PANEL* get_panel() const { return panel; }
-
+		size_t get_height() const { return height; }
+		size_t get_width() const { return width; }
 
 	public:
 		Menu();
@@ -31,7 +32,8 @@ class Menu
 		Menu& operator=(Menu&& other) noexcept;
 		~Menu();
 
-		void loop();
+		// Can return users chosen string from multiple choices
+		std::string loop();
 
 		// MenuNum
 		std::any get_value(const std::string& str) const;

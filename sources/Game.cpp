@@ -38,13 +38,19 @@ void Game::start()
 		current_cave.draw(*player);
 		key = UI::instance().input(500);
 
-		if (key == KEY_LEFT_CLICK)
-			move_with_mouse();
-		else if (key == KEY_RIGHT_CLICK)
-			action_menu();
-		else if (key == KEY_F(1))
-			UI::instance().toggle_show_debug();
-
+		switch (key)
+		{
+			case KEY_LEFT_CLICK:
+				move_with_mouse();
+				break;
+			case KEY_RIGHT_CLICK:
+				action_menu();
+				break;
+			case KEY_ESCAPE:
+				if (UI::instance().dialog("Quit to main menu?", {"Yes", "No"}) == "No")
+					key = 0;
+				break;
+		}
 		UI::instance().increase_loop_number();
 	}
 }
@@ -96,6 +102,17 @@ double Game::move_with_mouse()
 	return movement;
 }
 
+void Game::end()
+{
+	PANEL* panel = UI::instance().get_panel(UI::Panel::GAME);
+	WINDOW* win = panel_window(panel);
+	wclear(win);
+	UI::instance().update();
+	del_panel(panel);
+	delwin(win);
+
+}
+
 // aka right click menu
 // opens a temporary menu with clickable buttons
 // shows all possible actions for the cell clicked
@@ -103,10 +120,11 @@ double Game::move_with_mouse()
 void Game::action_menu()
 {}
 
-void start_game()
+void new_game()
 {
 	UI::instance().set_mode(UI::Mode::GAME);
 	Game game;
 	game.start();
+	game.end();
 	UI::instance().set_mode(UI::Mode::MAIN);
 }

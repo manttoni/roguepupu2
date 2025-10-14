@@ -13,7 +13,7 @@
 CaveGenerator::CaveGenerator()
 	: height(200), width(200), size(height * width),
 	frequency(0.1), seed(Random::randsize_t(10000, 99999)), octaves(8),
-	rng(seed), erosion_a(2.0), erosion_b(0.001), erosion_c(0.001),
+	rng(seed), erosion_a(2.0), erosion_b(0.005), erosion_c(0.005),
 	fungus_spawn_chance(0.45)
 {}
 
@@ -238,9 +238,7 @@ void CaveGenerator::set_rock_colors()
 
 void CaveGenerator::generate_cave(const size_t level)
 {
-	UI::instance().set_current_panel(UI::Panel::STDSCR);
-	UI::instance().print(0, 0, "Generating cave...");
-	UI::instance().update();
+	UI::instance().dialog("Generating cave...");
 
 	rng.seed(seed + level);
 	canvas = Cave(level, height, width, seed);

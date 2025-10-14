@@ -14,8 +14,9 @@ class Game
 	public:
 		Game();
 		void start();
+		void end();
 		double move_with_mouse();
 		void action_menu();
 };
 
-void start_game();
+void new_game();

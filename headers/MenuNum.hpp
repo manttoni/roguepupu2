@@ -64,4 +64,7 @@ class MenuNum : public MenuElt
 				);
 			return size;
 		}
+
+		// Override base classes virtual functions
+		void (*get_func() const)() override { return nullptr; }
 };

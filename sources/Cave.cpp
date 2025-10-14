@@ -304,7 +304,7 @@ void Cave::draw(const Creature& player)
 	WINDOW* window = panel_window(panel);
 	werase(window);
 
-	UI::instance().set_current_panel(panel);
+	UI::instance().set_current_panel(panel, true);
 
 	int window_height, window_width;
 	getmaxyx(window, window_height, window_width);

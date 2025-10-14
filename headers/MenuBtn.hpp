@@ -9,10 +9,11 @@ class MenuBtn : public MenuElt
 
 	public:
 		MenuBtn();
-		MenuBtn(const std::string& text, void (*func)());
+		MenuBtn(const std::string& text, void (*func)() = nullptr);
 		~MenuBtn();
 
 		void callback() const override { func(); }
+		void (*get_func() const)() { return func; }
 
 		//std::string get_text() const override;
 		size_t get_size() const override;

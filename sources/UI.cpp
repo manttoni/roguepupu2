@@ -12,6 +12,7 @@
 #include "MenuElt.hpp"
 #include "MenuBtn.hpp"
 #include "MenuNum.hpp"
+#include "MenuTxt.hpp"
 #include "Utils.hpp"
 #include "CaveGenerator.hpp"
 #include "Game.hpp"
@@ -93,21 +94,57 @@ void UI::reset_colors()
 	initialized_color_pairs.clear();
 }
 
+std::string UI::dialog(const std::string& text, const std::vector<std::string>& options)
+{
+	// Initialize elements for dialog box
+	std::vector<std::unique_ptr<MenuElt>> elements;
+	elements.push_back(std::make_unique<MenuTxt>(text));
+	for (auto& option : options)
+		elements.push_back(std::make_unique<MenuBtn>(option));
+
+	// Create menu in the middle of screen
+	auto menu = Menu(std::move(elements), Screen::middle());
+
+	// If there are no options, it will just be printed as a message
+	if (options.empty())
+		menu.set_read_only(true);
+
+	// Will return an option as a string it was constructed with
+	return menu.loop();
+}
+
 // return input as int for ncurses
 // if no delay defined, will wait forever for input
 // otherwise will be non-blocking, but waiting for delay times ms
 int UI::input(int delay)
 {
+	// -1 is default value for delay
+	// getch() will be blocking by default
+	if (delay == -1)
+		return getch();
+
+	// 0 is not enough time to get any input,
+	// and -1 is only legit negative
+	if (delay <= 0)
+		return ERR;
+
+	// ERR means no input within time limit
 	int key = ERR;
+
+	// Measure time
 	auto start = std::chrono::steady_clock::now();
 	auto now = start;
-	while (delay == -1 || std::chrono::duration_cast<std::chrono::milliseconds>(now - start).count() < delay)
-	{	// the condition implicitly checks for delay == 0
+
+	// Make getch() non-blocking
+	timeout(0);
+
+	// This will loop for delay ms. It will break when it gets a valid input.
+	while (std::chrono::duration_cast<std::chrono::milliseconds>(now - start).count() < delay)
+	{
 		now = std::chrono::steady_clock::now();
-		size_t mult = 1; // increase time elapsed per iteration of this loop
-		timeout(mult * delay / std::abs(delay));
 		key = getch();
 
+		// Check for mouse events
 		MEVENT mouse_event;
 		if (key == KEY_MOUSE && getmouse(&mouse_event) == OK)
 		{
@@ -115,7 +152,7 @@ int UI::input(int delay)
 				key = KEY_LEFT_CLICK;
 			else if (mouse_event.bstate & BUTTON2_CLICKED)
 				key = KEY_RIGHT_CLICK;
-			else // mouse movement
+			else // mouse movement triggered the event
 			{
 				// save new mouse position
 				mouse_position = {
@@ -127,12 +164,17 @@ int UI::input(int delay)
 			}
 		}
 
-		auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now - start).count();
-		if (key == ERR && elapsed_ms < delay) // no input and still time to get input
+		if (key == ERR) // no input
 			continue;
-		break; // got input or time ran out
+		break; // got input
 	}
+
+	// make getch() blocking (default)
 	timeout(-1);
+
+	// Can press F1 anywhere to toggle debug
+	if (key == KEY_F(1))
+		UI::instance().toggle_show_debug();
 
 	// update debug window
 	if (show_debug == true)
@@ -153,10 +195,19 @@ void UI::init_menus()
 {
 	// Main menu
 	std::vector<std::unique_ptr<MenuElt>> elements;
-	elements.push_back(std::make_unique<MenuBtn>("Start game", start_game));
-	elements.push_back(std::make_unique<MenuBtn>("CaveGenerator (broken)", CaveView::cave_generator));
+	elements.push_back(std::make_unique<MenuBtn>("New game", new_game));
 	elements.push_back(std::make_unique<MenuBtn>("Quit", quit));
 	menus["main"] = Menu(std::move(elements), Screen::middle());
+
+	// test
+	PANEL* main_panel = menus["main"].get_panel();
+	assert(main_panel != nullptr);
+	WINDOW* main_window = panel_window(main_panel);
+	assert(main_window != nullptr);
+	int height, width;
+	getmaxyx(main_window, height, width);
+	assert(menus["main"].get_width() == static_cast<size_t>(width));
+	assert(menus["main"].get_height() == static_cast<size_t>(height));
 
 	// Debug window
 	std::vector<std::unique_ptr<MenuElt>> debug_elements;
@@ -181,11 +232,6 @@ void UI::init_menus()
 	menus["cell_info"].set_read_only(true);
 }
 
-void UI::init_panels()
-{
-	add_panel(Panel::STDSCR, new_panel(stdscr));
-}
-
 void UI::init()
 {
 	loop_number = 0;
@@ -193,7 +239,6 @@ void UI::init()
 	initscr();
 	start_color();
 	init_menus();
-	init_panels();
 
 	// signals should reset original terminal mode
 	std::signal(SIGSEGV, handle_signal);
@@ -209,7 +254,7 @@ void UI::init()
 
 	// mouse input
 	mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, nullptr);
-	printf("\033[?1003h\n");	// mouse movement will trigger KEY_MOUSE events
+	printf("\033[?1003h");	// mouse movement will trigger KEY_MOUSE events
 	fflush(stdout);				// to know current cursor location
 
 	Log::log("UI init finished");
@@ -221,7 +266,7 @@ void UI::end()
 	endwin();
 
 	// reset mouse mode
-	printf("\033[?1003l\n");
+	printf("\033[?1003l");
 	fflush(stdout);
 
 	std::exit(0);

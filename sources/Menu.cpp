@@ -10,21 +10,19 @@
 #include "MenuBtn.hpp"
 #include "MenuNum.hpp"
 
-Menu::Menu() : panel(nullptr), start({0, 0}), loop_cb(nullptr), read_only(true)
+Menu::Menu() : panel(nullptr), loop_cb(nullptr), read_only(true)
 {
 }
 
 Menu::Menu(	std::vector<std::unique_ptr<MenuElt>> elements_,
 			const Screen::Coord& start,
 			void (*loop_cb)())
-			: elements(std::move(elements_)), start(start), loop_cb(loop_cb), read_only(false)
+			: elements(std::move(elements_)), loop_cb(loop_cb), read_only(false)
 {
-	// calculate menu size by amount of and longest element
-	height = elements.size() + 2;
-	width = 4;
+	height = elements.size() + 2; // add border
+	width = 4; // add border and space next to it
 	for (size_t i = 0; i < elements.size(); ++i)
 		width = std::max(elements[i]->get_size() + 4, width);
-
 
 	int y = static_cast<int>(start.y) - static_cast<int>(height) / 2;
 	int x = static_cast<int>(start.x) - static_cast<int>(width) / 2;
@@ -39,19 +37,23 @@ Menu::Menu(	std::vector<std::unique_ptr<MenuElt>> elements_,
 	assert(window != nullptr);
 	panel = new_panel(window);
 	assert(panel != nullptr);
+	int window_height, window_width;
+	getmaxyx(window, window_height, window_width);
+	Log::log("Constructed a Menu at " + std::to_string(y) + ", " + std::to_string(x) + " with size: " + std::to_string(height) + " * " + std::to_string(width));
+	Log::log("It has a window with size: " + std::to_string(window_height) + " x " + std::to_string(window_width));
 }
 
 Menu::~Menu()
 {
-	/*
 	if (panel != nullptr)
 	{
 		WINDOW* window = panel_window(panel);
+
+		// delete panel and window
 		del_panel(panel);
-		if (window)
+		if (window != nullptr)
 			delwin(window);
 	}
-	*/
 }
 
 Menu& Menu::operator=(Menu&& other) noexcept
@@ -60,12 +62,11 @@ Menu& Menu::operator=(Menu&& other) noexcept
 		return *this;
 
 	panel = other.panel;
-	//other.panel = nullptr;
+	other.panel = nullptr;
 
 	elements = std::move(other.elements);
 	height = other.height;
 	width = other.width;
-	start = other.start;
 	loop_cb = other.loop_cb;
 	read_only = other.read_only;
 
@@ -98,7 +99,26 @@ void Menu::set_value(const std::string& str, std::any value)
 	throw std::runtime_error("MenuNum name not found: " + str);
 }
 
-void Menu::loop()
+int Menu::get_mouse_selection() const
+{
+	WINDOW* window = panel_window(panel);
+	Screen::Coord start;
+	getbegyx(window, start.y, start.x);
+	Screen::Coord end = { start.y + height, start.x + width };
+	Screen::Coord mouse = UI::instance().get_mouse_position();
+
+	// Not inside menu, borders excluded
+	if (mouse.x <= start.x || mouse.x >= end.x
+		|| mouse.y <= start.y || mouse.y >= end.y)
+		return -1;
+
+	return mouse.y - start.y - 1; // -1 for border
+}
+
+// Print all MenuElts and if not read only, wait for a selection
+// Can return a string if MenuBtn does not have a callback function
+// This is useful for asking something from user
+std::string Menu::loop()
 {
 	assert(panel != nullptr);
 	WINDOW *window = panel_window(panel);
@@ -110,22 +130,28 @@ void Menu::loop()
 		if (loop_cb != nullptr)
 			loop_cb();
 
-		UI::instance().set_current_panel(panel);
-		top_panel(panel);
+		UI::instance().set_current_panel(panel, true);
 
 		// print elements
 		wmove(window, 1, 0); // because of box() start at y = 1
 		for (size_t i = 0; i < elements.size(); ++i)
 		{
-			if (!read_only && i == selected) UI::instance().enable_attr(A_REVERSE);
+			const bool highlight = !read_only && i == selected && elements[i]->is_selectable();
+			if (highlight == true) UI::instance().enable_attr(A_REVERSE);
 			UI::instance().print("  " + elements[i]->get_text() + "\n"); // spaces bcs of box()
-			if (!read_only && i == selected) UI::instance().disable_attr(A_REVERSE);
+			if (highlight == true) UI::instance().disable_attr(A_REVERSE);
 		}
 
 		box(window, 0, 0);
 		UI::instance().update();
+
 		if (read_only) break;
-		key = UI::instance().input();
+
+		// get key in non-blocking way
+		key = UI::instance().input(100); // ms
+		int mouse_select = get_mouse_selection();
+		if (mouse_select >= 0)
+			selected = mouse_select;
 		switch (key)
 		{
 			case KEY_DOWN:
@@ -142,12 +168,18 @@ void Menu::loop()
 					if (key == KEY_LEFT) elements[selected]->decrement();
 				}
 				break;
+			case KEY_LEFT_CLICK:
 			case '\n':
 				if (elements[selected]->get_type() == MenuElt::Type::BUTTON)
+				{
+					if (elements[selected]->get_func() == nullptr)
+						return elements[selected]->get_text(); // this is probably asking multi choice like "yes" or "no"
 					elements[selected]->callback();
+				}
 				break;
 			default:
 				break;
 		}
 	}
+	return "";
 }
