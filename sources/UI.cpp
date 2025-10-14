@@ -85,21 +85,26 @@ void UI::reset_colors()
 	initialized_colors.clear();
 	initialized_color_pairs.clear();
 }
+
 // if read_only is false, loop() will be infinite if called here
-int UI::input()
+// default delay is -1 which means it's blocking
+// otherwise waits only delay times ms for input
+int UI::input(int delay)
 {
 	update();
-	flushinp();
+	timeout(delay);
 	int key = getch();
+	timeout(-1);
+	flushinp();
 
 	if (show_debug == true)
 	{
+		MEVENT event;
 		Menu& debug = menus.at("debug");
 		debug.set_value("Keypress", key);
 		debug.set_value("Colors", initialized_colors.size());
 		debug.set_value("Color pairs", initialized_color_pairs.size());
 		debug.loop();
-		MEVENT event;
 		if (key == KEY_MOUSE && getmouse(&event) == OK)
 		{
 			debug.set_value("Mouse y", event.y);

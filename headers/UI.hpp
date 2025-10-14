@@ -98,7 +98,7 @@ class UI
 		void print(const std::string& str);
 		void println(const std::string& str);
 
-		int input(); // wrapper for getch
+		int input(int delay = -1); // wrapper for getch
 
 		size_t get_curs_y() const;
 		size_t get_curs_x() const;

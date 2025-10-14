@@ -93,7 +93,12 @@ double Game::move_with_mouse(const MEVENT& event)
 	{
 		movement += player->move(cells[cell_idx]);
 		current_cave.draw(*player);
-		usleep(100000);
+
+		// check for input during movement
+		// if input == ERR, there was no input
+		// else stop moving
+		if (UI::instance().input(100) != ERR)
+			break;
 	}
 	return movement;
 }
