@@ -238,6 +238,10 @@ void CaveGenerator::set_rock_colors()
 
 void CaveGenerator::generate_cave(const size_t level)
 {
+	UI::instance().set_current_panel(UI::Panel::STDSCR);
+	UI::instance().print(0, 0, "Generating cave...");
+	UI::instance().update();
+
 	rng.seed(seed + level);
 	canvas = Cave(level, height, width, seed);
 	form_rock();

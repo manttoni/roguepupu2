@@ -14,8 +14,8 @@ class Game
 	public:
 		Game();
 		void start();
-		double move_with_mouse(const MEVENT& event);
-		void action_menu(const MEVENT& event);
+		double move_with_mouse();
+		void action_menu();
 };
 
 void start_game();

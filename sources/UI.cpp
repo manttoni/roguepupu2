@@ -5,6 +5,7 @@
 #include <any>
 #include <utility>
 #include <climits>
+#include <chrono>
 #include "Utils.hpp"
 #include "UI.hpp"
 #include "Menu.hpp"
@@ -14,6 +15,8 @@
 #include "Utils.hpp"
 #include "CaveGenerator.hpp"
 #include "Game.hpp"
+
+
 
 void UI::print_wide(const size_t y, const size_t x, const wchar_t wc)
 {
@@ -38,6 +41,10 @@ void UI::print(const char ch)
 void UI::print(const std::string& str)
 {
 	wprintw(panel_window(current_panel), "%s", str.c_str());
+}
+void UI::print(const size_t y, const size_t x, const std::string& str)
+{
+	mvwprintw(panel_window(current_panel), y, x, "%s\n", str.c_str());
 }
 void UI::println(const std::string& str)
 {
@@ -86,30 +93,57 @@ void UI::reset_colors()
 	initialized_color_pairs.clear();
 }
 
-// if read_only is false, loop() will be infinite if called here
-// default delay is -1 which means it's blocking
-// otherwise waits only delay times ms for input
+// return input as int for ncurses
+// if no delay defined, will wait forever for input
+// otherwise will be non-blocking, but waiting for delay times ms
 int UI::input(int delay)
 {
-	update();
-	timeout(delay);
-	int key = getch();
-	timeout(-1);
-	flushinp();
+	int key = ERR;
+	auto start = std::chrono::steady_clock::now();
+	auto now = start;
+	while (delay == -1 || std::chrono::duration_cast<std::chrono::milliseconds>(now - start).count() < delay)
+	{	// the condition implicitly checks for delay == 0
+		now = std::chrono::steady_clock::now();
+		size_t mult = 1; // increase time elapsed per iteration of this loop
+		timeout(mult * delay / std::abs(delay));
+		key = getch();
 
+		MEVENT mouse_event;
+		if (key == KEY_MOUSE && getmouse(&mouse_event) == OK)
+		{
+			if (mouse_event.bstate & BUTTON1_CLICKED)
+				key = KEY_LEFT_CLICK;
+			else if (mouse_event.bstate & BUTTON2_CLICKED)
+				key = KEY_RIGHT_CLICK;
+			else // mouse movement
+			{
+				// save new mouse position
+				mouse_position = {
+					static_cast<size_t>(mouse_event.y),
+					static_cast<size_t>(mouse_event.x)
+				};
+				key = ERR; // make it known that there was no input
+				continue; // go back to beginning and wait for real input
+			}
+		}
+
+		auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now - start).count();
+		if (key == ERR && elapsed_ms < delay) // no input and still time to get input
+			continue;
+		break; // got input or time ran out
+	}
+	timeout(-1);
+
+	// update debug window
 	if (show_debug == true)
 	{
-		MEVENT event;
-		Menu& debug = menus.at("debug");
+		auto& debug = menus.at("debug");
 		debug.set_value("Keypress", key);
 		debug.set_value("Colors", initialized_colors.size());
 		debug.set_value("Color pairs", initialized_color_pairs.size());
+		debug.set_value("Mouse y", mouse_position.y);
+		debug.set_value("Mouse x", mouse_position.x);
 		debug.loop();
-		if (key == KEY_MOUSE && getmouse(&event) == OK)
-		{
-			debug.set_value("Mouse y", event.y);
-			debug.set_value("Mouse x", event.x);
-		}
 	}
 
 	return key;
@@ -129,8 +163,8 @@ void UI::init_menus()
 	debug_elements.push_back(std::make_unique<MenuNum<size_t>>("Colors"));
 	debug_elements.push_back(std::make_unique<MenuNum<size_t>>("Color pairs"));
 	debug_elements.push_back(std::make_unique<MenuNum<int>>("Keypress"));
-	debug_elements.push_back(std::make_unique<MenuNum<int>>("Mouse y"));
-	debug_elements.push_back(std::make_unique<MenuNum<int>>("Mouse x"));
+	debug_elements.push_back(std::make_unique<MenuNum<size_t>>("Mouse y"));
+	debug_elements.push_back(std::make_unique<MenuNum<size_t>>("Mouse x"));
 	debug_elements.push_back(std::make_unique<MenuNum<size_t>>("player_y"));
 	debug_elements.push_back(std::make_unique<MenuNum<size_t>>("player_x"));
 	menus["debug"] = Menu(std::move(debug_elements), Screen::botleft());
@@ -146,30 +180,50 @@ void UI::init_menus()
 	menus["cell_info"] = Menu(std::move(cell_info_elements), Screen::topright());
 	menus["cell_info"].set_read_only(true);
 }
+
+void UI::init_panels()
+{
+	add_panel(Panel::STDSCR, new_panel(stdscr));
+}
+
 void UI::init()
 {
-	ln = 0;
+	loop_number = 0;
 	setlocale(LC_ALL, "");
 	initscr();
 	start_color();
-	Log::log("initscr() width:" + std::to_string(Screen::width()) + " height:" + std::to_string(Screen::height()));
 	init_menus();
-	Log::log("Menus initialized");
+	init_panels();
+
+	// signals should reset original terminal mode
 	std::signal(SIGSEGV, handle_signal);
 	std::signal(SIGABRT, handle_signal);
 	std::signal(SIGFPE, handle_signal);
 	std::signal(SIGINT, handle_signal);
+
+	// keyboard input
 	noecho();
 	curs_set(0);
 	keypad(stdscr, TRUE);
 	set_escdelay(25);
+
+	// mouse input
 	mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, nullptr);
+	printf("\033[?1003h\n");	// mouse movement will trigger KEY_MOUSE events
+	fflush(stdout);				// to know current cursor location
+
 	Log::log("UI init finished");
 }
 
 void UI::end()
 {
+	// this will restore normal terminal mode
 	endwin();
+
+	// reset mouse mode
+	printf("\033[?1003l\n");
+	fflush(stdout);
+
 	std::exit(0);
 }
 

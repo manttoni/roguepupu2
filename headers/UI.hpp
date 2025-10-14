@@ -13,6 +13,8 @@
 #include "Menu.hpp"
 
 #define KEY_ESCAPE 27
+#define KEY_LEFT_CLICK 420
+#define KEY_RIGHT_CLICK 421
 
 class UI
 {
@@ -47,6 +49,7 @@ class UI
 	public:
 		enum class Panel
 		{
+			STDSCR,
 			GAME,
 			LOG,
 		};
@@ -79,23 +82,31 @@ class UI
 		void set_show_debug(const bool value) { this->show_debug = value; }
 		void toggle_show_debug() { show_debug = !show_debug; }
 
+	private:
+		Screen::Coord mouse_position;
+	public:
+		Screen::Coord get_mouse_position() const { return mouse_position; }
+		void set_mouse_position(Screen::Coord& mouse_position) { this->mouse_position = mouse_position; }
 
 	private:
 		PANEL* current_panel;
 		std::map<std::string, Menu> menus;
-		size_t ln;
+		size_t loop_number;
 	public:
 		Menu& get_menu(const std::string& name) { return menus.at(name); }
 		void set_current_panel(PANEL* current_panel) { this->current_panel = current_panel; }
+		void set_current_panel(Panel p) { this->current_panel = panels[p]; }
 		PANEL* get_current_panel() const { return current_panel; }
 		WINDOW* get_current_window() const { return panel_window(current_panel); }
-		size_t loop_number() const { return ln; }
+		size_t get_loop_number() const { return loop_number; }
+		void increase_loop_number() { loop_number++; }
 
 		void print_wide(const size_t y, const size_t x, wchar_t wc);
 		void print_wide(wchar_t wc);
 		void print(const size_t y, const size_t x, const char ch);
 		void print(const char ch);
 		void print(const std::string& str);
+		void print(const size_t y, const size_t x, const std::string& str);
 		void println(const std::string& str);
 
 		int input(int delay = -1); // wrapper for getch
@@ -107,6 +118,7 @@ class UI
 		void enable_color_pair(const ColorPair& color_pair);
 		void update() { update_panels(); doupdate(); }
 		void init_menus();
+		void init_panels();
 		void init();
 		void end();
 };

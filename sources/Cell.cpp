@@ -88,7 +88,7 @@ ColorPair Cell::get_color_pair() const
 	// foreground
 	if (entities.size() > 0)
 	{
-		size_t ln = UI::instance().loop_number();
+		size_t ln = UI::instance().get_loop_number();
 		const auto& e = entities[ln % entities.size()];
 		ret_fg = e->get_color();
 	}
@@ -138,6 +138,6 @@ wchar_t Cell::get_symbol() const
 	if (entities_size == 0)
 		return symbol;
 
-	const auto& entity = entities[UI::instance().loop_number() % entities_size];
+	const auto& entity = entities[UI::instance().get_loop_number() % entities_size];
 	return entity->get_symbol();
 }

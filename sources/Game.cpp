@@ -36,37 +36,32 @@ void Game::start()
 	while (key != KEY_ESCAPE)
 	{
 		current_cave.draw(*player);
-		key = UI::instance().input();
+		key = UI::instance().input(500);
 
-		if (key == KEY_MOUSE)
-		{
-			MEVENT event;
-			if (getmouse(&event) == OK)
-			{
-				if (event.bstate & BUTTON1_CLICKED)
-					move_with_mouse(event);
-				else if (event.bstate & BUTTON2_CLICKED)
-					action_menu(event);
-			}
-		}
-
-		if (key == KEY_F(1))
+		if (key == KEY_LEFT_CLICK)
+			move_with_mouse();
+		else if (key == KEY_RIGHT_CLICK)
+			action_menu();
+		else if (key == KEY_F(1))
 			UI::instance().toggle_show_debug();
+
+		UI::instance().increase_loop_number();
 	}
 }
 
 // left click movement
 // if there is an enemy, will attack that enemy also
-double Game::move_with_mouse(const MEVENT& event)
+double Game::move_with_mouse()
 {
+	Screen::Coord mouse_position = UI::instance().get_mouse_position();
 	PANEL* panel = UI::instance().get_panel(UI::Panel::GAME);
 	WINDOW* window = panel_window(panel);
 	int window_height, window_width, window_starty, window_startx;
 	getmaxyx(window, window_height, window_width);
 	getbegyx(window, window_starty, window_startx);
 
-	int mouse_y = event.y - window_starty;
-	int mouse_x = event.x - window_startx;
+	int mouse_y = mouse_position.y - window_starty;
+	int mouse_x = mouse_position.x - window_startx;
 
 	int window_center_y = window_height / 2;
 	int window_center_x = window_width / 2;
@@ -94,9 +89,7 @@ double Game::move_with_mouse(const MEVENT& event)
 		movement += player->move(cells[cell_idx]);
 		current_cave.draw(*player);
 
-		// check for input during movement
-		// if input == ERR, there was no input
-		// else stop moving
+		// stop with any input
 		if (UI::instance().input(100) != ERR)
 			break;
 	}
@@ -107,10 +100,8 @@ double Game::move_with_mouse(const MEVENT& event)
 // opens a temporary menu with clickable buttons
 // shows all possible actions for the cell clicked
 // clickin an option or outside of menu closes it
-void Game::action_menu(const MEVENT& event)
-{
-	(void) event;
-}
+void Game::action_menu()
+{}
 
 void start_game()
 {
