@@ -24,6 +24,11 @@ enum class Direction
 	RIGHT
 };
 
+struct Vec2
+{
+	int dy, dx;
+};
+
 namespace Screen
 {
 	struct Coord { size_t y, x; };

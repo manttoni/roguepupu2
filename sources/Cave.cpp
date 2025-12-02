@@ -264,12 +264,14 @@ void Cave::apply_lights()
 
 		for (const auto& idx : area)
 		{
-			double d = distance(ent_idx, idx);
-			double intensity = glow.intensity * std::max(0.0, 1.0 - d / glow.radius);
-			Color g = glow.color * intensity;
+			if (!has_vision(ent_idx, idx))
+				continue;
+
+			//double d = distance(ent_idx, idx);
+			//double intensity = glow.intensity * std::max(0.0, 1.0 - d / glow.radius);
+			Color g = glow.color;// * intensity;
 			cells[idx].add_light(g);
 
-			Log::log("Light added: " + g.to_string());
 		}
 	}
 }
@@ -349,7 +351,7 @@ entt::entity Cave::create_entity(const std::string& name, Cell& cell)
 	else if (name == "Glowing Mushroom")
 	{
 		registry.emplace<Renderable>(entity, L'*', Color(30, 0, 150));
-		registry.emplace<Glow>(entity, Color(30, 0, 150), 0.25, 4.0);
+		registry.emplace<Glow>(entity, Color(6, 0, 30), 0.25, 5.0);
 	}
 	else if (name == "Woody Mushroom")
 	{

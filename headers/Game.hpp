@@ -3,6 +3,7 @@
 #include <ncurses.h>
 #include <panel.h>
 #include "CaveGenerator.hpp"
+#include "Utils.hpp"
 
 class Game
 {
@@ -14,6 +15,7 @@ class Game
 		void start();
 		void end();
 		double move_with_mouse();
+		double move_player(const Vec2& direction);
 		void action_menu();
 };
 
