@@ -8,7 +8,6 @@
 #include "PerlinNoise.hpp"
 #include "Cave.hpp"
 #include "CaveGenerator.hpp"
-#include "Testing.hpp"
 
 void run()
 {
@@ -18,9 +17,7 @@ void run()
 int main(void)
 {
 	Log::log("--- Run started ---");
-	test();
 	UI::instance().init();
-	Log::log("Tests passed");
 	run();
 	Log::log("Run completed");
 	UI::instance().end();

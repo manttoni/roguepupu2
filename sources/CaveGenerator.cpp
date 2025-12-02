@@ -7,8 +7,6 @@
 #include "CaveGenerator.hpp"
 #include "Cave.hpp"
 #include "UI.hpp"
-#include "Fungus.hpp"
-#include "EntityFactory.hpp"
 
 CaveGenerator::CaveGenerator()
 	: height(200), width(200), size(height * width),
@@ -30,6 +28,7 @@ CaveGenerator::CaveGenerator(
 {
 	margin = static_cast<size_t>(height * margin_percent / 100);
 }
+/*
 CaveGenerator::CaveGenerator(CaveGenerator&& other)
 {
 	height = other.height;
@@ -65,12 +64,13 @@ CaveGenerator& CaveGenerator::operator=(CaveGenerator&& other)
 	}
 	return *this;
 }
-
+*/
 
 // A* to find path of least resistance through solid rock
 // optimize later to use the indices instead of cells
 std::vector<size_t> CaveGenerator::find_water_path()
 {
+	auto& canvas = caves.back();
 	auto& cells = canvas.get_cells();
 	size_t start = canvas.get_source_idx();
 	size_t end = canvas.get_sink_idx();
@@ -139,7 +139,7 @@ std::vector<size_t> CaveGenerator::find_water_path()
 
 void CaveGenerator::form_tunnels()
 {
-	top_panel(CaveView::cave_panel);
+	auto& canvas = caves.back();
 	while (canvas.find_path(canvas.get_source_idx(), canvas.get_sink_idx()).empty())
 	{
 		find_water_path();
@@ -148,6 +148,7 @@ void CaveGenerator::form_tunnels()
 
 void CaveGenerator::form_rock()
 {
+	auto& canvas = caves.back();
 	size_t level = canvas.get_level();
 	auto& cells = canvas.get_cells();
 	for (size_t i = 0; i < size; ++i)
@@ -175,6 +176,7 @@ void CaveGenerator::form_rock()
 
 void CaveGenerator::set_source_sink()
 {
+	auto& canvas = caves.back();
 	if (canvas.get_level() == 1)
 		canvas.set_source_idx(height / 2 * width + width / 2);
 	else
@@ -192,12 +194,12 @@ void CaveGenerator::set_source_sink()
 // Woody fungi grow if there is enough space
 void CaveGenerator::spawn_fungi()
 {
+	auto& canvas = caves.back();
 	const double WOODY_RADIUS = 5;
 	const double WOODY_SPACE_RATIO = 0.90;
 	const double FUNGUS_FREQUENCY = 0.1;
 	const size_t FUNGUS_OCTAVES = 1;
 	auto& cells = canvas.get_cells();
-	const EntityFactory& ef = EntityFactory::instance();
 	for (size_t i = 0; i < size; ++i)
 	{
 		if (Random::noise3D(i / width, i % width, canvas.get_level(), FUNGUS_FREQUENCY, seed, FUNGUS_OCTAVES) > fungus_spawn_chance
@@ -209,7 +211,7 @@ void CaveGenerator::spawn_fungi()
 		{
 			if (canvas.neighbor_has_type(i, Cell::Type::ROCK))
 			{
-				cell.add_entity(ef.get_fungus("glowing"));
+				canvas.create_entity("Glowing Mushroom", cell);
 				continue;
 			}
 			const auto& nearby = canvas.get_nearby_ids(i, WOODY_RADIUS);
@@ -219,7 +221,7 @@ void CaveGenerator::spawn_fungi()
 					space++;
 			double a = 3.14 * WOODY_RADIUS * WOODY_RADIUS;
 			if (space / a > WOODY_SPACE_RATIO)
-				cell.add_entity(ef.get_fungus("woody"));
+				canvas.create_entity("Woody Mushroom", cell);
 		}
 
 	}
@@ -227,6 +229,7 @@ void CaveGenerator::spawn_fungi()
 
 void CaveGenerator::set_rock_colors()
 {
+	auto& canvas = caves.back();
 	for (auto& cell : canvas.get_cells())
 	{
 		if (cell.get_type() != Cell::Type::ROCK)
@@ -241,18 +244,14 @@ void CaveGenerator::generate_cave(const size_t level)
 	UI::instance().dialog("Generating cave...");
 
 	rng.seed(seed + level);
-	canvas = Cave(level, height, width, seed);
+	caves.emplace_back(level, height, width, seed);
+
 	form_rock();
 	set_source_sink();
 	form_tunnels();
 	spawn_fungi();
 	set_rock_colors();
 
-	// don't copy, just move
-	caves.push_back(std::move(canvas));
-	// set ptr to cave for cells
-	for (auto& cell : caves.back().get_cells())
-		cell.set_cave(&caves.back());
 	return;
 }
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <deque>
 #include <ncurses.h>
 #include "PerlinNoise.hpp"
 #include "Cell.hpp"
@@ -12,8 +13,7 @@ class CaveGenerator
 		static constexpr size_t EDGE_WEIGH_MULT = 1;
 		static constexpr size_t MAX_ROCK_DENSITY = 9; // max density of rock
 
-		Cave canvas;
-		std::vector<Cave> caves;
+		std::deque<Cave> caves;
 
 		size_t height;
 		size_t width;
@@ -48,8 +48,11 @@ class CaveGenerator
 						const double B,
 						const double C,
 						const double fungus_spawn_chance);
-		CaveGenerator(CaveGenerator&& other);
-		CaveGenerator& operator=(CaveGenerator&& other);
+
+		CaveGenerator(const CaveGenerator& other) = delete;
+		CaveGenerator& operator=(const CaveGenerator&& other) = delete;
+		CaveGenerator(CaveGenerator&& other) = default;
+		CaveGenerator& operator=(CaveGenerator&& other) = default;
 
 		void generate_cave(const size_t level);
 		Cave& get_cave(const size_t level);

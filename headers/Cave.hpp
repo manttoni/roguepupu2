@@ -5,40 +5,40 @@
 #include <iostream>
 #include "Cell.hpp"
 #include "Utils.hpp"
-#include "Creature.hpp"
+#include "entt.hpp"
 
 class Cave
 {
 	private:
 		size_t height, width;
-		std::vector<Cell> cells;
-		size_t level;
-		size_t seed;
-		size_t source, sink; // water flow
-
 	public:
-		/* CONSTRUCTORS */
-		Cave();
-		Cave(const size_t level, const size_t height, const size_t width, const size_t seed);
-		Cave(const std::string& map, const size_t width);
-		Cave(Cave&& other);
-		Cave& operator=(Cave&& other);
-
-		/* GETTERS */
 		size_t get_height() const { return height; }
 		size_t get_width() const { return width; }
 		size_t get_size() const { return cells.size(); }
+
+	private:
+		std::vector<Cell> cells;
+	public:
 		const std::vector<Cell>& get_cells() const { return cells; }
 		std::vector<Cell>& get_cells() { return cells; }
+
+	private:
+		entt::registry registry;
+	public:
+		entt::entity create_entity(const std::string& type, Cell& cell);
+		entt::registry& get_registry() { return registry; }
+
+	private:
+		size_t level;
+		size_t seed;
+		size_t source, sink;
+	public:
 		size_t get_level() const { return level; }
 		int get_seed() const { return seed; }
 		size_t get_source_idx() const { return source; }
 		size_t get_sink_idx() const { return sink; }
-
-		/* SETTERS */
 		void set_level(const size_t level) { this->level = level; }
 		void set_seed(const int seed) { this->seed = seed; }
-//		void set_cells(const std::vector<Cell>& cells) { this->cells = cells; }
 		void set_source_idx(const size_t source)
 		{
 			this->source = source;
@@ -58,8 +58,16 @@ class Cave
 			cells[sink].set_fg(Color(1000, 1000, 1000));
 		}
 
-		/* TESTING */
-		void print_cave();
+	public:
+		Cave();
+		Cave(const size_t level, const size_t height, const size_t width, const size_t seed);
+		Cave(const std::string& map, const size_t width);
+
+		Cave(const Cave& other) = delete;
+		Cave& operator=(const Cave& other) = delete;
+
+		Cave(Cave&& other) = default;
+		Cave& operator=(Cave&& other) = default;
 
 		/* CELL TO CELL */
 		std::vector<size_t> find_path(const size_t start, const size_t end);
@@ -69,10 +77,8 @@ class Cave
 		bool has_access(const size_t from_idx, const size_t to_idx) const;
 		bool neighbor_has_type(const size_t middle, const Cell::Type type) const;
 		bool has_vision(const size_t from, const size_t to, const double vision_range = 0) const;
-
-		void clear_lights();
-		void apply_lights();
 		void reset_lights();
-
-		void draw(const Creature& player);
+		void apply_lights();
+		void clear_lights();
+		void draw();
 };

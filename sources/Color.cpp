@@ -56,12 +56,26 @@ Color Color::operator*(const int scalar) const
 		static_cast<short>(std::min(g * scalar, 1000)),
 		static_cast<short>(std::min(b * scalar, 1000)));
 }
+Color Color::operator*(const double scalar) const
+{
+	return Color(
+			static_cast<short>(std::min(r * scalar, 1000.0)),
+			static_cast<short>(std::min(g * scalar, 1000.0)),
+			static_cast<short>(std::min(b * scalar, 1000.0)));
+}
 Color Color::operator/(const int scalar) const
 {
 	return Color(
 		static_cast<short>(std::min(r / scalar, 1000)),
 		static_cast<short>(std::min(g / scalar, 1000)),
 		static_cast<short>(std::min(b / scalar, 1000)));
+}
+Color Color::operator/(const double scalar) const
+{
+	return Color(
+			static_cast<short>(std::min(r / scalar, 1000.0)),
+			static_cast<short>(std::min(g / scalar, 1000.0)),
+			static_cast<short>(std::min(b / scalar, 1000.0)));
 }
 
 short Color::init() const
@@ -79,4 +93,9 @@ short Color::init() const
 	ss << "Color initialized: " << color_id << " " << r << " " << g << " " << b;
 	Log::log(ss.str());
 	return color_id;
+}
+
+std::string Color::to_string() const
+{
+	return "(" + std::to_string(r) + ", " + std::to_string(g) + ", " + std::to_string(b) + ")";
 }

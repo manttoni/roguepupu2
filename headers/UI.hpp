@@ -137,12 +137,3 @@ static inline void quit()
 	UI::instance().end();
 }
 
-namespace CaveView
-{
-	void draw_cave();
-	void cave_generator();
-	extern PANEL* cave_panel;
-	extern Cave* current_cave;
-	extern Menu settings;
-	void show_cell_info(const Cell& cell);
-}

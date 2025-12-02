@@ -5,7 +5,6 @@
 #include "CaveGenerator.hpp"
 #include "UI.hpp"
 #include "Utils.hpp"
-#include "EntityFactory.hpp"
 
 Game::Game() :
 	cavegen(CaveGenerator()),
@@ -13,21 +12,13 @@ Game::Game() :
 {
 	const size_t start_idx = current_cave.get_source_idx();
 	auto& spawn_cell = current_cave.get_cells()[start_idx];
-
-	auto player_ptr = EntityFactory::instance().get_creature("Rabdin");
-	auto& player_ref = *player_ptr;
-
-	spawn_cell.add_entity(std::move(player_ptr));
-	player_ref.set_cell(&spawn_cell);
-
-	player = &player_ref;
+	current_cave.create_entity("player", spawn_cell);
 
 	PANEL* game = new_panel(newwin(Screen::height(), Screen::width(), 0, 0));
 	UI::instance().add_panel(UI::Panel::GAME, game);
 
 	// log stuff
 	Log::log("Game created.");
-	assert(player->get_name() == "Rabdin");
 }
 
 void Game::start()
@@ -35,17 +26,17 @@ void Game::start()
 	int key = 0;
 	while (key != KEY_ESCAPE)
 	{
-		current_cave.draw(*player);
+		current_cave.draw();
 		key = UI::instance().input(500);
 
 		switch (key)
 		{
-			case KEY_LEFT_CLICK:
+			/*case KEY_LEFT_CLICK:
 				move_with_mouse();
-				break;
-			case KEY_RIGHT_CLICK:
+				break;*/
+			/*case KEY_RIGHT_CLICK:
 				action_menu();
-				break;
+				break;*/
 			case KEY_ESCAPE:
 				if (UI::instance().dialog("Quit to main menu?", {"Yes", "No"}) == "No")
 					key = 0;
@@ -55,6 +46,7 @@ void Game::start()
 	}
 }
 
+/*
 // left click movement
 // if there is an enemy, will attack that enemy also
 double Game::move_with_mouse()
@@ -75,7 +67,7 @@ double Game::move_with_mouse()
 	int offset_y = mouse_y - window_center_y;
 	int offset_x = mouse_x - window_center_x;
 
-	const size_t player_idx = player->get_idx();
+	const size_t player_idx = get_player()->get_idx();
 	int player_y = player_idx / current_cave.get_width();
 	int player_x = player_idx % current_cave.get_width();
 
@@ -101,6 +93,7 @@ double Game::move_with_mouse()
 	}
 	return movement;
 }
+*/
 
 void Game::end()
 {

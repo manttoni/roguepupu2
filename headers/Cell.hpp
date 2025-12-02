@@ -4,23 +4,14 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "Entity.hpp"
 #include "Utils.hpp"
 #include "Color.hpp"
 #include "ColorPair.hpp"
+#include "entt.hpp"
 
+class Cave;
 class Cell
 {
-	public:
-		enum class Type
-		{
-			ROCK,	// solid rock
-			FLOOR,	// empty space with a floor
-			SOURCE,	// previous level
-			SINK,	// next level
-			NONE,	// default
-		};
-
 	private:
 		size_t idx;
 	public:
@@ -31,6 +22,15 @@ class Cell
 			this->idx = i;
 		}
 
+	public:
+		enum class Type
+		{
+			ROCK,	// solid rock
+			FLOOR,	// empty space with a floor
+			SOURCE,	// previous level
+			SINK,	// next level
+			NONE,	// default
+		};
 	private:
 		Type type;
 	public:
@@ -40,7 +40,6 @@ class Cell
 		void set_type(const Cell::Type type) {
 			this->type = type;
 		}
-
 
 	private:
 		Cave* cave;
@@ -70,6 +69,15 @@ class Cell
 		void reduce_density(const double amount);
 
 	private:
+		Color fg, bg;
+	public:
+		Color get_fg() const { return fg; }
+		Color get_bg() const { return bg; }
+		void set_fg(const Color& fg) { this->fg = fg; }
+		void set_bg(const Color& bg) { this->bg = bg; }
+		ColorPair get_color_pair() const;
+
+	private:
 		std::map<Color, size_t> lights;
 	public:
 		auto get_lights() const {
@@ -83,42 +91,15 @@ class Cell
 		}
 
 	private:
-		std::vector<std::unique_ptr<Entity>> entities;
-	public:
-		void add_entity(std::unique_ptr<Entity>&& ent) {
-			ent->set_cell(this);
-			entities.push_back(std::move(ent));
-		}
-		const auto& get_entities() const {
-			return entities;
-		}
-		auto& get_entities() {
-			return entities;
-		}
-
-	// Colors of cell itself.
-	// If there is entity, it will have priority over the fg
-	private:
-		Color fg, bg;
-	public:
-		Color get_fg() const { return fg; }
-		Color get_bg() const { return bg; }
-		void set_fg(const Color& fg) { this->fg = fg; }
-		void set_bg(const Color& bg) { this->bg = bg; }
-		ColorPair get_color_pair() const;
-
-	private:
 		bool seen = false;
 	public:
 		bool is_seen() const { return seen; }
 		void set_seen(const bool seen) { this->seen = seen; }
 
-
-
 	public:
 		Cell();
 		Cell(const size_t idx, const Type& type, Cave* cave, const wchar_t symbol, const double density = 0);
-		Cell(Cell&& other);
+		Cell(const Cell& other) = default;
 
 		char get_char() const;
 
@@ -126,12 +107,12 @@ class Cell
 		bool operator==(const Cell &other) const;
 		bool operator!=(const Cell &other) const;
 		bool operator<(const Cell &other) const;
-		Cell &operator=(Cell&& other);
+		Cell &operator=(const Cell& other) = default;
 
 		/* CELL FEATURES */
 		bool blocks_vision() const;
 		bool blocks_movement() const;
 
-		/* EFFECTS */
-		void trigger_effect(Effect& effect);
+		// Get entities in this
+		std::vector<entt::entity> get_entities() const;
 };

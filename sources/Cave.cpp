@@ -7,8 +7,8 @@
 #include "Cell.hpp"
 #include "Utils.hpp"
 #include "UI.hpp"
-#include "Light.hpp"
-#include "Creature.hpp"
+#include "Components.hpp"
+#include "entt.hpp"
 
 /* CONSTRUCTORS */
 // DEFAULT
@@ -29,32 +29,11 @@ Cave::Cave(const size_t level, const size_t height, const size_t width, const si
 	seed(seed),
 	source(0),
 	sink(0)
-{}
-
-// COPY
-Cave::Cave(Cave&& other) :
-	height(other.height),
-	width(other.width),
-	cells(std::move(other.cells)),
-	level(other.level),
-	seed(other.seed),
-	source(other.source),
-	sink(other.sink) {}
-
-Cave& Cave::operator=(Cave&& other)
 {
-	if (this == &other)
-		return *this;
-
-	height = other.height;
-	width = other.width;
-	cells = std::move(other.cells);
-	level = other.level;
-	seed = other.seed;
-	source = other.source;
-	sink = other.sink;
-	return *this;
+	for (auto& cell : cells)
+		cell.set_cave(this);
 }
+
 
 // constructor using premade map
 Cave::Cave(const std::string& map, const size_t width) : height(map.size() / width), width(width)
@@ -224,34 +203,6 @@ bool Cave::has_access(const size_t from_idx, const size_t to_idx) const
 	return true;
 }
 
-void Cave::clear_lights()
-{
-	for (auto& cell : cells)
-	{
-		cell.reset_lights();
-	}
-}
-
-void Cave::apply_lights()
-{
-	for (auto& cell : cells)
-	{
-		for (const auto& entity : cell.get_entities())
-		{
-			for (auto& light : entity->get_lights())
-			{
-				light.trigger(*this, cell.get_idx());
-			}
-		}
-	}
-}
-
-void Cave::reset_lights()
-{
-	clear_lights();
-	apply_lights();
-}
-
 bool Cave::has_vision(const size_t start, const size_t end, const double vision_range) const
 {
 	if (vision_range > 0 && distance(start, end) > vision_range)
@@ -292,12 +243,48 @@ bool Cave::has_vision(const size_t start, const size_t end, const double vision_
 
 	return true;
 }
-
-// draw cave from perspective of player or other creature
-void Cave::draw(const Creature& player)
+void Cave::clear_lights()
 {
-	Log::log("Drawing cave");
-	const size_t player_idx = player.get_idx();
+	for (auto& cell : cells)
+	{
+		cell.reset_lights();
+	}
+}
+
+void Cave::apply_lights()
+{
+	auto glowing_entities = registry.view<Position, Glow>();
+	for (const auto& entity : glowing_entities)
+	{
+		const auto& glow = glowing_entities.get<Glow>(entity);
+		const auto& pos = glowing_entities.get<Position>(entity);
+
+		const auto& ent_idx = pos.cell->get_idx();
+		const auto& area = get_nearby_ids(ent_idx, glow.radius);
+
+		for (const auto& idx : area)
+		{
+			double d = distance(ent_idx, idx);
+			double intensity = glow.intensity * std::max(0.0, 1.0 - d / glow.radius);
+			Color g = glow.color * intensity;
+			cells[idx].add_light(g);
+
+			Log::log("Light added: " + g.to_string());
+		}
+	}
+}
+
+void Cave::reset_lights()
+{
+	clear_lights();
+	apply_lights();
+}
+void Cave::draw()
+{
+	const auto& player = *registry.view<Player>().begin();
+	const auto& player_position = registry.get<Position>(player);
+	const size_t player_idx = player_position.cell->get_idx();
+
 	reset_lights();
 
 	PANEL* panel = UI::instance().get_panel(UI::Panel::GAME);
@@ -328,7 +315,7 @@ void Cave::draw(const Creature& player)
 
 		auto color_pair = cell.get_color_pair();
 
-		if (!has_vision(player_idx, cell_idx, player.get_vision_range()))
+		if (!has_vision(player_idx, cell_idx, registry.get<Vision>(player).range))
 		{
 			if (cell.is_seen()) // "ghost" cell if it was seen before
 				color_pair = ColorPair(Color(123, 123, 123), Color(0, 0, 0));
@@ -340,9 +327,39 @@ void Cave::draw(const Creature& player)
 		UI::instance().enable_color_pair(color_pair);
 		UI::instance().print_wide(y, x, symbol);
 		cell.set_seen(true);
-
 	}
-
 	UI::instance().update();
-	Log::log("Cave drawn");
+}
+
+entt::entity Cave::create_entity(const std::string& name, Cell& cell)
+{
+	entt::entity entity = registry.create();
+	registry.emplace<Position>(entity, &cell);
+	if (name != "player")
+		registry.emplace<Name>(entity, name);
+
+	if (name == "player")
+	{
+		registry.emplace<Player>(entity);
+		registry.emplace<Name>(entity, "Rabdin");
+		registry.emplace<Renderable>(entity, L'@', Color(123, 456, 789));
+		registry.emplace<Solid>(entity);
+		registry.emplace<Vision>(entity, 10);
+	}
+	else if (name == "Glowing Mushroom")
+	{
+		registry.emplace<Renderable>(entity, L'*', Color(30, 0, 150));
+		registry.emplace<Glow>(entity, Color(30, 0, 150), 0.25, 4.0);
+	}
+	else if (name == "Woody Mushroom")
+	{
+		registry.emplace<Renderable>(entity, L'$', Color(666, 333, 0));
+		registry.emplace<Opaque>(entity);
+		registry.emplace<Solid>(entity);
+	}
+	else
+		throw std::runtime_error("Entity " + name + " doesn't exist");
+
+	Log::log("create_entity: " + name + " created succesfully");
+	return entity;
 }
