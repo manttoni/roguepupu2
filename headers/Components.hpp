@@ -16,20 +16,24 @@ struct Position
 
 struct Renderable
 {
-	wchar_t symbol;
+	wchar_t glyph;
 	Color color;
 };
 
 struct Glow
 {
-	Color color;
-	double intensity;
+	double strength;
 	double radius;
 };
 
 struct Vision
 {
 	int range;
+};
+
+struct Inventory
+{
+	std::vector<entt::entity> inventory;
 };
 
 struct Solid {};

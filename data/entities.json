@@ -1,0 +1,31 @@
+{
+	"Glowing Mushroom": {
+		"Renderable": {
+			"glyph": "*",
+			"color": [30, 0, 150]
+		},
+		"Glow": {
+			"strength": 0.25,
+			"radius": 5
+		}
+	},
+
+	"Woody Mushroom": {
+		"Renderable": {
+			"glyph": "$",
+			"color": [666, 333, 0]
+		},
+		"Opaque": true,
+		"Solid": true
+	},
+
+	"Crazy Goblin": {
+		"Renderable": {
+			"glyph": "g",
+			"color": [0, 100, 0]
+		},
+		"Solid": true,
+		"Vision": 7,
+		"Inventory": true
+	}
+}

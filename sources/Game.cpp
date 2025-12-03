@@ -13,7 +13,16 @@ Game::Game() :
 {
 	const size_t start_idx = current_cave.get_source_idx();
 	auto& spawn_cell = current_cave.get_cells()[start_idx];
-	current_cave.create_entity("player", spawn_cell);
+
+	auto& registry = current_cave.get_registry();
+	entt::entity player = registry.create();
+	registry.emplace<Renderable>(player, L'@', Color(123,456,789));
+	registry.emplace<Player>(player);
+	registry.emplace<Solid>(player);
+	registry.emplace<Vision>(player, 10);
+	registry.emplace<Inventory>(player);
+	registry.emplace<Name>(player, "Rabdin");
+	registry.emplace<Position>(player, &spawn_cell);
 
 	PANEL* game = new_panel(newwin(Screen::height(), Screen::width(), 0, 0));
 	UI::instance().add_panel(UI::Panel::GAME, game);

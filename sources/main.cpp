@@ -8,6 +8,7 @@
 #include "PerlinNoise.hpp"
 #include "Cave.hpp"
 #include "CaveGenerator.hpp"
+#include "EntityFactory.hpp"
 
 void run()
 {
@@ -17,6 +18,8 @@ void run()
 int main(void)
 {
 	Log::log("--- Run started ---");
+	EntityFactory::instance().init();
+	EntityFactory::instance().log_prototypes();
 	UI::instance().init();
 	run();
 	Log::log("Run completed");

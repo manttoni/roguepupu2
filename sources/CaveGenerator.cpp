@@ -5,8 +5,10 @@
 #include "Cell.hpp"
 #include "Utils.hpp"
 #include "CaveGenerator.hpp"
+#include "EntityFactory.hpp"
 #include "Cave.hpp"
 #include "UI.hpp"
+#include "entity_enums.hpp"
 
 CaveGenerator::CaveGenerator()
 	: height(200), width(200), size(height * width),
@@ -211,7 +213,7 @@ void CaveGenerator::spawn_fungi()
 		{
 			if (canvas.neighbor_has_type(i, Cell::Type::ROCK))
 			{
-				canvas.create_entity("Glowing Mushroom", cell);
+				EntityFactory::instance().create_entity(EntityType::glowing_mushroom, cell);
 				continue;
 			}
 			const auto& nearby = canvas.get_nearby_ids(i, WOODY_RADIUS);
@@ -221,7 +223,7 @@ void CaveGenerator::spawn_fungi()
 					space++;
 			double a = 3.14 * WOODY_RADIUS * WOODY_RADIUS;
 			if (space / a > WOODY_SPACE_RATIO)
-				canvas.create_entity("Woody Mushroom", cell);
+				EntityFactory::instance().create_entity(EntityType::woody_mushroom, cell);
 		}
 
 	}

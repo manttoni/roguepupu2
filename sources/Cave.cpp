@@ -253,11 +253,10 @@ void Cave::clear_lights()
 
 void Cave::apply_lights()
 {
-	auto glowing_entities = registry.view<Position, Glow>();
+	auto glowing_entities = registry.view<Position, Glow, Renderable>();
 	for (const auto& entity : glowing_entities)
 	{
-		const auto& glow = glowing_entities.get<Glow>(entity);
-		const auto& pos = glowing_entities.get<Position>(entity);
+		const auto [glow, pos, rend] = glowing_entities.get<Glow, Position, Renderable>(entity);
 
 		const auto& ent_idx = pos.cell->get_idx();
 		const auto& area = get_nearby_ids(ent_idx, glow.radius);
@@ -267,11 +266,8 @@ void Cave::apply_lights()
 			if (!has_vision(ent_idx, idx))
 				continue;
 
-			//double d = distance(ent_idx, idx);
-			//double intensity = glow.intensity * std::max(0.0, 1.0 - d / glow.radius);
-			Color g = glow.color;// * intensity;
+			Color g = rend.color;
 			cells[idx].add_light(g);
-
 		}
 	}
 }
@@ -333,35 +329,3 @@ void Cave::draw()
 	UI::instance().update();
 }
 
-entt::entity Cave::create_entity(const std::string& name, Cell& cell)
-{
-	entt::entity entity = registry.create();
-	registry.emplace<Position>(entity, &cell);
-	if (name != "player")
-		registry.emplace<Name>(entity, name);
-
-	if (name == "player")
-	{
-		registry.emplace<Player>(entity);
-		registry.emplace<Name>(entity, "Rabdin");
-		registry.emplace<Renderable>(entity, L'@', Color(123, 456, 789));
-		registry.emplace<Solid>(entity);
-		registry.emplace<Vision>(entity, 10);
-	}
-	else if (name == "Glowing Mushroom")
-	{
-		registry.emplace<Renderable>(entity, L'*', Color(30, 0, 150));
-		registry.emplace<Glow>(entity, Color(6, 0, 30), 0.25, 5.0);
-	}
-	else if (name == "Woody Mushroom")
-	{
-		registry.emplace<Renderable>(entity, L'$', Color(666, 333, 0));
-		registry.emplace<Opaque>(entity);
-		registry.emplace<Solid>(entity);
-	}
-	else
-		throw std::runtime_error("Entity " + name + " doesn't exist");
-
-	Log::log("create_entity: " + name + " created succesfully");
-	return entity;
-}

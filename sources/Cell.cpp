@@ -136,5 +136,5 @@ wchar_t Cell::get_symbol() const
 		return symbol;
 
 	const auto& entity = entities[UI::instance().get_loop_number() % entities_size];
-	return cave->get_registry().get<Renderable>(entity).symbol;
+	return cave->get_registry().get<Renderable>(entity).glyph;
 }
