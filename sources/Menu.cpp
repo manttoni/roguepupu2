@@ -37,10 +37,7 @@ Menu::Menu(	std::vector<std::unique_ptr<MenuElt>> elements_,
 	assert(window != nullptr);
 	panel = new_panel(window);
 	assert(panel != nullptr);
-	int window_height, window_width;
-	getmaxyx(window, window_height, window_width);
-	Log::log("Constructed a Menu at " + std::to_string(y) + ", " + std::to_string(x) + " with size: " + std::to_string(height) + " * " + std::to_string(width));
-	Log::log("It has a window with size: " + std::to_string(window_height) + " x " + std::to_string(window_width));
+
 }
 
 Menu::~Menu()

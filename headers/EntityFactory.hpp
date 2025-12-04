@@ -10,9 +10,9 @@ class EntityFactory
 {
 	private:
 		static constexpr const char* path = "data/entities.json";
-		nlohmann::json definitions;
+		nlohmann::ordered_json definitions;
 		entt::registry prototypes;
-		std::unordered_map<EntityType, entt::entity> LUT;
+		std::unordered_map<EntityType, nlohmann::json> LUT;
 	public:
 		static EntityFactory& instance()
 		{
@@ -21,11 +21,9 @@ class EntityFactory
 		}
 		void init();
 		void read_definitions();
-		void parse_prototypes();
+		void create_lut();
 		void log_prototypes() const;
 
 	public:
-		// Create from nothing
 		entt::entity create_entity(const EntityType type, Cell& cell);
-		//entt::entity create_entity(const EntityType type, const entt::entity entity);
 };

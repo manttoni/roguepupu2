@@ -12,7 +12,8 @@
 void EntityFactory::init()
 {
 	read_definitions();
-	parse_prototypes();
+	create_lut();
+	//parse_prototypes();
 }
 
 void EntityFactory::read_definitions()
@@ -28,6 +29,11 @@ using FieldParser = std::function<void(entt::registry&, entt::entity, const nloh
 
 std::unordered_map<std::string, FieldParser> field_parsers =
 {
+	{ "Name", [](auto& p, auto e, const nlohmann::json& data)
+		{
+			p.template emplace<Name>(e, data.get<std::string>());
+		}
+	},
 	{ "Renderable", [](auto& p, auto e, const nlohmann::json& data)
 		{	// Can be rendered
 			std::string glyph_str = data["glyph"].get<std::string>();
@@ -67,23 +73,15 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 	}
 };
 
-void EntityFactory::parse_prototypes()
+void EntityFactory::create_lut()
 {
+	std::cout << definitions.dump(4) << std::endl;
 	EntityType type = EntityType{};
 	for (const auto& [name, data] : definitions.items())
 	{
-		entt::entity e = prototypes.create();
-		prototypes.emplace<Name>(e, name);
-		for (const auto& [field_name, field_data] : data.items())
-		{
-			auto it = field_parsers.find(field_name);
-			if (it == field_parsers.end())
-				throw std::runtime_error("Uknown field name: " + field_name);
-
-			it->second(prototypes, e, field_data);
-		}
-		LUT[type] = e;
-		type = static_cast<EntityType>(static_cast<int>(type) + 1);
+		data["Name"] = name;
+		LUT[type] = data;
+		type = static_cast<EntityType>(static_cast<int>(type) + 1 );
 	}
 }
 
@@ -98,22 +96,29 @@ void EntityFactory::log_prototypes() const
 	Log::log("Total: " + std::to_string(entities.size()));
 }
 
+// Create an entity in the registry of the cave that "cell" is in
 entt::entity EntityFactory::create_entity(const EntityType type, Cell& cell)
 {
-	auto* cave = cell.get_cave();
-	auto& registry = cave->get_registry();
+	if (LUT.find(type) == LUT.end())
+		throw std::runtime_error("Entity not found");
 
-	const auto src = LUT[type];
-	const auto dst = registry.create();
+	auto& cave = *cell.get_cave();
+	auto& registry = cave.get_registry();
+	auto entity = registry.create();
 
-	for (auto [id, storage] : prototypes.storage())
+	const auto& j = LUT[type];
+	for (const auto& [field_name, field_data] : j.items())
 	{
-		if (storage.contains(src))
-			storage.push(dst, storage.value(src));
+		auto it = field_parsers.find(field_name);
+		if (it == field_parsers.end())
+			throw std::runtime_error("Unknown field name");
+
+		it->second(registry, entity, field_data);
 	}
+	registry.emplace<Position>(entity, &cell);
 
-	return dst;
+	Log::log("Entity created: " + registry.get<Name>(entity).name);
+
+	return entity;
 }
-
-//entt::entity EntityFactory::create_entity(const EntityType type, const entt::entity){}
 
