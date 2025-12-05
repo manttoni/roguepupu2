@@ -1,0 +1,32 @@
+name: Build with Make
+
+on:
+  push:
+    branches: ["*"]
+  pull_request:
+    branches: ["*"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Install build tools and dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake libncurses5-dev libncursesw5-dev
+
+        # Install nlohmann/json via package manager
+        sudo apt-get install -y nlohmann-json3-dev
+
+        # Install EnTT (header-only, clone into include path)
+        git clone --depth 1 https://github.com/skypjack/entt.git entt
+        cp entt/single_include/entt/entt.hpp headers/
+        rm -rf entt
+
+    - name: Build project
+      run: make
+
