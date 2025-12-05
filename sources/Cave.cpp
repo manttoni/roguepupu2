@@ -290,7 +290,7 @@ void Cave::draw()
 
 	werase(window);
 	UI::instance().reset_colors();
-	reset_lights();
+	//reset_lights();
 
 	int window_height, window_width;
 	getmaxyx(window, window_height, window_width);

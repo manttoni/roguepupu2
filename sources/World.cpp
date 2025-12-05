@@ -209,6 +209,7 @@ void World::generate_cave(const size_t level)
 	spawn_fungi();
 	set_rock_colors();
 
+	caves.back().apply_lights();
 	return;
 }
 
