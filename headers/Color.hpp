@@ -14,10 +14,10 @@ class Color
 		short get_b() const { return b; }
 
 	public:
-		Color();
+		Color() = default;
 		Color(const short r, const short g, const short b);
-		Color(const Color& other);
-		Color& operator=(const Color& other);
+		Color(const Color& other) = default;
+		Color& operator=(const Color& other) = default;
 		bool operator==(const Color& other) const;
 		bool operator!=(const Color& other) const;
 		bool operator<(const Color& other) const;

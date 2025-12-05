@@ -124,7 +124,7 @@ void World::form_rock()
 		cells[i].set_type(Cell::Type::ROCK);
 		cells[i].set_density(density);
 		cells[i].set_idx(i);
-		cells[i].set_symbol(L'█');
+		cells[i].set_glyph(L'█');
 	}
 }
 
@@ -169,7 +169,7 @@ void World::spawn_fungi()
 
 		if (canvas.neighbor_has_type(i, Cell::Type::ROCK))
 		{
-			EntityFactory::instance().create_entity(registry, EntityType::glowing_mushroom, cell);
+			EntityFactory::instance().create_entity(registry, "Glowing Mushroom", &cell);
 			continue;
 		}
 		const auto& nearby = canvas.get_nearby_ids(i, WOODY_RADIUS);
@@ -179,7 +179,7 @@ void World::spawn_fungi()
 				space++;
 		double a = 3.14 * WOODY_RADIUS * WOODY_RADIUS;
 		if (space / a > WOODY_SPACE_RATIO)
-			EntityFactory::instance().create_entity(registry, EntityType::woody_mushroom, cell);
+			EntityFactory::instance().create_entity(registry, "Woody Mushroom", &cell);
 
 	}
 }

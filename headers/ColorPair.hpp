@@ -12,7 +12,7 @@ class ColorPair
 		Color get_bg() const { return bg; }
 
 	public:
-		ColorPair();
+		ColorPair() = default;
 		ColorPair(const Color& fg, const Color& bg);
 
 		bool operator==(const ColorPair& other) const;

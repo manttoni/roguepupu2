@@ -30,7 +30,7 @@ class Game
 		Game();
 		void start();
 		void end();
-		void change_level();
+		void check_change_level();
 };
 
 void new_game();

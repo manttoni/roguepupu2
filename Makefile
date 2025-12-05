@@ -21,15 +21,8 @@ OBJS := $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SRCS))
 # Depending on headers
 DEP := $(OBJS:.o=.d)
 
-ENTITY_HEADER = headers/entity_enums.hpp
-ENTITY_JSON = data/entities.json
-ENTITY_ENUM = scripts/enumerate_entities.py
-
 # Default target
-all: $(ENTITY_HEADER) $(BIN)
-
-$(ENTITY_HEADER) : $(ENTITY_JSON) $(ENTITY_ENUM)
-	python3 $(ENTITY_ENUM)
+all: $(BIN)
 
 # Link object files into binary
 $(BIN): $(OBJS)

@@ -18,9 +18,6 @@ short ColorPair::init() const
 	short bg_id = bg.init();
 	init_pair(pair_id, fg_id, bg_id);
 	UI::instance().set_initialized_color_pair(*this, pair_id);
-	std::stringstream ss;
-	ss << "Color pair initialized: " << pair_id << " " << fg_id << " " << bg_id;
-	Log::log(ss.str());
 	return pair_id;
 }
 

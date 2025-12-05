@@ -1,0 +1,19 @@
+#pragma once
+
+#include <string>
+#include "entt.hpp"
+
+namespace EquipmentSystem
+{
+	enum class Slot
+	{
+		one_handed, // one_hand and two_hand are special cases,
+		two_handed, // they can be in left and/or right hand
+		left_hand,
+		right_hand,
+	};
+	Slot parse_slot(const std::string& str);
+	void equip(entt::registry& registry, const entt::entity entity, const entt::entity item);
+	void unequip(entt::registry& registry, const entt::entity entity, const entt::entity item);
+	bool is_equipped(const entt::registry& registry, const entt::entity& entity, const entt::entity& item);
+};
