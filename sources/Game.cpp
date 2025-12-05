@@ -6,6 +6,7 @@
 #include "UI.hpp"
 #include "Components.hpp"
 #include "Utils.hpp"
+#include "systems/MovementSystem.hpp"
 
 Game::Game() :
 	cavegen(CaveGenerator()),
@@ -27,13 +28,6 @@ Game::Game() :
 	PANEL* game = new_panel(newwin(Screen::height(), Screen::width(), 0, 0));
 	UI::instance().add_panel(UI::Panel::GAME, game);
 }
-
-std::map<int, Vec2> movement_keys = {
-	{KEY_UP,	{-1, 0}},
-	{KEY_RIGHT,	{0, 1}},
-	{KEY_DOWN,	{1, 0}},
-	{KEY_LEFT,	{0, -1}}
-};
 
 entt::entity Game::get_player()
 {
@@ -102,9 +96,9 @@ void Game::start()
 			break;
 		}
 
-		if (movement_keys.find(key) != movement_keys.end())
+		if (MovementSystem::movement_keys.find(key) != MovementSystem::movement_keys.end())
 		{
-			if (move_player(movement_keys[key]) > 0)
+			if (MovementSystem::move(current_cave->get_registry(), get_player(), MovementSystem::movement_keys[key]) > 0)
 				check_descend();
 			else
 				continue;
@@ -113,23 +107,6 @@ void Game::start()
 		current_cave->draw();
 		UI::instance().increase_loop_number();
 	}
-}
-
-double Game::move_player(const Vec2& direction)
-{
-	auto& registry = current_cave->get_registry();
-	auto& player = *registry.view<Player>().begin();
-	auto& pos = registry.get<Position>(player);
-	const size_t src_idx = pos.cell->get_idx();
-	const size_t width = current_cave->get_width();
-	const size_t y = src_idx / width;
-	const size_t x = src_idx % width;
-
-	const size_t dst_idx = (direction.dy + y) * width + direction.dx + x;
-	if (!current_cave->has_access(src_idx, dst_idx))
-		return 0;
-	pos.cell = &current_cave->get_cells()[dst_idx];
-	return current_cave->distance(src_idx, dst_idx);
 }
 
 /*
