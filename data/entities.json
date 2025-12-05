@@ -2,10 +2,10 @@
 	"Glowing Mushroom": {
 		"Renderable": {
 			"glyph": "*",
-			"color": [30, 0, 150]
+			"color": [400, 0, 500]
 		},
 		"Glow": {
-			"strength": 0.25,
+			"strength": 0.02,
 			"radius": 5
 		}
 	},

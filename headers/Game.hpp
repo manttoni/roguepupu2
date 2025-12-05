@@ -9,14 +9,15 @@ class Game
 {
 	private:
 		CaveGenerator cavegen;
-		Cave& current_cave;
+		Cave* current_cave;
 	public:
 		Game();
 		void start();
 		void end();
-		double move_with_mouse();
 		double move_player(const Vec2& direction);
-		void action_menu();
+		void check_descend();
+		void change_level(const int d);
+		entt::entity get_player();
 };
 
 void new_game();

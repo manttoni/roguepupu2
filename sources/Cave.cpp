@@ -266,7 +266,7 @@ void Cave::apply_lights()
 			if (!has_vision(ent_idx, idx))
 				continue;
 
-			Color g = rend.color;
+			Color g = rend.color * glow.strength;
 			cells[idx].add_light(g);
 		}
 	}

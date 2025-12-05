@@ -182,7 +182,7 @@ void CaveGenerator::set_source_sink()
 	if (canvas.get_level() == 1)
 		canvas.set_source_idx(height / 2 * width + width / 2);
 	else
-		canvas.set_source_idx(caves.back().get_sink_idx()); // sink of last level
+		canvas.set_source_idx((caves.end() - 2)->get_sink_idx()); // sink of last level
 
 	size_t sink_idx;
 	do

@@ -13,7 +13,6 @@ void EntityFactory::init()
 {
 	read_definitions();
 	create_lut();
-	//parse_prototypes();
 }
 
 void EntityFactory::read_definitions()
@@ -75,7 +74,6 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 
 void EntityFactory::create_lut()
 {
-	std::cout << definitions.dump(4) << std::endl;
 	EntityType type = EntityType{};
 	for (const auto& [name, data] : definitions.items())
 	{
@@ -96,7 +94,6 @@ void EntityFactory::log_prototypes() const
 	Log::log("Total: " + std::to_string(entities.size()));
 }
 
-// Create an entity in the registry of the cave that "cell" is in
 entt::entity EntityFactory::create_entity(const EntityType type, Cell& cell)
 {
 	if (LUT.find(type) == LUT.end())
