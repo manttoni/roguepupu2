@@ -8,7 +8,6 @@
 #include "EntityFactory.hpp"
 #include "Cave.hpp"
 #include "UI.hpp"
-#include "entity_enums.hpp"
 
 World::World()
 	: height(200), width(200),

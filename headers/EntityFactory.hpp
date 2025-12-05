@@ -5,7 +5,6 @@
 #include <string>
 #include "entt.hpp"
 #include "Cell.hpp"
-#include "entity_enums.hpp"
 
 class EntityFactory
 {
