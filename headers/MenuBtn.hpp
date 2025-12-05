@@ -13,7 +13,7 @@ class MenuBtn : public MenuElt
 		~MenuBtn();
 
 		void callback() const override { func(); }
-		void (*get_func() const)() { return func; }
+		void (*get_func() const)() override { return func; }
 
 		//std::string get_text() const override;
 		size_t get_size() const override;
