@@ -1,0 +1,21 @@
+{
+	"Dagger": {
+		"Renderable": {
+			"glyph": "d",
+			"color": [234, 234, 234]
+		},
+		"Equippable": "one_handed",
+		"Damage": "1d4",
+		"Weight": 0.3
+	},
+
+	"Rusty Dagger": {
+		"Renderable": {
+			"glyph": "d",
+			"color": [345, 234, 234]
+		},
+		"Equippable": "one_handed",
+		"Damage": "1d4-1",
+		"Weight": 0.3
+	}
+}

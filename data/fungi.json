@@ -1,0 +1,21 @@
+{
+	"Glowing Mushroom": {
+		"Renderable": {
+			"glyph": "*",
+			"color": [400, 0, 500]
+		},
+		"Glow": {
+			"strength": 0.02,
+			"radius": 5
+		}
+	},
+
+	"Woody Mushroom": {
+		"Renderable": {
+			"glyph": "$",
+			"color": [666, 333, 0]
+		},
+		"Opaque": true,
+		"Solid": true
+	}
+}

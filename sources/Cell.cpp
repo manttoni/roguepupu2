@@ -9,28 +9,12 @@
 #include "entt.hpp"
 #include "Components.hpp"
 
-/* CONSTRUCTORS */
-Cell::Cell()
-	: idx(SIZE_MAX), type(Type::NONE), density(0) {}
+Cell::Cell() : idx(SIZE_MAX), type(Type::NONE), density(0) {}
 
-Cell::Cell(const size_t idx, const Type &type, Cave* cave, const wchar_t symbol, const double density)
-	: idx(idx), type(type), cave(cave), symbol(symbol), density(density)
+Cell::Cell(const size_t idx, const Type &type, Cave* cave, const wchar_t glyph, const double density)
+	: idx(idx), type(type), cave(cave), glyph(glyph), density(density)
 {}
-/*
-Cell::Cell(const Cell& other)
-{
-	idx = other.idx;
-	type = other.type;
-	density = other.density;
-	fg = other.fg;
-	bg = other.bg;
-	lights = other.lights;
-	cave = other.cave;
-	symbol = other.symbol;
-	seen = other.seen;
-}
-*/
-/* OVERLOADS */
+
 bool Cell::operator==(const Cell &other) const
 {
 	return idx == other.idx;
@@ -60,7 +44,7 @@ void Cell::reduce_density(const double amount)
 	// rock has been destroyed
 	density = 0;
 	type = Type::FLOOR;
-	symbol = L' ';
+	glyph = L' ';
 	bg = Color(35, 40, 30);
 }
 
@@ -131,12 +115,12 @@ bool Cell::blocks_vision() const
 	return false;
 }
 
-wchar_t Cell::get_symbol() const
+wchar_t Cell::get_glyph() const
 {
 	const auto& entities = get_entities();
 	size_t entities_size = entities.size();
 	if (entities_size == 0)
-		return symbol;
+		return glyph;
 
 	const auto& entity = entities[UI::instance().get_loop_number() % entities_size];
 	return cave->get_world()->get_registry().get<Renderable>(entity).glyph;

@@ -11,8 +11,6 @@
 #include "Components.hpp"
 #include "entt.hpp"
 
-/* CONSTRUCTORS */
-// DEFAULT
 Cave::Cave() :
 	height(0),
 	width(0),
@@ -21,7 +19,6 @@ Cave::Cave() :
 	source(0),
 	sink(0) {}
 
-// CANVAS IN CAVEGENERATOR
 Cave::Cave(const size_t level, const size_t height, const size_t width, const size_t seed) :
 	height(height),
 	width(width),
@@ -34,7 +31,6 @@ Cave::Cave(const size_t level, const size_t height, const size_t width, const si
 	for (auto& cell : cells)
 		cell.set_cave(this);
 }
-
 
 // constructor using premade map
 Cave::Cave(const std::string& map, const size_t width) : height(map.size() / width), width(width)
@@ -62,7 +58,7 @@ std::vector<size_t> Cave::find_path(const size_t start, const size_t end)
 {
 	if (start >= get_size() || end >= get_size())
 		throw std::runtime_error("Cave::find_path: invalid arguments");
-	if (cells[start].blocks_movement())
+	if (cells[start].blocks_movement() || cells[end].blocks_movement())
 		return {};
 	std::vector<size_t> open_set = { start };
 	std::map<size_t, size_t> came_from;
@@ -244,6 +240,7 @@ bool Cave::has_vision(const size_t start, const size_t end, const double vision_
 
 	return true;
 }
+
 void Cave::clear_lights()
 {
 	for (auto& cell : cells)
@@ -279,6 +276,7 @@ void Cave::reset_lights()
 	clear_lights();
 	apply_lights();
 }
+
 void Cave::draw()
 {
 	auto& registry = world->get_registry();
@@ -286,13 +284,13 @@ void Cave::draw()
 	const auto& player_position = registry.get<Position>(player);
 	const size_t player_idx = player_position.cell->get_idx();
 
-	reset_lights();
-
 	PANEL* panel = UI::instance().get_panel(UI::Panel::GAME);
 	WINDOW* window = panel_window(panel);
-	werase(window);
+	UI::instance().set_current_panel(panel);
 
-	UI::instance().set_current_panel(panel, true);
+	werase(window);
+	UI::instance().reset_colors();
+	reset_lights();
 
 	int window_height, window_width;
 	getmaxyx(window, window_height, window_width);
@@ -314,7 +312,7 @@ void Cave::draw()
 		if (y < 0 || y >= window_height || x < 0 || x >= window_width)
 			continue;
 
-		auto color_pair = cell.get_color_pair();
+		ColorPair color_pair;
 
 		if (!has_vision(player_idx, cell_idx, registry.get<Vision>(player).range))
 		{
@@ -323,10 +321,12 @@ void Cave::draw()
 			else
 				continue;
 		}
+		else
+			color_pair = cell.get_color_pair();
 
-		wchar_t symbol = cell.get_symbol();
+		wchar_t glyph = cell.get_glyph();
 		UI::instance().enable_color_pair(color_pair);
-		UI::instance().print_wide(y, x, symbol);
+		UI::instance().print_wide(y, x, glyph);
 		cell.set_seen(true);
 	}
 	UI::instance().update();

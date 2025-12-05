@@ -91,7 +91,7 @@ void UI::reset_colors()
 	initialized_color_pairs.clear();
 }
 
-std::string UI::dialog(const std::string& text, const std::vector<std::string>& options)
+std::string UI::dialog(const std::string& text, const std::vector<std::string>& options, const Screen::Coord& position)
 {
 	// Initialize elements for dialog box
 	std::vector<std::unique_ptr<MenuElt>> elements;
@@ -100,7 +100,7 @@ std::string UI::dialog(const std::string& text, const std::vector<std::string>& 
 		elements.push_back(std::make_unique<MenuBtn>(option));
 
 	// Create menu in the middle of screen
-	auto menu = Menu(std::move(elements), Screen::middle());
+	auto menu = Menu(std::move(elements), position);
 
 	// If there are no options, it will just be printed as a message
 	if (options.empty())
@@ -184,6 +184,7 @@ int UI::input(int delay)
 		debug.set_value("Color pairs", initialized_color_pairs.size());
 		debug.set_value("Mouse y", mouse_position.y);
 		debug.set_value("Mouse x", mouse_position.x);
+		set_current_panel(debug.get_panel(), true);
 		debug.loop();
 	}
 

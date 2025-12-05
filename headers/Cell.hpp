@@ -52,10 +52,10 @@ class Cell
 		}
 
 	private:
-		wchar_t symbol;
+		wchar_t glyph;
 	public:
-		wchar_t get_symbol() const;
-		void set_symbol(const wchar_t symbol) { this->symbol = symbol; }
+		wchar_t get_glyph() const;
+		void set_glyph(const wchar_t glyph) { this->glyph = glyph; }
 
 	private:
 		double density;

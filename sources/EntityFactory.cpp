@@ -4,24 +4,29 @@
 #include <unordered_map>
 #include <iostream>
 #include "entt.hpp"
+#include "systems/EquipmentSystem.hpp"
 #include "Components.hpp"
 #include "EntityFactory.hpp"
 #include "Cave.hpp"
 #include "Utils.hpp"
+#include "Dice.hpp"
 
 void EntityFactory::init()
 {
-	read_definitions();
-	create_lut();
+	read_definitions(items_path);
+	read_definitions(fungi_path);
+	read_definitions(creatures_path);
 }
 
-void EntityFactory::read_definitions()
+void EntityFactory::read_definitions(const char* path)
 {
 	std::ifstream file(path);
 	if (!file.is_open())
-		throw std::runtime_error("Opening file failed");
+		throw std::runtime_error(std::string("Opening file failed: ") + path);
+	nlohmann::json definitions;
 	file >> definitions;
 	file.close();
+	add_entities(definitions);
 }
 
 using FieldParser = std::function<void(entt::registry&, entt::entity, const nlohmann::json&)>;
@@ -55,9 +60,19 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 		}
 	},
 	{ "Inventory", [](auto& p, auto e, const nlohmann::json& data)
-		{	// Has an inventory / can store entities inside
-			(void) data;
-			p.template emplace<Inventory>(e);
+		{	// Has an inventory and maybe starting items
+			std::vector<entt::entity> items;
+			for (const auto& item : data)
+			{
+				if (!item.contains("id"))
+				{
+					Log::log("Item is missing id: " + item.dump(4));
+					continue;
+				}
+				auto i = EntityFactory::instance().create_entity(p, item["id"].get<std::string>());
+				items.push_back(i);
+			}
+			p.template emplace<Inventory>(e, items);
 		}
 	},
 	{ "Vision", [](auto& p, auto e, const nlohmann::json& data)
@@ -75,36 +90,58 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			(void) data;
 			p.template emplace<Player>(e);
 		}
+	},
+	{ "Damage", [](auto& p, auto e, const nlohmann::json& data)
+		{	// Can deal damage
+			p.template emplace<Damage>(e, Dice(data.get<std::string>()));
+		}
+	},
+	{ "Weight", [](auto& p, auto e, const nlohmann::json& data)
+		{	// Has a weight in kilograms
+			p.template emplace<Weight>(e, data.get<double>());
+		}
+	},
+	{ "Equippable", [](auto& p, auto e, const nlohmann::json& data)
+		{	// This entity can be equipped by someone
+			EquipmentSystem::Slot slot = EquipmentSystem::parse_slot(data.get<std::string>());
+			p.template emplace<Equippable>(e, slot);
+		}
+	},
+	{ "Equipment", [](auto& p, auto e, const nlohmann::json& data)
+		{	// This entity has equipment slots and can equip items
+			(void) data;
+			p.template emplace<Equipment>(e);
+		}
 	}
 };
 
-void EntityFactory::create_lut()
+void EntityFactory::add_entities(nlohmann::json& json)
 {
-	EntityType type = EntityType{};
-	for (const auto& [name, data] : definitions.items())
+	for (const auto& [name, data] : json.items())
 	{
-		data["Name"] = name;
-		LUT[type] = data;
-		type = static_cast<EntityType>(static_cast<int>(type) + 1 );
+		if (!data.contains("Name"))
+			data["Name"] = name;
+		LUT[name] = data;
 	}
 }
 
-entt::entity EntityFactory::create_entity(entt::registry& registry, const EntityType type, Cell& cell)
+entt::entity EntityFactory::create_entity(entt::registry& registry, const std::string& name, Cell* cell)
 {
-	if (LUT.find(type) == LUT.end())
-		throw std::runtime_error("Entity not found");
+	if (LUT.find(name) == LUT.end())
+		throw std::runtime_error("Entity not found: " + name);
 
 	auto entity = registry.create();
-	const auto& j = LUT[type];
+	const auto& j = LUT[name];
 	for (const auto& [field_name, field_data] : j.items())
 	{
 		auto it = field_parsers.find(field_name);
 		if (it == field_parsers.end())
-			throw std::runtime_error("Unknown field name" + field_name);
+			throw std::runtime_error("Unknown field name: " + field_name);
 
 		it->second(registry, entity, field_data);
 	}
-	registry.emplace<Position>(entity, &cell);
+	if (cell != nullptr)
+		registry.emplace<Position>(entity, cell);
 	return entity;
 }
 

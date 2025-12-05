@@ -123,6 +123,16 @@ std::string Menu::loop()
 	int key = 0;
 	while (key != KEY_ESCAPE)
 	{
+		while (!read_only && !elements[selected]->is_selectable())
+		{
+			selected++;
+			if (selected >= elements.size())
+			{
+				selected = 0;
+				break;
+			}
+		}
+
 		// call loop_callback
 		if (loop_cb != nullptr)
 			loop_cb();

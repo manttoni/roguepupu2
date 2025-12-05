@@ -1,0 +1,32 @@
+{
+	"Player": {
+		"Renderable": {
+			"glyph": "@",
+			"color": [123,456,789]
+		},
+		"Player": true,
+		"Solid": true,
+		"Vision": 10,
+		"Inventory": [
+			{
+				"id": "Dagger"
+			}
+		],
+		"Equipment": true
+	},
+
+	"Crazy Goblin": {
+		"Renderable": {
+			"glyph": "g",
+			"color": [0, 100, 0]
+		},
+		"Solid": true,
+		"Vision": 7,
+		"Inventory": [
+			{
+				"id": "Rusty Dagger"
+			}
+		],
+		"Equipment": true
+	}
+}

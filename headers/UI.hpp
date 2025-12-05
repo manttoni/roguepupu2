@@ -94,7 +94,10 @@ class UI
 		size_t loop_number;
 	public:
 		Menu& get_menu(const std::string& name) { return menus.at(name); }
-		void set_current_panel(PANEL* current_panel, const bool make_top = false) {
+		void set_current_panel(PANEL* current_panel, const bool make_top = false)
+		{
+			if (current_panel == nullptr)
+				return;
 			this->current_panel = current_panel;
 			if (make_top == true)
 				top_panel(current_panel);
@@ -117,7 +120,7 @@ class UI
 		void print(const size_t y, const size_t x, const std::string& str);
 		void println(const std::string& str);
 
-		std::string dialog(const std::string& text, const std::vector<std::string>& options = {});
+		std::string dialog(const std::string& text, const std::vector<std::string>& options = {}, const Screen::Coord& position = Screen::middle());
 		int input(int delay = -1); // wrapper for getch
 
 		size_t get_curs_y() const;
