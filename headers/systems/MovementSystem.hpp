@@ -7,5 +7,8 @@
 namespace MovementSystem
 {
 	extern std::map<int, Vec2> movement_keys;
-	double move(entt::registry& reg, entt::entity e, const Vec2 d);
+	bool movement_key_pressed(const int key);
+	double move(entt::registry& registry, entt::entity entity, const int key);
+	double move(entt::registry& registry, entt::entity entity, const Vec2 direction);
+	double move(entt::registry& registry, entt::entity entity, Cell& cell);
 };

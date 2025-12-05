@@ -4,6 +4,7 @@
 #include "UI.hpp"
 #include "Cell.hpp"
 #include "Cave.hpp"
+#include "World.hpp"
 #include "Utils.hpp"
 #include "entt.hpp"
 #include "Components.hpp"
@@ -66,10 +67,12 @@ void Cell::reduce_density(const double amount)
 std::vector<entt::entity> Cell::get_entities() const
 {
 	std::vector<entt::entity> entities;
-	cave->get_registry().view<Position>().each([this, &entities](auto entity, auto& pos) {
-		if (pos.cell == this)
-			entities.push_back(entity);
-	});
+	auto& registry = cave->get_world()->get_registry();
+	registry.view<Position>().each([this, &entities](auto entity, auto& pos)
+			{
+				if (pos.cell == this)
+					entities.push_back(entity);
+			});
 	return entities;
 }
 
@@ -86,7 +89,7 @@ ColorPair Cell::get_color_pair() const
 	{
 		size_t ln = UI::instance().get_loop_number();
 		const auto& e = entities[ln % entities.size()];
-		ret_fg = cave->get_registry().get<Renderable>(e).color;
+		ret_fg = cave->get_world()->get_registry().get<Renderable>(e).color;
 	}
 	else
 		ret_fg = this->fg;
@@ -110,7 +113,7 @@ bool Cell::blocks_movement() const
 		return true;
 
 	for (const auto& ent : get_entities())
-		if (cave->get_registry().all_of<Solid>(ent))
+		if (cave->get_world()->get_registry().all_of<Solid>(ent))
 			return true;
 
 	return false;
@@ -122,7 +125,7 @@ bool Cell::blocks_vision() const
 		return true;
 
 	for (const auto& ent : get_entities())
-		if (cave->get_registry().all_of<Opaque>(ent))
+		if (cave->get_world()->get_registry().all_of<Opaque>(ent))
 			return true;
 
 	return false;
@@ -136,5 +139,5 @@ wchar_t Cell::get_symbol() const
 		return symbol;
 
 	const auto& entity = entities[UI::instance().get_loop_number() % entities_size];
-	return cave->get_registry().get<Renderable>(entity).glyph;
+	return cave->get_world()->get_registry().get<Renderable>(entity).glyph;
 }

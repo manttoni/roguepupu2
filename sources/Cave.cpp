@@ -3,6 +3,7 @@
 #include <cassert>
 #include <iostream>
 #include <ncurses.h>
+#include "World.hpp"
 #include "Cave.hpp"
 #include "Cell.hpp"
 #include "Utils.hpp"
@@ -253,6 +254,7 @@ void Cave::clear_lights()
 
 void Cave::apply_lights()
 {
+	auto& registry = world->get_registry();
 	auto glowing_entities = registry.view<Position, Glow, Renderable>();
 	for (const auto& entity : glowing_entities)
 	{
@@ -279,6 +281,7 @@ void Cave::reset_lights()
 }
 void Cave::draw()
 {
+	auto& registry = world->get_registry();
 	const auto& player = *registry.view<Player>().begin();
 	const auto& player_position = registry.get<Position>(player);
 	const size_t player_idx = player_position.cell->get_idx();

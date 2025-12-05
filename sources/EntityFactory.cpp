@@ -69,6 +69,12 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 		{	// Emits light around it
 			p.template emplace<Glow>(e, data["strength"].get<double>(), data["radius"].get<double>());
 		}
+	},
+	{ "Player", [](auto& p, auto e, const nlohmann::json& data)
+		{	// Is the player, one and only
+			(void) data;
+			p.template emplace<Player>(e);
+		}
 	}
 };
 
@@ -83,39 +89,22 @@ void EntityFactory::create_lut()
 	}
 }
 
-void EntityFactory::log_prototypes() const
-{
-	Log::log("Parsed entities:");
-	const auto& entities = prototypes.view<Name>();
-	for (const auto& entity : entities)
-	{
-		Log::log(prototypes.get<Name>(entity).name);
-	}
-	Log::log("Total: " + std::to_string(entities.size()));
-}
-
-entt::entity EntityFactory::create_entity(const EntityType type, Cell& cell)
+entt::entity EntityFactory::create_entity(entt::registry& registry, const EntityType type, Cell& cell)
 {
 	if (LUT.find(type) == LUT.end())
 		throw std::runtime_error("Entity not found");
 
-	auto& cave = *cell.get_cave();
-	auto& registry = cave.get_registry();
 	auto entity = registry.create();
-
 	const auto& j = LUT[type];
 	for (const auto& [field_name, field_data] : j.items())
 	{
 		auto it = field_parsers.find(field_name);
 		if (it == field_parsers.end())
-			throw std::runtime_error("Unknown field name");
+			throw std::runtime_error("Unknown field name" + field_name);
 
 		it->second(registry, entity, field_data);
 	}
 	registry.emplace<Position>(entity, &cell);
-
-	Log::log("Entity created: " + registry.get<Name>(entity).name);
-
 	return entity;
 }
 
