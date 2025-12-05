@@ -7,8 +7,15 @@
 #include "Utils.hpp"
 #include "entt.hpp"
 
+class World;
 class Cave
 {
+	private:
+		World* world;
+	public:
+		World* get_world() { return world; }
+		void set_world(World* world) { this->world = world; }
+
 	private:
 		size_t height, width;
 	public:
@@ -21,24 +28,28 @@ class Cave
 	public:
 		const std::vector<Cell>& get_cells() const { return cells; }
 		std::vector<Cell>& get_cells() { return cells; }
-
-	private:
-		entt::registry registry;
-	public:
-		entt::entity create_entity(const std::string& type, Cell& cell);
-		entt::registry& get_registry() { return registry; }
+		Cell& get_cell(const size_t idx) { return cells[idx]; }
 
 	private:
 		size_t level;
-		size_t seed;
-		size_t source, sink;
 	public:
 		size_t get_level() const { return level; }
+		void set_level(const size_t level) { this->level = level; }
+
+	private:
+		size_t seed;
+	public:
 		int get_seed() const { return seed; }
+		void set_seed(const int seed) { this->seed = seed; }
+
+	private:
+		size_t source, sink;
+	public:
 		size_t get_source_idx() const { return source; }
 		size_t get_sink_idx() const { return sink; }
-		void set_level(const size_t level) { this->level = level; }
-		void set_seed(const int seed) { this->seed = seed; }
+		Cell& get_source() { return cells[source]; }
+		Cell& get_sink() { return cells[sink]; }
+		const std::pair<size_t, size_t> get_ends() const { return { source, sink }; }
 		void set_source_idx(const size_t source)
 		{
 			this->source = source;
@@ -63,9 +74,8 @@ class Cave
 		Cave(const size_t level, const size_t height, const size_t width, const size_t seed);
 		Cave(const std::string& map, const size_t width);
 
-		Cave(const Cave& other) = delete;
-		Cave& operator=(const Cave& other) = delete;
-
+		Cave(const Cave& other) = default;
+		Cave& operator=(const Cave& other) = default;
 		Cave(Cave&& other) = default;
 		Cave& operator=(Cave&& other) = default;
 

@@ -6,11 +6,14 @@ LDFLAGS := -lncursesw -lpanelw -lm
 
 # Directories
 SRC_DIR := sources
+SYSTEMS_DIR := sources/systems
 OBJ_DIR := build
 BIN := roguepupu2
 
 # Find all .c files in sources directory
 SRCS := $(wildcard $(SRC_DIR)/*.cpp)
+# Add files in sources/systems/
+SRCS += $(wildcard $(SYSTEMS_DIR)/*.cpp)
 
 # Create corresponding .o filenames in build/
 OBJS := $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SRCS))
@@ -36,6 +39,7 @@ $(BIN): $(OBJS)
 # Compile source files into object files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(OBJ_DIR)
+	@mkdir -p $(OBJ_DIR)/systems
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Clean build files

@@ -2,22 +2,35 @@
 
 #include <ncurses.h>
 #include <panel.h>
-#include "CaveGenerator.hpp"
+#include "World.hpp"
 #include "Utils.hpp"
+#include "entt.hpp"
 
 class Game
 {
 	private:
-		CaveGenerator cavegen;
-		Cave* current_cave;
+		World world;
+	public:
+		Cave& get_cave() { return world.get_cave(level); }
+		entt::registry& get_registry() { return world.get_registry(); }
+
+	private:
+		size_t level;
+	public:
+		void set_level(const size_t level) { this->level = level; }
+		size_t get_level() const { return level; }
+
+	private:
+		entt::entity player;
+	public:
+		void set_player(const entt::entity player) { this->player = player; }
+		entt::entity get_player() const { return player; }
+
 	public:
 		Game();
 		void start();
 		void end();
-		double move_player(const Vec2& direction);
-		void check_descend();
-		void change_level(const int d);
-		entt::entity get_player();
+		void change_level();
 };
 
 void new_game();

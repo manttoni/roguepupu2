@@ -1,0 +1,61 @@
+#include <map>
+#include "entt.hpp"
+#include "Utils.hpp"
+#include "Components.hpp"
+#include "Cave.hpp"
+#include "Cell.hpp"
+#include "systems/MovementSystem.hpp"
+
+namespace MovementSystem
+{
+	std::map<int, Vec2> movement_keys = {
+		{KEY_UP,	{-1, 0}},
+		{KEY_RIGHT,	{0, 1}},
+		{KEY_DOWN,	{1, 0}},
+		{KEY_LEFT,	{0, -1}}
+	};
+
+	bool movement_key_pressed(const int key)
+	{
+		return movement_keys.find(key) != movement_keys.end();
+	}
+
+	double move(entt::registry& registry, entt::entity entity, const int key)
+	{
+		return move(registry, entity, movement_keys[key]);
+	}
+
+	// Move to a direction if possible
+	double move(entt::registry& registry, entt::entity entity, const Vec2 direction)
+	{
+		auto& position = registry.get<Position>(entity);
+		auto* current_cell = position.cell;
+		auto* current_cave = current_cell->get_cave();
+
+		const size_t width = current_cave->get_width();
+		const size_t src_idx = current_cell->get_idx();
+		const size_t y = src_idx / width;
+		const size_t x = src_idx % width;
+		const size_t dst_idx = (direction.dy + y) * width + direction.dx + x;
+
+		if (!current_cave->has_access(src_idx, dst_idx))
+			return 0;
+		position.cell = &current_cave->get_cell(dst_idx);
+		return current_cave->distance(src_idx, dst_idx);
+	}
+
+	// Move to a cell even if there is no path
+	// Can be used f.e. when changing level or teleporting
+	double move(entt::registry& registry, entt::entity entity, Cell& new_cell)
+	{
+		auto& position = registry.get<Position>(entity);
+		auto* current_cell = position.cell;
+		auto* current_cave = current_cell->get_cave();
+		auto* new_cave = new_cell.get_cave();
+
+		position.cell = &new_cell;
+		if (new_cave == current_cave)
+			return new_cave->distance(*current_cell, new_cell);
+		return 0;
+	}
+};

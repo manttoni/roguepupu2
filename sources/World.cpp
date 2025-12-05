@@ -4,20 +4,20 @@
 #include <panel.h>
 #include "Cell.hpp"
 #include "Utils.hpp"
-#include "CaveGenerator.hpp"
+#include "World.hpp"
 #include "EntityFactory.hpp"
 #include "Cave.hpp"
 #include "UI.hpp"
 #include "entity_enums.hpp"
 
-CaveGenerator::CaveGenerator()
-	: height(200), width(200), size(height * width),
+World::World()
+	: height(200), width(200),
 	frequency(0.1), seed(Random::randsize_t(10000, 99999)), octaves(8),
 	rng(seed), erosion_a(2.0), erosion_b(0.005), erosion_c(0.005),
 	fungus_spawn_chance(0.45)
 {}
 
-CaveGenerator::CaveGenerator(
+World::World(
 		const size_t height,
 		const size_t width,
 		const double frequency,
@@ -26,51 +26,13 @@ CaveGenerator::CaveGenerator(
 		const int octaves,
 		const double A, const double B, const double C,
 		const double fungus_spawn_chance)
-	: height(height), width(width), size(height * width), frequency(frequency), seed(seed), octaves(octaves), rng(seed), erosion_a(A), erosion_b(B), erosion_c(C), fungus_spawn_chance(fungus_spawn_chance)
+	: height(height), width(width), frequency(frequency), seed(seed), octaves(octaves), rng(seed), erosion_a(A), erosion_b(B), erosion_c(C), fungus_spawn_chance(fungus_spawn_chance)
 {
 	margin = static_cast<size_t>(height * margin_percent / 100);
 }
-/*
-CaveGenerator::CaveGenerator(CaveGenerator&& other)
-{
-	height = other.height;
-	width = other.width;
-	size = other.size;
-	frequency = other.frequency;
-	seed = other.seed;
-	caves = std::move(other.caves);
-	octaves = other.octaves;
-	margin = other.margin;
-	erosion_a = other.erosion_a;
-	erosion_b = other.erosion_b;
-	erosion_c = other.erosion_c;
-	fungus_spawn_chance = other.fungus_spawn_chance;
-}
-
-CaveGenerator& CaveGenerator::operator=(CaveGenerator&& other)
-{
-	if (this != &other)
-	{
-		height = other.height;
-		width = other.width;
-		size = other.size;
-		frequency = other.frequency;
-		seed = other.seed;
-		caves = std::move(other.caves);
-		octaves = other.octaves;
-		margin = other.margin;
-		erosion_a = other.erosion_a;
-		erosion_b = other.erosion_b;
-		erosion_c = other.erosion_c;
-		fungus_spawn_chance = other.fungus_spawn_chance;
-	}
-	return *this;
-}
-*/
 
 // A* to find path of least resistance through solid rock
-// optimize later to use the indices instead of cells
-std::vector<size_t> CaveGenerator::find_water_path()
+std::vector<size_t> World::find_water_path()
 {
 	auto& canvas = caves.back();
 	auto& cells = canvas.get_cells();
@@ -139,7 +101,7 @@ std::vector<size_t> CaveGenerator::find_water_path()
 	return {};
 }
 
-void CaveGenerator::form_tunnels()
+void World::form_tunnels()
 {
 	auto& canvas = caves.back();
 	while (canvas.find_path(canvas.get_source_idx(), canvas.get_sink_idx()).empty())
@@ -148,27 +110,17 @@ void CaveGenerator::form_tunnels()
 	}
 }
 
-void CaveGenerator::form_rock()
+void World::form_rock()
 {
 	auto& canvas = caves.back();
 	size_t level = canvas.get_level();
 	auto& cells = canvas.get_cells();
-	for (size_t i = 0; i < size; ++i)
+	for (size_t i = 0; i < height * width; ++i)
 	{
 		size_t y = i / width;
 		size_t x = i % width;
 		double perlin = Random::noise3D(y, x, level, frequency, seed, octaves);
-		//int distance_to_edge = std::min(std::min(x, y), std::min(width - x - 1, height - y - 1));
-
-		// if close enough, make rock denser
-		/*double edge_weight =
-			distance_to_edge <= margin && margin != 0
-			? Math::map(margin - distance_to_edge, 0, margin, 1, EDGE_WEIGH_MULT)
-			: 1;*/
-
-		double edge_weight = 1;
-
-		double density = Math::map(perlin * edge_weight, 0, EDGE_WEIGH_MULT, 1, 9);
+		double density = Math::map(perlin, 0, 1, 1, 9);
 		cells[i].set_type(Cell::Type::ROCK);
 		cells[i].set_density(density);
 		cells[i].set_idx(i);
@@ -176,7 +128,7 @@ void CaveGenerator::form_rock()
 	}
 }
 
-void CaveGenerator::set_source_sink()
+void World::set_source_sink()
 {
 	auto& canvas = caves.back();
 	if (canvas.get_level() == 1)
@@ -186,7 +138,7 @@ void CaveGenerator::set_source_sink()
 
 	size_t sink_idx;
 	do
-		sink_idx = Random::randsize_t(0, size - 1, rng);
+		sink_idx = Random::randsize_t(0, height * width - 1, rng);
 	while
 		(canvas.distance(canvas.get_source_idx(), sink_idx) < width / 2);
 	canvas.set_sink_idx(sink_idx);
@@ -194,42 +146,45 @@ void CaveGenerator::set_source_sink()
 
 // Glowing fungi grow next to walls
 // Woody fungi grow if there is enough space
-void CaveGenerator::spawn_fungi()
+void World::spawn_fungi()
 {
 	auto& canvas = caves.back();
+	auto& cells = canvas.get_cells();
+
 	const double WOODY_RADIUS = 5;
 	const double WOODY_SPACE_RATIO = 0.90;
+
 	const double FUNGUS_FREQUENCY = 0.1;
 	const size_t FUNGUS_OCTAVES = 1;
-	auto& cells = canvas.get_cells();
-	for (size_t i = 0; i < size; ++i)
+
+	for (size_t i = 0; i < height * width; ++i)
 	{
 		if (Random::noise3D(i / width, i % width, canvas.get_level(), FUNGUS_FREQUENCY, seed, FUNGUS_OCTAVES) > fungus_spawn_chance
 			|| Random::randsize_t(0, 100, rng) >= fungus_spawn_chance * 100)
 			continue;
 
 		Cell& cell = cells[i];
-		if (cell.get_type() == Cell::Type::FLOOR)
+		if (cell.get_type() != Cell::Type::FLOOR)
+			continue;
+
+		if (canvas.neighbor_has_type(i, Cell::Type::ROCK))
 		{
-			if (canvas.neighbor_has_type(i, Cell::Type::ROCK))
-			{
-				EntityFactory::instance().create_entity(EntityType::glowing_mushroom, cell);
-				continue;
-			}
-			const auto& nearby = canvas.get_nearby_ids(i, WOODY_RADIUS);
-			double space = 0;
-			for (const auto& idx : nearby)
-				if (!cells[idx].blocks_movement())
-					space++;
-			double a = 3.14 * WOODY_RADIUS * WOODY_RADIUS;
-			if (space / a > WOODY_SPACE_RATIO)
-				EntityFactory::instance().create_entity(EntityType::woody_mushroom, cell);
+			EntityFactory::instance().create_entity(registry, EntityType::glowing_mushroom, cell);
+			continue;
 		}
+		const auto& nearby = canvas.get_nearby_ids(i, WOODY_RADIUS);
+		double space = 0;
+		for (const auto& idx : nearby)
+			if (!cells[idx].blocks_movement())
+				space++;
+		double a = 3.14 * WOODY_RADIUS * WOODY_RADIUS;
+		if (space / a > WOODY_SPACE_RATIO)
+			EntityFactory::instance().create_entity(registry, EntityType::woody_mushroom, cell);
 
 	}
 }
 
-void CaveGenerator::set_rock_colors()
+void World::set_rock_colors()
 {
 	auto& canvas = caves.back();
 	for (auto& cell : canvas.get_cells())
@@ -241,12 +196,13 @@ void CaveGenerator::set_rock_colors()
 	}
 }
 
-void CaveGenerator::generate_cave(const size_t level)
+void World::generate_cave(const size_t level)
 {
 	UI::instance().dialog("Generating cave...");
 
 	rng.seed(seed + level);
 	caves.emplace_back(level, height, width, seed);
+	caves.back().set_world(this);
 
 	form_rock();
 	set_source_sink();
@@ -258,7 +214,7 @@ void CaveGenerator::generate_cave(const size_t level)
 }
 
 // generate all z levels until reaches target
-Cave& CaveGenerator::get_cave(const size_t level)
+Cave& World::get_cave(const size_t level)
 {
 	while (caves.size() < level)
 		generate_cave(caves.size() + 1);

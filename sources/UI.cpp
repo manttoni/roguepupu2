@@ -14,10 +14,7 @@
 #include "MenuNum.hpp"
 #include "MenuTxt.hpp"
 #include "Utils.hpp"
-#include "CaveGenerator.hpp"
 #include "Game.hpp"
-
-
 
 void UI::print_wide(const size_t y, const size_t x, const wchar_t wc)
 {
@@ -118,6 +115,8 @@ std::string UI::dialog(const std::string& text, const std::vector<std::string>& 
 // otherwise will be non-blocking, but waiting for delay times ms
 int UI::input(int delay)
 {
+	flushinp();
+
 	// -1 is default value for delay
 	// getch() will be blocking by default
 	if (delay == -1)
@@ -232,6 +231,12 @@ void UI::init_menus()
 	menus["cell_info"].set_read_only(true);
 }
 
+void UI::init_panels()
+{
+	PANEL* game = new_panel(newwin(Screen::height(), Screen::width(), 0, 0));
+	UI::instance().add_panel(UI::Panel::GAME, game);
+}
+
 void UI::init()
 {
 	loop_number = 0;
@@ -239,6 +244,7 @@ void UI::init()
 	initscr();
 	start_color();
 	init_menus();
+	init_panels();
 
 	// signals should reset original terminal mode
 	std::signal(SIGSEGV, handle_signal);
