@@ -180,10 +180,10 @@ bool Cave::has_access(const size_t from_idx, const size_t to_idx) const
 	if (to.blocks_movement()) // can't move to "to"
 		return false;
 
-	size_t fy = from_idx / width;
-	size_t fx = from_idx % width;
-	size_t ty = to_idx / width;
-	size_t tx = to_idx % width;
+	int fy = from_idx / width;
+	int fx = from_idx % width;
+	int ty = to_idx / width;
+	int tx = to_idx % width;
 
 	if (abs(fy - ty) > 1 || abs(fx - tx) > 1) // is not a neighbor
 		return false;
