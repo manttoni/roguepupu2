@@ -82,6 +82,12 @@ namespace Log
 		os << timestamp() << " " << message << std::endl;
 		os.close();
 	}
+
+	[[noreturn]] static inline void error(const std::string& message)
+	{
+		log(message);
+		throw std::runtime_error("Error: " + message);
+	}
 }
 
 namespace Math

@@ -11,8 +11,24 @@ namespace EquipmentSystem
 	{
 		if (str == "one_handed")
 			return Slot::one_handed;
+		else if (str == "two_handed")
+			return Slot::two_handed;
+		else if (str == "body")
+			return Slot::body;
+		else if (str == "gloves")
+			return Slot::gloves;
+		else if (str == "helmet")
+			return Slot::helmet;
+		else if (str == "boots")
+			return Slot::boots;
+		else if (str == "ring")
+			return Slot::ring;
+		else if (str == "amulet")
+			return Slot::amulet;
+		else if (str == "cloak")
+			return Slot::cloak;
 
-		throw std::runtime_error("Unknown equipment slot: " + str);
+		Log::error("Unknown equipment slot: " + str);
 	}
 
 	void equip(entt::registry& registry, const entt::entity entity, const entt::entity item)
@@ -34,6 +50,14 @@ namespace EquipmentSystem
 			else
 				equipment[Slot::right_hand] = item;
 		}
+		else if (slot == Slot::two_handed)
+		{
+			equipment[Slot::right_hand] = item;
+			equipment[Slot::left_hand] = item;
+		}
+		else
+			equipment[slot] = item;
+
 		assert(is_equipped(registry, entity, item));
 	}
 

@@ -1,0 +1,21 @@
+{
+	"rabdin": {
+		"renderable": {
+			"glyph": "@",
+			"color": [123,456,789]
+		},
+		"player": true,
+		"solid": true,
+		"vision": 10,
+		"inventory": [
+			{
+				"filter": {"rarity": "common", "subcategory": "weapons"}
+			},
+			{
+				"filter": {"rarity": "common", "subcategory": "armor"}
+			}
+		],
+		"equipment": true
+	}
+}
+

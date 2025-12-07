@@ -11,6 +11,13 @@ namespace EquipmentSystem
 		two_handed, // they can be in left and/or right hand
 		left_hand,
 		right_hand,
+		body,
+		gloves,
+		helmet,
+		boots,
+		ring,
+		amulet,
+		cloak
 	};
 	Slot parse_slot(const std::string& str);
 	void equip(entt::registry& registry, const entt::entity entity, const entt::entity item);

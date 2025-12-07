@@ -15,7 +15,7 @@ Dice::Dice(const std::string& str)
 
 Dice::Dice(const int n, const int sides, const int mod) : n(n), sides(sides), mod(mod) {}
 
-int Dice::roll(int advantage)
+int Dice::roll(int advantage) const
 {
 	static std::random_device rd;
 	static std::mt19937 gen(rd());

@@ -168,7 +168,7 @@ void World::spawn_fungi()
 
 		if (canvas.neighbor_has_type(i, Cell::Type::ROCK))
 		{
-			EntityFactory::instance().create_entity(registry, "Glowing Mushroom", &cell);
+			EntityFactory::instance().create_entity(registry, "glowing mushroom", &cell);
 			continue;
 		}
 		const auto& nearby = canvas.get_nearby_ids(i, WOODY_RADIUS);
@@ -178,7 +178,7 @@ void World::spawn_fungi()
 				space++;
 		double a = 3.14 * WOODY_RADIUS * WOODY_RADIUS;
 		if (space / a > WOODY_SPACE_RATIO)
-			EntityFactory::instance().create_entity(registry, "Woody Mushroom", &cell);
+			EntityFactory::instance().create_entity(registry, "woody mushroom", &cell);
 
 	}
 }

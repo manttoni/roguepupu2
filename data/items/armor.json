@@ -1,0 +1,9 @@
+{
+	"leather armor": {
+		"renderable": {},
+		"equippable": "body",
+		"weight": 3,
+		"rarity": "common",
+		"armorclass": 11
+	}
+}
