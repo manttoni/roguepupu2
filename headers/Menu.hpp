@@ -15,8 +15,10 @@ class Menu
 		void (*loop_cb)(); // call every loop
 		bool read_only;
 		int get_mouse_selection() const;
+		size_t initial_selected;
 
 	public:
+		void set_selected(const size_t initial_selection) { initial_selected = initial_selection; }
 		void set_read_only(const bool value) { read_only = value; }
 		bool get_read_only() const { return read_only; }
 		PANEL* get_panel() const { return panel; }

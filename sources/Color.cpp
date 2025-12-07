@@ -83,3 +83,8 @@ std::string Color::to_string() const
 {
 	return "(" + std::to_string(r) + ", " + std::to_string(g) + ", " + std::to_string(b) + ")";
 }
+
+std::string Color::markup() const
+{
+	return "{" + std::to_string(r) + "," + std::to_string(g) + "," + std::to_string(b) + "}";
+}

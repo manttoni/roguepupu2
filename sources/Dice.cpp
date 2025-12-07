@@ -2,8 +2,9 @@
 #include <cstring>
 #include <random>
 #include "Dice.hpp"
+#include "Utils.hpp"
 
-Dice::Dice(const std::string& str)
+Dice::Dice(const std::string& str) : string(str)
 {
 	n = std::stoi(str);
 	sides = atoi(strchr(str.c_str(), 'd') + 1);
@@ -11,6 +12,8 @@ Dice::Dice(const std::string& str)
 		mod = -1 * atoi(strchr(str.c_str(), '-') + 1);
 	else if (strchr(str.c_str(), '+') != nullptr)
 		mod = atoi(strchr(str.c_str(), '+') + 1);
+	else
+		mod = 0;
 }
 
 Dice::Dice(const int n, const int sides, const int mod) : n(n), sides(sides), mod(mod) {}
@@ -35,3 +38,4 @@ int Dice::roll(int advantage) const
 
 	return result;
 }
+

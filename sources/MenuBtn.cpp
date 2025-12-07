@@ -1,3 +1,4 @@
+#include <string>
 #include "MenuBtn.hpp"
 #include "MenuElt.hpp"
 
@@ -7,5 +8,13 @@ MenuBtn::~MenuBtn() {}
 
 size_t MenuBtn::get_size() const
 {
-	return text.size();
+	size_t markup_len = 0;
+	size_t pos = 0;
+	// Return the length of text, but subtract length of possible color markup
+	while (text.find('{', pos) != std::string::npos && text.find('}', pos) != std::string::npos) // contains markups
+	{
+		markup_len += text.find('}', pos) - text.find('{', pos);
+		pos = text.find('}', pos) + 1;
+	}
+	return text.size() - markup_len;
 }

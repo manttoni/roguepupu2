@@ -31,9 +31,19 @@ namespace EquipmentSystem
 		Log::error("Unknown equipment slot: " + str);
 	}
 
+	void equip_or_unequip(entt::registry& registry, const entt::entity entity, const entt::entity item)
+	{
+		if (is_equipped(registry, entity, item))
+			unequip(registry, entity, item);
+		else
+			equip(registry, entity, item);
+	}
+
 	void equip(entt::registry& registry, const entt::entity entity, const entt::entity item)
 	{
 		if (!registry.all_of<Equipment>(entity) || !registry.all_of<Equippable>(item))
+			return;
+		if (is_equipped(registry, entity, item))
 			return;
 
 		auto& equipment = registry.get<Equipment>(entity).slots;

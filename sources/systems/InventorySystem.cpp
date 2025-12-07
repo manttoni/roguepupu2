@@ -6,6 +6,7 @@
 #include "systems/InventorySystem.hpp"
 #include "systems/EquipmentSystem.hpp"
 #include "UI.hpp"
+#include "ECS.hpp"
 
 namespace InventorySystem
 {
@@ -14,56 +15,78 @@ namespace InventorySystem
 		return key == 'i';
 	}
 
-	std::vector<std::string> create_options(const entt::registry& registry, const std::vector<entt::entity>& items)
+	std::vector<std::string> create_descriptions(const entt::registry& registry, const std::vector<entt::entity>& items)
 	{
 		auto player = *registry.view<Player>().begin();
-		std::vector<std::string> item_names;
+		std::vector<std::string> descriptions;
 		for (const auto& item : items)
 		{
-			auto name = registry.get<Name>(item).name;
-			if (EquipmentSystem::is_equipped(registry, player, item))
-				name.insert(0, " * ");
-			else
-				name.insert(0, "   ");
-			item_names.push_back(name);
+			std::string description = EquipmentSystem::is_equipped(registry, player, item) ? " * " : "   ";
+			description += ECS::get_description(registry, item);
+			descriptions.push_back(description);
 		}
-		return item_names;
+		return descriptions;
 	}
 
-	entt::entity get_item_by_id(const entt::registry& registry, const std::string& id, const std::vector<entt::entity>& items)
+	bool has_item(const entt::registry& registry, const entt::entity holder, const entt::entity item)
 	{
-		for (const auto& item : items)
-		{
-			if (registry.get<Name>(item).name == id)
-				return item;
-		}
-		return entt::null;
+		if (!registry.all_of<Inventory>(holder))
+			Log::error("Checking non-existent inventory of: " + ECS::get_name(registry, holder));
+		const auto& inventory = registry.get<Inventory>(holder).inventory;
+		auto it = std::find(inventory.begin(), inventory.end(), item);
+		return it != inventory.end();
 	}
 
-	void open_inventory(entt::registry& registry, const entt::entity entity)
+	void remove_item(entt::registry& registry, const entt::entity entity, const entt::entity item)
 	{
-		if (!registry.all_of<Inventory>(entity))
+		auto& inventory = registry.get<Inventory>(entity).inventory;
+		auto it = std::find(inventory.begin(), inventory.end(), item);
+		inventory.erase(it);
+	}
+
+	void add_item(entt::registry& registry, const entt::entity entity, const entt::entity item)
+	{
+		auto& inventory = registry.get<Inventory>(entity).inventory;
+		inventory.push_back(item);
+	}
+
+	void loot_item(entt::registry& registry, const entt::entity looter, const entt::entity owner, const entt::entity item)
+	{
+		if (!has_item(registry, owner, item))
+			Log::error("Looting non-existent item from: " + ECS::get_name(registry, owner));
+
+		remove_item(registry, owner, item);
+		add_item(registry, looter, item);
+	}
+
+	void open_inventory(entt::registry& registry, const entt::entity owner)
+	{
+		if (!registry.all_of<Inventory>(owner))
 			return;
 
+		const auto& owner_name = registry.get<Name>(owner).name;
 		auto player = *registry.view<Player>().begin();
 		std::string selection = "none";
+		size_t idx = 0;
 		while (selection != "") // Will be "" when esc pressed in dialog
 		{
-			auto& items = registry.get<Inventory>(entity).inventory;
-			const auto& item_names = create_options(registry, items);
-			selection = UI::instance().dialog("** Inventory **", item_names, Screen::top_left());
+			auto& items = registry.get<Inventory>(owner).inventory;
+			const auto& descriptions = create_descriptions(registry, items);
+			selection = UI::instance().dialog("*** " + Utils::capitalize(owner_name) + " ***", descriptions, Screen::top_left(), idx + 1);
 			if (selection.empty())
 				break;
-			entt::entity item = get_item_by_id(registry, selection.substr(3), items);
-			if (item == entt::null)
-				break;
+			auto it = std::find(descriptions.begin(), descriptions.end(), selection);
+			idx = it - descriptions.begin();
+			auto& item = items[idx];
 
-			if (registry.all_of<Equippable>(item))
+			if (owner == player)
 			{
-				if (!EquipmentSystem::is_equipped(registry, player, item))
-					EquipmentSystem::equip(registry, player, item);
-				else
-					EquipmentSystem::unequip(registry, player, item);
+				if (registry.all_of<Equippable>(item))
+					EquipmentSystem::equip_or_unequip(registry, player, item);
+			}
+			else
+			{
+				loot_item(registry, player, owner, item);
 			}
 		}
 	}
