@@ -20,6 +20,7 @@ namespace EquipmentSystem
 		cloak
 	};
 	Slot parse_slot(const std::string& str);
+	void equip_or_unequip(entt::registry& registry, const entt::entity entity, const entt::entity item);
 	void equip(entt::registry& registry, const entt::entity entity, const entt::entity item);
 	void unequip(entt::registry& registry, const entt::entity entity, const entt::entity item);
 	bool is_equipped(const entt::registry& registry, const entt::entity& entity, const entt::entity& item);

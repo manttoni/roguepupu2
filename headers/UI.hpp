@@ -114,13 +114,14 @@ class UI
 
 		void print_wide(const size_t y, const size_t x, wchar_t wc);
 		void print_wide(wchar_t wc);
+		void print_colors(const char* ptr);
 		void print(const size_t y, const size_t x, const char ch);
 		void print(const char ch);
 		void print(const std::string& str);
 		void print(const size_t y, const size_t x, const std::string& str);
 		void println(const std::string& str);
 
-		std::string dialog(const std::string& text, const std::vector<std::string>& options = {}, const Screen::Coord& position = Screen::middle());
+		std::string dialog(const std::string& text, const std::vector<std::string>& options = {}, const Screen::Coord& position = Screen::middle(), const size_t initial_selection = 0);
 		int input(int delay = -1); // wrapper for getch
 
 		size_t get_curs_y() const;
@@ -128,6 +129,7 @@ class UI
 		void enable_attr(const chtype attr) { wattron(panel_window(current_panel), attr); }
 		void disable_attr(const chtype attr) { wattroff(panel_window(current_panel), attr); }
 		void enable_color_pair(const ColorPair& color_pair);
+		void disable_color_pair(const ColorPair& color_pair);
 		void update() { update_panels(); doupdate(); }
 		void init_menus();
 		void init_panels();

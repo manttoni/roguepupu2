@@ -119,11 +119,11 @@ std::string Menu::loop()
 {
 	assert(panel != nullptr);
 	WINDOW *window = panel_window(panel);
-	size_t selected = 0;
+	size_t selected = initial_selected;
 	int key = 0;
 	while (key != KEY_ESCAPE)
 	{
-		while (!read_only && !elements[selected]->is_selectable())
+		while (!read_only && selected < elements.size() && !elements[selected]->is_selectable())
 		{
 			selected++;
 			if (selected >= elements.size())

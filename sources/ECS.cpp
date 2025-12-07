@@ -1,0 +1,58 @@
+#include <string>
+#include "entt.hpp"
+#include "ECS.hpp"
+#include "Color.hpp"
+#include "Utils.hpp"
+#include "Components.hpp"
+
+namespace ECS
+{
+	Color get_rarity_color(const std::string& rarity)
+	{
+		if (rarity == "common")
+			return Color(500, 500, 500);
+		if (rarity == "uncommon")
+			return Color(0, 500, 0);
+		if (rarity == "rare")
+			return Color(0, 0, 500);
+		if (rarity == "epic")
+			return Color(500, 0, 250);
+		if (rarity == "legendary")
+			return Color(900, 750, 150);
+
+		Log::error("Unknown rarity: " + rarity);
+	}
+
+	std::string get_name(const entt::registry& registry, const entt::entity entity)
+	{
+		if (!registry.all_of<Name>(entity))
+			return "undefined";
+		return registry.get<Name>(entity).name;
+	}
+
+	Color get_color(const entt::registry& registry, const entt::entity entity)
+	{
+		Color c = registry.get<Renderable>(entity).color;
+		if (c == Color{})
+		{
+			if (registry.all_of<Rarity>(entity))
+				return get_rarity_color(registry.get<Rarity>(entity).rarity);
+			Log::error("Entity color was never defined: " + get_name(registry, entity));
+		}
+		return c;
+	}
+
+	std::string get_description(const entt::registry& registry, const entt::entity entity)
+	{
+		const auto& color = get_color(registry, entity);
+		const auto& name = get_name(registry, entity);
+
+		std::string description = color.markup() + Utils::capitalize(name) + "{reset}";
+		if (registry.all_of<Damage>(entity))
+			description += "(" + registry.get<Damage>(entity).dice.get_str() + ")";
+		else if (registry.all_of<ArmorClass>(entity))
+			description += std::string("(AC: ") + std::to_string(registry.get<ArmorClass>(entity).value) + ")";
+
+		return description;
+	}
+};

@@ -63,7 +63,8 @@ struct Equipment
 	std::map<EquipmentSystem::Slot, std::optional<entt::entity>> slots =
 	{
 		{ EquipmentSystem::Slot::left_hand, std::nullopt },
-		{ EquipmentSystem::Slot::right_hand, std::nullopt }
+		{ EquipmentSystem::Slot::right_hand, std::nullopt },
+		{ EquipmentSystem::Slot::body, std::nullopt }
 	};
 };
 

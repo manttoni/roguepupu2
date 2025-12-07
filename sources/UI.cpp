@@ -6,6 +6,7 @@
 #include <utility>
 #include <climits>
 #include <chrono>
+#include <cstring>
 #include "Utils.hpp"
 #include "UI.hpp"
 #include "Menu.hpp"
@@ -18,13 +19,11 @@
 
 void UI::print_wide(const size_t y, const size_t x, const wchar_t wc)
 {
-	assert(wcwidth(wc) == 1);
 	wchar_t wc_str[2] = { wc, L'\0' };
 	mvwaddwstr(panel_window(current_panel), y, x, wc_str);
 }
 void UI::print_wide(wchar_t wc)
 {
-	assert(wcwidth(wc) == 1);
 	wchar_t wc_str[2] = { wc, L'\0' };
 	waddwstr(panel_window(current_panel), wc_str);
 }
@@ -36,9 +35,40 @@ void UI::print(const char ch)
 {
 	wprintw(panel_window(current_panel), "%c", ch);
 }
+void UI::print_colors(const char* ptr)
+{
+	Color c;
+	while (*ptr != '\0')
+	{
+		if (*ptr == '{') // color markup start
+		{
+			if (strncmp(ptr, "{reset}", 7) == 0)
+			{
+				//wattron(get_current_window(), COLOR_PAIR(0));
+				disable_color_pair(ColorPair(c, Color{}));
+				ptr = strchr(ptr, '}') + 1;
+				continue;
+			}
+			const short r = static_cast<short>(atoi(ptr + 1));
+			ptr = strchr(ptr, ',') + 1;
+			const short g = static_cast<short>(atoi(ptr));
+			ptr = strchr(ptr, ',') + 1;
+			const short b = static_cast<short>(atoi(ptr));
+			ptr = strchr(ptr, '}') + 1;
+			c = Color(r, g, b);
+			enable_color_pair(ColorPair(c, Color{}));
+			continue;
+		}
+		print(*ptr);
+		ptr++;
+	}
+}
 void UI::print(const std::string& str)
 {
-	wprintw(panel_window(current_panel), "%s", str.c_str());
+	if (str.find('{') != std::string::npos)
+		print_colors(str.c_str()); // Probably wants to print with colors
+	else
+		wprintw(panel_window(current_panel), "%s", str.c_str());
 }
 void UI::print(const size_t y, const size_t x, const std::string& str)
 {
@@ -83,7 +113,14 @@ void UI::enable_color_pair(const ColorPair& color_pair)
 	short pair_id = is_initialized_color_pair(color_pair);
 	if (pair_id == -1)
 		pair_id = color_pair.init();
-	wattron(UI::instance().get_current_window(), COLOR_PAIR(pair_id));
+	wattron(get_current_window(), COLOR_PAIR(pair_id));
+}
+void UI::disable_color_pair(const ColorPair& color_pair)
+{
+	short pair_id = is_initialized_color_pair(color_pair);
+	if (pair_id == -1)
+		pair_id = color_pair.init();
+	wattroff(get_current_window(), COLOR_PAIR(pair_id));
 }
 void UI::reset_colors()
 {
@@ -91,7 +128,7 @@ void UI::reset_colors()
 	initialized_color_pairs.clear();
 }
 
-std::string UI::dialog(const std::string& text, const std::vector<std::string>& options, const Screen::Coord& position)
+std::string UI::dialog(const std::string& text, const std::vector<std::string>& options, const Screen::Coord& position, const size_t initial_selection)
 {
 	// Initialize elements for dialog box
 	std::vector<std::unique_ptr<MenuElt>> elements;
@@ -105,6 +142,8 @@ std::string UI::dialog(const std::string& text, const std::vector<std::string>& 
 	// If there are no options, it will just be printed as a message
 	if (options.empty())
 		menu.set_read_only(true);
+
+	menu.set_selected(initial_selection);
 
 	// Will return an option as a string it was constructed with
 	return menu.loop();
@@ -263,8 +302,6 @@ void UI::init()
 	mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, nullptr);
 	printf("\033[?1003h");	// mouse movement will trigger KEY_MOUSE events
 	fflush(stdout);				// to know current cursor location
-
-	Log::log("UI init finished");
 }
 
 void UI::end()

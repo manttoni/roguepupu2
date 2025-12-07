@@ -29,4 +29,5 @@ class Color
 
 		short init() const;
 		std::string to_string() const;
+		std::string markup() const;
 };
