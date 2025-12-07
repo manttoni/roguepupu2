@@ -1,0 +1,15 @@
+{
+	"crazy goblin": {
+		"renderable": {
+			"color": [100, 200, 50]
+		},
+		"solid": true,
+		"vision": 10,
+		"inventory": [
+			{
+				"filter": {"name": "dagger"}
+			}
+		],
+		"equipment": true
+	}
+}

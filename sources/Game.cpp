@@ -13,7 +13,7 @@
 
 Game::Game() :
 	level(1),
-	player(EntityFactory::instance().create_entity(world.get_registry(), "Player", &get_cave().get_source()))
+	player(EntityFactory::instance().create_entity(world.get_registry(), "rabdin", &get_cave().get_source()))
 {}
 
 void Game::check_change_level()

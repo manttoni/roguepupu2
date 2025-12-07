@@ -78,7 +78,7 @@ std::any Menu::get_value(const std::string& str) const
 			&& elements[i]->MenuElt::get_text() == str)
 			return elements[i]->get_value();
 	}
-	throw std::runtime_error("Not found");
+	Log::error("Not found");
 	return {};
 }
 
@@ -93,7 +93,7 @@ void Menu::set_value(const std::string& str, std::any value)
 			return;
 		}
 	}
-	throw std::runtime_error("MenuNum name not found: " + str);
+	Log::error("MenuNum name not found: " + str);
 }
 
 int Menu::get_mouse_selection() const

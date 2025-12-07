@@ -66,3 +66,23 @@ struct Equipment
 		{ EquipmentSystem::Slot::right_hand, std::nullopt }
 	};
 };
+
+struct Category
+{
+	std::string category;
+};
+
+struct Subcategory
+{
+	std::string subcategory;
+};
+
+struct Rarity
+{
+	std::string rarity;
+};
+
+struct ArmorClass
+{
+	int value;
+};

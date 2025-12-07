@@ -7,6 +7,7 @@
 #include <sstream>
 #include <any>
 #include "MenuElt.hpp"
+#include "Utils.hpp"
 
 template <typename T>
 class MenuNum : public MenuElt
@@ -41,7 +42,7 @@ class MenuNum : public MenuElt
 				ss << "MenuNum::set_value(" << std::any_cast<std::string>(value) << ")\n";
 				ss << "Couldn't convert std::any to T\n";
 				ss << "value.type() = " << std::string(value.type().name()) << " | typeid(T) = " << std::string(typeid(T).name()) << std::endl;
-				throw std::runtime_error(ss.str());
+				Log::error(ss.str());
 			}
 		}
 		void increment() { value = std::min(value + delta, limits.second); }

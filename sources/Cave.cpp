@@ -57,7 +57,7 @@ Cave::Cave(const std::string& map, const size_t width) : height(map.size() / wid
 std::vector<size_t> Cave::find_path(const size_t start, const size_t end)
 {
 	if (start >= get_size() || end >= get_size())
-		throw std::runtime_error("Cave::find_path: invalid arguments");
+		Log::error("Cave::find_path: invalid arguments");
 	if (cells[start].blocks_movement() || cells[end].blocks_movement())
 		return {};
 	std::vector<size_t> open_set = { start };

@@ -1,0 +1,9 @@
+{
+	"dagger": {
+		"renderable": {},
+		"equippable": "one_handed",
+		"damage": "1d4",
+		"weight": 0.3,
+		"rarity": "common"
+	}
+}
