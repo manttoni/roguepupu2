@@ -1,9 +1,163 @@
 {
+	"padded armor": {
+		"renderable" : {},
+		"weight": 8.0,
+		"rarity": "common",
+		"armor": {
+			"proficiency": "light",
+			"armor_class": 11,
+			"stealth_disadvantage": true
+		},
+		"value": "5gp"
+	},
+
 	"leather armor": {
 		"renderable": {},
-		"equippable": "body",
-		"weight": 3,
+		"weight": 10.0,
 		"rarity": "common",
-		"armorclass": 11
+		"value": "10gp",
+		"armor": {
+			"proficiency": "light",
+			"armor_class": 11
+		}
+	},
+
+	"studded leather armor": {
+		"renderable": {},
+		"weight": 13.0,
+		"rarity": "common",
+		"value": "45gp",
+		"armor": {
+			"proficiency": "light",
+			"armor_class": 12
+		}
+	},
+
+	"hide armor": {
+		"renderable": {},
+		"weight": 12.0,
+		"rarity": "common",
+		"value": "10gp",
+		"armor": {
+			"proficiency": "medium",
+			"armor_class": 12,
+			"max_dexbonus": 2
+		}
+	},
+
+	"chain shirt": {
+		"renderable": {},
+		"weight": 20.0,
+		"rarity": "common",
+		"value": "50gp",
+		"armor": {
+			"proficiency": "medium",
+			"armor_class": 13,
+			"max_dexbonus": 2
+		}
+	},
+
+	"scale mail": {
+		"renderable": {},
+		"weight": 45.0,
+		"rarity": "common",
+		"value": "50gp",
+		"armor": {
+			"proficiency": "medium",
+			"armor_class": 14,
+			"max_dexbonus": 2,
+			"stealth_disadvantage": true
+		}
+	},
+
+	"breastplate": {
+		"renderable": {},
+		"weight": 20.0,
+		"rarity": "common",
+		"value": "400gp",
+		"armor": {
+			"proficiency": "medium",
+			"armor_class": 14,
+			"max_dexbonus": 2
+		}
+	},
+
+	"half plate": {
+		"renderable": {},
+		"weight": 40.0,
+		"rarity": "common",
+		"value": "750gp",
+		"armor": {
+			"proficiency": "medium",
+			"armor_class": 15,
+			"max_dexbonus": 2,
+			"stealth_disadvantage": true
+		}
+	},
+
+	"ring mail": {
+		"renderable": {},
+		"weight": 40.0,
+		"rarity": "common",
+		"value": "30gp",
+		"armor": {
+			"proficiency": "heavy",
+			"armor_class": 14,
+			"max_dexbonus": 0,
+			"stealth_disadvantage": true
+		}
+	},
+
+	"chain mail": {
+		"renderable": {},
+		"weight": 55.0,
+		"rarity": "common",
+		"value": "75gp",
+		"armor": {
+			"proficiency": "heavy",
+			"armor_class": 16,
+			"max_dexbonus": 0,
+			"stealth_disadvantage": true,
+			"strength_requirement": 13
+		}
+	},
+
+	"splint armor": {
+		"renderable": {},
+		"weight": 60.0,
+		"rarity": "common",
+		"value": "200gp",
+		"armor": {
+			"proficiency": "heavy",
+			"armor_class": 17,
+			"max_dexbonus": 0,
+			"stealth_disadvantage": true,
+			"strength_requirement": 15
+		}
+	},
+
+	"plate armor": {
+		"renderable": {},
+		"weight": 65.0,
+		"rarity": "common",
+		"value": "1500gp",
+		"armor": {
+			"proficiency": "heavy",
+			"armor_class": 18,
+			"max_dexbonus": 0,
+			"stealth_disadvantage": true,
+			"strength_requirement": 15
+		}
+	},
+
+	"shield": {
+		"renderable": {},
+		"weight": 6.0,
+		"rarity": "common",
+		"value": "10gp",
+		"armor": {
+			"proficiency": "shields",
+			"armor_class_bonus": 2
+		}
 	}
 }

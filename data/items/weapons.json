@@ -1,9 +1,490 @@
 {
+	"club": {
+		"renderable": {},
+		"weight": 2.0,
+		"rarity": "common",
+		"damage": {
+			"type": "bludgeoning",
+			"dice": "1d4"
+		},
+		"weapon": {
+			"proficiency": "simple",
+			"properties": ["light"]
+		},
+		"value": "1sp"
+	},
+
 	"dagger": {
 		"renderable": {},
-		"equippable": "one_handed",
-		"damage": "1d4",
-		"weight": 0.3,
-		"rarity": "common"
+		"weight": 1.0,
+		"rarity": "common",
+		"damage": {
+			"type": "piercing",
+			"dice": "1d4"
+		},
+		"weapon": {
+			"proficiency": "simple",
+			"properties": ["finesse", "light", "thrown"]
+		},
+		"value": "2gp"
+	},
+
+	"greatclub": {
+		"renderable": {},
+		"weight": 10.0,
+		"rarity": "common",
+		"damage": {
+			"type": "bludgeoning",
+			"dice": "1d8"
+		},
+		"weapon": {
+			"proficiency": "simple",
+			"properties": ["two-handed"]
+		},
+		"value": "2sp"
+	},
+
+	"handaxe": {
+		"renderable": {},
+		"weight": 2.0,
+		"rarity": "common",
+		"damage": {
+			"type": "slashing",
+			"dice": "1d6"
+		},
+		"weapon": {
+			"proficiency": "simple",
+			"properties": ["light", "thrown"]
+		},
+		"value": "5gp"
+	},
+
+	"javelin": {
+		"renderable": {},
+		"weight": 2.0,
+		"rarity": "common",
+		"damage": {
+			"type": "piercing",
+			"dice": "1d6"
+		},
+		"weapon": {
+			"proficiency": "simple",
+			"properties": ["thrown"]
+		},
+		"value": "5sp"
+	},
+
+	"light hammer": {
+		"renderable": {},
+		"weight": 2.0,
+		"rarity": "common",
+		"damage": {
+			"type": "bludgeoning",
+			"dice": "1d4"
+		},
+		"weapon": {
+			"proficiency": "simple",
+			"properties": ["light", "thrown"]
+		},
+		"value": "2gp"
+	},
+
+	"mace": {
+		"renderable": {},
+		"weight": 4.0,
+		"rarity": "common",
+		"damage": {
+			"type": "bludgeoning",
+			"dice": "1d6"
+		},
+		"weapon": {
+			"proficiency": "simple",
+			"properties": []
+		},
+		"value": "5gp"
+	},
+
+	"quarterstaff": {
+		"renderable": {},
+		"weight": 4.0,
+		"rarity": "common",
+		"damage": {
+			"type": "bludgeoning",
+			"dice": "1d6"
+		},
+		"weapon": {
+			"proficiency": "simple",
+			"properties": ["versatile"]
+		},
+		"value": "2sp"
+	},
+
+	"sickle": {
+		"renderable": {},
+		"weight": 2.0,
+		"rarity": "common",
+		"damage": {
+			"type": "slashing",
+			"dice": "1d4"
+		},
+		"weapon": {
+			"proficiency": "simple",
+			"properties": ["light"]
+		},
+		"value": "1gp"
+	},
+
+	"spear": {
+		"renderable": {},
+		"weight": 3.0,
+		"rarity": "common",
+		"damage": {
+			"type": "piercing",
+			"dice": "1d6"
+		},
+		"weapon": {
+			"proficiency": "simple",
+			"properties": ["thrown", "versatile"]
+		},
+		"value": "1gp"
+	},
+
+	"light crossbow": {
+		"renderable": {},
+		"weight": 5.0,
+		"rarity": "common",
+		"damage": {
+			"type": "piercing",
+			"dice": "1d8"
+		},
+		"weapon": {
+			"proficiency": "simple",
+			"properties": ["ammunition", "loading", "two-handed"]
+		},
+		"value": "25gp"
+	},
+
+	"dart": {
+		"renderable": {},
+		"weight": 0.25,
+		"rarity": "common",
+		"damage": {
+			"type": "piercing",
+			"dice": "1d4"
+		},
+		"weapon": {
+			"proficiency": "simple",
+			"properties": ["finesse", "thrown"]
+		},
+		"value": "5cp"
+	},
+
+	"shortbow": {
+		"renderable": {},
+		"weight": 2.0,
+		"rarity": "common",
+		"damage": {
+			"type": "piercing",
+			"dice": "1d6"
+		},
+		"weapon": {
+			"proficiency": "simple",
+			"properties": ["ammunition", "two-handed"]
+		},
+		"value": "25gp"
+	},
+
+	"sling": {
+		"renderable": {},
+		"weight": null,
+		"rarity": "common",
+		"damage": {
+			"type": "bludgeoning",
+			"dice": "1d4"
+		},
+		"weapon": {
+			"proficiency": "simple",
+			"properties": ["ammunition"]
+		},
+		"value": "1sp"
+	},
+
+	"battleaxe": {
+		"renderable": {},
+		"weight": 4.0,
+		"rarity": "common",
+		"damage": { "type": "slashing", "dice": "1d8" },
+		"weapon": {
+			"proficiency": "martial",
+			"properties": ["versatile (1d10)"]
+		},
+		"value": "10gp"
+	},
+
+	"flail": {
+		"renderable": {},
+		"weight": 2.0,
+		"rarity": "common",
+		"damage": { "type": "bludgeoning", "dice": "1d8" },
+		"weapon": {
+			"proficiency": "martial",
+			"properties": []
+		},
+		"value": "10gp"
+	},
+
+	"glaive": {
+		"renderable": {},
+		"weight": 6.0,
+		"rarity": "common",
+		"damage": { "type": "slashing", "dice": "1d10" },
+		"weapon": {
+			"proficiency": "martial",
+			"properties": ["heavy", "reach", "two-handed"]
+		},
+		"value": "20gp"
+	},
+
+	"greataxe": {
+		"renderable": {},
+		"weight": 7.0,
+		"rarity": "common",
+		"damage": { "type": "slashing", "dice": "1d12" },
+		"weapon": {
+			"proficiency": "martial",
+			"properties": ["heavy", "two-handed"]
+		},
+		"value": "30gp"
+	},
+
+	"greatsword": {
+		"renderable": {},
+		"weight": 6.0,
+		"rarity": "common",
+		"damage": { "type": "slashing", "dice": "2d6" },
+		"weapon": {
+			"proficiency": "martial",
+			"properties": ["heavy", "two-handed"]
+		},
+		"value": "50gp"
+	},
+
+	"halberd": {
+		"renderable": {},
+		"weight": 6.0,
+		"rarity": "common",
+		"damage": { "type": "slashing", "dice": "1d10" },
+		"weapon": {
+			"proficiency": "martial",
+			"properties": ["heavy", "reach", "two-handed"]
+		},
+		"value": "20gp"
+	},
+
+	"lance": {
+		"renderable": {},
+		"weight": 6.0,
+		"rarity": "common",
+		"damage": { "type": "piercing", "dice": "1d12" },
+		"weapon": {
+			"proficiency": "martial",
+			"properties": ["reach", "special"]
+		},
+		"value": "10gp"
+	},
+
+	"longsword": {
+		"renderable": {},
+		"weight": 3.0,
+		"rarity": "common",
+		"damage": { "type": "slashing", "dice": "1d8" },
+		"weapon": {
+			"proficiency": "martial",
+			"properties": ["versatile (1d10)"]
+		},
+		"value": "15gp"
+	},
+
+	"maul": {
+		"renderable": {},
+		"weight": 10.0,
+		"rarity": "common",
+		"damage": { "type": "bludgeoning", "dice": "2d6" },
+		"weapon": {
+			"proficiency": "martial",
+			"properties": ["heavy", "two-handed"]
+		},
+		"value": "10gp"
+	},
+
+	"morningstar": {
+		"renderable": {},
+		"weight": 4.0,
+		"rarity": "common",
+		"damage": { "type": "piercing", "dice": "1d8" },
+		"weapon": {
+			"proficiency": "martial",
+			"properties": []
+		},
+		"value": "15gp"
+	},
+
+	"pike": {
+		"renderable": {},
+		"weight": 18.0,
+		"rarity": "common",
+		"damage": { "type": "piercing", "dice": "1d10" },
+		"weapon": {
+			"proficiency": "martial",
+			"properties": ["heavy", "reach", "two-handed"]
+		},
+		"value": "5gp"
+	},
+
+	"rapier": {
+		"renderable": {},
+		"weight": 2.0,
+		"rarity": "common",
+		"damage": { "type": "piercing", "dice": "1d8" },
+		"weapon": {
+			"proficiency": "martial",
+			"properties": ["finesse"]
+		},
+		"value": "25gp"
+	},
+
+	"scimitar": {
+		"renderable": {},
+		"weight": 3.0,
+		"rarity": "common",
+		"damage": { "type": "slashing", "dice": "1d6" },
+		"weapon": {
+			"proficiency": "martial",
+			"properties": ["finesse", "light"]
+		},
+		"value": "25gp"
+	},
+
+	"shortsword": {
+		"renderable": {},
+		"weight": 2.0,
+		"rarity": "common",
+		"damage": { "type": "piercing", "dice": "1d6" },
+		"weapon": {
+			"proficiency": "martial",
+			"properties": ["finesse", "light"]
+		},
+		"value": "10gp"
+	},
+
+	"trident": {
+		"renderable": {},
+		"weight": 4.0,
+		"rarity": "common",
+		"damage": { "type": "piercing", "dice": "1d6" },
+		"weapon": {
+			"proficiency": "martial",
+			"properties": ["thrown", "versatile (1d8)"]
+		},
+		"value": "5gp"
+	},
+
+	"war pick": {
+		"renderable": {},
+		"weight": 2.0,
+		"rarity": "common",
+		"damage": { "type": "piercing", "dice": "1d8" },
+		"weapon": {
+			"proficiency": "martial",
+			"properties": []
+		},
+		"value": "5gp"
+	},
+
+	"warhammer": {
+		"renderable": {},
+		"weight": 2.0,
+		"rarity": "common",
+		"damage": { "type": "bludgeoning", "dice": "1d8" },
+		"weapon": {
+			"proficiency": "martial",
+			"properties": ["versatile (1d10)"]
+		},
+		"value": "15gp"
+	},
+
+	"whip": {
+		"renderable": {},
+		"weight": 3.0,
+		"rarity": "common",
+		"damage": { "type": "slashing", "dice": "1d4" },
+		"weapon": {
+			"proficiency": "martial",
+			"properties": ["finesse", "reach"]
+		},
+		"value": "2gp"
+	},
+
+	"blowgun": {
+		"renderable": {},
+		"weight": 1.0,
+		"rarity": "common",
+		"damage": { "type": "piercing", "dice": "1" },
+		"weapon": {
+			"proficiency": "martial",
+			"properties": ["ammunition", "loading"]
+		},
+		"value": "10gp"
+	},
+
+	"hand crossbow": {
+		"renderable": {},
+		"weight": 3.0,
+		"rarity": "common",
+		"damage": { "type": "piercing", "dice": "1d6" },
+		"weapon": {
+			"proficiency": "martial",
+			"properties": ["ammunition", "light", "loading"]
+		},
+		"value": "75gp"
+	},
+
+	"heavy crossbow": {
+		"renderable": {},
+		"weight": 18.0,
+		"rarity": "common",
+		"damage": { "type": "piercing", "dice": "1d10" },
+		"weapon": {
+			"proficiency": "martial",
+			"properties": ["ammunition", "heavy", "loading", "two-handed"]
+		},
+		"value": "50gp"
+	},
+
+	"longbow": {
+		"renderable": {},
+		"weight": 2.0,
+		"rarity": "common",
+		"damage": { "type": "piercing", "dice": "1d8" },
+		"weapon": {
+			"proficiency": "martial",
+			"properties": ["ammunition", "heavy", "two-handed"]
+		},
+		"value": "50gp"
+	},
+
+	"net": {
+		"renderable": {},
+		"weight": 3.0,
+		"rarity": "common",
+		"damage": { "type": "none", "dice": "0" },
+		"weapon": {
+			"proficiency": "martial",
+			"properties": ["special", "thrown"]
+		},
+		"value": "1gp"
 	}
+
+
 }
+
