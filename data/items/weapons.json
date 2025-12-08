@@ -24,7 +24,7 @@
 		},
 		"weapon": {
 			"proficiency": "simple",
-			"properties": ["finesse", "light", "thrown"]
+			"properties": ["finesse", "light", "thrown 20/60"]
 		},
 		"value": 2
 	},
@@ -54,7 +54,7 @@
 		},
 		"weapon": {
 			"proficiency": "simple",
-			"properties": ["light", "thrown"]
+			"properties": ["light", "thrown 20/60"]
 		},
 		"value": 5
 	},
@@ -69,7 +69,7 @@
 		},
 		"weapon": {
 			"proficiency": "simple",
-			"properties": ["thrown"]
+			"properties": ["thrown 30/120"]
 		},
 		"value": 5
 	},
@@ -84,7 +84,7 @@
 		},
 		"weapon": {
 			"proficiency": "simple",
-			"properties": ["light", "thrown"]
+			"properties": ["light", "thrown 20/60"]
 		},
 		"value": 2
 	},
@@ -144,7 +144,7 @@
 		},
 		"weapon": {
 			"proficiency": "simple",
-			"properties": ["thrown", "versatile"]
+			"properties": ["thrown 20/60", "versatile"]
 		},
 		"value": 1
 	},
@@ -159,7 +159,7 @@
 		},
 		"weapon": {
 			"proficiency": "simple",
-			"properties": ["ammunition", "loading", "two-handed"]
+			"properties": ["ammunition 80/320", "loading", "two-handed"]
 		},
 		"value": 25
 	},
@@ -174,7 +174,7 @@
 		},
 		"weapon": {
 			"proficiency": "simple",
-			"properties": ["finesse", "thrown"]
+			"properties": ["finesse", "thrown 20/60"]
 		},
 		"value": 5
 	},
@@ -189,7 +189,7 @@
 		},
 		"weapon": {
 			"proficiency": "simple",
-			"properties": ["ammunition", "two-handed"]
+			"properties": ["ammunition 80/320", "two-handed"]
 		},
 		"value": 25
 	},
@@ -204,7 +204,7 @@
 		},
 		"weapon": {
 			"proficiency": "simple",
-			"properties": ["ammunition"]
+			"properties": ["ammunition 30/120"]
 		},
 		"value": 1
 	},
@@ -384,7 +384,7 @@
 		"damage": { "type": "piercing", "dice": "1d6" },
 		"weapon": {
 			"proficiency": "martial",
-			"properties": ["thrown", "versatile (1d8)"]
+			"properties": ["thrown 20/60", "versatile (1d8)"]
 		},
 		"value": 5
 	},
@@ -432,7 +432,7 @@
 		"damage": { "type": "piercing", "dice": "1" },
 		"weapon": {
 			"proficiency": "martial",
-			"properties": ["ammunition", "loading"]
+			"properties": ["ammunition 25/100", "loading"]
 		},
 		"value": 10
 	},
@@ -444,7 +444,7 @@
 		"damage": { "type": "piercing", "dice": "1d6" },
 		"weapon": {
 			"proficiency": "martial",
-			"properties": ["ammunition", "light", "loading"]
+			"properties": ["ammunition 30/120", "light", "loading"]
 		},
 		"value": 75
 	},
@@ -456,7 +456,7 @@
 		"damage": { "type": "piercing", "dice": "1d10" },
 		"weapon": {
 			"proficiency": "martial",
-			"properties": ["ammunition", "heavy", "loading", "two-handed"]
+			"properties": ["ammunition 100/400", "heavy", "loading", "two-handed"]
 		},
 		"value": 50
 	},
@@ -468,7 +468,7 @@
 		"damage": { "type": "piercing", "dice": "1d8" },
 		"weapon": {
 			"proficiency": "martial",
-			"properties": ["ammunition", "heavy", "two-handed"]
+			"properties": ["ammunition 150/600", "heavy", "two-handed"]
 		},
 		"value": 50
 	}

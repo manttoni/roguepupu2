@@ -14,6 +14,8 @@
 #include "systems/DamageSystem.hpp"                       // for parse_type
 class Cell;
 
+#define CELL_SIZE 5
+
 void EntityFactory::init()
 {
 	read_definitions("data/items/weapons.json");
@@ -129,8 +131,27 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 				Log::error("Weapon component missing proficiency: " + data.dump(4));
 
 			const std::string proficiency = data["proficiency"].get<std::string>();
-			const std::vector<std::string> properties = data["properties"].get<std::vector<std::string>>();
-			reg.template emplace<Weapon>(e, proficiency, properties);
+			std::vector<std::string> properties = data["properties"].get<std::vector<std::string>>();
+
+			// Parse more data from properties
+			double normal_range = 1.5, long_range = 1.5;
+			Dice versatile_dice;
+			for (auto& property : properties)
+			{
+				const size_t space = property.find(' '); // splits additional data
+				const size_t slash = property.find('/'); // normal/long range
+				const size_t parenth = property.find('('); // (versatile dice)
+				if (slash != std::string::npos)
+				{
+					normal_range = std::stod(property.substr(space + 1)) / CELL_SIZE;
+					long_range = std::stod(property.substr(slash + 1)) / CELL_SIZE;
+				}
+				if (parenth != std::string::npos)
+					versatile_dice = Dice(property.substr(parenth + 1));
+				if (space != std::string::npos)
+					property = property.substr(0, space);
+			}
+			reg.template emplace<Weapon>(e, proficiency, properties, normal_range, long_range, versatile_dice);
 		}
 	},
 	{ "value", [](auto& reg, auto e, const nlohmann::json& data)
