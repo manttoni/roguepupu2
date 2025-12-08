@@ -81,7 +81,7 @@ namespace InventorySystem
 
 			if (owner == player)
 			{
-				if (registry.all_of<Equippable>(item))
+				if (registry.any_of<Weapon, Armor>(item))
 					EquipmentSystem::equip_or_unequip(registry, player, item);
 			}
 			else

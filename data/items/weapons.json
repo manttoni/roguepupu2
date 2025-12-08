@@ -11,7 +11,7 @@
 			"proficiency": "simple",
 			"properties": ["light"]
 		},
-		"value": "1sp"
+		"value": 1
 	},
 
 	"dagger": {
@@ -26,7 +26,7 @@
 			"proficiency": "simple",
 			"properties": ["finesse", "light", "thrown"]
 		},
-		"value": "2gp"
+		"value": 2
 	},
 
 	"greatclub": {
@@ -41,7 +41,7 @@
 			"proficiency": "simple",
 			"properties": ["two-handed"]
 		},
-		"value": "2sp"
+		"value": 2
 	},
 
 	"handaxe": {
@@ -56,7 +56,7 @@
 			"proficiency": "simple",
 			"properties": ["light", "thrown"]
 		},
-		"value": "5gp"
+		"value": 5
 	},
 
 	"javelin": {
@@ -71,7 +71,7 @@
 			"proficiency": "simple",
 			"properties": ["thrown"]
 		},
-		"value": "5sp"
+		"value": 5
 	},
 
 	"light hammer": {
@@ -86,7 +86,7 @@
 			"proficiency": "simple",
 			"properties": ["light", "thrown"]
 		},
-		"value": "2gp"
+		"value": 2
 	},
 
 	"mace": {
@@ -101,7 +101,7 @@
 			"proficiency": "simple",
 			"properties": []
 		},
-		"value": "5gp"
+		"value": 5
 	},
 
 	"quarterstaff": {
@@ -116,7 +116,7 @@
 			"proficiency": "simple",
 			"properties": ["versatile"]
 		},
-		"value": "2sp"
+		"value": 2
 	},
 
 	"sickle": {
@@ -131,7 +131,7 @@
 			"proficiency": "simple",
 			"properties": ["light"]
 		},
-		"value": "1gp"
+		"value": 1
 	},
 
 	"spear": {
@@ -146,7 +146,7 @@
 			"proficiency": "simple",
 			"properties": ["thrown", "versatile"]
 		},
-		"value": "1gp"
+		"value": 1
 	},
 
 	"light crossbow": {
@@ -161,7 +161,7 @@
 			"proficiency": "simple",
 			"properties": ["ammunition", "loading", "two-handed"]
 		},
-		"value": "25gp"
+		"value": 25
 	},
 
 	"dart": {
@@ -176,7 +176,7 @@
 			"proficiency": "simple",
 			"properties": ["finesse", "thrown"]
 		},
-		"value": "5cp"
+		"value": 5
 	},
 
 	"shortbow": {
@@ -191,7 +191,7 @@
 			"proficiency": "simple",
 			"properties": ["ammunition", "two-handed"]
 		},
-		"value": "25gp"
+		"value": 25
 	},
 
 	"sling": {
@@ -206,7 +206,7 @@
 			"proficiency": "simple",
 			"properties": ["ammunition"]
 		},
-		"value": "1sp"
+		"value": 1
 	},
 
 	"battleaxe": {
@@ -218,7 +218,7 @@
 			"proficiency": "martial",
 			"properties": ["versatile (1d10)"]
 		},
-		"value": "10gp"
+		"value": 10
 	},
 
 	"flail": {
@@ -230,7 +230,7 @@
 			"proficiency": "martial",
 			"properties": []
 		},
-		"value": "10gp"
+		"value": 10
 	},
 
 	"glaive": {
@@ -242,7 +242,7 @@
 			"proficiency": "martial",
 			"properties": ["heavy", "reach", "two-handed"]
 		},
-		"value": "20gp"
+		"value": 20
 	},
 
 	"greataxe": {
@@ -254,7 +254,7 @@
 			"proficiency": "martial",
 			"properties": ["heavy", "two-handed"]
 		},
-		"value": "30gp"
+		"value": 30
 	},
 
 	"greatsword": {
@@ -266,7 +266,7 @@
 			"proficiency": "martial",
 			"properties": ["heavy", "two-handed"]
 		},
-		"value": "50gp"
+		"value": 50
 	},
 
 	"halberd": {
@@ -278,7 +278,7 @@
 			"proficiency": "martial",
 			"properties": ["heavy", "reach", "two-handed"]
 		},
-		"value": "20gp"
+		"value": 20
 	},
 
 	"lance": {
@@ -290,7 +290,7 @@
 			"proficiency": "martial",
 			"properties": ["reach", "special"]
 		},
-		"value": "10gp"
+		"value": 10
 	},
 
 	"longsword": {
@@ -302,7 +302,7 @@
 			"proficiency": "martial",
 			"properties": ["versatile (1d10)"]
 		},
-		"value": "15gp"
+		"value": 15
 	},
 
 	"maul": {
@@ -314,7 +314,7 @@
 			"proficiency": "martial",
 			"properties": ["heavy", "two-handed"]
 		},
-		"value": "10gp"
+		"value": 10
 	},
 
 	"morningstar": {
@@ -326,7 +326,7 @@
 			"proficiency": "martial",
 			"properties": []
 		},
-		"value": "15gp"
+		"value": 15
 	},
 
 	"pike": {
@@ -338,7 +338,7 @@
 			"proficiency": "martial",
 			"properties": ["heavy", "reach", "two-handed"]
 		},
-		"value": "5gp"
+		"value": 5
 	},
 
 	"rapier": {
@@ -350,7 +350,7 @@
 			"proficiency": "martial",
 			"properties": ["finesse"]
 		},
-		"value": "25gp"
+		"value": 25
 	},
 
 	"scimitar": {
@@ -362,7 +362,7 @@
 			"proficiency": "martial",
 			"properties": ["finesse", "light"]
 		},
-		"value": "25gp"
+		"value": 25
 	},
 
 	"shortsword": {
@@ -374,7 +374,7 @@
 			"proficiency": "martial",
 			"properties": ["finesse", "light"]
 		},
-		"value": "10gp"
+		"value": 10
 	},
 
 	"trident": {
@@ -386,7 +386,7 @@
 			"proficiency": "martial",
 			"properties": ["thrown", "versatile (1d8)"]
 		},
-		"value": "5gp"
+		"value": 5
 	},
 
 	"war pick": {
@@ -398,7 +398,7 @@
 			"proficiency": "martial",
 			"properties": []
 		},
-		"value": "5gp"
+		"value": 5
 	},
 
 	"warhammer": {
@@ -410,7 +410,7 @@
 			"proficiency": "martial",
 			"properties": ["versatile (1d10)"]
 		},
-		"value": "15gp"
+		"value": 15
 	},
 
 	"whip": {
@@ -422,7 +422,7 @@
 			"proficiency": "martial",
 			"properties": ["finesse", "reach"]
 		},
-		"value": "2gp"
+		"value": 2
 	},
 
 	"blowgun": {
@@ -434,7 +434,7 @@
 			"proficiency": "martial",
 			"properties": ["ammunition", "loading"]
 		},
-		"value": "10gp"
+		"value": 10
 	},
 
 	"hand crossbow": {
@@ -446,7 +446,7 @@
 			"proficiency": "martial",
 			"properties": ["ammunition", "light", "loading"]
 		},
-		"value": "75gp"
+		"value": 75
 	},
 
 	"heavy crossbow": {
@@ -458,7 +458,7 @@
 			"proficiency": "martial",
 			"properties": ["ammunition", "heavy", "loading", "two-handed"]
 		},
-		"value": "50gp"
+		"value": 50
 	},
 
 	"longbow": {
@@ -470,7 +470,7 @@
 			"proficiency": "martial",
 			"properties": ["ammunition", "heavy", "two-handed"]
 		},
-		"value": "50gp"
+		"value": 50
 	},
 
 	"net": {
@@ -482,7 +482,7 @@
 			"proficiency": "martial",
 			"properties": ["special", "thrown"]
 		},
-		"value": "1gp"
+		"value": 1
 	}
 
 

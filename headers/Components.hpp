@@ -6,6 +6,7 @@
 #include "Color.hpp"
 #include "Dice.hpp"
 #include "systems/EquipmentSystem.hpp"
+#include "systems/DamageSystem.hpp"
 
 struct Name
 {
@@ -45,27 +46,20 @@ struct Player {};
 
 struct Damage
 {
+	DamageSystem::Type type;
 	Dice dice;
 };
 
 struct Weight
 {
-	double weight;
-};
-
-struct Equippable
-{
-	EquipmentSystem::Slot slot;
+	double lb;
 };
 
 struct Equipment
 {
-	std::map<EquipmentSystem::Slot, std::optional<entt::entity>> slots =
-	{
-		{ EquipmentSystem::Slot::left_hand, std::nullopt },
-		{ EquipmentSystem::Slot::right_hand, std::nullopt },
-		{ EquipmentSystem::Slot::body, std::nullopt }
-	};
+	entt::entity right_hand;
+	entt::entity left_hand;
+	entt::entity armor;
 };
 
 struct Category
@@ -83,7 +77,22 @@ struct Rarity
 	std::string rarity;
 };
 
-struct ArmorClass
+struct Value
 {
-	int value;
+	size_t value;
+};
+
+struct Weapon
+{
+	std::string proficiency;
+	std::vector<std::string> properties;
+};
+
+struct Armor
+{
+	std::string proficiency;
+	size_t armor_class;
+	size_t max_dexbonus;
+	bool stealth_disadvantage;
+	size_t strength_requirement;
 };

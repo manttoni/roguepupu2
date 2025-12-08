@@ -6,6 +6,7 @@
 #include <filesystem>
 #include "entt.hpp"
 #include "systems/EquipmentSystem.hpp"
+#include "systems/DamageSystem.hpp"
 #include "Components.hpp"
 #include "EntityFactory.hpp"
 #include "Cave.hpp"
@@ -33,6 +34,7 @@ void EntityFactory::read_definitions(const std::filesystem::path& path)
 	const std::string category = path.parent_path().filename();
 	const std::string subcategory = path.stem().filename();
 	add_entities(definitions, category, subcategory);
+	Log::log(path.string() + " parsed");
 }
 
 using FieldParser = std::function<void(entt::registry&, entt::entity, const nlohmann::json&)>;
@@ -113,18 +115,33 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 	},
 	{ "damage", [](auto& reg, auto e, const nlohmann::json& data)
 		{	// Can deal damage
-			reg.template emplace<Damage>(e, Dice(data.get<std::string>()));
+			if (!data.contains("type") || !data.contains("dice"))
+				Log::error("Damage component incomplete: " + data.dump(4));
+
+			DamageSystem::Type type = DamageSystem::parse_type(data["type"].get<std::string>());
+			Dice dice(data["dice"].get<std::string>());
+			reg.template emplace<Damage>(e, type, dice);
+		}
+	},
+	{ "weapon", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			if (!data.contains("proficiency"))
+				Log::error("Weapon component missing proficiency: " + data.dump(4));
+
+			const std::string proficiency = data["proficiency"].get<std::string>();
+			const std::vector<std::string> properties = data["properties"].get<std::vector<std::string>>();
+			reg.template emplace<Weapon>(e, proficiency, properties);
+		}
+	},
+	{ "value", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			const size_t value = data.get<size_t>();
+			reg.template emplace<Value>(e, value);
 		}
 	},
 	{ "weight", [](auto& reg, auto e, const nlohmann::json& data)
-		{	// Has a weight in kilograms
+		{	// Has a weight in lb
 			reg.template emplace<Weight>(e, data.get<double>());
-		}
-	},
-	{ "equippable", [](auto& reg, auto e, const nlohmann::json& data)
-		{	// This entity can be equipped by someone
-			EquipmentSystem::Slot slot = EquipmentSystem::parse_slot(data.get<std::string>());
-			reg.template emplace<Equippable>(e, slot);
 		}
 	},
 	{ "equipment", [](auto& reg, auto e, const nlohmann::json& data)
@@ -148,9 +165,17 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			reg.template emplace<Rarity>(e, data.get<std::string>());
 		}
 	},
-	{ "armorclass", [](auto& reg, auto e, const nlohmann::json& data)
+	{ "armor", [](auto& reg, auto e, const nlohmann::json& data)
 		{
-			reg.template emplace<ArmorClass>(e, data.get<int>());
+			if (!data.contains("proficiency"))
+				Log::error("Incomplete armor component: " + data.dump(4));
+
+			const std::string proficiency = data["proficiency"].get<std::string>();
+			const size_t armor_class = data.contains("armor_class") ? data["armor_class"].get<size_t>() : 0;
+			const size_t max_dexbonus = data.contains("max_dexbonus") ? data["max_dexbonus"].get<size_t>() : SIZE_MAX;
+			const bool stealth_disadvantage = data.contains("stealth_disadvantage") ? data["stealth_disadvantage"].get<bool>() : false;
+			const size_t strength_requirement = data.contains("strength_requirement") ? data["strength_requirement"].get<size_t>() : 0;
+			reg.template emplace<Armor>(e, proficiency, armor_class, max_dexbonus, stealth_disadvantage, strength_requirement);
 		}
 	}
 };

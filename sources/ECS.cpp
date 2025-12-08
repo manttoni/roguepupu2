@@ -48,10 +48,6 @@ namespace ECS
 		const auto& name = get_name(registry, entity);
 
 		std::string description = color.markup() + Utils::capitalize(name) + "{reset}";
-		if (registry.all_of<Damage>(entity))
-			description += "(" + registry.get<Damage>(entity).dice.get_str() + ")";
-		else if (registry.all_of<ArmorClass>(entity))
-			description += std::string("(AC: ") + std::to_string(registry.get<ArmorClass>(entity).value) + ")";
 
 		return description;
 	}

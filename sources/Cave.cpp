@@ -1,15 +1,16 @@
-#include <string>
-#include <cmath>
-#include <cassert>
-#include <iostream>
-#include <ncurses.h>
-#include "World.hpp"
-#include "Cave.hpp"
-#include "Cell.hpp"
-#include "Utils.hpp"
-#include "UI.hpp"
-#include "Components.hpp"
-#include "entt.hpp"
+#include <curses.h>        // for werase, WINDOW, getmaxyx
+#include <panel.h>         // for panel_window, PANEL
+#include <stdlib.h>        // for abs
+#include <string>          // for basic_string, string
+#include "Cave.hpp"        // for Cave
+#include "Cell.hpp"        // for Cell
+#include "Color.hpp"       // for Color
+#include "ColorPair.hpp"   // for ColorPair
+#include "Components.hpp"  // for Position, Glow, Renderable, Vision, Player...
+#include "UI.hpp"          // for UI
+#include "Utils.hpp"       // for contains, remove_element, error
+#include "World.hpp"       // for World
+#include "entt.hpp"        // for vector, size_t, map, ceil, basic_sigh_mixin
 
 Cave::Cave() :
 	height(0),
