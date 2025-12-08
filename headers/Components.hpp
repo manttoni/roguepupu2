@@ -47,7 +47,7 @@ struct Player {};
 
 struct Damage
 {
-	DamageSystem::Type type;
+	std::string type;
 	Dice dice;
 };
 

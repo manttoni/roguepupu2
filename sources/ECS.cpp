@@ -23,13 +23,6 @@ namespace ECS
 		Log::error("Unknown rarity: " + rarity);
 	}
 
-	std::string get_name(const entt::registry& registry, const entt::entity entity)
-	{
-		if (!registry.all_of<Name>(entity))
-			return "undefined";
-		return registry.get<Name>(entity).name;
-	}
-
 	Color get_color(const entt::registry& registry, const entt::entity entity)
 	{
 		Color c = registry.get<Renderable>(entity).color;
@@ -37,18 +30,18 @@ namespace ECS
 		{
 			if (registry.all_of<Rarity>(entity))
 				return get_rarity_color(registry.get<Rarity>(entity).rarity);
-			Log::error("Entity color was never defined: " + get_name(registry, entity));
+			Log::error("Entity color was never defined");
 		}
 		return c;
 	}
 
-	std::string get_description(const entt::registry& registry, const entt::entity entity)
+	std::string get_colored_name(const entt::registry& registry, const entt::entity entity)
 	{
 		const auto& color = get_color(registry, entity);
-		const auto& name = get_name(registry, entity);
+		const auto& name = registry.get<Name>(entity).name;
 
-		std::string description = color.markup() + Utils::capitalize(name) + "{reset}";
+		std::string colored_name = color.markup() + Utils::capitalize(name) + "{reset}";
 
-		return description;
+		return colored_name;
 	}
 };

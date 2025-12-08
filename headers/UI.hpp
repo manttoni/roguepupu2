@@ -121,6 +121,7 @@ class UI
 		void print(const size_t y, const size_t x, const std::string& str);
 		void println(const std::string& str);
 
+		std::string dialog(const std::vector<std::string>& text, const std::vector<std::string>& options = {}, const Screen::Coord& position = Screen::middle(), const size_t initial_selection = 0);
 		std::string dialog(const std::string& text, const std::vector<std::string>& options = {}, const Screen::Coord& position = Screen::middle(), const size_t initial_selection = 0);
 		int input(int delay = -1); // wrapper for getch
 

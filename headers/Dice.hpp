@@ -14,5 +14,5 @@ class Dice
 		Dice(const int n, const int sides, const int mod = 0);
 		Dice(const Dice& other) = default;
 		Dice& operator=(const Dice& other) = default;
-		std::string get_str() const { return string; }
+		std::string get_string() const { return string; }
 };

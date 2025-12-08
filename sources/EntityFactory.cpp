@@ -120,7 +120,7 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			if (!data.contains("type") || !data.contains("dice"))
 				Log::error("Damage component incomplete: " + data.dump(4));
 
-			DamageSystem::Type type = DamageSystem::parse_type(data["type"].get<std::string>());
+			std::string type = data["type"].get<std::string>();
 			Dice dice(data["dice"].get<std::string>());
 			reg.template emplace<Damage>(e, type, dice);
 		}

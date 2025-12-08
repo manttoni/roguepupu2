@@ -131,11 +131,12 @@ void UI::reset_colors()
 	initialized_color_pairs.clear();
 }
 
-std::string UI::dialog(const std::string& text, const std::vector<std::string>& options, const Screen::Coord& position, const size_t initial_selection)
+std::string UI::dialog(const std::vector<std::string>& text, const std::vector<std::string>& options, const Screen::Coord& position, const size_t initial_selection)
 {
 	// Initialize elements for dialog box
 	std::vector<std::unique_ptr<MenuElt>> elements;
-	elements.push_back(std::make_unique<MenuTxt>(text));
+	for (auto& t : text)
+		elements.push_back(std::make_unique<MenuTxt>(t));
 	for (auto& option : options)
 		elements.push_back(std::make_unique<MenuBtn>(option));
 
@@ -150,6 +151,11 @@ std::string UI::dialog(const std::string& text, const std::vector<std::string>& 
 
 	// Will return an option as a string it was constructed with
 	return menu.loop();
+
+}
+std::string UI::dialog(const std::string& text, const std::vector<std::string>& options, const Screen::Coord& position, const size_t initial_selection)
+{
+	return dialog(std::vector<std::string>{text}, options, position, initial_selection);
 }
 
 // return input as int for ncurses
