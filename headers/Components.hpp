@@ -87,6 +87,9 @@ struct Weapon
 {
 	std::string proficiency;
 	std::vector<std::string> properties;
+	double normal_range; // distance in cells
+	double long_range; // disadvantage outside normal range
+	Dice versatile_dice;
 };
 
 struct Armor

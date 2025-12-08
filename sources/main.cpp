@@ -10,12 +10,15 @@ void run()
 	UI::instance().get_menu("main").loop();
 }
 
-int main(void)
+int main(int argc, char** argv)
 {
 	Log::log("--- Run started ---");
 	EntityFactory::instance().init();
-	if (tester() > 0)
-		return 1;
+	if (argc > 1 && std::string(argv[1]) == "test")
+	{
+		tester();
+		return 0;
+	}
 	Log::log("EntityFactory initialized");
 	UI::instance().init();
 	Log::log("UI initialized");
