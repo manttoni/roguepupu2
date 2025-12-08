@@ -1,18 +1,18 @@
-#include <fstream>
-#include <nlohmann/json.hpp>
-#include <stdexcept>
-#include <unordered_map>
-#include <iostream>
-#include <filesystem>
-#include "entt.hpp"
-#include "systems/EquipmentSystem.hpp"
-#include "systems/DamageSystem.hpp"
-#include "Components.hpp"
-#include "EntityFactory.hpp"
-#include "Cave.hpp"
-#include "Utils.hpp"
-#include "Dice.hpp"
-#include "Color.hpp"
+#include <filesystem>                                     // for path
+#include <fstream>                                        // for basic_ifstream
+#include <nlohmann/detail/iterators/iter_impl.hpp>        // for iter_impl
+#include <nlohmann/detail/iterators/iteration_proxy.hpp>  // for iteration_p...
+#include <nlohmann/json.hpp>                              // for basic_json
+#include <nlohmann/json_fwd.hpp>                          // for json
+#include <string>                                         // for string, ope...
+#include "Color.hpp"                                      // for Color
+#include "Components.hpp"                                 // for Position
+#include "Dice.hpp"                                       // for Dice
+#include "EntityFactory.hpp"                              // for EntityFactory
+#include "Utils.hpp"                                      // for error, rand...
+#include "entt.hpp"                                       // for vector, ope...
+#include "systems/DamageSystem.hpp"                       // for parse_type
+class Cell;
 
 void EntityFactory::init()
 {

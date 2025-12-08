@@ -1,10 +1,10 @@
-#include <map>
-#include "entt.hpp"
-#include "Utils.hpp"
-#include "Components.hpp"
-#include "Cave.hpp"
-#include "Cell.hpp"
-#include "systems/MovementSystem.hpp"
+#include <curses.h>                    // for KEY_DOWN, KEY_LEFT, KEY_RIGHT
+#include "Cave.hpp"                    // for Cave
+#include "Cell.hpp"                    // for Cell
+#include "Components.hpp"              // for Position
+#include "Utils.hpp"                   // for Vec2
+#include "entt.hpp"                    // for size_t, map, entity, registry
+#include "systems/MovementSystem.hpp"  // for move, movement_key_pressed
 
 namespace MovementSystem
 {

@@ -1,12 +1,11 @@
-#include <vector>
-#include <string>
-#include "Utils.hpp"
-#include "Components.hpp"
-#include "entt.hpp"
-#include "systems/InventorySystem.hpp"
-#include "systems/EquipmentSystem.hpp"
-#include "UI.hpp"
-#include "ECS.hpp"
+#include <string>                       // for basic_string, operator+, char...
+#include "Components.hpp"               // for Inventory, Name, Player (ptr ...
+#include "ECS.hpp"                      // for get_name, get_description
+#include "UI.hpp"                       // for UI
+#include "Utils.hpp"                    // for error, capitalize, top_left
+#include "entt.hpp"                     // for vector, allocator, basic_sigh...
+#include "systems/EquipmentSystem.hpp"  // for equip_or_unequip, is_equipped
+#include "systems/InventorySystem.hpp"  // for add_item, has_item, inventory...
 
 namespace InventorySystem
 {

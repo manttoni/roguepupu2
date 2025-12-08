@@ -1,15 +1,17 @@
-#include <utility>
-#include <ncurses.h>
-#include <memory>
-#include <panel.h>
-#include "EntityFactory.hpp"
-#include "Game.hpp"
-#include "World.hpp"
-#include "UI.hpp"
-#include "Components.hpp"
-#include "Utils.hpp"
-#include "systems/MovementSystem.hpp"
-#include "systems/InventorySystem.hpp"
+#include <ncurses.h>                    // for delwin, wclear, WINDOW
+#include <panel.h>                      // for PANEL, del_panel, panel_window
+#include <string>                       // for basic_string, allocator, oper...
+#include <utility>                      // for pair
+#include "Cave.hpp"                     // for Cave
+#include "Cell.hpp"                     // for Cell
+#include "Components.hpp"               // for Position
+#include "EntityFactory.hpp"            // for EntityFactory
+#include "Game.hpp"                     // for Game, new_game
+#include "UI.hpp"                       // for UI, KEY_ESCAPE
+#include "World.hpp"                    // for World
+#include "entt.hpp"                     // for allocator, vector, size_t
+#include "systems/InventorySystem.hpp"  // for inventory_key_pressed, open_i...
+#include "systems/MovementSystem.hpp"   // for move, movement_key_pressed
 
 Game::Game() :
 	level(1),

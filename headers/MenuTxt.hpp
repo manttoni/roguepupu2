@@ -8,5 +8,5 @@ class MenuTxt : public MenuElt
 		MenuTxt(const std::string& text) : MenuElt(text, MenuElt::Type::TEXT) {}
 		size_t get_size() const override { return text.size(); }
 		std::any get_value() const override { return {}; }
-		void (*get_func() const)() override { return nullptr; }
+		std::function<void()> get_func() const override { return nullptr; }
 };

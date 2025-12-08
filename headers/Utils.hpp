@@ -73,7 +73,14 @@ namespace Utils
 
 namespace Log
 {
+	enum class Type
+	{
+		FATAL_ERROR,
+		INFO,
+		TEST_FAIL
+	};
 	const std::string logfile = "logs/logs.log";
+	const std::string testerlogfile = "logs/tester.log";
 	static inline std::string timestamp()
 	{
 		auto now = std::chrono::system_clock::now();
@@ -85,11 +92,11 @@ namespace Log
 		return oss.str();
 	}
 
-	static inline void log(const std::string& message)
+	static inline void log(const std::string& message, const std::string& filename = logfile)
 	{
-		std::ofstream os(logfile, std::ios::app);
+		std::ofstream os(filename, std::ios::app);
 		if (!os)
-			throw std::runtime_error("Can't open " + logfile);
+			throw std::runtime_error("Can't open " + filename);
 
 		os << timestamp() << " " << message << std::endl;
 		os.close();
@@ -99,6 +106,13 @@ namespace Log
 	{
 		log(message);
 		throw std::runtime_error("Error: " + message);
+	}
+
+	static inline void tester_log(const Type type, const std::string& message)
+	{
+		log(message, testerlogfile);
+		if (type == Type::FATAL_ERROR)
+			throw std::runtime_error("Fatal error: " + message);
 	}
 }
 

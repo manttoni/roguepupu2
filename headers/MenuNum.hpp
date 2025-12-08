@@ -31,7 +31,7 @@ class MenuNum : public MenuElt
 			this->value = std::max(value, this->limits.first);
 		}
 
-		std::any get_value() const { return value; }
+		std::any get_value() const override { return value; }
 		void set_value(std::any value) override
 		{
 			if (value.type() == typeid(T))
@@ -45,8 +45,8 @@ class MenuNum : public MenuElt
 				Log::error(ss.str());
 			}
 		}
-		void increment() { value = std::min(value + delta, limits.second); }
-		void decrement() { value = std::max(value - delta, limits.first); }
+		void increment() override { value = std::min(value + delta, limits.second); }
+		void decrement() override { value = std::max(value - delta, limits.first); }
 
 		std::string get_text() const override
 		{
@@ -65,7 +65,5 @@ class MenuNum : public MenuElt
 				);
 			return size;
 		}
-
-		// Override base classes virtual functions
-		void (*get_func() const)() override { return nullptr; }
+		std::function<void()> get_func() const override { return nullptr; }
 };

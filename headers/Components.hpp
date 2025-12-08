@@ -7,6 +7,7 @@
 #include "Dice.hpp"
 #include "systems/EquipmentSystem.hpp"
 #include "systems/DamageSystem.hpp"
+#include "entt.hpp"
 
 struct Name
 {
@@ -57,9 +58,9 @@ struct Weight
 
 struct Equipment
 {
-	entt::entity right_hand;
-	entt::entity left_hand;
-	entt::entity armor;
+	entt::entity right_hand{entt::null};
+	entt::entity left_hand{entt::null};
+	entt::entity armor{entt::null};
 };
 
 struct Category

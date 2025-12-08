@@ -1,7 +1,8 @@
-#include <sstream>
-#include "Color.hpp"
-#include "Utils.hpp"
-#include "UI.hpp"
+#include <ncurses.h>  // for init_color
+#include <algorithm>  // for min, max
+#include <string>     // for operator+, allocator, char_traits, to_string
+#include "Color.hpp"  // for Color
+#include "UI.hpp"     // for UI
 
 Color::Color(const short r, const short g, const short b) :
 	r(std::min<short>(1000, std::max<short>(r, 0))),

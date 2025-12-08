@@ -1,9 +1,8 @@
-#include <optional>
-#include <stdexcept>
-#include <cassert>
-#include "systems/EquipmentSystem.hpp"
-#include "Components.hpp"
-#include "Utils.hpp"
+#include <string>                       // for operator==, basic_string, ope...
+#include "Components.hpp"               // for Equipment, Weapon, Armor (ptr...
+#include "Utils.hpp"                    // for error
+#include "entt.hpp"                     // for vector, entity, null_t, find
+#include "systems/EquipmentSystem.hpp"  // for Slot, equip, equip_armor, equ...
 
 namespace EquipmentSystem
 {
@@ -52,6 +51,7 @@ namespace EquipmentSystem
 
 	void equip_weapon(entt::registry& registry, const entt::entity entity, const entt::entity item)
 	{
+		assert(entity != entt::null);
 		auto& equipment = registry.get<Equipment>(entity);
 		const auto& weapon_component = registry.get<Weapon>(item);
 		const auto& properties = weapon_component.properties;

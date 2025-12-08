@@ -1,21 +1,24 @@
-#include <ncursesw/ncurses.h>
-#include <string>
-#include <vector>
-#include <memory>
-#include <any>
-#include <utility>
-#include <climits>
-#include <chrono>
-#include <cstring>
-#include "Utils.hpp"
-#include "UI.hpp"
-#include "Menu.hpp"
-#include "MenuElt.hpp"
-#include "MenuBtn.hpp"
-#include "MenuNum.hpp"
-#include "MenuTxt.hpp"
-#include "Utils.hpp"
-#include "Game.hpp"
+#include <bits/chrono.h>  // for duration, duration_cast, operator-, steady_...
+#include <curses.h>       // for wprintw, ERR, COLOR_PAIR, curs_set, endwin
+#include <locale.h>       // for setlocale, LC_ALL
+#include <panel.h>        // for panel_window, PANEL, new_panel
+#include <stdio.h>        // for fflush, printf, stdout
+#include <any>            // for any
+#include <csignal>        // for signal, SIGABRT, SIGFPE, SIGINT, SIGSEGV
+#include <cstdlib>        // for atoi, exit
+#include <cstring>        // for strchr, strncmp
+#include <string>         // for basic_string, string
+#include "Color.hpp"      // for Color
+#include "ColorPair.hpp"  // for ColorPair
+#include "Game.hpp"       // for new_game
+#include "Menu.hpp"       // for Menu
+#include "MenuBtn.hpp"    // for MenuBtn
+#include "MenuElt.hpp"    // for MenuElt
+#include "MenuNum.hpp"    // for MenuNum
+#include "MenuTxt.hpp"    // for MenuTxt
+#include "UI.hpp"         // for UI, KEY_LEFT_CLICK, KEY_RIGHT_CLICK, quit
+#include "Utils.hpp"      // for Coord, botleft, height, middle, topright
+#include "entt.hpp"       // for unique_ptr, make_unique, vector, allocator
 
 void UI::print_wide(const size_t y, const size_t x, const wchar_t wc)
 {

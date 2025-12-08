@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <any>
+#include <functional>
 
 class MenuElt
 {
@@ -35,5 +36,5 @@ class MenuElt
 		virtual void decrement() {}
 		virtual std::any get_value() const = 0;
 		virtual void set_value(std::any value) {(void) value;};
-		virtual void (*get_func() const)() = 0;
+		virtual std::function<void()> get_func() const = 0;
 };

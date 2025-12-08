@@ -1,4 +1,5 @@
 #include "systems/DamageSystem.hpp"
+#include "Utils.hpp"  // for error
 
 namespace DamageSystem
 {

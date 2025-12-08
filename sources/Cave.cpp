@@ -1,4 +1,4 @@
-#include <curses.h>        // for werase, WINDOW, getmaxyx
+#include <ncurses.h>       // for werase, WINDOW, getmaxyx
 #include <panel.h>         // for panel_window, PANEL
 #include <stdlib.h>        // for abs
 #include <string>          // for basic_string, string

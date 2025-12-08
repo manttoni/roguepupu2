@@ -196,7 +196,7 @@
 
 	"sling": {
 		"renderable": {},
-		"weight": null,
+		"weight": 0.1,
 		"rarity": "common",
 		"damage": {
 			"type": "bludgeoning",
@@ -471,20 +471,6 @@
 			"properties": ["ammunition", "heavy", "two-handed"]
 		},
 		"value": 50
-	},
-
-	"net": {
-		"renderable": {},
-		"weight": 3.0,
-		"rarity": "common",
-		"damage": { "type": "none", "dice": "0" },
-		"weapon": {
-			"proficiency": "martial",
-			"properties": ["special", "thrown"]
-		},
-		"value": 1
 	}
-
-
 }
 

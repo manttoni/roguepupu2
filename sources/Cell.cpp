@@ -1,13 +1,11 @@
-#include <string>
-#include <stdexcept>
-#include <ostream>
-#include "UI.hpp"
-#include "Cell.hpp"
-#include "Cave.hpp"
-#include "World.hpp"
-#include "Utils.hpp"
-#include "entt.hpp"
-#include "Components.hpp"
+#include "Cave.hpp"        // for Cave
+#include "Cell.hpp"        // for Cell
+#include "Color.hpp"       // for Color
+#include "ColorPair.hpp"   // for ColorPair
+#include "Components.hpp"  // for Renderable, Position, Opaque (ptr only)
+#include "UI.hpp"          // for UI
+#include "World.hpp"       // for World
+#include "entt.hpp"        // for vector, basic_sigh_mixin, entity, map, size_t
 
 Cell::Cell() : idx(SIZE_MAX), type(Type::NONE), density(0) {}
 

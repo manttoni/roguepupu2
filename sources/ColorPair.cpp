@@ -1,7 +1,7 @@
-#include <ncurses.h>
-#include <sstream>
-#include "ColorPair.hpp"
-#include "UI.hpp"
+#include <ncurses.h>      // for init_pair
+#include "Color.hpp"      // for Color
+#include "ColorPair.hpp"  // for ColorPair
+#include "UI.hpp"         // for UI
 
 ColorPair::ColorPair(const Color& fg, const Color& bg) : fg(fg), bg(bg)
 {}

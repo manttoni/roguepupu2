@@ -1,19 +1,25 @@
-#include <string>
-#include <cstring>
-#include <random>
-#include "Dice.hpp"
-#include "Utils.hpp"
+#include <stdlib.h>   // for atoi
+#include <algorithm>  // for max, min
+#include <cstring>    // for strchr
+#include <random>     // for uniform_int_distribution, random_device, mt19937
+#include <string>     // for basic_string, stoi, string
+#include "Dice.hpp"   // for Dice
 
-Dice::Dice(const std::string& str) : string(str)
+Dice::Dice(const std::string& str) : n(0), sides(0), mod(0), string(str)
 {
-	n = std::stoi(str);
-	sides = atoi(strchr(str.c_str(), 'd') + 1);
-	if (strchr(str.c_str(), '-') != nullptr)
-		mod = -1 * atoi(strchr(str.c_str(), '-') + 1);
-	else if (strchr(str.c_str(), '+') != nullptr)
-		mod = atoi(strchr(str.c_str(), '+') + 1);
+	if (str.find('d') == std::string::npos)
+		mod = std::stoi(str);
 	else
-		mod = 0;
+	{
+		n = std::stoi(str);
+		const size_t sides_pos = str.find('d');
+		sides = std::stoi(str.substr(sides_pos + 1));
+		size_t mod_pos = str.find('+');
+		if (mod_pos == std::string::npos)
+			mod_pos = str.find('-');
+		if (mod_pos != std::string::npos)
+			mod = std::stoi(str.substr(mod_pos));
+	}
 }
 
 Dice::Dice(const int n, const int sides, const int mod) : n(n), sides(sides), mod(mod) {}

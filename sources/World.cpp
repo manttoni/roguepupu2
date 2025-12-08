@@ -1,13 +1,12 @@
-#include <vector>
-#include <iomanip>
-#include <ncurses.h>
-#include <panel.h>
-#include "Cell.hpp"
-#include "Utils.hpp"
-#include "World.hpp"
-#include "EntityFactory.hpp"
-#include "Cave.hpp"
-#include "UI.hpp"
+#include <string>             // for basic_string
+#include "Cave.hpp"           // for Cave
+#include "Cell.hpp"           // for Cell
+#include "Color.hpp"          // for Color
+#include "EntityFactory.hpp"  // for EntityFactory
+#include "UI.hpp"             // for UI
+#include "Utils.hpp"          // for randsize_t, noise3D, contains, remove_e...
+#include "World.hpp"          // for World
+#include "entt.hpp"           // for vector, size_t, map, deque, allocator
 
 World::World()
 	: height(200), width(200),
