@@ -317,7 +317,7 @@ void Cave::draw()
 
 		if (!has_vision(player_idx, cell_idx, registry.get<Vision>(player).range))
 		{
-			if (cell.is_seen()) // "ghost" cell if it was seen before
+			if (cell.is_seen() && cell.blocks_movement()) // "ghost" cell if it was seen before and was solid
 				color_pair = ColorPair(Color(123, 123, 123), Color(0, 0, 0));
 			else
 				continue;

@@ -121,6 +121,19 @@ wchar_t Cell::get_glyph() const
 	if (entities_size == 0)
 		return glyph;
 
-	const auto& entity = entities[UI::instance().get_loop_number() % entities_size];
-	return ECS::get_glyph(cave->get_world()->get_registry(), entity);
+	const auto& registry = cave->get_world()->get_registry();
+	const size_t loop = UI::instance().get_loop_number();
+	entt::entity entity = entt::null;
+	const auto player = ECS::get_player(registry);
+	if (ECS::can_see(registry, player, entities[0]))
+		entity = entities[loop % entities_size];
+	else
+	{	// If player cant see this cell, it can remember only solid objects
+		for (const auto e : entities)
+			if (registry.all_of<Solid>(e))
+				entity = e;
+	}
+	if (entity == entt::null)
+		return L' ';
+	return ECS::get_glyph(registry, entity);
 }
