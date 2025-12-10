@@ -7,6 +7,7 @@
 #include "Utils.hpp"          // for randsize_t, noise3D, contains, remove_e...
 #include "World.hpp"          // for World
 #include "entt.hpp"           // for vector, size_t, map, deque, allocator
+#include "systems/InventorySystem.hpp"
 
 World::World()
 	: height(200), width(200),
@@ -182,6 +183,30 @@ void World::spawn_fungi()
 	}
 }
 
+void World::spawn_chests()
+{
+	auto& canvas = caves.back();
+	auto& cells = canvas.get_cells();
+	const size_t max_value = canvas.get_level() * 10;
+	const double spawn_chance = 1.0;
+
+	for (size_t i = 0; i < height * width; ++i)
+	{
+		if (cells[i].blocks_movement() || Random::randreal(0, 100) > spawn_chance)
+			continue;
+
+		nlohmann::json loot_filter = {{"category", "items"}, {"value_max", max_value}};
+		const auto& loot_pool = EntityFactory::instance().random_pool(loot_filter, SIZE_MAX);
+		const auto chest = EntityFactory::instance().create_entity(registry, "chest", &cells[i]);
+		while (InventorySystem::get_inventory_value(registry, chest) < max_value)
+		{
+			const size_t rand_idx = Random::randsize_t(0, loot_pool.size() - 1);
+			const auto item = EntityFactory::instance().create_entity(registry, loot_pool[rand_idx]);
+			InventorySystem::add_item(registry, chest, item);
+		}
+	}
+}
+
 void World::set_rock_colors()
 {
 	auto& canvas = caves.back();
@@ -206,6 +231,7 @@ void World::generate_cave(const size_t level)
 	set_source_sink();
 	form_tunnels();
 	spawn_fungi();
+	spawn_chests();
 	set_rock_colors();
 
 	caves.back().apply_lights();

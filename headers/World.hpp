@@ -43,6 +43,7 @@ class World
 		std::vector<size_t> find_water_path();
 		void set_source_sink();
 		void spawn_fungi();
+		void spawn_chests();
 		void set_rock_colors();
 
 	public:
