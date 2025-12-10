@@ -21,6 +21,7 @@ void EntityFactory::init()
 	read_definitions("data/items/weapons.json");
 	read_definitions("data/items/armor.json");
 	read_definitions("data/plants/mushrooms.json");
+	read_definitions("data/furniture/chests.json");
 	read_definitions("data/creatures/players.json");
 	read_definitions("data/creatures/goblins.json");
 }

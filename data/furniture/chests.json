@@ -1,0 +1,11 @@
+{
+	"chest": {
+		"renderable": {
+			"glyph": "C",
+			"color": [400, 120, 90]
+		},
+		"inventory": {},
+		"solid": true,
+		"weight": 20
+	}
+}
