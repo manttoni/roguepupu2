@@ -37,7 +37,6 @@ namespace Screen
 	inline size_t width()	{ return static_cast<size_t>(COLS); }
 
 	inline Coord middle()		{ return {height() / 2, width() / 2 }; }
-	inline Coord top_left()		{ return {0, 0}; }
 	inline Coord top()			{ return {0, width() / 2}; }
 	inline Coord botleft()		{ return {height(), 0}; }
 	inline Coord topright()		{ return {0, width()}; }
