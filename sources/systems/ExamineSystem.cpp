@@ -1,5 +1,6 @@
 #include <format>
 #include "systems/ExamineSystem.hpp"
+#include "systems/InventorySystem.hpp"
 #include "UI.hpp"
 #include "Utils.hpp"
 #include "ECS.hpp"
@@ -67,52 +68,66 @@ namespace ExamineSystem
 			ECS::get_cell(registry, picker)->get_cave()->reset_lights();
 	}
 
+	bool can_take(const entt::registry& registry, const entt::entity entity, const entt::entity item)
+	{
+		const auto& category = registry.get<Category>(item).category;
+		const auto& name = registry.get<Name>(item).name;
+		if (category != "items" && name != "glowing mushroom")
+			return false;
+
+		Cell* entity_cell = ECS::get_cell(registry, entity);
+		Cell* item_cell = ECS::get_cell(registry, item);
+		if (entity_cell->get_cave()->distance(*entity_cell, *item_cell) > MELEE_RANGE)
+			return false;
+
+		return true;
+	}
+
+	bool can_open(const entt::registry& registry, const entt::entity entity, const entt::entity container)
+	{
+		if (!registry.all_of<Inventory>(container))
+			return false;
+		if (ECS::get_cell(registry, entity) != ECS::get_cell(registry, entity))
+			return false;
+		if (ECS::distance(registry, entity, container) > MELEE_RANGE)
+			return false;
+		return true;
+	}
+
 	void show_entities_info(entt::registry& registry, std::vector<entt::entity>& entities)
 	{
 		if (entities.empty())
 			return;
-		std::vector<std::string> options;
-		options.push_back("Next");
 		const auto player = *registry.view<Player>().begin();
 		Cell* player_cell = ECS::get_cell(registry, player);
-		Cell* entity_cell = ECS::get_cell(registry, entities[0]); // all entities are in the same cell so any will work
-		if (player_cell->get_cave()->distance(*player_cell, *entity_cell) <= MELEE_RANGE)
-			options.push_back("Pick up");
-		options.push_back("Cancel");
-
 		auto it = entities.begin();
 		while (!entities.empty())
 		{
-			auto valid_options = options;
-			if (entities.size() == 1)
-			{
-				auto it_next = std::find(valid_options.begin(), valid_options.end(), "Next");
-				if (it_next != valid_options.end())
-					valid_options.erase(it_next);
-			}
-
-			const auto& category = ECS::get_category(registry, *it);
-			if (category != "items" && ECS::get_name(registry, *it) != "glowing mushroom")
-			{
-				auto it_pick = std::find(valid_options.begin(), valid_options.end(), "Pick up");
-				if (it_pick != valid_options.end())
-					valid_options.erase(it_pick);
-			}
-
-			assert(std::find(valid_options.begin(), valid_options.end(), "Cancel") != valid_options.end());
+			std::vector<std::string> options;
+			if (can_take(registry, player, *it))
+				options.push_back("Take");
+			if (can_open(registry, player, *it))
+				options.push_back("Open");
+			if (entities.size() > 1)
+				options.push_back("Next");
+			options.push_back("Cancel");
 
 			const auto& info_neat = get_info_neat(registry, *it);
-			const auto& selected = UI::instance().dialog(info_neat, valid_options, Screen::topleft());
+			const auto& selected = UI::instance().dialog(info_neat, options, Screen::topleft());
 			if (selected == "Next")
 			{
 				if (++it == entities.end())
 					it = entities.begin();
 			}
-			else if (selected == "Pick up")
+			else if (selected == "Take")
 			{
 				pick_up(registry, player, *it);
 				it = entities.erase(it);
 				player_cell->get_cave()->draw();
+			}
+			else if (selected == "Open")
+			{
+				InventorySystem::open_inventory(registry, *it);
 			}
 			else if (selected == "Cancel" || selected.empty())
 				break;
