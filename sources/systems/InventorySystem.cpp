@@ -60,8 +60,14 @@ namespace InventorySystem
 
 	void drop_item(entt::registry& registry, const entt::entity owner, const entt::entity item)
 	{
-		remove_item(registry, owner, item);
 		Cell* cell = ECS::get_cell(registry, owner);
+		if (cell->blocks_movement())
+		{
+			const auto player = ECS::get_player(registry);
+			cell = ECS::get_cell(registry, player);
+		}
+
+		remove_item(registry, owner, item);
 		registry.emplace<Position>(item, cell);
 		if (registry.all_of<Glow>(item))
 		{
@@ -76,7 +82,7 @@ namespace InventorySystem
 		std::vector<std::string> options;
 		if (owner == player)
 		{
-			if (registry.any_of<Weapon, Armor>(item)) // can be equipped
+			if (ECS::is_equippable(registry, item))
 			{
 				if (EquipmentSystem::is_equipped(registry, player, item))
 					options.push_back("Unequip");
@@ -84,7 +90,9 @@ namespace InventorySystem
 					options.push_back("Equip");
 			}
 		}
-		else options.push_back("Loot");
+		else
+			options.push_back("Take");
+
 		options.push_back("Drop");
 		options.push_back("Cancel");
 		return options;
@@ -103,11 +111,12 @@ namespace InventorySystem
 		{
 			// Create list of items to show in inventory window
 			auto& items = registry.get<Inventory>(owner).inventory;
-			const auto& names = get_colored_item_names(registry, items);
+			auto names = get_colored_item_names(registry, items);
+			names.push_back("Cancel");
 
 			// Dialog returns selection
 			selection = UI::instance().dialog("*** " + Utils::capitalize(owner_name) + " ***", names, Screen::topleft(), idx + 1);
-			if (selection.empty()) // Esc was pressed
+			if (selection.empty() || selection == "Cancel")
 				break;
 
 			// Get index of selected item
@@ -124,6 +133,20 @@ namespace InventorySystem
 				loot_item(registry, player, owner, item);
 			else if (selection == "Drop")
 				drop_item(registry, owner, item);
+			else if (selection == "Cancel")
+				break;
 		}
+	}
+
+	size_t get_inventory_value(const entt::registry& registry, const entt::entity entity)
+	{
+		if (!registry.all_of<Inventory>(entity))
+			return 0;
+
+		size_t value = 0;
+		const auto& inventory = registry.get<Inventory>(entity).inventory;
+		for (const auto item : inventory)
+			value += ECS::get_value(registry, item);
+		return value;
 	}
 };

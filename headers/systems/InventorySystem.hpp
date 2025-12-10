@@ -12,4 +12,5 @@ namespace InventorySystem
 	void loot_item(entt::registry& registry, const entt::entity looter, const entt::entity owner, const entt::entity item);
 	void pick_up(entt::registry& registry, const entt::entity picker, const entt::entity entity);
 	void open_inventory(entt::registry& registry, const entt::entity entity);
+	size_t get_inventory_value(const entt::registry& registry, const entt::entity entity);
 };
