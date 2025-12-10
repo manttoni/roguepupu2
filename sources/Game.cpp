@@ -12,6 +12,8 @@
 #include "entt.hpp"                     // for allocator, vector, size_t
 #include "systems/InventorySystem.hpp"  // for inventory_key_pressed, open_i...
 #include "systems/MovementSystem.hpp"   // for move, movement_key_pressed
+#include "systems/ExamineSystem.hpp"
+#include "ECS.hpp"
 
 Game::Game() :
 	level(1),
@@ -41,7 +43,7 @@ void Game::check_change_level()
 	level += d;
 }
 
-void Game::start()
+void Game::loop()
 {
 	get_cave().draw();
 
@@ -67,6 +69,11 @@ void Game::start()
 			key = 0;
 			continue;
 		}
+		if (key == KEY_LEFT_CLICK)
+		{
+			auto entities = ExamineSystem::get_clicked_entities(get_cave(), ECS::get_cell(get_registry(), player)->get_idx());
+			ExamineSystem::show_entities_info(get_registry(), entities);
+		}
 
 		get_cave().draw();
 		UI::instance().increase_loop_number();
@@ -86,12 +93,14 @@ void Game::end()
 // Called by main menu
 void new_game()
 {
+	PANEL* game_panel = new_panel(newwin(Screen::height(), Screen::width(), 0, 0));
+	UI::instance().add_panel(UI::Panel::GAME, game_panel);
 	UI::instance().set_mode(UI::Mode::GAME);
 	PANEL* panel = UI::instance().get_panel(UI::Panel::GAME);
 	UI::instance().set_current_panel(panel, true);
 
 	Game game;
-	game.start();
+	game.loop();
 	game.end();
 	UI::instance().set_mode(UI::Mode::MAIN);
 }
