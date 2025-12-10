@@ -194,9 +194,9 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			const std::string proficiency = data["proficiency"].get<std::string>();
 			const size_t armor_class = data.contains("armor_class") ? data["armor_class"].get<size_t>() : 0;
 			const size_t max_dexbonus = data.contains("max_dexbonus") ? data["max_dexbonus"].get<size_t>() : SIZE_MAX;
-			const bool stealth_disadvantage = data.contains("stealth_disadvantage") ? data["stealth_disadvantage"].get<bool>() : false;
+			const std::string stealth = data.contains("stealth") ? data["stealth"].get<std::string>() : "";
 			const size_t strength_requirement = data.contains("strength_requirement") ? data["strength_requirement"].get<size_t>() : 0;
-			reg.template emplace<Armor>(e, proficiency, armor_class, max_dexbonus, stealth_disadvantage, strength_requirement);
+			reg.template emplace<Armor>(e, proficiency, armor_class, max_dexbonus, stealth, strength_requirement);
 		}
 	}
 };

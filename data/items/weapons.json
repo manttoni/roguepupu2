@@ -114,7 +114,7 @@
 		},
 		"weapon": {
 			"proficiency": "simple",
-			"properties": ["versatile"]
+			"properties": ["versatile (1d8)"]
 		},
 		"value": 2
 	},
@@ -144,7 +144,7 @@
 		},
 		"weapon": {
 			"proficiency": "simple",
-			"properties": ["thrown 20/60", "versatile"]
+			"properties": ["thrown 20/60", "versatile (1d8)"]
 		},
 		"value": 1
 	},

@@ -6,7 +6,7 @@
 		"armor": {
 			"proficiency": "light",
 			"armor_class": 11,
-			"stealth_disadvantage": true
+			"stealth": "disadvantage"
 		},
 		"value": 5
 	},
@@ -66,7 +66,7 @@
 			"proficiency": "medium",
 			"armor_class": 14,
 			"max_dexbonus": 2,
-			"stealth_disadvantage": true
+			"stealth": "disadvantage"
 		}
 	},
 
@@ -91,7 +91,7 @@
 			"proficiency": "medium",
 			"armor_class": 15,
 			"max_dexbonus": 2,
-			"stealth_disadvantage": true
+			"stealth": "disadvantage"
 		}
 	},
 
@@ -104,7 +104,7 @@
 			"proficiency": "heavy",
 			"armor_class": 14,
 			"max_dexbonus": 0,
-			"stealth_disadvantage": true
+			"stealth": "disadvantage"
 		}
 	},
 
@@ -117,7 +117,7 @@
 			"proficiency": "heavy",
 			"armor_class": 16,
 			"max_dexbonus": 0,
-			"stealth_disadvantage": true,
+			"stealth": "disadvantage",
 			"strength_requirement": 13
 		}
 	},
@@ -131,7 +131,7 @@
 			"proficiency": "heavy",
 			"armor_class": 17,
 			"max_dexbonus": 0,
-			"stealth_disadvantage": true,
+			"stealth": "disadvantage",
 			"strength_requirement": 15
 		}
 	},
@@ -145,7 +145,7 @@
 			"proficiency": "heavy",
 			"armor_class": 18,
 			"max_dexbonus": 0,
-			"stealth_disadvantage": true,
+			"stealth": "disadvantage",
 			"strength_requirement": 15
 		}
 	}
