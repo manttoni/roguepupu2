@@ -28,7 +28,7 @@ class Game
 
 	public:
 		Game();
-		void start();
+		void loop();
 		void end();
 		void check_change_level();
 };

@@ -1,8 +1,10 @@
+#include <iostream>
 #include <stdexcept>
 #include <nlohmann/json.hpp>
 #include <vector>
 #include <string>
 #include <map>
+#include "ECS.hpp"
 #include "EntityFactory.hpp"
 #include "Utils.hpp"
 #include "entt.hpp"
@@ -31,6 +33,11 @@ size_t test_equipping_all_weapons()
 		for (const auto& weapon_name : all_weapon_names)
 		{
 			const auto test_weapon = EntityFactory::instance().create_entity(test_registry, weapon_name);
+			if (ECS::has_weapon_property(test_registry, test_weapon, "versatile") && ECS::get_versatile_dice(test_registry, test_weapon).get_string().empty())
+			{
+				Log::tester_log(Log::Type::TEST_FAIL, "Expected a versatile weapon to have versatile dice");
+				failed++;
+			}
 			EquipmentSystem::equip(test_registry, test_entity, test_weapon);
 			if (!EquipmentSystem::is_equipped(test_registry, test_entity, test_weapon))
 			{
@@ -49,5 +56,6 @@ size_t tester()
 	Log::tester_log(Log::Type::INFO, "-- Starting tester --");
 	failed += test_equipping_all_weapons();
 	Log::tester_log(Log::Type::INFO, "Tester finished with " + std::to_string(failed) + " failed tests");
+	std::cout << "Tester finished with " << failed << " failed tests" << std::endl;
 	return failed;
 }

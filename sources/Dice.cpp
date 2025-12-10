@@ -5,7 +5,7 @@
 #include <string>     // for basic_string, stoi, string
 #include "Dice.hpp"   // for Dice
 
-Dice::Dice(const std::string& str) : n(0), sides(0), mod(0), string(str)
+Dice::Dice(const std::string& str) : n(0), sides(0), mod(0), string("")
 {
 	if (str.find('d') == std::string::npos)
 		mod = std::stoi(str);
@@ -20,9 +20,11 @@ Dice::Dice(const std::string& str) : n(0), sides(0), mod(0), string(str)
 		if (mod_pos != std::string::npos)
 			mod = std::stoi(str.substr(mod_pos));
 	}
+	if (n > 0)
+		string += std::to_string(n) + "d" + std::to_string(sides);
+	if (mod != 0)
+		string += (mod > 0 && n > 0 ? "+" : "") + std::to_string(mod);
 }
-
-Dice::Dice(const int n, const int sides, const int mod) : n(n), sides(sides), mod(mod) {}
 
 int Dice::roll(int advantage) const
 {

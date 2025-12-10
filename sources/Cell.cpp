@@ -6,6 +6,7 @@
 #include "UI.hpp"          // for UI
 #include "World.hpp"       // for World
 #include "entt.hpp"        // for vector, basic_sigh_mixin, entity, map, size_t
+#include "ECS.hpp"
 
 Cell::Cell() : idx(SIZE_MAX), type(Type::NONE), density(0) {}
 
@@ -71,7 +72,7 @@ ColorPair Cell::get_color_pair() const
 	{
 		size_t ln = UI::instance().get_loop_number();
 		const auto& e = entities[ln % entities.size()];
-		ret_fg = cave->get_world()->get_registry().get<Renderable>(e).color;
+		ret_fg = ECS::get_color(cave->get_world()->get_registry(), e);
 	}
 	else
 		ret_fg = this->fg;
@@ -121,5 +122,5 @@ wchar_t Cell::get_glyph() const
 		return glyph;
 
 	const auto& entity = entities[UI::instance().get_loop_number() % entities_size];
-	return cave->get_world()->get_registry().get<Renderable>(entity).glyph;
+	return ECS::get_glyph(cave->get_world()->get_registry(), entity);
 }

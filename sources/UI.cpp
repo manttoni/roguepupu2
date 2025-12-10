@@ -280,12 +280,6 @@ void UI::init_menus()
 	menus["cell_info"].set_read_only(true);
 }
 
-void UI::init_panels()
-{
-	PANEL* game = new_panel(newwin(Screen::height(), Screen::width(), 0, 0));
-	UI::instance().add_panel(UI::Panel::GAME, game);
-}
-
 void UI::init()
 {
 	loop_number = 0;
@@ -293,7 +287,6 @@ void UI::init()
 	initscr();
 	start_color();
 	init_menus();
-	init_panels();
 
 	// signals should reset original terminal mode
 	std::signal(SIGSEGV, handle_signal);

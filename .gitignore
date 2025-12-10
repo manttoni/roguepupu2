@@ -4,4 +4,4 @@ logs/
 *.swp
 roguepupu2
 *.txt
-gitrepo.sh
+*.sh

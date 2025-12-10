@@ -97,6 +97,6 @@ struct Armor
 	std::string proficiency;
 	size_t armor_class;
 	size_t max_dexbonus;
-	bool stealth_disadvantage;
+	std::string stealth;
 	size_t strength_requirement;
 };
