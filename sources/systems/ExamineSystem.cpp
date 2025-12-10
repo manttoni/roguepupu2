@@ -85,11 +85,19 @@ namespace ExamineSystem
 		{
 			auto valid_options = options;
 			if (entities.size() == 1)
-				valid_options.erase(std::find(valid_options.begin(), valid_options.end(), "Next"));
+			{
+				auto it_next = std::find(valid_options.begin(), valid_options.end(), "Next");
+				if (it_next != valid_options.end())
+					valid_options.erase(it_next);
+			}
 
 			const auto& category = ECS::get_category(registry, *it);
-			if (category != "items" && ECS::get_name(registry, *it) != "glowing mushroom") // testing picking mushrooms
-				valid_options.erase(std::find(valid_options.begin(), valid_options.end(), "Pick up"));
+			if (category != "items" && ECS::get_name(registry, *it) != "glowing mushroom")
+			{
+				auto it_pick = std::find(valid_options.begin(), valid_options.end(), "Pick up");
+				if (it_pick != valid_options.end())
+					valid_options.erase(it_pick);
+			}
 
 			assert(std::find(valid_options.begin(), valid_options.end(), "Cancel") != valid_options.end());
 
