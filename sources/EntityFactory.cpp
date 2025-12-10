@@ -15,7 +15,7 @@
 class Cell;
 
 #define CELL_SIZE 5
-
+#define MELEE_RANGE 1.5
 void EntityFactory::init()
 {
 	read_definitions("data/items/weapons.json");
@@ -134,7 +134,7 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			std::vector<std::string> properties = data["properties"].get<std::vector<std::string>>();
 
 			// Parse more data from properties
-			double normal_range = 1.5, long_range = 1.5;
+			double normal_range = MELEE_RANGE, long_range = MELEE_RANGE;
 			Dice versatile_dice;
 			for (auto& property : properties)
 			{
