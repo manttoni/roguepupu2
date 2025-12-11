@@ -8,14 +8,16 @@
 		"solid": true,
 		"vision": 10,
 		"inventory": [
-			{
-				"filter": {"rarity": "common", "subcategory": "weapons"}
-			},
-			{
-				"filter": {"rarity": "common", "subcategory": "armor"}
-			}
+			{"filter": {"rarity": "common", "subcategory": "weapons", "value_max": 10}},
+			{"filter": {"rarity": "common", "subcategory": "armor", "value_max": 10}}
 		],
-		"equipment": true
+		"equipment": true,
+		"stats": {
+			"level": 1,
+			"attributes": {
+				"random": "3d6"
+			}
+		}
 	}
 }
 

@@ -6,10 +6,14 @@
 		"solid": true,
 		"vision": 10,
 		"inventory": [
-			{
-				"filter": {"name": "dagger"}
-			}
+			{"filter": {"rarity": "common", "subcategory": "weapons", "value_max": 2}}
 		],
-		"equipment": true
+		"equipment": true,
+		"stats": {
+			"level": 1,
+			"attributes": {
+				"random": "3d4"
+			}
+		}
 	}
 }

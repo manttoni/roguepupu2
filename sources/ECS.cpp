@@ -7,6 +7,7 @@
 #include "Color.hpp"
 #include "Utils.hpp"
 #include "Components.hpp"
+#include "systems/StatsSystem.hpp"
 
 namespace ECS
 {
@@ -73,6 +74,8 @@ namespace ECS
 	{
 		if (registry.all_of<Armor>(entity))
 			return registry.get<Armor>(entity).armor_class;
+		if (registry.all_of<Stats>(entity))
+			return StatsSystem::get_AC(registry, entity);
 		return 0;
 	}
 
@@ -172,6 +175,16 @@ namespace ECS
 				dmg_str += "/" + versatile_dice.get_string();
 			dmg_str += " " + damage.type;
 			info["Damage"] = dmg_str;
+		}
+
+		if (registry.all_of<Stats>(entity))
+		{
+			const auto& stats = registry.get<Stats>(entity);
+			info["Level"] = std::to_string(stats.level);
+			for (const auto& [attribute, value] : stats.attributes)
+				info[attribute] = std::to_string(value);
+			info["Hitpoints"] = std::to_string(stats.hp) + "/" + std::to_string(stats.max_hp);
+			info["AC"] = std::to_string(get_armor_class(registry, entity));
 		}
 
 		size_t armor_class = get_armor_class(registry, entity);

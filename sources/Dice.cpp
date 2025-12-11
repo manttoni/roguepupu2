@@ -32,15 +32,15 @@ int Dice::roll(int advantage) const
 	static std::mt19937 gen(rd());
 	std::uniform_int_distribution<> dist(1, sides);
 
-	int result = dist(gen) + mod;
+	int result = n * dist(gen) + mod;
 	while (advantage < 0)
 	{
-		result = std::min(result, dist(gen) + mod);
+		result = std::min(result, n * dist(gen) + mod);
 		advantage++;
 	}
 	while (advantage > 0)
 	{
-		result = std::max(result, dist(gen) + mod);
+		result = std::max(result, n * dist(gen) + mod);
 		advantage--;
 	}
 

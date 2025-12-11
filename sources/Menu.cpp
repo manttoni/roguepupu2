@@ -6,6 +6,7 @@
 #include <string>       // for basic_string, operator+, operator==, char_traits
 #include "Menu.hpp"     // for Menu
 #include "MenuElt.hpp"  // for MenuElt
+#include "MenuTxt.hpp"
 #include "UI.hpp"       // for UI, KEY_ESCAPE, KEY_LEFT_CLICK
 #include "Utils.hpp"    // for Coord, error, height, width, decrement, incre...
 #include "entt.hpp"     // for vector, size_t, move, max
@@ -145,6 +146,12 @@ std::string Menu::loop()
 		{
 			const bool highlight = !read_only && i == selected && elements[i]->is_selectable();
 			if (highlight == true) UI::instance().enable_attr(A_REVERSE);
+			if (elements[i]->get_text() == MenuTxt::HorizontalLine)
+			{
+				UI::instance().print("\n");
+				//mvwhline(window, i + 1, 1, ACS_HLINE, width - 2);
+				continue;
+			}
 			UI::instance().print("  " + elements[i]->get_text() + "\n"); // spaces bcs of box()
 			if (highlight == true) UI::instance().disable_attr(A_REVERSE);
 		}

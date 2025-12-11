@@ -12,6 +12,7 @@
 #include "Utils.hpp"                                      // for error, rand...
 #include "entt.hpp"                                       // for vector, ope...
 #include "systems/DamageSystem.hpp"                       // for parse_type
+#include "systems/StatsSystem.hpp"
 class Cell;
 
 #define CELL_SIZE 5
@@ -198,6 +199,29 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			const std::string stealth = data.contains("stealth") ? data["stealth"].get<std::string>() : "";
 			const size_t strength_requirement = data.contains("strength_requirement") ? data["strength_requirement"].get<size_t>() : 0;
 			reg.template emplace<Armor>(e, proficiency, armor_class, max_dexbonus, stealth, strength_requirement);
+		}
+	},
+	{ "stats", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			if (!data.contains("level") || !data.contains("attributes"))
+				Log::error("Incomplete stats component: " + data.dump(4));
+
+			const size_t level = data["level"].get<size_t>();
+			std::map<std::string, size_t> attributes;
+			if (data["attributes"].contains("random"))
+			{
+				const std::string r = data["attributes"]["random"].get<std::string>();
+				attributes["strength"] = Dice(r).roll();
+				attributes["dexterity"] = Dice(r).roll();
+				attributes["constitution"] = Dice(r).roll();
+				attributes["intelligence"] = Dice(r).roll();
+				attributes["wisdom"] = Dice(r).roll();
+				attributes["charisma"] = Dice(r).roll();
+			}
+			else
+				Log::error("Setting attributes not implemented");
+			const size_t hp = 5 + level * (Dice("1d8").roll() + StatsSystem::get_modifier(attributes["constitution"]));
+			reg.template emplace<Stats>(e, level, attributes, hp, hp);
 		}
 	}
 };

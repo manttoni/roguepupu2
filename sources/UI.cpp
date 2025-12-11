@@ -137,6 +137,8 @@ std::string UI::dialog(const std::vector<std::string>& text, const std::vector<s
 	std::vector<std::unique_ptr<MenuElt>> elements;
 	for (auto& t : text)
 		elements.push_back(std::make_unique<MenuTxt>(t));
+	if (!text.empty() && !options.empty())
+		elements.push_back(std::make_unique<MenuTxt>(MenuTxt::HorizontalLine));
 	for (auto& option : options)
 		elements.push_back(std::make_unique<MenuBtn>(option));
 
