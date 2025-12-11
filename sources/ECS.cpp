@@ -43,7 +43,18 @@ namespace ECS
 		}
 		return c;
 	}
-
+	std::vector<std::string> get_colored_names(const entt::registry& registry, const std::vector<entt::entity>& items)
+	{
+		auto player = *registry.view<Player>().begin();
+		std::vector<std::string> names;
+		for (const auto& item : items)
+		{
+			std::string name = EquipmentSystem::is_equipped(registry, player, item) ? " * " : "   ";
+			name += ECS::get_colored_name(registry, item);
+			names.push_back(name);
+		}
+		return names;
+	}
 	wchar_t get_glyph(const entt::registry& registry, const entt::entity entity)
 	{
 		if (registry.all_of<Renderable>(entity))
@@ -246,5 +257,12 @@ namespace ECS
 		const size_t idx_a = get_cell(registry, seer)->get_idx();
 		const size_t idx_b = get_cell(registry, target)->get_idx();
 		return get_cell(registry, seer)->get_cave()->has_vision(idx_a, idx_b, vision_range);
+	}
+
+	std::vector<entt::entity> get_inventory(const entt::registry& registry, const entt::entity entity)
+	{
+		if (!registry.all_of<Inventory>(entity))
+			return {};
+		return registry.get<Inventory>(entity).inventory;
 	}
 };
