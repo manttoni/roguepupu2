@@ -129,11 +129,11 @@ namespace InventorySystem
 			selection = UI::instance().dialog(info_neat, options, Screen::topleft());
 			if (selection == "Equip" || selection == "Unequip")
 				EquipmentSystem::equip_or_unequip(registry, player, item);
-			else if (selection == "Loot")
+			else if (selection == "Take")
 				loot_item(registry, player, owner, item);
 			else if (selection == "Drop")
 				drop_item(registry, owner, item);
-			else if (selection == "Cancel")
+			else if (selection == "Cancel" || items.empty())
 				break;
 		}
 	}
