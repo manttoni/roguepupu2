@@ -21,6 +21,7 @@ void EntityFactory::init()
 	read_definitions("data/items/weapons.json");
 	read_definitions("data/items/armor.json");
 	read_definitions("data/plants/mushrooms.json");
+	read_definitions("data/furniture/chests.json");
 	read_definitions("data/creatures/players.json");
 	read_definitions("data/creatures/goblins.json");
 }
@@ -241,6 +242,13 @@ bool EntityFactory::exclude(const nlohmann::json& data, const nlohmann::json& fi
 {
 	for (const auto& [filter_field, filter_data] : filter.items())
 	{
+		if (filter_field == "value_max" && data.contains("value"))
+		{
+			if (filter_data.get<size_t>() < data["value"])
+				return true;
+			return false;
+		}
+
 		if (!data.contains(filter_field) || data[filter_field] != filter_data)
 			return true;
 	}

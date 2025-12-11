@@ -3,6 +3,7 @@
 #include <map>
 #include "entt.hpp"
 #include "ECS.hpp"
+#include "Cave.hpp"
 #include "Color.hpp"
 #include "Utils.hpp"
 #include "Components.hpp"
@@ -80,6 +81,11 @@ namespace ECS
 		if (!registry.all_of<Damage>(entity))
 			return Damage{};
 		return registry.get<Damage>(entity);
+	}
+
+	std::string get_subcategory(const entt::registry& registry, const entt::entity entity)
+	{
+		return registry.get<Subcategory>(entity).subcategory;
 	}
 
 	std::string get_proficiency_requirement(const entt::registry& registry, const entt::entity entity)
@@ -195,5 +201,37 @@ namespace ECS
 			info["Value"] = std::to_string(value) + " gp";
 
 		return info;
+	}
+
+	double distance(const entt::registry& registry, const entt::entity a, const entt::entity b)
+	{
+		Cell* ac = get_cell(registry, a);
+		Cell* bc = get_cell(registry, b);
+
+		return ac->get_cave()->distance(*ac, *bc);
+	}
+
+	entt::entity get_player(const entt::registry& registry)
+	{
+		const auto players = registry.view<Player>();
+		if (players.empty())
+			return entt::null;
+		return *players.begin();
+	}
+
+	bool is_equippable(const entt::registry& registry, const entt::entity entity)
+	{
+		const std::vector<std::string> equippable = { "weapons", "armor" };
+		return std::find(equippable.begin(), equippable.end(), get_subcategory(registry, entity)) != equippable.end();
+	}
+
+	bool can_see(const entt::registry& registry, const entt::entity seer, const entt::entity target)
+	{
+		if (!registry.all_of<Vision>(seer))
+			return false;
+		const double vision_range = registry.get<Vision>(seer).range;
+		const size_t idx_a = get_cell(registry, seer)->get_idx();
+		const size_t idx_b = get_cell(registry, target)->get_idx();
+		return get_cell(registry, seer)->get_cave()->has_vision(idx_a, idx_b, vision_range);
 	}
 };
