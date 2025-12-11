@@ -36,28 +36,29 @@ class World
 		double erosion_a;	// This makes branches
 		double erosion_b;	// Smooth cave
 		double erosion_c;	// Smooth cave
-		double fungus_spawn_chance;
+
+		double mushroom_spawn_chance;
+		double mushroom_frequency;
+		size_t mushroom_octaves;
+		size_t mushroom_woody_radius;
+		double mushroom_woody_space_ratio;
+
+		double chest_spawn_chance;
+		size_t chest_value_power;
+		size_t chest_value_multiplier;
+		int chest_value_scalar;
+		size_t chest_item_variance;
 
 		void form_rock();
 		void form_tunnels();
 		std::vector<size_t> find_water_path();
 		void set_source_sink();
-		void spawn_fungi();
+		void spawn_mushrooms();
 		void spawn_chests();
 		void set_rock_colors();
 
 	public:
 		World();
-		World(	const size_t height,
-				const size_t width,
-				const double frequency,
-				const int seed,
-				const int margin_percent,
-				const int octaves,
-				const double A,
-				const double B,
-				const double C,
-				const double fungus_spawn_chance);
 
 		World(const World& other) = delete;
 		World& operator=(const World&& other) = delete;

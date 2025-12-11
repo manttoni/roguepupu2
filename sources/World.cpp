@@ -1,3 +1,4 @@
+#include <cmath>
 #include <string>             // for basic_string
 #include "Cave.hpp"           // for Cave
 #include "Cell.hpp"           // for Cell
@@ -9,25 +10,45 @@
 #include "entt.hpp"           // for vector, size_t, map, deque, allocator
 #include "systems/InventorySystem.hpp"
 
-World::World()
-	: height(200), width(200),
-	frequency(0.1), seed(Random::randsize_t(10000, 99999)), octaves(8),
-	rng(seed), erosion_a(2.0), erosion_b(0.005), erosion_c(0.005),
-	fungus_spawn_chance(0.45)
-{}
-
-World::World(
-		const size_t height,
-		const size_t width,
-		const double frequency,
-		const int seed,
-		const int margin_percent,
-		const int octaves,
-		const double A, const double B, const double C,
-		const double fungus_spawn_chance)
-	: height(height), width(width), frequency(frequency), seed(seed), octaves(octaves), rng(seed), erosion_a(A), erosion_b(B), erosion_c(C), fungus_spawn_chance(fungus_spawn_chance)
+World::World() : seed(Random::randsize_t(10000, 99999)), rng(seed)
 {
-	margin = static_cast<size_t>(height * margin_percent / 100);
+	const std::string path = "data/world/generation.json";
+	std::ifstream file(path);
+	if (!file.is_open())
+		Log::error(std::string("Opening file failed: ") + path);
+	nlohmann::json data;
+	file >> data;
+	file.close();
+	try
+	{
+		height = data["height"].get<int>();
+		width = data["width"].get<int>();
+
+		const auto& noise = data["noise"];
+		frequency = noise["frequency"].get<double>();
+		octaves = noise["octaves"].get<int>();
+		erosion_a = noise["erosion_a"].get<double>();
+		erosion_b = noise["erosion_b"].get<double>();
+		erosion_c = noise["erosion_c"].get<double>();
+
+		const auto& mushrooms = data["mushrooms"];
+		mushroom_spawn_chance = mushrooms["spawn_chance"].get<double>();
+		mushroom_frequency = mushrooms["frequency"].get<double>();
+		mushroom_octaves = mushrooms["octaves"].get<size_t>();
+		mushroom_woody_radius = mushrooms["woody_radius"].get<size_t>();
+		mushroom_woody_space_ratio = mushrooms["woody_space_ratio"].get<double>();
+
+		const auto& chests = data["chests"];
+		chest_spawn_chance = chests["spawn_chance"].get<double>();
+		chest_value_power = chests["value_power"].get<size_t>();
+		chest_value_multiplier = chests["value_multiplier"].get<size_t>();
+		chest_value_scalar = chests["value_scalar"].get<int>();
+		chest_item_variance = chests["item_variance"].get<size_t>();
+	}
+	catch (std::exception& e)
+	{
+		Log::error("Parsing world generation data went wrong");
+	}
 }
 
 // A* to find path of least resistance through solid rock
@@ -145,21 +166,17 @@ void World::set_source_sink()
 
 // Glowing fungi grow next to walls
 // Woody fungi grow if there is enough space
-void World::spawn_fungi()
+void World::spawn_mushrooms()
 {
 	auto& canvas = caves.back();
 	auto& cells = canvas.get_cells();
 
-	const double WOODY_RADIUS = 5;
-	const double WOODY_SPACE_RATIO = 0.90;
-
-	const double FUNGUS_FREQUENCY = 0.1;
-	const size_t FUNGUS_OCTAVES = 1;
-
 	for (size_t i = 0; i < height * width; ++i)
 	{
-		if (Random::noise3D(i / width, i % width, canvas.get_level(), FUNGUS_FREQUENCY, seed, FUNGUS_OCTAVES) > fungus_spawn_chance
-			|| Random::randsize_t(0, 100, rng) >= fungus_spawn_chance * 100)
+		if (cells[i].blocks_movement())
+			continue;
+		if (Random::noise3D(i / width, i % width, canvas.get_level(), mushroom_frequency, seed, mushroom_octaves) > mushroom_spawn_chance
+			|| Random::randsize_t(0, 100, rng) >= mushroom_spawn_chance * 100)
 			continue;
 
 		Cell& cell = cells[i];
@@ -171,13 +188,13 @@ void World::spawn_fungi()
 			EntityFactory::instance().create_entity(registry, "glowing mushroom", &cell);
 			continue;
 		}
-		const auto& nearby = canvas.get_nearby_ids(i, WOODY_RADIUS);
+		const auto& nearby = canvas.get_nearby_ids(i, mushroom_woody_radius);
 		double space = 0;
 		for (const auto& idx : nearby)
 			if (!cells[idx].blocks_movement())
 				space++;
-		double a = 3.14 * WOODY_RADIUS * WOODY_RADIUS;
-		if (space / a > WOODY_SPACE_RATIO)
+		double a = 3.14 * mushroom_woody_radius * mushroom_woody_radius;
+		if (space / a > mushroom_woody_space_ratio)
 			EntityFactory::instance().create_entity(registry, "woody mushroom", &cell);
 
 	}
@@ -187,16 +204,15 @@ void World::spawn_chests()
 {
 	auto& canvas = caves.back();
 	auto& cells = canvas.get_cells();
-	const size_t max_value = canvas.get_level() * 10;
-	const double spawn_chance = 1.0;
+	const size_t max_value = std::pow(canvas.get_level(), chest_value_power) * chest_value_multiplier + chest_value_scalar;
 
 	for (size_t i = 0; i < height * width; ++i)
 	{
-		if (cells[i].blocks_movement() || Random::randreal(0, 100) > spawn_chance)
+		if (cells[i].blocks_movement() || Random::randreal(0, 1) > chest_spawn_chance)
 			continue;
 
 		nlohmann::json loot_filter = {{"category", "items"}, {"value_max", max_value}};
-		const auto& loot_pool = EntityFactory::instance().random_pool(loot_filter, SIZE_MAX);
+		const auto& loot_pool = EntityFactory::instance().random_pool(loot_filter, chest_item_variance);
 		const auto chest = EntityFactory::instance().create_entity(registry, "chest", &cells[i]);
 		while (InventorySystem::get_inventory_value(registry, chest) < max_value)
 		{
@@ -230,8 +246,8 @@ void World::generate_cave(const size_t level)
 	form_rock();
 	set_source_sink();
 	form_tunnels();
-	spawn_fungi();
 	spawn_chests();
+	spawn_mushrooms();
 	set_rock_colors();
 
 	caves.back().apply_lights();
