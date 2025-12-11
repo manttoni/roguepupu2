@@ -280,38 +280,6 @@ void UI::init_menus()
 	elements.push_back(std::make_unique<MenuBtn>("New game", new_game));
 	elements.push_back(std::make_unique<MenuBtn>("Quit", quit));
 	menus["main"] = Menu(std::move(elements), Screen::middle());
-
-	// test
-	PANEL* main_panel = menus["main"].get_panel();
-	assert(main_panel != nullptr);
-	WINDOW* main_window = panel_window(main_panel);
-	assert(main_window != nullptr);
-	int height, width;
-	getmaxyx(main_window, height, width);
-	assert(menus["main"].get_width() == static_cast<size_t>(width));
-	assert(menus["main"].get_height() == static_cast<size_t>(height));
-
-	// Debug window
-	std::vector<std::unique_ptr<MenuElt>> debug_elements;
-	debug_elements.push_back(std::make_unique<MenuNum<size_t>>("Colors"));
-	debug_elements.push_back(std::make_unique<MenuNum<size_t>>("Color pairs"));
-	debug_elements.push_back(std::make_unique<MenuNum<int>>("Keypress"));
-	debug_elements.push_back(std::make_unique<MenuNum<size_t>>("Mouse y"));
-	debug_elements.push_back(std::make_unique<MenuNum<size_t>>("Mouse x"));
-	debug_elements.push_back(std::make_unique<MenuNum<size_t>>("player_y"));
-	debug_elements.push_back(std::make_unique<MenuNum<size_t>>("player_x"));
-	menus["debug"] = Menu(std::move(debug_elements), Screen::botleft());
-	menus["debug"].set_read_only(true);
-
-	// Cell info
-	std::vector<std::unique_ptr<MenuElt>> cell_info_elements;
-	cell_info_elements.push_back(std::make_unique<MenuNum<size_t>>("Index"));
-	cell_info_elements.push_back(std::make_unique<MenuNum<double>>("Density", std::pair<double, double>(0.0, 9.0)));
-	cell_info_elements.push_back(std::make_unique<MenuNum<int>>("Color pair"));
-	cell_info_elements.push_back(std::make_unique<MenuNum<size_t>>("Glow stacks"));
-	cell_info_elements.push_back(std::make_unique<MenuNum<size_t>>("Entities"));
-	menus["cell_info"] = Menu(std::move(cell_info_elements), Screen::topright());
-	menus["cell_info"].set_read_only(true);
 }
 
 void UI::init()
