@@ -49,7 +49,10 @@ namespace ExamineSystem
 
 		std::vector<std::string> info_neat = { ECS::get_colored_name(registry, entity) };
 		for (const auto& [left, right] : info)
-			info_neat.push_back(std::format("{: <{}} : {: >{}}", left, leftcol, right, rightcol));
+		{
+			const std::string line = std::format("{: <{}} : {: >{}}", left, leftcol, right, rightcol);
+			info_neat.push_back(Utils::capitalize(line));
+		}
 		return info_neat;
 	}
 
@@ -107,7 +110,12 @@ namespace ExamineSystem
 			if (can_take(registry, player, *it))
 				options.push_back("Take");
 			if (can_open(registry, player, *it))
-				options.push_back("Open");
+			{
+				if (*it == player)
+					options.push_back("Inventory");
+				else
+					options.push_back("Open");
+			}
 			if (entities.size() > 1)
 				options.push_back("Next");
 			options.push_back("Cancel");
@@ -125,7 +133,7 @@ namespace ExamineSystem
 				it = entities.erase(it);
 				player_cell->get_cave()->draw();
 			}
-			else if (selected == "Open")
+			else if (selected == "Open" || selected == "Inventory")
 			{
 				InventorySystem::open_inventory(registry, *it);
 			}
