@@ -84,8 +84,6 @@ void Game::end()
 // Called by main menu
 void new_game()
 {
-	PANEL* game_panel = new_panel(newwin(Screen::height(), Screen::width(), 0, 0));
-	UI::instance().add_panel(UI::Panel::GAME, game_panel);
 	UI::instance().set_mode(UI::Mode::GAME);
 	PANEL* panel = UI::instance().get_panel(UI::Panel::GAME);
 	UI::instance().set_current_panel(panel, true);

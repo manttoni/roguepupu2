@@ -273,13 +273,10 @@ Cell* UI::get_clicked_cell(Cave& cave)
 	return &cave.get_cell(dest_idx);
 }
 
-void UI::init_menus()
+void UI::init_panels()
 {
-	// Main menu
-	std::vector<std::unique_ptr<MenuElt>> elements;
-	elements.push_back(std::make_unique<MenuBtn>("New game", new_game));
-	elements.push_back(std::make_unique<MenuBtn>("Quit", quit));
-	menus["main"] = Menu(std::move(elements), Screen::middle());
+	PANEL* game_panel = new_panel(newwin(Screen::height(), Screen::width(), 0, 0));
+	UI::instance().add_panel(UI::Panel::GAME, game_panel);
 }
 
 void UI::init()
@@ -288,7 +285,7 @@ void UI::init()
 	setlocale(LC_ALL, "");
 	initscr();
 	start_color();
-	init_menus();
+	init_panels();
 
 	// signals should reset original terminal mode
 	std::signal(SIGSEGV, handle_signal);

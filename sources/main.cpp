@@ -1,4 +1,5 @@
 #include <string>             // for allocator, basic_string
+#include "Game.hpp"
 #include "EntityFactory.hpp"  // for EntityFactory
 #include "Menu.hpp"           // for Menu
 #include "UI.hpp"             // for UI
@@ -7,7 +8,36 @@
 
 void run()
 {
-	UI::instance().get_menu("main").loop();
+	Game* game = nullptr;
+	std::string selection = "none";
+	while (!selection.empty() && selection != "Quit")
+	{
+		std::vector<std::string> options;
+		if (game != nullptr)
+			options.push_back("Continue");
+		options.push_back("New Game");
+		options.push_back("Controls");
+		options.push_back("Quit");
+		selection = UI::instance().dialog("Roguepupu 2", options);
+		if (selection == "Continue" && game != nullptr)
+		{
+			game->loop();
+		}
+		else if (selection == "New Game")
+		{
+			game = new Game();
+			game->loop();
+		}
+		else if (selection == "Controls")
+		{
+			UI::instance().dialog("Controls", {
+					"Move with arrows or WASD",
+					"Interact with left click",
+					"Use menu with arrows or mouse",
+					"i: inventory",
+					"c: character"});
+		}
+	}
 }
 
 int main(int argc, char** argv)
@@ -19,11 +49,8 @@ int main(int argc, char** argv)
 		tester();
 		return 0;
 	}
-	Log::log("EntityFactory initialized");
 	UI::instance().init();
-	Log::log("UI initialized");
 	run();
-	Log::log("Run completed");
 	UI::instance().end();
 }
 
