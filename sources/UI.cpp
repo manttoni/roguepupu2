@@ -19,6 +19,7 @@
 #include "UI.hpp"         // for UI, KEY_LEFT_CLICK, KEY_RIGHT_CLICK, quit
 #include "Utils.hpp"      // for Coord, botleft, height, middle, topright
 #include "entt.hpp"       // for unique_ptr, make_unique, vector, allocator
+#include "ECS.hpp"
 
 void UI::print_wide(const size_t y, const size_t x, const wchar_t wc)
 {
@@ -239,6 +240,37 @@ int UI::input(int delay)
 	}
 
 	return key;
+}
+
+Cell* UI::get_clicked_cell(Cave& cave)
+{
+	Screen::Coord mouse_position = get_mouse_position();
+	PANEL* panel = get_panel(UI::Panel::GAME);
+	WINDOW* window = panel_window(panel);
+	int window_height, window_width, window_starty, window_startx;
+	getmaxyx(window, window_height, window_width);
+	getbegyx(window, window_starty, window_startx);
+
+	int mouse_y = mouse_position.y - window_starty;
+	int mouse_x = mouse_position.x - window_startx;
+
+	int window_center_y = window_height / 2;
+	int window_center_x = window_width / 2;
+
+	int offset_y = mouse_y - window_center_y;
+	int offset_x = mouse_x - window_center_x;
+
+	auto& registry = cave.get_world()->get_registry();
+	const auto player = ECS::get_player(registry);
+	const size_t player_idx = ECS::get_cell(registry, player)->get_idx();
+	int player_y = player_idx / cave.get_width();
+	int player_x = player_idx % cave.get_width();
+
+	int dest_y = player_y + offset_y;
+	int dest_x = player_x + offset_x;
+	const size_t dest_idx = dest_y * cave.get_width() + dest_x;
+
+	return &cave.get_cell(dest_idx);
 }
 
 void UI::init_menus()

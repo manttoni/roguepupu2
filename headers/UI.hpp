@@ -124,7 +124,7 @@ class UI
 		std::string dialog(const std::vector<std::string>& text, const std::vector<std::string>& options = {}, const Screen::Coord& position = Screen::middle(), const size_t initial_selection = 0);
 		std::string dialog(const std::string& text, const std::vector<std::string>& options = {}, const Screen::Coord& position = Screen::middle(), const size_t initial_selection = 0);
 		int input(int delay = -1); // wrapper for getch
-
+		Cell* get_clicked_cell(Cave& cave);
 		size_t get_curs_y() const;
 		size_t get_curs_x() const;
 		void enable_attr(const chtype attr) { wattron(panel_window(current_panel), attr); }
