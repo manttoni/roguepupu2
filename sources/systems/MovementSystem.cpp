@@ -10,9 +10,13 @@ namespace MovementSystem
 {
 	std::map<int, Vec2> movement_keys = {
 		{KEY_UP,	{-1, 0}},
+		{'w',		{-1, 0}},
 		{KEY_RIGHT,	{0, 1}},
+		{'d',		{0, 1}},
 		{KEY_DOWN,	{1, 0}},
-		{KEY_LEFT,	{0, -1}}
+		{'s',		{1, 0}},
+		{KEY_LEFT,	{0, -1}},
+		{'a',		{0, -1}}
 	};
 
 	bool movement_key_pressed(const int key)
