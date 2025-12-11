@@ -10,9 +10,9 @@
 #include "UI.hpp"                       // for UI, KEY_ESCAPE
 #include "World.hpp"                    // for World
 #include "entt.hpp"                     // for allocator, vector, size_t
+#include "systems/ContextSystem.hpp"
 #include "systems/InventorySystem.hpp"  // for inventory_key_pressed, open_i...
 #include "systems/MovementSystem.hpp"   // for move, movement_key_pressed
-#include "systems/ExamineSystem.hpp"
 #include "ECS.hpp"
 
 Game::Game() :
@@ -47,33 +47,24 @@ void Game::loop()
 {
 	get_cave().draw();
 
-	int key = 0;
-	while (key != KEY_ESCAPE)
+	int key;
+	while ((key = UI::instance().input(500)) != KEY_ESCAPE)
 	{
-		key = UI::instance().input(500);
-		if (key == KEY_ESCAPE)
-		{
-			if (UI::instance().dialog("Quit to main menu?", {"Yes", "No"}) == "Yes")
-				return;
-			key = 0;
-		}
-		if (MovementSystem::movement_key_pressed(key))
-		{
-			if (MovementSystem::move(get_registry(), player, key) == 0)
-				continue;
-			check_change_level();
-		}
-		if (InventorySystem::inventory_key_pressed(key))
-		{
-			InventorySystem::open_inventory(get_registry(), player);
-			key = 0;
-			continue;
-		}
 		if (key == KEY_LEFT_CLICK)
 		{
-			auto entities = ExamineSystem::get_clicked_entities(get_cave(), ECS::get_cell(get_registry(), player)->get_idx());
-			ExamineSystem::show_entities_info(get_registry(), entities);
+			Cell* clicked_cell = UI::instance().get_clicked_cell(get_cave());
+			auto entities = clicked_cell->get_entities();
+			if (entities.size() == 1)
+				ContextSystem::show_entity_details(get_registry(), entities[0]);
+			else
+				ContextSystem::show_entities_list(get_registry(), clicked_cell);
 		}
+		if (MovementSystem::move(get_registry(), player, key) > 0)
+			check_change_level();
+		if (key == 'i')
+			ContextSystem::show_entities_list(get_registry(), player);
+		if (key == 'c')
+			ContextSystem::show_entity_details(get_registry(), player);
 
 		get_cave().draw();
 		UI::instance().increase_loop_number();
