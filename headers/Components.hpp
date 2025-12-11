@@ -100,3 +100,12 @@ struct Armor
 	std::string stealth;
 	size_t strength_requirement;
 };
+
+struct Stats
+{
+	size_t level;
+	std::map<std::string, size_t> attributes;
+	size_t max_hp;
+	size_t hp;
+};
+
