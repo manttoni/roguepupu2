@@ -7,7 +7,6 @@
 #include "Utils.hpp"                    // for topleft, capitalize
 #include "entt.hpp"                     // for vector, allocator, basic_sigh...
 #include "systems/EquipmentSystem.hpp"  // for is_equipped, equip_or_unequip
-#include "systems/ExamineSystem.hpp"    // for get_info_neat
 #include "systems/InventorySystem.hpp"  // for add_item, has_item, inventory...
 
 namespace InventorySystem
