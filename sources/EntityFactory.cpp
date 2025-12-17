@@ -1,3 +1,4 @@
+#include <regex>
 #include <filesystem>                                     // for path
 #include <fstream>                                        // for basic_ifstream
 #include <nlohmann/detail/iterators/iter_impl.hpp>        // for iter_impl
@@ -7,11 +8,11 @@
 #include <string>                                         // for string, ope...
 #include "Color.hpp"                                      // for Color
 #include "Components.hpp"                                 // for Position
-#include "Dice.hpp"                                       // for Dice
 #include "EntityFactory.hpp"                              // for EntityFactory
 #include "Utils.hpp"                                      // for error, rand...
 #include "entt.hpp"                                       // for vector, ope...
 #include "systems/DamageSystem.hpp"                       // for parse_type
+#include "ECS.hpp"
 #include "systems/StatsSystem.hpp"
 class Cell;
 
@@ -19,12 +20,17 @@ class Cell;
 #define MELEE_RANGE 1.5
 void EntityFactory::init()
 {
-	read_definitions("data/items/weapons.json");
-	read_definitions("data/items/armor.json");
-	read_definitions("data/plants/mushrooms.json");
-	read_definitions("data/furniture/chests.json");
-	read_definitions("data/creatures/players.json");
-	read_definitions("data/creatures/goblins.json");
+	read_definitions("data/entities/items/weapons.json");
+	read_definitions("data/entities/items/armor.json");
+	read_definitions("data/entities/plants/mushrooms.json");
+	read_definitions("data/entities/furniture/chests.json");
+	read_definitions("data/entities/creatures/players.json");
+	read_definitions("data/entities/creatures/goblins.json");
+	Log::log("Parsed entities amount: " + std::to_string(LUT.size()));
+	for (const auto& [name, data] : LUT)
+	{
+		Log::log(data.dump(4));
+	}
 }
 
 void EntityFactory::read_definitions(const std::filesystem::path& path)
@@ -50,23 +56,6 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			reg.template emplace<Name>(e, data.get<std::string>());
 		}
 	},
-	{ "renderable", [](auto& reg, auto e, const nlohmann::json& data)
-		{	// If the values are not defined, will define them later
-			wchar_t glyph = L'?';
-			Color color;
-			if (data.contains("glyph"))
-			{
-				const std::string glyph_str = data["glyph"].get<std::string>();
-				glyph = static_cast<wchar_t>(glyph_str[0]);
-			}
-			if (data.contains("color"))
-			{
-				const auto& c = data["color"];
-				color = Color(c[0].get<int>(), c[1].get<int>(), c[2].get<int>());
-			}
-			reg.template emplace<Renderable>(e, glyph, color);
-		}
-	},
 	{ "solid", [](auto& reg, auto e, const nlohmann::json& data)
 		{
 			(void) data;
@@ -82,16 +71,21 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 	{ "inventory", [](auto& reg, auto e, const nlohmann::json& data)
 		{	// Can store entities inside it, and might do so initially
 			std::vector<entt::entity> inventory;
+			if (data.is_boolean())
+			{
+				if (data.get<bool>() == true)
+					reg.template emplace<Inventory>(e, inventory);
+				return;
+			}
 			for (const auto& entity : data)
 			{
-				const std::string amount_str = entity.contains("amount") ? entity["amount"].get<std::string>() : "1d1";
-				const Dice d(amount_str);
-				const size_t amount = d.roll();
-
+				const size_t amount = entity.contains("amount") ? entity["amount"].get<size_t>() : 1;
 				if (!entity.contains("filter")) // Need to specify what kind of entities it has with a filter
 					Log::error("Cannot spawn entity to inventory: " + entity.dump(4));
+				if (entity.contains("chance") && Random::randreal(0, 1) > entity["chance"].get<double>())
+					continue;
 				std::vector<std::string> names = EntityFactory::instance().random_pool(entity["filter"], amount);
-
+				Log::log("Adding to inventory with filter: " + entity["filter"].dump(4));
 				for (size_t i = 0; i < amount; ++i)
 				{
 					const size_t rand = Random::randsize_t(0, names.size() - 1);
@@ -117,53 +111,9 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			reg.template emplace<Player>(e);
 		}
 	},
-	{ "damage", [](auto& reg, auto e, const nlohmann::json& data)
-		{	// Can deal damage
-			if (!data.contains("type") || !data.contains("dice"))
-				Log::error("Damage component incomplete: " + data.dump(4));
 
-			std::string type = data["type"].get<std::string>();
-			Dice dice(data["dice"].get<std::string>());
-			reg.template emplace<Damage>(e, type, dice);
-		}
-	},
-	{ "weapon", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			if (!data.contains("proficiency"))
-				Log::error("Weapon component missing proficiency: " + data.dump(4));
-
-			const std::string proficiency = data["proficiency"].get<std::string>();
-			std::vector<std::string> properties = data["properties"].get<std::vector<std::string>>();
-
-			// Parse more data from properties
-			double normal_range = MELEE_RANGE, long_range = MELEE_RANGE;
-			Dice versatile_dice;
-			for (auto& property : properties)
-			{
-				const size_t space = property.find(' '); // splits additional data
-				const size_t slash = property.find('/'); // normal/long range
-				const size_t parenth = property.find('('); // (versatile dice)
-				if (slash != std::string::npos)
-				{
-					normal_range = std::stod(property.substr(space + 1)) / CELL_SIZE;
-					long_range = std::stod(property.substr(slash + 1)) / CELL_SIZE;
-				}
-				if (parenth != std::string::npos)
-					versatile_dice = Dice(property.substr(parenth + 1));
-				if (space != std::string::npos)
-					property = property.substr(0, space);
-			}
-			reg.template emplace<Weapon>(e, proficiency, properties, normal_range, long_range, versatile_dice);
-		}
-	},
-	{ "value", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			const size_t value = data.get<size_t>();
-			reg.template emplace<Value>(e, value);
-		}
-	},
 	{ "weight", [](auto& reg, auto e, const nlohmann::json& data)
-		{	// Has a weight in lb
+		{
 			reg.template emplace<Weight>(e, data.get<double>());
 		}
 	},
@@ -183,45 +133,102 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			reg.template emplace<Subcategory>(e, data.get<std::string>());
 		}
 	},
-	{ "rarity", [](auto& reg, auto e, const nlohmann::json& data)
+
+	{ "faction", [](auto& reg, auto e, const nlohmann::json& data)
 		{
-			reg.template emplace<Rarity>(e, data.get<std::string>());
+			const std::string faction = data.get<std::string>();
+			reg.template emplace<Faction>(e, faction);
+		}
+	},
+	{ "glyph", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			const std::string glyph_str = data.get<std::string>();
+			const wchar_t glyph = static_cast<wchar_t>(glyph_str[0]);
+			reg.template emplace<Glyph>(e, glyph);
+		}
+	},
+	{ "fgcolor", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			Color color = Color(data[0].get<int>(), data[1].get<int>(), data[2].get<int>());
+			reg.template emplace<FGColor>(e, color);
+		}
+	},
+	{ "bgcolor", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			const auto& c = data["color"];
+			Color color = Color(c[0].get<int>(), c[1].get<int>(), c[2].get<int>());
+			reg.template emplace<BGColor>(e, color);
+		}
+	},
+	{ "armor_penetration", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			reg.template emplace<ArmorPenetration>(e, data.get<int>());
 		}
 	},
 	{ "armor", [](auto& reg, auto e, const nlohmann::json& data)
 		{
-			if (!data.contains("proficiency"))
-				Log::error("Incomplete armor component: " + data.dump(4));
-
-			const std::string proficiency = data["proficiency"].get<std::string>();
-			const size_t armor_class = data.contains("armor_class") ? data["armor_class"].get<size_t>() : 0;
-			const size_t max_dexbonus = data.contains("max_dexbonus") ? data["max_dexbonus"].get<size_t>() : SIZE_MAX;
-			const std::string stealth = data.contains("stealth") ? data["stealth"].get<std::string>() : "";
-			const size_t strength_requirement = data.contains("strength_requirement") ? data["strength_requirement"].get<size_t>() : 0;
-			reg.template emplace<Armor>(e, proficiency, armor_class, max_dexbonus, stealth, strength_requirement);
+			reg.template emplace<Armor>(e, data.get<int>());
 		}
 	},
-	{ "stats", [](auto& reg, auto e, const nlohmann::json& data)
+	{ "accuracy", [](auto& reg, auto e, const nlohmann::json& data)
 		{
-			if (!data.contains("level") || !data.contains("attributes"))
-				Log::error("Incomplete stats component: " + data.dump(4));
-
-			const size_t level = data["level"].get<size_t>();
-			std::map<std::string, size_t> attributes;
-			if (data["attributes"].contains("random"))
-			{
-				const std::string r = data["attributes"]["random"].get<std::string>();
-				attributes["strength"] = Dice(r).roll();
-				attributes["dexterity"] = Dice(r).roll();
-				attributes["constitution"] = Dice(r).roll();
-				attributes["intelligence"] = Dice(r).roll();
-				attributes["wisdom"] = Dice(r).roll();
-				attributes["charisma"] = Dice(r).roll();
-			}
-			else
-				Log::error("Setting attributes not implemented");
-			const size_t hp = 5 + level * (Dice("1d8").roll() + StatsSystem::get_modifier(attributes["constitution"]));
-			reg.template emplace<Stats>(e, level, attributes, hp, hp);
+			reg.template emplace<Accuracy>(e, data.get<int>());
+		}
+	},
+	{ "evasion", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			reg.template emplace<Evasion>(e, data.get<int>());
+		}
+	},
+	{ "barrier", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			reg.template emplace<Barrier>(e, data.get<int>());
+		}
+	},
+	{ "power", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			reg.template emplace<Power>(e, data.get<int>());
+		}
+	},
+	{ "crit_chance", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			reg.template emplace<CritChance>(e, data.get<double>());
+		}
+	},
+	{ "crit_multiplier", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			reg.template emplace<CritMultiplier>(e, data.get<double>());
+		}
+	},
+	{ "attributes", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			const int strength = data["strength"].get<int>();
+			const int dexterity = data["dexterity"].get<int>();
+			const int intelligence = data["intelligence"].get<int>();
+			reg.template emplace<Attributes>(e, strength, dexterity, intelligence);
+		}
+	},
+	{ "two_handed", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			(void) data;
+			reg.template emplace<TwoHanded>(e);
+		}
+	},
+	{ "damage", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			const std::regex pattern(R"(^\d+-\d+$)");
+			const std::string str = data.get<std::string>();
+			if (!std::regex_match(str, pattern))
+				Log::error("Invalid damage: " + str);
+			const auto dash = str.find('-');
+			const int min = std::stoi(str.substr(0, dash));
+			const int max = std::stoi(str.substr(dash + 1));
+			reg.template emplace<Damage>(e, min, max);
+		}
+	},
+	{ "level", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			reg.template emplace<Level>(e, data.get<int>());
 		}
 	}
 };
@@ -243,6 +250,7 @@ void EntityFactory::add_entities(nlohmann::json& json, const std::string& catego
 
 entt::entity EntityFactory::create_entity(entt::registry& registry, const std::string& name, Cell* cell)
 {
+	Log::log("Creating entity: " + name);
 	if (LUT.find(name) == LUT.end())
 		Log::error("Entity not found: " + name);
 
@@ -253,12 +261,18 @@ entt::entity EntityFactory::create_entity(entt::registry& registry, const std::s
 		auto it = field_parsers.find(field_name);
 		if (it == field_parsers.end())
 			Log::error("Unknown field name: " + field_name);
-
 		it->second(registry, entity, field_data);
 	}
 
 	if (cell != nullptr)
 		registry.emplace<Position>(entity, cell);
+	if (registry.all_of<Attributes>(entity))
+	{
+		registry.emplace<Resources>(entity,
+				ECS::get_health_max(registry, entity),
+				ECS::get_fatigue_max(registry, entity),
+				ECS::get_mana_max(registry, entity));
+	}
 	return entity;
 }
 
@@ -266,13 +280,8 @@ bool EntityFactory::exclude(const nlohmann::json& data, const nlohmann::json& fi
 {
 	for (const auto& [filter_field, filter_data] : filter.items())
 	{
-		if (filter_field == "value_max" && data.contains("value"))
-		{
-			if (filter_data.get<size_t>() < data["value"])
-				return true;
-			return false;
-		}
-
+		if (data.contains("player"))
+			return true; // always exclude players
 		if (!data.contains(filter_field) || data[filter_field] != filter_data)
 			return true;
 	}

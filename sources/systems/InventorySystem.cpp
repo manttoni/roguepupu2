@@ -57,15 +57,4 @@ namespace InventorySystem
 		}
 	}
 
-	size_t get_inventory_value(const entt::registry& registry, const entt::entity entity)
-	{
-		if (!registry.all_of<Inventory>(entity))
-			return 0;
-
-		size_t value = 0;
-		const auto& inventory = registry.get<Inventory>(entity).inventory;
-		for (const auto item : inventory)
-			value += ECS::get_value(registry, item);
-		return value;
-	}
 };

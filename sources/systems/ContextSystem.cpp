@@ -1,5 +1,7 @@
 #include "systems/ContextSystem.hpp"
 #include "systems/InventorySystem.hpp"
+#include "systems/EquipmentSystem.hpp"
+#include "systems/StatsSystem.hpp"
 #include "ECS.hpp"
 #include "UI.hpp"
 #include "Utils.hpp"
@@ -32,24 +34,30 @@ namespace ContextSystem
 		const auto player = ECS::get_player(registry);
 		if (player == owner && owner != entt::null)
 		{
-			if (EquipmentSystem::is_equipped(registry, player, entity))
-				options.push_back("Unequip");
-			else
-				options.push_back("Equip");
+			if (ECS::is_equippable(registry, entity))
+			{
+				if (EquipmentSystem::is_equipped(registry, player, entity))
+					options.push_back("Unequip");
+				else
+					options.push_back("Equip");
+			}
 			options.push_back("Drop");
 		}
-		if (registry.all_of<Inventory>(entity))
-		{
-			if (player == entity)
-				options.push_back("Inventory");
-			else
-				options.push_back("Open");
-		}
+
 		double distance;
 		if (registry.all_of<Position>(entity))
 			distance = ECS::distance(registry, player, entity);
 		else
 			distance = ECS::distance(registry, player, owner);
+		if (distance < MELEE_RANGE && registry.all_of<Inventory>(entity))
+		{
+			if (player == entity)
+				options.push_back("Inventory");
+			else if (ECS::is_dead(registry, entity))
+				options.push_back("Loot");
+			else if (registry.get<Subcategory>(entity).subcategory == "furniture")
+				options.push_back("Open");
+		}
 		if (distance < MELEE_RANGE && player != owner)
 		{
 			if (registry.get<Category>(entity).category == "items")
@@ -63,7 +71,7 @@ namespace ContextSystem
 		const auto player = ECS::get_player(registry);
 		if (selection == "Unequip" || selection == "Equip")
 			EquipmentSystem::equip_or_unequip(registry, player, entity);
-		if (selection == "Inventory" || selection == "Open")
+		if (selection == "Inventory" || selection == "Open" || selection == "Loot")
 			show_entities_list(registry, entity);
 		if (selection == "Drop")
 			InventorySystem::drop_item(registry, player, entity);

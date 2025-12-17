@@ -164,7 +164,7 @@ std::string Menu::loop()
 		// get key in non-blocking way
 		key = UI::instance().input(100); // ms
 		int mouse_select = get_mouse_selection();
-		if (mouse_select >= 0)
+		if (mouse_select >= 0 && mouse_select < static_cast<int>(elements.size()))
 			selected = mouse_select;
 		switch (key)
 		{

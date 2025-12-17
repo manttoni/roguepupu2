@@ -4,56 +4,52 @@
 #include <string>
 #include "Cell.hpp"
 #include "Color.hpp"
-#include "Dice.hpp"
-#include "systems/EquipmentSystem.hpp"
-#include "systems/DamageSystem.hpp"
 #include "entt.hpp"
-
-struct Name
-{
-	std::string name;
-};
-
-struct Position
-{
-	Cell* cell;
-};
-
-struct Renderable
-{
-	wchar_t glyph;
-	Color color;
-};
-
-struct Glow
-{
-	double strength;
-	double radius;
-};
-
-struct Vision
-{
-	int range;
-};
-
-struct Inventory
-{
-	std::vector<entt::entity> inventory;
-};
 
 struct Solid {};
 struct Opaque {};
 struct Player {};
+struct TwoHanded {};
 
-struct Damage
+struct Name { std::string name; };
+struct Position { Cell* cell; };
+struct Glyph { wchar_t glyph; };
+
+struct FGColor { Color color; };
+struct BGColor { Color color; };
+
+struct Vision { int range; };
+struct Weight { double weight; };
+struct Faction { std::string faction; };
+
+struct Category { std::string category; };
+struct Subcategory { std::string subcategory; };
+
+struct ArmorPenetration { int armor_penetration; };
+struct Armor { int armor; };
+
+struct Accuracy { int accuracy; };
+struct Evasion { int evasion; };
+
+struct Barrier { int barrier; };
+struct Power { int power; };
+
+struct CritChance { double crit_chance; };
+struct CritMultiplier { double crit_multiplier; };
+
+struct Glow { double strength, radius; };
+struct Damage { int min, max; };
+
+struct Level { int level; };
+struct Attributes
 {
-	std::string type;
-	Dice dice;
+	int strength;
+	int dexterity;
+	int intelligence;
 };
-
-struct Weight
+struct Resources
 {
-	double lb;
+	int health, fatigue, mana;
 };
 
 struct Equipment
@@ -62,50 +58,7 @@ struct Equipment
 	entt::entity left_hand{entt::null};
 	entt::entity armor{entt::null};
 };
-
-struct Category
+struct Inventory
 {
-	std::string category;
+	std::vector<entt::entity> inventory;
 };
-
-struct Subcategory
-{
-	std::string subcategory;
-};
-
-struct Rarity
-{
-	std::string rarity;
-};
-
-struct Value
-{
-	size_t value;
-};
-
-struct Weapon
-{
-	std::string proficiency;
-	std::vector<std::string> properties;
-	double normal_range; // distance in cells
-	double long_range; // disadvantage outside normal range
-	Dice versatile_dice;
-};
-
-struct Armor
-{
-	std::string proficiency;
-	size_t armor_class;
-	size_t max_dexbonus;
-	std::string stealth;
-	size_t strength_requirement;
-};
-
-struct Stats
-{
-	size_t level;
-	std::map<std::string, size_t> attributes;
-	size_t max_hp;
-	size_t hp;
-};
-

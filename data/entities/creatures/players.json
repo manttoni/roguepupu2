@@ -1,0 +1,31 @@
+{
+	"rabdin": {
+		"glyph": "@",
+		"fgcolor": [123,456,789],
+		"player": true,
+		"solid": true,
+		"vision": 10,
+		"inventory": [
+			{
+				"filter": {
+					"level": 1,
+					"subcategory": "weapons"
+				}
+			},
+			{
+				"filter": {
+					"level": 1,
+					"subcategory": "armor"
+				}
+			}
+		],
+		"equipment": true,
+		"faction": "player",
+		"attributes": {
+			"strength": 10,
+			"dexterity": 10,
+			"intelligence": 10
+		}
+	}
+}
+

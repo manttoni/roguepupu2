@@ -9,6 +9,7 @@
 #include "World.hpp"          // for World
 #include "entt.hpp"           // for vector, size_t, map, deque, allocator
 #include "systems/InventorySystem.hpp"
+#include "ECS.hpp"
 
 World::World() : seed(Random::randsize_t(10000, 99999)), rng(seed)
 {
@@ -204,22 +205,57 @@ void World::spawn_chests()
 {
 	auto& canvas = caves.back();
 	auto& cells = canvas.get_cells();
-	const size_t max_value = std::pow(canvas.get_level(), chest_value_power) * chest_value_multiplier + chest_value_scalar;
 
 	for (size_t i = 0; i < height * width; ++i)
 	{
 		if (cells[i].blocks_movement() || Random::randreal(0, 1) > chest_spawn_chance)
 			continue;
 
-		nlohmann::json loot_filter = {{"category", "items"}, {"value_max", max_value}};
+		nlohmann::json loot_filter = {{"category", "items"}};
 		const auto& loot_pool = EntityFactory::instance().random_pool(loot_filter, chest_item_variance);
 		const auto chest = EntityFactory::instance().create_entity(registry, "chest", &cells[i]);
-		while (InventorySystem::get_inventory_value(registry, chest) < max_value)
+		size_t amount = Random::randsize_t(0, 5);
+		for (size_t i = 0; i < amount; ++i)
 		{
 			const size_t rand_idx = Random::randsize_t(0, loot_pool.size() - 1);
+			assert(rand_idx < loot_pool.size());
 			const auto item = EntityFactory::instance().create_entity(registry, loot_pool[rand_idx]);
 			InventorySystem::add_item(registry, chest, item);
 		}
+	}
+}
+
+void World::spawn_creatures()
+{
+	auto& canvas = caves.back();
+	auto& cells = canvas.get_cells();
+	const size_t enemy_levels = 50 * canvas.get_level();
+	std::vector<size_t> spawn_cells;
+
+	for (size_t i = 0; i < height * width; ++i)
+	{
+		if (!cells[i].blocks_movement())
+			spawn_cells.push_back(i);
+	}
+
+	std::shuffle(spawn_cells.begin(), spawn_cells.end(), rng);
+	const nlohmann::json& filter =
+	{
+		{"category", "creatures"}
+	};
+	const auto& creature_pool = EntityFactory::instance().random_pool(filter, 3);
+	size_t level_sum = 0;
+	size_t spawn_idx = 0;
+	while (level_sum < enemy_levels && spawn_idx < spawn_cells.size())
+	{
+		const size_t idx = spawn_cells[spawn_idx];
+		const size_t creature_idx = Random::randsize_t(0, creature_pool.size() - 1);
+		Cell* cell = &cells[idx];
+		assert(cell != nullptr);
+		assert(creature_idx < creature_pool.size());
+		const entt::entity e = EntityFactory::instance().create_entity(registry, creature_pool[creature_idx], cell);
+		level_sum += ECS::get_level(registry, e);
+		spawn_idx++;
 	}
 }
 
@@ -243,11 +279,19 @@ void World::generate_cave(const size_t level)
 	caves.emplace_back(level, height, width, seed);
 	caves.back().set_world(this);
 
+	Log::log("Forming rock");
 	form_rock();
+	Log::log("Setting source and sink");
 	set_source_sink();
+	Log::log("Forming tunnels");
 	form_tunnels();
-	spawn_chests();
+	Log::log("Spawning mushrooms");
 	spawn_mushrooms();
+	Log::log("Spawning chests");
+	spawn_chests();
+	Log::log("Spawning creatures");
+	spawn_creatures();
+	Log::log("Setting rock colors");
 	set_rock_colors();
 
 	caves.back().apply_lights();

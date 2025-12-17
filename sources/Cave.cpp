@@ -253,10 +253,10 @@ void Cave::clear_lights()
 void Cave::apply_lights()
 {
 	auto& registry = world->get_registry();
-	auto glowing_entities = registry.view<Position, Glow, Renderable>();
+	auto glowing_entities = registry.view<Position, Glow, FGColor>();
 	for (const auto& entity : glowing_entities)
 	{
-		const auto [glow, pos, rend] = glowing_entities.get<Glow, Position, Renderable>(entity);
+		const auto [glow, pos, color] = glowing_entities.get<Glow, Position, FGColor>(entity);
 
 		const auto& ent_idx = pos.cell->get_idx();
 		const auto& area = get_nearby_ids(ent_idx, glow.radius);
@@ -266,7 +266,7 @@ void Cave::apply_lights()
 			if (!has_vision(ent_idx, idx))
 				continue;
 
-			Color g = rend.color * glow.strength;
+			Color g = color.color * glow.strength;
 			cells[idx].add_light(g);
 		}
 	}

@@ -1,10 +1,12 @@
 #include <curses.h>                    // for KEY_DOWN, KEY_LEFT, KEY_RIGHT
+#include "ECS.hpp"
 #include "Cave.hpp"                    // for Cave
 #include "Cell.hpp"                    // for Cell
 #include "Components.hpp"              // for Position
 #include "Utils.hpp"                   // for Vec2
 #include "entt.hpp"                    // for size_t, map, entity, registry
 #include "systems/MovementSystem.hpp"  // for move, movement_key_pressed
+#include "systems/CombatSystem.hpp"
 
 namespace MovementSystem
 {
@@ -41,7 +43,16 @@ namespace MovementSystem
 		const size_t y = src_idx / width;
 		const size_t x = src_idx % width;
 		const size_t dst_idx = (direction.dy + y) * width + direction.dx + x;
-
+		Cell* dst = &current_cave->get_cell(dst_idx);
+		const auto& entities = dst->get_entities();
+		for (auto& e : entities)
+		{
+			if (ECS::are_enemies(registry, entity, e))
+			{
+				CombatSystem::attack(registry, entity, e);
+				return 0;
+			}
+		}
 		if (!current_cave->has_access(src_idx, dst_idx))
 			return 0;
 		position.cell = &current_cave->get_cell(dst_idx);
@@ -52,6 +63,8 @@ namespace MovementSystem
 	// Can be used f.e. when changing level or teleporting
 	double move(entt::registry& registry, entt::entity entity, Cell& new_cell)
 	{
+		if (new_cell.blocks_movement())
+			return 0;
 		auto& position = registry.get<Position>(entity);
 		auto* current_cell = position.cell;
 		auto* current_cave = current_cell->get_cave();

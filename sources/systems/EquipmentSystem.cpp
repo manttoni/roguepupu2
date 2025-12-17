@@ -1,4 +1,5 @@
 #include <string>                       // for operator==, basic_string, ope...
+#include "ECS.hpp"
 #include "Components.hpp"               // for Equipment, Weapon, Armor (ptr...
 #include "Utils.hpp"                    // for error
 #include "entt.hpp"                     // for vector, entity, null_t, find
@@ -43,41 +44,34 @@ namespace EquipmentSystem
 		if (is_equipped(registry, entity, item))
 			return;
 
-		if (registry.all_of<Weapon>(item))
+		const auto& subcategory = registry.get<Subcategory>(item).subcategory;
+		if (subcategory == "weapons")
 			equip_weapon(registry, entity, item);
-		else if (registry.all_of<Armor>(item))
+		else if (subcategory == "armor")
 			equip_armor(registry, entity, item);
 	}
 
 	void equip_weapon(entt::registry& registry, const entt::entity entity, const entt::entity item)
 	{
-		assert(entity != entt::null);
+		if (!registry.all_of<Equipment>(entity))
+			return;
 		auto& equipment = registry.get<Equipment>(entity);
-		const auto& weapon_component = registry.get<Weapon>(item);
-		const auto& properties = weapon_component.properties;
-		if (std::find(properties.begin(), properties.end(), "two-handed") != properties.end())
+		if (registry.all_of<TwoHanded>(item))
 		{
 			equipment.right_hand = item;
 			equipment.left_hand = item;
 			return;
 		}
-		if (equipment.right_hand == entt::null || registry.all_of<Armor>(equipment.left_hand))
-		{	// Equip in right hand if its free or left hand has a shield
+		if (equipment.right_hand == entt::null)
 			equipment.right_hand = item;
-			return;
-		}
-		equipment.left_hand = item;
-		const auto& right_properties = registry.get<Weapon>(equipment.right_hand).properties;
-		const bool right_light = std::find(right_properties.begin(), right_properties.end(), "light") != right_properties.end();
-		const bool item_light = std::find(properties.begin(), properties.end(), "light") != properties.end();
-
-		// If one is not light, unequip right weapon
-		if (right_light == false || item_light == false)
-			unequip(registry, entity, equipment.right_hand);
+		else
+			equipment.left_hand = item;
 	}
 
 	void equip_armor(entt::registry& registry, const entt::entity entity, const entt::entity item)
 	{
+		if (!registry.all_of<Equipment>(entity))
+			return;
 		auto& equipment = registry.get<Equipment>(entity);
 		equipment.armor = item;
 	}
@@ -94,18 +88,11 @@ namespace EquipmentSystem
 			equipment.left_hand = entt::null;
 		if (equipment.armor == item)
 			equipment.armor = entt::null;
-
-		if (equipment.right_hand == entt::null && !registry.all_of<Armor>(equipment.left_hand))
-		{
-			equipment.right_hand = equipment.left_hand;
-			equipment.left_hand = entt::null;
-		}
-		assert(!is_equipped(registry, entity, item));
 	}
 
 	bool is_equipped(const entt::registry& registry, const entt::entity& entity, const entt::entity& item)
 	{
-		if (!registry.all_of<Equipment>(entity) || !registry.any_of<Weapon, Armor>(item))
+		if (!registry.all_of<Equipment>(entity) || !ECS::is_equippable(registry, item))
 			return false;
 
 		const auto& equipment = registry.get<Equipment>(entity);
@@ -115,5 +102,17 @@ namespace EquipmentSystem
 			return true;
 
 		return false;
+	}
+
+	bool is_dual_wielding(const entt::registry& registry, const entt::entity entity)
+	{
+		if (!registry.all_of<Equipment>(entity))
+			return false;
+		const auto equipment = registry.get<Equipment>(entity);
+		if (equipment.right_hand == entt::null || equipment.left_hand == entt::null)
+			return false;
+		if (equipment.right_hand == equipment.left_hand)
+			return false;
+		return true;
 	}
 };

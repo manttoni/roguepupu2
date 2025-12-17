@@ -55,6 +55,7 @@ class World
 		void set_source_sink();
 		void spawn_mushrooms();
 		void spawn_chests();
+		void spawn_creatures();
 		void set_rock_colors();
 
 	public:

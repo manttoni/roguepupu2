@@ -1,9 +1,7 @@
 {
 	"glowing mushroom": {
-		"renderable": {
-			"glyph": "*",
-			"color": [400, 0, 500]
-		},
+		"glyph": "*",
+		"fgcolor": [400, 0, 500],
 		"glow": {
 			"strength": 0.02,
 			"radius": 5
@@ -11,10 +9,8 @@
 	},
 
 	"woody mushroom": {
-		"renderable": {
-			"glyph": "$",
-			"color": [666, 333, 0]
-		},
+		"glyph": "$",
+		"fgcolor": [666, 333, 0],
 		"opaque": true,
 		"solid": true
 	}

@@ -8,158 +8,45 @@
 #include "Utils.hpp"
 #include "Components.hpp"
 #include "systems/StatsSystem.hpp"
+#include "systems/EquipmentSystem.hpp"
+#include "systems/CombatSystem.hpp"
+#include "systems/InventorySystem.hpp"
 
 namespace ECS
 {
-	std::string get_category(const entt::registry& registry, const entt::entity entity)
-	{
-		return registry.get<Category>(entity).category;
-	}
-
-	Color get_rarity_color(const std::string& rarity)
-	{
-		if (rarity == "common")
-			return Color(500, 500, 500);
-		if (rarity == "uncommon")
-			return Color(0, 500, 0);
-		if (rarity == "rare")
-			return Color(0, 0, 500);
-		if (rarity == "epic")
-			return Color(500, 0, 250);
-		if (rarity == "legendary")
-			return Color(900, 750, 150);
-
-		Log::error("Unknown rarity: " + rarity);
-	}
-
 	Color get_color(const entt::registry& registry, const entt::entity entity)
 	{
-		Color c = registry.get<Renderable>(entity).color;
-		if (c == Color{})
-		{
-			if (registry.all_of<Rarity>(entity))
-				return get_rarity_color(registry.get<Rarity>(entity).rarity);
-			Log::error("Entity color was never defined");
-		}
-		return c;
-	}
-	std::vector<std::string> get_colored_names(const entt::registry& registry, const std::vector<entt::entity>& items)
-	{
-		auto player = *registry.view<Player>().begin();
-		std::vector<std::string> names;
-		for (const auto& item : items)
-		{
-			std::string name = EquipmentSystem::is_equipped(registry, player, item) ? " * " : "   ";
-			name += ECS::get_colored_name(registry, item);
-			names.push_back(name);
-		}
-		return names;
-	}
-	wchar_t get_glyph(const entt::registry& registry, const entt::entity entity)
-	{
-		if (registry.all_of<Renderable>(entity))
-		{
-			wchar_t glyph = registry.get<Renderable>(entity).glyph;
-			if (glyph != L'?')
-				return glyph;
-		}
-		return get_name(registry, entity).front();
-	}
-
-	std::string get_name(const entt::registry& registry, const entt::entity entity)
-	{
-		if (!registry.all_of<Name>(entity))
-			return "undefined";
-		return registry.get<Name>(entity).name;
+		if (registry.all_of<FGColor>(entity))
+			return registry.get<FGColor>(entity).color;
+		return Color(500, 500, 500);
 	}
 
 	std::string get_colored_name(const entt::registry& registry, const entt::entity entity)
 	{
 		const auto& color = get_color(registry, entity);
-		const auto& name = get_name(registry, entity);
+		const auto& name = registry.get<Name>(entity).name;
 		std::string colored_name = color.markup() + Utils::capitalize(name) + "{reset}";
 		return colored_name;
 	}
 
-	size_t get_armor_class(const entt::registry& registry, const entt::entity entity)
+	std::vector<std::string> get_colored_names(const entt::registry& registry, const std::vector<entt::entity>& items)
 	{
-		if (registry.all_of<Armor>(entity))
-			return registry.get<Armor>(entity).armor_class;
-		if (registry.all_of<Stats>(entity))
-			return StatsSystem::get_AC(registry, entity);
-		return 0;
+		auto player = get_player(registry);
+		std::vector<std::string> names;
+		for (const auto& item : items)
+		{
+			std::string name = EquipmentSystem::is_equipped(registry, player, item) ? " * " : "   ";
+			name += get_colored_name(registry, item);
+			names.push_back(name);
+		}
+		return names;
 	}
 
-	Damage get_damage(const entt::registry& registry, const entt::entity entity)
+	wchar_t get_glyph(const entt::registry& registry, const entt::entity entity)
 	{
-		if (!registry.all_of<Damage>(entity))
-			return Damage{};
-		return registry.get<Damage>(entity);
-	}
-
-	std::string get_subcategory(const entt::registry& registry, const entt::entity entity)
-	{
-		return registry.get<Subcategory>(entity).subcategory;
-	}
-
-	std::string get_proficiency_requirement(const entt::registry& registry, const entt::entity entity)
-	{
-		const auto& subcategory = registry.get<Subcategory>(entity).subcategory;
-		if (subcategory == "weapons")
-			return registry.get<Weapon>(entity).proficiency;
-		if (subcategory == "armor")
-			return registry.get<Armor>(entity).proficiency;
-		return "";
-	}
-
-	Dice get_versatile_dice(const entt::registry& registry, const entt::entity entity)
-	{
-		if (registry.all_of<Weapon>(entity))
-			return registry.get<Weapon>(entity).versatile_dice;
-		return Dice{};
-	}
-
-	std::vector<std::string> get_properties(const entt::registry& registry, const entt::entity entity)
-	{
-		if (registry.all_of<Weapon>(entity))
-			return registry.get<Weapon>(entity).properties;
-		return {};
-	}
-
-	double get_normal_range(const entt::registry& registry, const entt::entity entity)
-	{
-		if (registry.all_of<Weapon>(entity))
-			return registry.get<Weapon>(entity).normal_range;
-		return 0;
-	}
-
-	double get_long_range(const entt::registry& registry, const entt::entity entity)
-	{
-		if (registry.all_of<Weapon>(entity))
-			return registry.get<Weapon>(entity).long_range;
-		return 0;
-	}
-
-	double get_weight(const entt::registry& registry, const entt::entity entity)
-	{
-		if (registry.all_of<Weight>(entity))
-			return registry.get<Weight>(entity).lb;
-		return 0;
-	}
-
-	size_t get_value(const entt::registry& registry, const entt::entity entity)
-	{
-		if (registry.all_of<Value>(entity))
-			return registry.get<Value>(entity).value;
-		return 0;
-	}
-
-	bool has_weapon_property(const entt::registry& registry, const entt::entity entity, const std::string& property)
-	{
-		if (!registry.all_of<Weapon>(entity))
-			return false;
-		const auto& properties = registry.get<Weapon>(entity).properties;
-		return std::find(properties.begin(), properties.end(), property) != properties.end();
+		if (registry.all_of<Glyph>(entity))
+			return registry.get<Glyph>(entity).glyph;
+		return registry.get<Name>(entity).name.front();
 	}
 
 	Cell* get_cell(const entt::registry& registry, const entt::entity entity)
@@ -169,61 +56,179 @@ namespace ECS
 		return nullptr;
 	}
 
+	int get_damage_min(const entt::registry& registry, const entt::entity entity)
+	{
+		if (registry.all_of<Damage>(entity))
+			return registry.get<Damage>(entity).min;
+		if (registry.all_of<Equipment>(entity))
+		{
+			const auto& equipment = registry.get<Equipment>(entity);
+			double total_min = static_cast<double>(get_damage_min(registry, equipment.right_hand));
+			if (EquipmentSystem::is_dual_wielding(registry, entity))
+			{
+				total_min += static_cast<double>(get_damage_min(registry, equipment.left_hand));
+				total_min *= 0.75;
+			}
+			return static_cast<int>(total_min);
+		}
+		return 0;
+	}
+
+	int get_damage_max(const entt::registry& registry, const entt::entity entity)
+	{
+		if (registry.all_of<Damage>(entity))
+			return registry.get<Damage>(entity).max;
+		if (registry.all_of<Equipment>(entity))
+		{
+			const auto& equipment = registry.get<Equipment>(entity);
+			double total_max = static_cast<double>(get_damage_max(registry, equipment.right_hand));
+			if (EquipmentSystem::is_dual_wielding(registry, entity))
+			{
+				total_max += static_cast<double>(get_damage_max(registry, equipment.left_hand));
+				total_max *= 0.75;
+			}
+			return static_cast<int>(total_max);
+		}
+		return 0;
+	}
+
+	int get_armor_penetration(const entt::registry& registry, const entt::entity entity)
+	{
+		if (registry.all_of<ArmorPenetration>(entity))
+			return registry.get<ArmorPenetration>(entity).armor_penetration;
+		return 0;
+	}
+
+	int get_armor(const entt::registry& registry, const entt::entity entity)
+	{
+		if (registry.all_of<Armor>(entity))
+			return registry.get<Armor>(entity).armor;
+		if (registry.all_of<Equipment, Attributes>(entity))
+		{
+			const auto& equipment = registry.get<Equipment>(entity);
+			return get_strength(registry, entity) * get_armor(registry, equipment.armor);
+		}
+		return 0;
+	}
+
+	int get_accuracy(const entt::registry& registry, const entt::entity entity)
+	{
+		if (registry.all_of<Accuracy>(entity))
+			return registry.get<Accuracy>(entity).accuracy;
+		return 0;
+	}
+
+	int get_evasion(const entt::registry& registry, const entt::entity entity)
+	{
+		if (registry.all_of<Evasion>(entity))
+			return registry.get<Evasion>(entity).evasion;
+		return 0;
+	}
+
+	int get_barrier(const entt::registry& registry, const entt::entity entity)
+	{
+		if (registry.all_of<Barrier>(entity))
+			return registry.get<Barrier>(entity).barrier;
+		return 0;
+	}
+
+	int get_power(const entt::registry& registry, const entt::entity entity)
+	{
+		if (registry.all_of<Power>(entity))
+			return registry.get<Power>(entity).power;
+		return 0;
+	}
+
+	double get_crit_chance(const entt::registry& registry, const entt::entity entity)
+	{
+		if (registry.all_of<CritChance>(entity))
+			return registry.get<CritChance>(entity).crit_chance;
+		return 0;
+	}
+
+	double get_crit_multiplier(const entt::registry& registry, const entt::entity entity)
+	{
+		if (registry.all_of<CritMultiplier>(entity))
+			return registry.get<CritMultiplier>(entity).crit_multiplier;
+		return 0;
+	}
+
+	int get_strength(const entt::registry& registry, const entt::entity entity)
+	{
+		if (registry.all_of<Attributes>(entity))
+			return registry.get<Attributes>(entity).strength;
+		return 0;
+	}
+	int get_dexterity(const entt::registry& registry, const entt::entity entity)
+	{
+		if (registry.all_of<Attributes>(entity))
+			return registry.get<Attributes>(entity).dexterity;
+		return 0;
+	}
+	int get_intelligence(const entt::registry& registry, const entt::entity entity)
+	{
+		if (registry.all_of<Attributes>(entity))
+			return registry.get<Attributes>(entity).intelligence;
+		return 0;
+	}
+
+	int get_health_max(const entt::registry& registry, const entt::entity entity)
+	{
+		return get_strength(registry, entity);
+	}
+	int get_fatigue_max(const entt::registry& registry, const entt::entity entity)
+	{
+		return get_dexterity(registry, entity);
+	}
+	int get_mana_max(const entt::registry& registry, const entt::entity entity)
+	{
+		return get_intelligence(registry, entity);
+	}
+
+	double get_weight(const entt::registry& registry, const entt::entity entity)
+	{
+		if (registry.all_of<Weight>(entity))
+			return registry.get<Weight>(entity).weight;
+		return 0;
+	}
+
 	std::map<std::string, std::string> get_info(const entt::registry& registry, const entt::entity entity)
 	{
 		std::map<std::string, std::string> info;
-
-		std::string proficiency = get_proficiency_requirement(registry, entity);
-		if (!proficiency.empty())
-			info["Proficiency"] = proficiency;
-
-		Damage damage = get_damage(registry, entity);
-		if (!damage.type.empty())
+		if (registry.all_of<Faction>(entity))
+			info["faction"] = registry.get<Faction>(entity).faction;
+		if (registry.all_of<Level>(entity))
+			info["level"] = std::to_string(registry.get<Level>(entity).level);
+		info["category"] = registry.get<Category>(entity).category;
+		info["subcategory"] = registry.get<Subcategory>(entity).subcategory;
+		if (registry.any_of<Damage, Equipment>(entity))
+			info["damage"] = std::to_string(get_damage_min(registry, entity)) + " - " + std::to_string(get_damage_max(registry, entity));
+		info["weight"] = std::to_string(get_weight(registry, entity));
+		if (registry.any_of<ArmorPenetration, Equipment>(entity))
+			info["armor penetration"] = std::to_string(get_armor_penetration(registry, entity));
+		if (registry.any_of<Armor, Equipment>(entity))
+			info["armor"] = std::to_string(get_armor(registry, entity));
+		if (registry.any_of<Accuracy, Equipment>(entity))
+			info["accuracy"] = std::to_string(get_accuracy(registry, entity));
+		if (registry.any_of<Evasion, Equipment>(entity))
+			info["evasion"] = std::to_string(get_evasion(registry, entity));
+		if (registry.any_of<Barrier, Equipment>(entity))
+			info["barrier"] = std::to_string(get_barrier(registry, entity));
+		if (registry.any_of<Power, Equipment>(entity))
+			info["power"] = std::to_string(get_power(registry, entity));
+		if (registry.any_of<CritChance, Equipment>(entity))
+			info["crit chance"] = std::to_string(get_crit_chance(registry, entity));
+		if (registry.any_of<CritMultiplier, Equipment>(entity))
+			info["crit multiplier"] = std::to_string(get_crit_multiplier(registry, entity));
+		if (registry.all_of<Attributes>(entity))
 		{
-			std::string dmg_str = damage.dice.get_string();
-			Dice versatile_dice = get_versatile_dice(registry, entity);
-			if (!versatile_dice.get_string().empty())
-				dmg_str += "/" + versatile_dice.get_string();
-			dmg_str += " " + damage.type;
-			info["Damage"] = dmg_str;
+			info["strength"] = std::to_string(get_strength(registry, entity));
+			info["dexterity"] = std::to_string(get_dexterity(registry, entity));
+			info["intelligence"] = std::to_string(get_intelligence(registry, entity));
+			info["health"] = std::to_string(registry.get<Resources>(entity).health) + " / " + std::to_string(get_health_max(registry, entity));
+			info["fatigue"] = std::to_string(registry.get<Resources>(entity).fatigue) + " / " + std::to_string(get_fatigue_max(registry, entity));
+			info["mana"] = std::to_string(registry.get<Resources>(entity).mana) + " / " + std::to_string(get_mana_max(registry, entity));
 		}
-
-		if (registry.all_of<Stats>(entity))
-		{
-			const auto& stats = registry.get<Stats>(entity);
-			info["Level"] = std::to_string(stats.level);
-			for (const auto& [attribute, value] : stats.attributes)
-				info[attribute] = std::to_string(value);
-			info["Hitpoints"] = std::to_string(stats.hp) + "/" + std::to_string(stats.max_hp);
-			info["AC"] = std::to_string(get_armor_class(registry, entity));
-		}
-
-		size_t armor_class = get_armor_class(registry, entity);
-		if (armor_class > 0)
-			info["AC"] = std::to_string(armor_class);
-
-		std::vector<std::string> properties = get_properties(registry, entity);
-		std::string propstring("");
-		for (size_t i = 0; i < properties.size(); ++i)
-			propstring += properties[i] + (i < properties.size() - 1 ? " | " : "");
-		if (!propstring.empty())
-			info["Properties"] = propstring;
-
-		double normal_range = get_normal_range(registry, entity);
-		double long_range = get_long_range(registry, entity);
-		if (normal_range > MELEE_RANGE || long_range > MELEE_RANGE)
-			info["Range"] = std::format("{:.1f}", normal_range) + "/" + std::format("{:.1f}", long_range) + " cells";
-		else if (normal_range == MELEE_RANGE)
-			info["Range"] = "Melee";
-
-		double weight = get_weight(registry, entity);
-		if (weight > 0.0)
-			info["Weight"] = std::format("{:.1f}", weight) + " lb";
-
-		size_t value = get_value(registry, entity);
-		if (value > 0)
-			info["Value"] = std::to_string(value) + " gp";
-
 		return info;
 	}
 
@@ -246,7 +251,8 @@ namespace ECS
 	bool is_equippable(const entt::registry& registry, const entt::entity entity)
 	{
 		const std::vector<std::string> equippable = { "weapons", "armor" };
-		return std::find(equippable.begin(), equippable.end(), get_subcategory(registry, entity)) != equippable.end();
+		const auto& subcategory = registry.get<Subcategory>(entity).subcategory;
+		return std::find(equippable.begin(), equippable.end(), subcategory) != equippable.end();
 	}
 
 	bool can_see(const entt::registry& registry, const entt::entity seer, const entt::entity target)
@@ -264,5 +270,27 @@ namespace ECS
 		if (!registry.all_of<Inventory>(entity))
 			return {};
 		return registry.get<Inventory>(entity).inventory;
+	}
+
+	size_t get_level(const entt::registry& registry, const entt::entity entity)
+	{
+		if (!registry.all_of<Level>(entity))
+			return 0;
+		const auto& level = registry.get<Level>(entity).level;
+		return level;
+	}
+
+	bool are_enemies(const entt::registry& registry, const entt::entity a, const entt::entity b)
+	{
+		if (!registry.all_of<Faction>(a) || !registry.all_of<Faction>(b))
+			return false;
+		return registry.get<Faction>(a).faction != registry.get<Faction>(b).faction;
+	}
+
+	bool is_dead(const entt::registry& registry, const entt::entity entity)
+	{
+		if (registry.all_of<Resources>(entity))
+			return registry.get<Resources>(entity).health <= 0;
+		return false;
 	}
 };
