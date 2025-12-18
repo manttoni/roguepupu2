@@ -14,6 +14,7 @@
 #include "systems/DamageSystem.hpp"                       // for parse_type
 #include "ECS.hpp"
 #include "systems/StatsSystem.hpp"
+#include "systems/EquipmentSystem.hpp"
 class Cell;
 
 #define CELL_SIZE 5
@@ -272,6 +273,14 @@ entt::entity EntityFactory::create_entity(entt::registry& registry, const std::s
 				ECS::get_health_max(registry, entity),
 				ECS::get_fatigue_max(registry, entity),
 				ECS::get_mana_max(registry, entity));
+	}
+	if (registry.all_of<Inventory>(entity))
+	{
+		for (const auto item : registry.get<Inventory>(entity).inventory)
+		{
+			if (ECS::is_equippable(registry, item))
+				EquipmentSystem::equip(registry, entity, item);
+		}
 	}
 	return entity;
 }

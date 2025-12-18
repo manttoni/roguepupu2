@@ -11,6 +11,7 @@
 #include "Utils.hpp"       // for contains, remove_element, error
 #include "World.hpp"       // for World
 #include "entt.hpp"        // for vector, size_t, map, ceil, basic_sigh_mixin
+#include "GameLogger.hpp"
 
 Cave::Cave() :
 	height(0),
@@ -330,6 +331,6 @@ void Cave::draw()
 		UI::instance().print_wide(y, x, glyph);
 		cell.set_seen(true);
 	}
-	UI::instance().update();
+	//UI::instance().update();
 }
 

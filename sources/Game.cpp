@@ -18,7 +18,10 @@
 Game::Game() :
 	level(1),
 	player(EntityFactory::instance().create_entity(world.get_registry(), "rabdin", &get_cave().get_source()))
-{}
+{
+	get_registry().ctx().emplace<GameLogger>(log);
+	get_registry().ctx().get<GameLogger>().log("Game started");
+}
 
 void Game::check_change_level()
 {
@@ -46,8 +49,9 @@ void Game::check_change_level()
 void Game::loop()
 {
 	get_cave().draw();
+	UI::instance().update();
 
-	int key;
+	int key = 0;
 	while ((key = UI::instance().input(500)) != KEY_ESCAPE)
 	{
 		if (key == KEY_LEFT_CLICK)
@@ -67,29 +71,8 @@ void Game::loop()
 			ContextSystem::show_entity_details(get_registry(), player);
 
 		get_cave().draw();
-		UI::instance().increase_loop_number();
+		UI::instance().increase_loop_number(); // should do this with registry.ctx() instead
+		UI::instance().print_log(get_registry().ctx().get<GameLogger>().last(20));
 	}
 }
 
-void Game::end()
-{
-	PANEL* panel = UI::instance().get_panel(UI::Panel::GAME);
-	WINDOW* win = panel_window(panel);
-	wclear(win);
-	UI::instance().update();
-	del_panel(panel);
-	delwin(win);
-}
-
-// Called by main menu
-void new_game()
-{
-	UI::instance().set_mode(UI::Mode::GAME);
-	PANEL* panel = UI::instance().get_panel(UI::Panel::GAME);
-	UI::instance().set_current_panel(panel, true);
-
-	Game game;
-	game.loop();
-	game.end();
-	UI::instance().set_mode(UI::Mode::MAIN);
-}

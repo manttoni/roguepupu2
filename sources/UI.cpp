@@ -132,6 +132,23 @@ void UI::reset_colors()
 	initialized_color_pairs.clear();
 }
 
+void UI::print_log(const std::vector<std::string>& messages)
+{
+	ColorPair log_pair = ColorPair(Color(500, 500, 500), Color{});
+	enable_color_pair(log_pair);
+	const size_t n = messages.size();
+	const size_t height = Screen::height();
+	PANEL* game_panel = panels[Panel::GAME];
+	WINDOW* game_window = panel_window(game_panel);
+	for (size_t i = 0; i < n; ++i)
+	{
+		wmove(game_window, height - 1 - n + i, 0);
+		print(messages[i]);
+	}
+	update();
+	disable_color_pair(log_pair);
+}
+
 std::string UI::dialog(const std::vector<std::string>& text, const std::vector<std::string>& options, const Screen::Coord& position, const size_t initial_selection)
 {
 	// Initialize elements for dialog box
@@ -154,7 +171,6 @@ std::string UI::dialog(const std::vector<std::string>& text, const std::vector<s
 
 	// Will return an option as a string it was constructed with
 	return menu.loop();
-
 }
 std::string UI::dialog(const std::string& text, const std::vector<std::string>& options, const Screen::Coord& position, const size_t initial_selection)
 {
@@ -221,23 +237,6 @@ int UI::input(int delay)
 
 	// make getch() blocking (default)
 	timeout(-1);
-
-	// Can press F1 anywhere to toggle debug
-	if (key == KEY_F(1))
-		UI::instance().toggle_show_debug();
-
-	// update debug window
-	if (show_debug == true)
-	{
-		auto& debug = menus.at("debug");
-		debug.set_value("Keypress", key);
-		debug.set_value("Colors", initialized_colors.size());
-		debug.set_value("Color pairs", initialized_color_pairs.size());
-		debug.set_value("Mouse y", mouse_position.y);
-		debug.set_value("Mouse x", mouse_position.x);
-		set_current_panel(debug.get_panel(), true);
-		debug.loop();
-	}
 
 	return key;
 }

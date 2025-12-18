@@ -1,4 +1,8 @@
 #include "systems/DamageSystem.hpp"
+#include "GameLogger.hpp"
+#include "entt.hpp"
+#include "Components.hpp"
+#include "ECS.hpp"
 
 namespace DamageSystem
 {
@@ -6,5 +10,8 @@ namespace DamageSystem
 	{
 		auto& resources = registry.get<Resources>(entity);
 		resources.health -= damage;
+		registry.ctx().get<GameLogger>().log(ECS::get_colored_name(registry, entity) + " takes {500,0,0}" + std::to_string(damage) + "{reset} damage");
+		if (resources.health <= 0)
+			registry.ctx().get<GameLogger>().log(ECS::get_colored_name(registry, entity) + " dies");
 	}
 };

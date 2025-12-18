@@ -6,95 +6,119 @@
 #include "systems/EquipmentSystem.hpp"
 #include "systems/StatsSystem.hpp"
 #include "ECS.hpp"
+#include "GameLogger.hpp"
 
 namespace CombatSystem
 {
-	int get_fatigue_factor(const entt::registry& registry, const entt::entity entity)
+	double get_fatigue_factor(const entt::registry& registry, const entt::entity entity)
 	{
-		const int current = registry.get<Resources>(entity).fatigue;
-		const int max = ECS::get_fatigue_max(registry, entity);
-		return std::max(1, current) / std::max(1, max);
+		const double current = static_cast<double>(registry.get<Resources>(entity).fatigue);
+		const double max = static_cast<double>(ECS::get_fatigue_max(registry, entity));
+		return Random::randreal(1.0, current) / Random::randreal(1, max);
 	}
-	int get_accuracy(const entt::registry& registry, const entt::entity attacker, const entt::entity weapon)
+	double get_accuracy(const entt::registry& registry, const entt::entity attacker, const entt::entity weapon)
 	{
-		const int dexterity = static_cast<int>(registry.get<Attributes>(attacker).dexterity);
-		const int weapon_accuracy = static_cast<int>(ECS::get_accuracy(registry, weapon));
-		const int fatigue_factor = get_fatigue_factor(registry, attacker);
-		const int result = dexterity * std::max(1, weapon_accuracy) * fatigue_factor;
-		return static_cast<int>(result);
+		const double dexterity = static_cast<double>(registry.get<Attributes>(attacker).dexterity);
+		const double weapon_accuracy = static_cast<double>(ECS::get_accuracy(registry, weapon));
+		const double fatigue_factor = get_fatigue_factor(registry, attacker);
+		const double result = dexterity * std::max(1.0, weapon_accuracy) * fatigue_factor;
+		return static_cast<double>(result);
 	}
-	int get_equipment_evasion(const entt::registry& registry, const entt::entity defender)
+	double get_equipment_evasion(const entt::registry& registry, const entt::entity defender)
 	{
 		const auto& equipment = registry.get<Equipment>(defender);
-		const int body_armor = ECS::get_evasion(registry, equipment.armor);
+		const double body_armor = ECS::get_evasion(registry, equipment.armor);
 		return body_armor;
 	}
-	int get_equipment_barrier(const entt::registry& registry, const entt::entity defender)
+	double get_equipment_barrier(const entt::registry& registry, const entt::entity defender)
 	{
 		const auto& equipment = registry.get<Equipment>(defender);
-		const int body_armor = ECS::get_barrier(registry, equipment.armor);
+		const double body_armor = ECS::get_barrier(registry, equipment.armor);
 		return body_armor;
 	}
 
-	int get_evasion(const entt::registry& registry, const entt::entity defender)
+	double get_evasion(const entt::registry& registry, const entt::entity defender)
 	{
-		const int dexterity = static_cast<int>(registry.get<Attributes>(defender).dexterity);
-		const int equipment_evasion = static_cast<int>(get_equipment_evasion(registry, defender));
-		const int fatigue_factor = get_fatigue_factor(registry, defender);
-		const int result = std::max(1, dexterity) * std::max(1, equipment_evasion) * fatigue_factor;
-		return static_cast<int>(result);
+		const double dexterity = static_cast<double>(registry.get<Attributes>(defender).dexterity);
+		const double equipment_evasion = static_cast<double>(get_equipment_evasion(registry, defender));
+		const double fatigue_factor = get_fatigue_factor(registry, defender);
+		const double result = std::max(1.0, dexterity) * std::max(1.0, equipment_evasion) * fatigue_factor;
+		return static_cast<double>(result);
 	}
 
-	int get_hit_quality(const entt::registry& registry, const entt::entity attacker, const entt::entity weapon, const entt::entity defender)
+	double get_hit_quality(const entt::registry& registry, const entt::entity attacker, const entt::entity weapon, const entt::entity defender)
 	{
-		const int accuracy = get_accuracy(registry, attacker, weapon);
-		const int evasion = get_evasion(registry, defender);
-		return accuracy / evasion;
+		const double accuracy = get_accuracy(registry, attacker, weapon);
+		const double evasion = get_evasion(registry, defender);
+		return Random::randreal(1, accuracy) / Random::randreal(1, evasion);
 	}
 
-	int get_base_damage(const entt::registry& registry, const entt::entity attacker, const entt::entity weapon)
+	double get_base_damage(const entt::registry& registry, const entt::entity attacker, const entt::entity weapon)
 	{
-		const int strength = static_cast<int>(registry.get<Attributes>(attacker).strength);
-		const int weapon_damage_min = ECS::get_damage_min(registry, weapon);
-		const int weapon_damage_max = ECS::get_damage_max(registry, weapon);
-		const int rand_damage = static_cast<int>(Random::randint(weapon_damage_min, weapon_damage_max));
-		return strength * rand_damage;
+		const double strength = static_cast<double>(registry.get<Attributes>(attacker).strength);
+		const double weapon_damage_min = ECS::get_damage_min(registry, weapon);
+		const double weapon_damage_max = ECS::get_damage_max(registry, weapon);
+		const double rand_damage = Random::randreal(weapon_damage_min, weapon_damage_max);
+		const double dual_wield_multiplier = EquipmentSystem::is_dual_wielding(registry, attacker) ? 0.75 : 1.0;
+		return strength * rand_damage * dual_wield_multiplier;
 	}
 
-	int get_barrier(const entt::registry& registry, const entt::entity defender)
+	double get_barrier(const entt::registry& registry, const entt::entity defender)
 	{
-		const int intelligence = static_cast<int>(registry.get<Attributes>(defender).intelligence);
-		const int equipment_barrier = static_cast<int>(get_equipment_barrier(registry, defender));
-		const int result = intelligence * std::max(1, equipment_barrier);
+		const double intelligence = static_cast<double>(registry.get<Attributes>(defender).intelligence);
+		const double equipment_barrier = static_cast<double>(get_equipment_barrier(registry, defender));
+		const double result = intelligence * std::max(1.0, equipment_barrier);
 		return result;
 	}
 
-	int get_power(const entt::registry& registry, const entt::entity attacker, const entt::entity weapon)
+	double get_power(const entt::registry& registry, const entt::entity attacker, const entt::entity weapon)
 	{
-		const int intelligence = registry.get<Attributes>(attacker).intelligence;
-		const int weapon_power = ECS::get_power(registry, weapon);
-		return intelligence * std::max(1, weapon_power);
+		const double intelligence = registry.get<Attributes>(attacker).intelligence;
+		const double weapon_power = ECS::get_power(registry, weapon);
+		return intelligence * std::max(1.0, weapon_power);
 	}
 
-	int get_armor(const entt::registry& registry, const entt::entity defender)
+	double get_equipment_armor(const entt::registry& registry, const entt::entity defender)
 	{
 		const auto& equipment = registry.get<Equipment>(defender);
-		const int body_armor = ECS::get_armor(registry, equipment.armor);
+		const double body_armor = ECS::get_armor(registry, equipment.armor);
 		return body_armor;
+	}
+
+	double get_armor(const entt::registry& registry, const entt::entity defender)
+	{
+		const double strength = registry.get<Attributes>(defender).strength;
+		const double equipment_armor = get_equipment_armor(registry, defender);
+		return strength * equipment_armor;
 	}
 
 	void weapon_attack(entt::registry& registry, const entt::entity attacker, const entt::entity weapon, const entt::entity defender)
 	{
-		const int base_damage = get_base_damage(registry, attacker, weapon);
-		const int hit_quality = get_hit_quality(registry, attacker, weapon, defender);
-		const int barrier = get_barrier(registry, defender);
-		const int power = get_power(registry, attacker, weapon);
-		const int armor = get_armor(registry, defender);
-		const int armor_penetration = ECS::get_armor_penetration(registry, weapon);
-		const int barrier_efficiency = std::max(0, barrier - power);
-		const int armor_deflection = std::max(0, armor - armor_penetration);
-		const int damage_taken = (base_damage - barrier_efficiency) * hit_quality - armor_deflection;
-		DamageSystem::take_damage(registry, defender, damage_taken);
+		if (registry.get<Resources>(defender).health <= 0)
+			return;
+		registry.ctx().get<GameLogger>().log(
+				ECS::get_colored_name(registry, attacker) + " attacks " +
+				ECS::get_colored_name(registry, defender) + " with " +
+				ECS::get_colored_name(registry, weapon));
+
+		const double hit_quality = std::min(1.0, get_hit_quality(registry, attacker, weapon, defender));
+		if (hit_quality < 0.5)
+		{
+			registry.ctx().get<GameLogger>().log("The attack misses");
+			return;
+		}
+		const double base_damage = get_base_damage(registry, attacker, weapon);
+		const double barrier = get_barrier(registry, defender);
+		const double power = get_power(registry, attacker, weapon);
+		const double armor = get_armor(registry, defender);
+		const double armor_penetration = ECS::get_armor_penetration(registry, weapon);
+		const double barrier_efficiency = std::max(0.0, barrier - power);
+		const double armor_deflection = std::max(0.0, armor - armor_penetration);
+
+		const double damage_taken = (base_damage - barrier_efficiency) * hit_quality - armor_deflection;
+
+		const int final_damage = std::max(0, static_cast<int>(std::round(damage_taken)));
+		DamageSystem::take_damage(registry, defender, final_damage);
 	}
 
 	void attack(entt::registry& registry, const entt::entity attacker, const entt::entity defender)

@@ -279,19 +279,12 @@ void World::generate_cave(const size_t level)
 	caves.emplace_back(level, height, width, seed);
 	caves.back().set_world(this);
 
-	Log::log("Forming rock");
 	form_rock();
-	Log::log("Setting source and sink");
 	set_source_sink();
-	Log::log("Forming tunnels");
 	form_tunnels();
-	Log::log("Spawning mushrooms");
 	spawn_mushrooms();
-	Log::log("Spawning chests");
 	spawn_chests();
-	Log::log("Spawning creatures");
 	spawn_creatures();
-	Log::log("Setting rock colors");
 	set_rock_colors();
 
 	caves.back().apply_lights();
