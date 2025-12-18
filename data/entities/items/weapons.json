@@ -3,11 +3,10 @@
 		"level": 1,
 		"weight": 0.3,
 		"damage": {
-			"amount": "1-2",
+			"amount": "1-3",
 			"type": "physical"
 		},
-		"accuracy": 2,
-		"armor_penetration": 1
+		"accuracy": 2
 	},
 
 	"rusted mace": {
@@ -16,7 +15,16 @@
 		"damage": {
 			"amount": "3-4",
 			"type": "physical"
+		}
+	},
+
+	"faded scepter": {
+		"level": 1,
+		"weight": 3,
+		"damage": {
+			"amount": "1-2",
+			"type": "physical"
 		},
-		"accuracy": 1
+		"power": 3
 	}
 }

@@ -60,8 +60,8 @@ std::vector<size_t> Cave::find_path(const size_t start, const size_t end)
 {
 	if (start >= get_size() || end >= get_size())
 		Log::error("Cave::find_path: invalid arguments");
-	if (cells[start].blocks_movement() || cells[end].blocks_movement())
-		return {};
+	//if (cells[start].blocks_movement() || cells[end].blocks_movement())
+	//	return {}; If this can stay like this, would solve some problems
 	std::vector<size_t> open_set = { start };
 	std::map<size_t, size_t> came_from;
 	std::map<size_t, double> g_score;

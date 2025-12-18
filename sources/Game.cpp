@@ -45,33 +45,45 @@ void Game::check_change_level()
 	level += d;
 }
 
+void Game::handle_key(const int key)
+{
+	if (key == KEY_LEFT_CLICK)
+	{
+		Cell* clicked_cell = UI::instance().get_clicked_cell(get_cave());
+		auto entities = clicked_cell->get_entities();
+		if (entities.size() == 1)
+			ContextSystem::show_entity_details(get_registry(), entities[0]);
+		else
+			ContextSystem::show_entities_list(get_registry(), clicked_cell);
+	}
+	else if (MovementSystem::move(get_registry(), player, key) > 0)
+		check_change_level();
+	else if (key == 'i')
+		ContextSystem::show_entities_list(get_registry(), player);
+	else if (key == 'c')
+		ContextSystem::show_entity_details(get_registry(), player);
+}
+
 void Game::loop()
 {
 	get_cave().draw();
+	UI::instance().print_log(get_registry().ctx().get<GameLogger>().last(Screen::height() / 3));
 	UI::instance().update();
 
 	int key = 0;
 	while ((key = UI::instance().input(500)) != KEY_ESCAPE)
 	{
-		if (key == KEY_LEFT_CLICK)
-		{
-			Cell* clicked_cell = UI::instance().get_clicked_cell(get_cave());
-			auto entities = clicked_cell->get_entities();
-			if (entities.size() == 1)
-				ContextSystem::show_entity_details(get_registry(), entities[0]);
-			else
-				ContextSystem::show_entities_list(get_registry(), clicked_cell);
-		}
-		if (MovementSystem::move(get_registry(), player, key) > 0)
-			check_change_level();
-		if (key == 'i')
-			ContextSystem::show_entities_list(get_registry(), player);
-		if (key == 'c')
-			ContextSystem::show_entity_details(get_registry(), player);
+		handle_key(key);
 
 		get_cave().draw();
 		UI::instance().increase_loop_number(); // should do this with registry.ctx() instead
 		UI::instance().print_log(get_registry().ctx().get<GameLogger>().last(Screen::height() / 3));
+
+		// if player has used up their action(s), give turn to environment
+		// player action is for sure at least moving and attacking and equipping or unequipping
+		// environment is all enemies, allies, fire, liquids, whatever
+		if (get_registry().get<Actions>(player).actions > 0)
+			continue;
 	}
 	UI::instance().print_log(get_registry().ctx().get<GameLogger>().last(Screen::height()));
 }

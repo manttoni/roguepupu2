@@ -23,6 +23,8 @@ class Game
 		void set_player(const entt::entity player) { this->player = player; }
 		entt::entity get_player() const { return player; }
 		Game();
+		void handle_key(const int key);
+		void environment_turn();
 		void loop();
 		void end();
 		void check_change_level();

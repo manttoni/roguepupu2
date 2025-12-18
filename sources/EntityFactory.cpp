@@ -233,6 +233,11 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 		{
 			reg.template emplace<Level>(e, data.get<int>());
 		}
+	},
+	{ "actions", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			reg.template emplace<Actions>(e, data.get<int>());
+		}
 	}
 };
 
@@ -247,6 +252,8 @@ void EntityFactory::add_entities(nlohmann::json& json, const std::string& catego
 			data["subcategory"] = subcategory;
 		if (!data.contains("name"))
 			data["name"] = name;
+		if (!data.contains("actions"))
+			data["actions"] = 1;
 		LUT[name] = data;
 	}
 }

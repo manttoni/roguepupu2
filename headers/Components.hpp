@@ -55,6 +55,10 @@ struct Resources
 {
 	int health, fatigue, mana;
 };
+struct Actions
+{
+	int actions;
+};
 
 struct Equipment
 {

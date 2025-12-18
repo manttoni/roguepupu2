@@ -1,5 +1,5 @@
 {
-	"crazy goblin": {
+	"goblin": {
 		"level": 1,
 		"fgcolor": [150, 300, 75],
 		"inventory": [
@@ -7,12 +7,6 @@
 				"filter": {
 					"level": 1,
 					"subcategory": "weapons"
-				}
-			},
-			{
-				"filter": {
-					"level": 1,
-					"subcategory": "armor"
 				}
 			}
 		],
