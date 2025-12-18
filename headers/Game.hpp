@@ -1,11 +1,9 @@
 #pragma once
 
-#include <ncurses.h>
-#include <panel.h>
-#include "World.hpp"
-#include "Utils.hpp"
-#include "entt.hpp"
-#include "GameLogger.hpp"
+#include "GameLogger.hpp"  // for GameLogger
+#include "World.hpp"       // for World
+#include "entt.hpp"        // for entity, size_t, registry
+class Cave;
 
 class Game
 {
@@ -25,6 +23,7 @@ class Game
 		Game();
 		void handle_key(const int key);
 		void environment_turn();
+		void reset_actions();
 		void loop();
 		void end();
 		void check_change_level();

@@ -1,13 +1,15 @@
 #pragma once
-#include <utility>
-#include <algorithm>
-#include <string>
-#include <limits>
-#include <sstream>
-#include <sstream>
-#include <any>
-#include "MenuElt.hpp"
-#include "Utils.hpp"
+#include <stddef.h>     // for size_t
+#include <any>          // for any, any_cast
+#include <functional>   // for function
+#include <iterator>     // for pair
+#include <limits>       // for numeric_limits
+#include <sstream>      // for basic_ostream, operator<<, basic_stringstream
+#include <string>       // for char_traits, allocator, basic_string, operator<<
+#include <typeinfo>     // for type_info
+#include <utility>      // for pair
+#include "MenuElt.hpp"  // for MenuElt
+#include "Utils.hpp"    // for error
 
 template <typename T>
 class MenuNum : public MenuElt

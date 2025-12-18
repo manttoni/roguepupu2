@@ -1,4 +1,4 @@
-#include <ncurses.h>  // for init_color
+#include <curses.h>   // for init_color
 #include <algorithm>  // for min, max
 #include <string>     // for operator+, allocator, char_traits, to_string
 #include "Color.hpp"  // for Color

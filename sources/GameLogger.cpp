@@ -1,7 +1,7 @@
-#include <string>
-#include <vector>
-#include "GameLogger.hpp"
-#include "UI.hpp"
+#include <string>          // for basic_string, string
+#include <vector>          // for vector
+#include "GameLogger.hpp"  // for GameLogger
+#include "entt.hpp"        // for min, size_t
 
 std::vector<std::string> GameLogger::last(size_t n) const
 {

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <string>
 #include "entt.hpp"
 
 namespace InventorySystem

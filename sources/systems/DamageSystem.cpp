@@ -4,6 +4,7 @@
 #include "entt.hpp"
 #include "Components.hpp"
 #include "ECS.hpp"
+#include "Cell.hpp"
 
 namespace DamageSystem
 {

@@ -1,7 +1,9 @@
 #pragma once
-#include <string>
-#include <functional>
-#include "MenuElt.hpp"
+#include <stddef.h>     // for size_t
+#include <any>          // for any
+#include <functional>   // for function, operator!=
+#include <string>       // for string
+#include "MenuElt.hpp"  // for MenuElt
 
 class MenuBtn : public MenuElt
 {

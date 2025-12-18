@@ -64,6 +64,16 @@ void Game::handle_key(const int key)
 		ContextSystem::show_entity_details(get_registry(), player);
 }
 
+void Game::reset_actions()
+{
+	auto actors = get_registry().view<Actions>();
+	for (const auto& actor : actors)
+	{
+		auto& actions = get_registry().get<Actions>(actor);
+		actions.used = 0;
+	}
+}
+
 void Game::loop()
 {
 	get_cave().draw();
@@ -73,17 +83,16 @@ void Game::loop()
 	int key = 0;
 	while ((key = UI::instance().input(500)) != KEY_ESCAPE)
 	{
+		reset_actions();
 		handle_key(key);
 
 		get_cave().draw();
 		UI::instance().increase_loop_number(); // should do this with registry.ctx() instead
 		UI::instance().print_log(get_registry().ctx().get<GameLogger>().last(Screen::height() / 3));
 
-		// if player has used up their action(s), give turn to environment
-		// player action is for sure at least moving and attacking and equipping or unequipping
-		// environment is all enemies, allies, fire, liquids, whatever
-		if (get_registry().get<Actions>(player).actions > 0)
+		if (ECS::has_actions_left(get_registry(), player))
 			continue;
+		get_registry().ctx().get<GameLogger>().log("Environment turn");
 	}
 	UI::instance().print_log(get_registry().ctx().get<GameLogger>().last(Screen::height()));
 }

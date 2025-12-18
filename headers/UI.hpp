@@ -1,17 +1,17 @@
 #pragma once
-#include <string>
-#include <ncurses.h>
-#include <panel.h>
-#include <csignal>
-#include <map>
-#include <memory>
-#include <any>
-#include <utility>
-#include "ColorPair.hpp"
-#include "Color.hpp"
-#include "Cell.hpp"
-#include "Menu.hpp"
-
+#include <curses.h>       // for chtype, doupdate, endwin, WINDOW, wattroff
+#include <panel.h>        // for PANEL, panel_window, top_panel, update_panels
+#include <cstdlib>        // for size_t, exit
+#include <map>            // for map
+#include <string>         // for string, allocator
+#include <vector>         // for vector
+#include "Color.hpp"      // for Color
+#include "ColorPair.hpp"  // for ColorPair
+#include "Menu.hpp"       // for Menu
+#include "Utils.hpp"      // for middle, Coord
+class Cave;
+class Cell;
+class ColorPair;
 #define KEY_ESCAPE 27
 #define KEY_LEFT_CLICK 420
 #define KEY_RIGHT_CLICK 421

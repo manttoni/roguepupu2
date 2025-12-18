@@ -1,10 +1,9 @@
 #pragma once
 
-#include <optional>
-#include <string>
-#include "Cell.hpp"
-#include "Color.hpp"
-#include "entt.hpp"
+#include <string>     // for basic_string, string
+#include "Color.hpp"  // for Color
+#include "entt.hpp"   // for null, null_t, entity, vector
+class Cell;
 
 struct Solid {};
 struct Opaque {};
@@ -57,7 +56,7 @@ struct Resources
 };
 struct Actions
 {
-	int actions;
+	int actions, used;
 };
 
 struct Equipment

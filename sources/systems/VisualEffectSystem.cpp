@@ -3,6 +3,7 @@
 #include "systems/VisualEffectSystem.hpp"
 #include "Components.hpp"
 #include "ECS.hpp"
+#include "Cell.hpp"
 
 namespace VisualEffectSystem
 {

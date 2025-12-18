@@ -1,12 +1,14 @@
+#include <curses.h>        // for WINDOW, getmaxyx
+#include <panel.h>         // for panel_window, PANEL
 #include "Cave.hpp"        // for Cave
 #include "Cell.hpp"        // for Cell
 #include "Color.hpp"       // for Color
 #include "ColorPair.hpp"   // for ColorPair
-#include "Components.hpp"  // for Renderable, Position, Opaque (ptr only)
+#include "Components.hpp"  // for Position, Vision, Solid (ptr only), Opaque...
+#include "ECS.hpp"         // for can_see, get_color, get_glyph, get_player
 #include "UI.hpp"          // for UI
 #include "World.hpp"       // for World
-#include "entt.hpp"        // for vector, basic_sigh_mixin, entity, map, size_t
-#include "ECS.hpp"
+#include "entt.hpp"        // for vector, basic_sigh_mixin, size_t, entity
 
 Cell::Cell() : idx(SIZE_MAX), type(Type::NONE), density(0) {}
 

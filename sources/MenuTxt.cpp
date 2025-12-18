@@ -1,3 +1,8 @@
+#include <stddef.h>     // for size_t
+#include <any>          // for any
+#include <functional>   // for function
+#include <string>       // for allocator, basic_string, string
+#include "MenuElt.hpp"  // for MenuElt
 #include "MenuTxt.hpp"
 
 size_t MenuTxt::get_size() const

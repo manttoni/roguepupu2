@@ -49,6 +49,8 @@ namespace EquipmentSystem
 			equip_weapon(registry, entity, item);
 		else if (subcategory == "armor")
 			equip_armor(registry, entity, item);
+		else
+			return;
 	}
 
 	void equip_weapon(entt::registry& registry, const entt::entity entity, const entt::entity item)

@@ -1,20 +1,17 @@
 #pragma once
 
-#include <cmath>
-#include <stdexcept>
-#include <cassert>
-#include <vector>
-#include <map>
-#include <algorithm>
-#include <random>
-#include <fstream>
-#include <stdexcept>
-#include <iomanip>
-#include <sstream>
-#include <ctime>
-#include <chrono>
-#include <ncurses.h>
-#include "PerlinNoise.hpp"
+#include <bits/chrono.h>    // for system_clock
+#include <curses.h>         // for COLS, LINES
+#include <cctype>           // for toupper
+#include <ctime>            // for size_t, localtime, time_t, tm
+#include <fstream>          // for char_traits, basic_ostream, basic_ofstream
+#include <iomanip>          // for operator<<, put_time
+#include <random>           // for uniform_int_distribution, mt19937, random...
+#include <sstream>          // for basic_ostringstream
+#include <stdexcept>        // for runtime_error
+#include <string>           // for basic_string, string, operator+, operator<<
+#include <vector>           // for allocator, vector
+#include "PerlinNoise.hpp"  // for PerlinNoise
 
 enum class Direction
 {

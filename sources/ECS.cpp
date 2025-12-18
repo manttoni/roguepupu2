@@ -1,16 +1,12 @@
-#include <string>
-#include <vector>
-#include <map>
-#include "entt.hpp"
-#include "ECS.hpp"
-#include "Cave.hpp"
-#include "Color.hpp"
-#include "Utils.hpp"
-#include "Components.hpp"
-#include "systems/StatsSystem.hpp"
-#include "systems/EquipmentSystem.hpp"
-#include "systems/CombatSystem.hpp"
-#include "systems/InventorySystem.hpp"
+#include <string>                       // for basic_string, to_string, oper...
+#include "Cave.hpp"                     // for Cave
+#include "Cell.hpp"                     // for Cell
+#include "Color.hpp"                    // for Color
+#include "Components.hpp"               // for Damage, Equipment, Resources
+#include "ECS.hpp"                      // for are_enemies, can_see, distance
+#include "Utils.hpp"                    // for capitalize
+#include "entt.hpp"                     // for allocator, entity, registry
+#include "systems/EquipmentSystem.hpp"  // for is_dual_wielding, is_equipped
 
 namespace ECS
 {
@@ -296,5 +292,11 @@ namespace ECS
 		if (registry.all_of<Resources>(entity))
 			return registry.get<Resources>(entity).health <= 0;
 		return false;
+	}
+
+	bool has_actions_left(const entt::registry& registry, const entt::entity entity)
+	{
+		const auto& actions = registry.get<Actions>(entity);
+		return actions.used < actions.actions;
 	}
 };

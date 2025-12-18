@@ -1,6 +1,8 @@
-#include <string>
-#include <any>
-#include "MenuElt.hpp"
+#include <stddef.h>     // for size_t
+#include <any>          // for any
+#include <functional>   // for function
+#include <string>       // for allocator, basic_string, string
+#include "MenuElt.hpp"  // for MenuElt
 
 class MenuTxt : public MenuElt
 {

@@ -3,6 +3,7 @@
 #include <map>
 #include "entt.hpp"
 #include "Utils.hpp"
+#include "Cell.hpp"
 
 namespace MovementSystem
 {

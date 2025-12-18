@@ -1,7 +1,8 @@
 #pragma once
-#include <string>
-#include <any>
-#include <functional>
+#include <stddef.h>    // for size_t
+#include <any>         // for any
+#include <functional>  // for function
+#include <string>      // for string, basic_string
 
 class MenuElt
 {

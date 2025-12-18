@@ -1,15 +1,19 @@
-#include <cmath>
-#include <string>             // for basic_string
-#include "Cave.hpp"           // for Cave
-#include "Cell.hpp"           // for Cell
-#include "Color.hpp"          // for Color
-#include "EntityFactory.hpp"  // for EntityFactory
-#include "UI.hpp"             // for UI
-#include "Utils.hpp"          // for randsize_t, noise3D, contains, remove_e...
-#include "World.hpp"          // for World
-#include "entt.hpp"           // for vector, size_t, map, deque, allocator
-#include "systems/InventorySystem.hpp"
-#include "ECS.hpp"
+#include <exception>                     // for exception
+#include <fstream>                       // for basic_ifstream, basic_istream
+#include <nlohmann/detail/json_ref.hpp>  // for json_ref
+#include <nlohmann/json.hpp>             // for basic_json, operator>>
+#include <nlohmann/json_fwd.hpp>         // for json
+#include <string>                        // for basic_string, operator+, string
+#include "Cave.hpp"                      // for Cave
+#include "Cell.hpp"                      // for Cell
+#include "Color.hpp"                     // for Color
+#include "ECS.hpp"                       // for get_level
+#include "EntityFactory.hpp"             // for EntityFactory
+#include "UI.hpp"                        // for UI
+#include "Utils.hpp"                     // for randsize_t, error, noise3D
+#include "World.hpp"                     // for World
+#include "entt.hpp"                      // for vector, size_t, deque, map
+#include "systems/InventorySystem.hpp"   // for add_item
 
 World::World() : seed(Random::randsize_t(10000, 99999)), rng(seed)
 {

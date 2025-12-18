@@ -1,10 +1,12 @@
+#include <format>
 #include "systems/ContextSystem.hpp"
 #include "systems/InventorySystem.hpp"
 #include "systems/EquipmentSystem.hpp"
-#include "systems/StatsSystem.hpp"
 #include "ECS.hpp"
 #include "UI.hpp"
 #include "Utils.hpp"
+#include "Components.hpp"
+#include "Cell.hpp"
 
 #define MELEE_RANGE 1.5
 

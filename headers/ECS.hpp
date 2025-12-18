@@ -1,10 +1,10 @@
 #pragma once
 
-#include <string>
-#include <map>
-#include "entt.hpp"
-#include "Color.hpp"
-#include "Components.hpp"
+#include <string>    // for string
+#include "entt.hpp"  // for entity, registry, vector, map, size_t
+class Cell;
+class Color;
+struct Damage;
 
 #define MELEE_RANGE 1.5
 
@@ -42,4 +42,5 @@ namespace ECS
 	int get_health_max(const entt::registry& registry, const entt::entity entity);
 	int get_mana_max(const entt::registry& registry, const entt::entity entity);
 	bool is_dead(const entt::registry& registry, const entt::entity entity);
+	bool has_actions_left(const entt::registry& registry, const entt::entity entity);
 };

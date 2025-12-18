@@ -1,8 +1,6 @@
 #pragma once
 
-#include <vector>
-#include "entt.hpp"
-#include "Components.hpp"
+#include "entt.hpp"  // for entity, registry
 
 namespace DamageSystem
 {

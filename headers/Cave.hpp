@@ -1,11 +1,9 @@
 #pragma once
 
-#include <string>
-#include <vector>
-#include <iostream>
-#include "Cell.hpp"
-#include "Utils.hpp"
-#include "entt.hpp"
+#include <string>     // for string
+#include "Cell.hpp"   // for Cell
+#include "Color.hpp"  // for Color
+#include "entt.hpp"   // for size_t, vector, pair
 
 class World;
 class Cave

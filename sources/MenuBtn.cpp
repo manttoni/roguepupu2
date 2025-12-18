@@ -1,4 +1,5 @@
 #include <stddef.h>     // for size_t
+#include <functional>   // for function
 #include <string>       // for basic_string, allocator, string
 #include "MenuBtn.hpp"  // for MenuBtn
 #include "MenuElt.hpp"  // for MenuElt

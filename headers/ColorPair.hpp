@@ -1,6 +1,9 @@
 #pragma once
 
-#include "Color.hpp"
+#include <curses.h>       // for init_pair
+#include "Color.hpp"      // for Color
+#include "ColorPair.hpp"  // for ColorPair
+#include "UI.hpp"         // for UI
 
 class ColorPair
 {

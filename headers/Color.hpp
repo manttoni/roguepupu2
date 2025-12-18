@@ -1,7 +1,6 @@
 #pragma once
 
-#include <cstddef>
-#include <string>
+#include <string>  // for string
 
 class Color
 {

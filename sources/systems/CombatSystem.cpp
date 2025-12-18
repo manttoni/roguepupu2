@@ -6,9 +6,9 @@
 #include "systems/CombatSystem.hpp"
 #include "systems/DamageSystem.hpp"
 #include "systems/EquipmentSystem.hpp"
-#include "systems/StatsSystem.hpp"
 #include "ECS.hpp"
 #include "GameLogger.hpp"
+#include "Utils.hpp"
 
 namespace CombatSystem
 {
@@ -145,5 +145,6 @@ namespace CombatSystem
 		{
 			weapon_attack(registry, attacker, left_weapon, defender);
 		}
+		registry.get<Actions>(attacker).used++;
 	}
 };

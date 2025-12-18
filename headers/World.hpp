@@ -1,11 +1,8 @@
 #pragma once
 
-#include <vector>
-#include <deque>
-#include <ncurses.h>
-#include "PerlinNoise.hpp"
-#include "Cell.hpp"
-#include "Cave.hpp"
+#include <random>    // for mt19937
+#include "Cave.hpp"  // for Cave
+#include "entt.hpp"  // for size_t, registry, deque, vector
 
 class World
 {

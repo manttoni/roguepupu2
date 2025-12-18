@@ -56,6 +56,8 @@ namespace MovementSystem
 		if (!current_cave->has_access(src_idx, dst_idx))
 			return 0;
 		position.cell = &current_cave->get_cell(dst_idx);
+		if (registry.all_of<Actions>(entity))
+			registry.get<Actions>(entity).used++;
 		return current_cave->distance(src_idx, dst_idx);
 	}
 

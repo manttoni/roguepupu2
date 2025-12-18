@@ -1,7 +1,8 @@
 #pragma once
 
-#include <vector>
-#include <string>
+#include <stddef.h>  // for size_t
+#include <string>    // for basic_string, string
+#include <vector>    // for vector
 
 class GameLogger
 {

@@ -1,21 +1,19 @@
-#include <regex>
 #include <filesystem>                                     // for path
 #include <fstream>                                        // for basic_ifstream
 #include <nlohmann/detail/iterators/iter_impl.hpp>        // for iter_impl
 #include <nlohmann/detail/iterators/iteration_proxy.hpp>  // for iteration_p...
 #include <nlohmann/json.hpp>                              // for basic_json
 #include <nlohmann/json_fwd.hpp>                          // for json
+#include <regex>                                          // for regex_match
 #include <string>                                         // for string, ope...
 #include "Color.hpp"                                      // for Color
-#include "Components.hpp"                                 // for Position
+#include "Components.hpp"                                 // for Resources
+#include "ECS.hpp"                                        // for get_fatigue...
 #include "EntityFactory.hpp"                              // for EntityFactory
 #include "Utils.hpp"                                      // for error, rand...
-#include "entt.hpp"                                       // for vector, ope...
-#include "systems/DamageSystem.hpp"                       // for parse_type
-#include "ECS.hpp"
-#include "systems/StatsSystem.hpp"
-#include "systems/EquipmentSystem.hpp"
-class Cell;
+#include "entt.hpp"                                       // for operator==
+#include "systems/EquipmentSystem.hpp"                    // for equip
+class Cell;  // lines 18-18
 
 #define CELL_SIZE 5
 #define MELEE_RANGE 1.5
@@ -27,11 +25,6 @@ void EntityFactory::init()
 	read_definitions("data/entities/furniture/chests.json");
 	read_definitions("data/entities/creatures/players.json");
 	read_definitions("data/entities/creatures/goblins.json");
-	Log::log("Parsed entities amount: " + std::to_string(LUT.size()));
-	for (const auto& [name, data] : LUT)
-	{
-		Log::log(data.dump(4));
-	}
 }
 
 void EntityFactory::read_definitions(const std::filesystem::path& path)
@@ -236,7 +229,7 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 	},
 	{ "actions", [](auto& reg, auto e, const nlohmann::json& data)
 		{
-			reg.template emplace<Actions>(e, data.get<int>());
+			reg.template emplace<Actions>(e, data.get<int>(), 0);
 		}
 	}
 };
@@ -252,8 +245,8 @@ void EntityFactory::add_entities(nlohmann::json& json, const std::string& catego
 			data["subcategory"] = subcategory;
 		if (!data.contains("name"))
 			data["name"] = name;
-		if (!data.contains("actions"))
-			data["actions"] = 1;
+		if (data["category"] == "creatures" && !data.contains("actions"))
+			data["actions"] = 1; // all creatures get 1 action unless specified in json
 		LUT[name] = data;
 	}
 }

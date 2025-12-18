@@ -1,4 +1,4 @@
-#include <ncurses.h>    // for WINDOW, A_REVERSE, KEY_LEFT, KEY_RIGHT, box
+#include <curses.h>     // for WINDOW, A_REVERSE, KEY_LEFT, KEY_RIGHT, box
 #include <panel.h>      // for panel_window, del_panel, new_panel
 #include <any>          // for any
 #include <cassert>      // for assert
@@ -6,10 +6,10 @@
 #include <string>       // for basic_string, operator+, operator==, char_traits
 #include "Menu.hpp"     // for Menu
 #include "MenuElt.hpp"  // for MenuElt
-#include "MenuTxt.hpp"
+#include "MenuTxt.hpp"  // for MenuTxt
 #include "UI.hpp"       // for UI, KEY_ESCAPE, KEY_LEFT_CLICK
 #include "Utils.hpp"    // for Coord, error, height, width, decrement, incre...
-#include "entt.hpp"     // for vector, size_t, move, max
+#include "entt.hpp"     // for vector, size_t, move, max, operator==, function
 
 Menu::Menu() : panel(nullptr), loop_cb(nullptr), read_only(true)
 {

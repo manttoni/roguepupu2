@@ -1,7 +1,7 @@
 #pragma once
 
-#include "entt.hpp"
-#include "Color.hpp"
+#include "entt.hpp"  // for entity, registry, size_t
+class Color;
 
 namespace VisualEffectSystem
 {

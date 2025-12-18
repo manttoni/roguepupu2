@@ -1,15 +1,9 @@
 #pragma once
 
-#include <memory>
-#include <string>
-#include <vector>
-#include <map>
-#include "Utils.hpp"
-#include "Color.hpp"
-#include "ColorPair.hpp"
-#include "entt.hpp"
-
-class Cave;
+#include "Color.hpp"  // for Color
+#include "entt.hpp"   // for size_t, map, entity, vector
+class Cave;  // lines 12-12
+class ColorPair;
 class Cell
 {
 	private:

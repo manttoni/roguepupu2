@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vector>
-#include "entt.hpp"
+#include "entt.hpp"  // for entity, registry, vector
+struct Damage;  // lines 6-6
 
 struct Damage;
 
