@@ -4,6 +4,7 @@
 #include "Cell.hpp"   // for Cell
 #include "Color.hpp"  // for Color
 #include "entt.hpp"   // for size_t, vector, pair
+#include "Utils.hpp"
 
 class World;
 class Cave
@@ -85,6 +86,7 @@ class Cave
 		bool has_access(const size_t from_idx, const size_t to_idx) const;
 		bool neighbor_has_type(const size_t middle, const Cell::Type type) const;
 		bool has_vision(const size_t from, const size_t to, const double vision_range = 0) const;
+		Vec2 get_direction(const size_t from, const size_t to);
 		void reset_lights();
 		void apply_lights();
 		void clear_lights();

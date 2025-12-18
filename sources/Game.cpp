@@ -17,6 +17,7 @@
 
 Game::Game() :
 	level(1),
+	registry(world.get_registry()),
 	player(EntityFactory::instance().create_entity(world.get_registry(), "rabdin", &get_cave().get_source()))
 {
 	get_registry().ctx().emplace<GameLogger>(log);
@@ -62,6 +63,12 @@ void Game::handle_key(const int key)
 		ContextSystem::show_entities_list(get_registry(), player);
 	else if (key == 'c')
 		ContextSystem::show_entity_details(get_registry(), player);
+	else if (key == ' ')
+	{
+		auto& actions = registry.get<Actions>(player);
+		actions.used = actions.actions;
+		registry.ctx().get<GameLogger>().log(ECS::get_colored_name(registry, player) + " does nothing");
+	}
 }
 
 void Game::reset_actions()
@@ -74,6 +81,28 @@ void Game::reset_actions()
 	}
 }
 
+void Game::environment_turn()
+{
+	auto actors = get_registry().view<Actions>(entt::exclude<Player>);
+	for (const auto actor : actors)
+	{
+		if (!ECS::can_see(registry, actor, player))
+			continue;
+		const auto actor_idx = ECS::get_cell(registry, actor)->get_idx();
+		const auto& path = get_cave().find_path(
+				actor_idx,
+				ECS::get_cell(registry, player)->get_idx());
+		Log::log("It has a path to player with len: " + std::to_string(path.size()));
+		if (path.empty())
+			continue;
+		const auto move_to = path[1];
+		Vec2 direction = get_cave().get_direction(actor_idx, move_to);
+		MovementSystem::move(get_registry(), actor, direction);
+		get_cave().draw();
+		UI::instance().print_log(get_registry().ctx().get<GameLogger>().last(Screen::height() / 3));
+	}
+}
+
 void Game::loop()
 {
 	get_cave().draw();
@@ -83,7 +112,7 @@ void Game::loop()
 	int key = 0;
 	while ((key = UI::instance().input(500)) != KEY_ESCAPE)
 	{
-		reset_actions();
+
 		handle_key(key);
 
 		get_cave().draw();
@@ -92,7 +121,14 @@ void Game::loop()
 
 		if (ECS::has_actions_left(get_registry(), player))
 			continue;
-		get_registry().ctx().get<GameLogger>().log("Environment turn");
+		environment_turn();
+		if (ECS::is_dead(registry, player))
+		{
+			UI::instance().dialog("Game Over", {"OK"}, Screen::top());
+			over = true;
+			return;
+		}
+		reset_actions();
 	}
 	UI::instance().print_log(get_registry().ctx().get<GameLogger>().last(Screen::height()));
 }

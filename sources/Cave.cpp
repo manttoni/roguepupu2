@@ -56,6 +56,7 @@ Cave::Cave(const std::string& map, const size_t width) : height(map.size() / wid
 
 /* CELL TO CELL */
 // uses A* to find walkable path from start to end
+// start and end can be blocked
 std::vector<size_t> Cave::find_path(const size_t start, const size_t end)
 {
 	if (start >= get_size() || end >= get_size())
@@ -88,13 +89,14 @@ std::vector<size_t> Cave::find_path(const size_t start, const size_t end)
 				current_idx = came_from[current_idx];
 				path.push_back(current_idx);
 			}
+			std::reverse(path.begin(), path.end());
 			return path;
 		}
 
 		Utils::remove_element(open_set, current_idx);
 		for (const size_t neighbor_idx : get_nearby_ids(current_idx, 1.5))
 		{
-			if (!has_access(current_idx, neighbor_idx))
+			if (neighbor_idx != end && !has_access(current_idx, neighbor_idx))
 				continue;
 			double tentative_g_score = g_score[current_idx] + distance(current_idx, neighbor_idx);
 			if (g_score.count(neighbor_idx) == 0)
@@ -110,6 +112,15 @@ std::vector<size_t> Cave::find_path(const size_t start, const size_t end)
 		}
 	}
 	return {};
+}
+
+Vec2 Cave::get_direction(const size_t from, const size_t to)
+{
+	int from_y = from / width;
+	int from_x = from % width;
+	int to_y = to / width;
+	int to_x = to % width;
+	return { to_y - from_y, to_x - from_x };
 }
 
 double Cave::distance(const Cell &start, const Cell &end) const

@@ -29,6 +29,9 @@ namespace DamageSystem
 		if (registry.all_of<Faction>(entity))
 			registry.remove<Faction>(entity);
 
+		if (registry.all_of<Actions>(entity))
+			registry.remove<Actions>(entity);
+
 		registry.get<Name>(entity).name += " (corpse)";
 	}
 

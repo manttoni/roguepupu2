@@ -9,8 +9,8 @@
 void run()
 {
 	Game* game = nullptr;
-	std::string selection = "none";
-	while (!selection.empty() && selection != "Quit")
+	std::string selection = "";
+	while (selection != "Quit")
 	{
 		std::vector<std::string> options;
 		if (game != nullptr)
@@ -25,6 +25,7 @@ void run()
 		}
 		else if (selection == "New Game")
 		{
+			delete game;
 			game = new Game();
 			game->loop();
 		}
@@ -32,12 +33,20 @@ void run()
 		{
 			UI::instance().dialog("Controls", {
 					"Move with arrows or WASD",
+					"Move also diagonally with numpad",
 					"Interact with left click",
 					"Use menu with arrows or mouse",
 					"i: inventory",
-					"c: character"});
+					"c: character",
+					"space: pass"});
+		}
+		if (game != nullptr && game->is_over())
+		{
+			delete game;
+			game = nullptr;
 		}
 	}
+	delete game;
 }
 
 int main(int argc, char** argv)

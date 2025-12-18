@@ -11,8 +11,11 @@ class Game
 		World world;
 		GameLogger log;
 		size_t level;
+		entt::registry& registry;
 		entt::entity player;
+		bool over = false;
 	public:
+		bool is_over() const { return over; }
 		GameLogger& get_log() { return log; }
 		Cave& get_cave() { return world.get_cave(level); }
 		entt::registry& get_registry() { return world.get_registry(); }
