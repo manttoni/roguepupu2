@@ -2,15 +2,21 @@
 	"rusted dagger": {
 		"level": 1,
 		"weight": 0.3,
-		"damage": "1-2",
-		"accuracy": 4,
+		"damage": {
+			"amount": "1-2",
+			"type": "physical"
+		},
+		"accuracy": 2,
 		"armor_penetration": 1
 	},
 
 	"rusted mace": {
 		"level": 1,
 		"weight": 5,
-		"damage": "3-5",
-		"accuracy": 2
+		"damage": {
+			"amount": "3-4",
+			"type": "physical"
+		},
+		"accuracy": 1
 	}
 }

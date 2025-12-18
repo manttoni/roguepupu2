@@ -1,6 +1,7 @@
 #include <string>
 #include <vector>
 #include "GameLogger.hpp"
+#include "UI.hpp"
 
 std::vector<std::string> GameLogger::last(size_t n) const
 {

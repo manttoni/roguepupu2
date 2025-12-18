@@ -38,7 +38,11 @@ struct CritChance { double crit_chance; };
 struct CritMultiplier { double crit_multiplier; };
 
 struct Glow { double strength, radius; };
-struct Damage { int min, max; };
+struct Damage
+{
+	int min, max;
+	std::string type;
+};
 
 struct Level { int level; };
 struct Attributes

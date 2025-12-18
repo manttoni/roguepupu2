@@ -86,7 +86,6 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 				if (entity.contains("chance") && Random::randreal(0, 1) > entity["chance"].get<double>())
 					continue;
 				std::vector<std::string> names = EntityFactory::instance().random_pool(entity["filter"], amount);
-				Log::log("Adding to inventory with filter: " + entity["filter"].dump(4));
 				for (size_t i = 0; i < amount; ++i)
 				{
 					const size_t rand = Random::randsize_t(0, names.size() - 1);
@@ -217,14 +216,17 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 	},
 	{ "damage", [](auto& reg, auto e, const nlohmann::json& data)
 		{
+			if (!data.contains("amount") || !data.contains("type"))
+				Log::error("Error parsing entity: " + data.dump(4));
+
 			const std::regex pattern(R"(^\d+-\d+$)");
-			const std::string str = data.get<std::string>();
+			const std::string str = data["amount"].get<std::string>();
 			if (!std::regex_match(str, pattern))
 				Log::error("Invalid damage: " + str);
 			const auto dash = str.find('-');
 			const int min = std::stoi(str.substr(0, dash));
 			const int max = std::stoi(str.substr(dash + 1));
-			reg.template emplace<Damage>(e, min, max);
+			reg.template emplace<Damage>(e, min, max, data["type"].get<std::string>());
 		}
 	},
 	{ "level", [](auto& reg, auto e, const nlohmann::json& data)
@@ -251,7 +253,6 @@ void EntityFactory::add_entities(nlohmann::json& json, const std::string& catego
 
 entt::entity EntityFactory::create_entity(entt::registry& registry, const std::string& name, Cell* cell)
 {
-	Log::log("Creating entity: " + name);
 	if (LUT.find(name) == LUT.end())
 		Log::error("Entity not found: " + name);
 

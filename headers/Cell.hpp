@@ -115,4 +115,6 @@ class Cell
 
 		// Get entities in this
 		std::vector<entt::entity> get_entities() const;
+
+		void draw();
 };

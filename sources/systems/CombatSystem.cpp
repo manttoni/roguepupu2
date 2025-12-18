@@ -1,4 +1,6 @@
 #include <vector>
+#include <chrono>
+#include <thread>
 #include "Components.hpp"
 #include "entt.hpp"
 #include "systems/CombatSystem.hpp"
@@ -110,14 +112,22 @@ namespace CombatSystem
 		const double base_damage = get_base_damage(registry, attacker, weapon);
 		const double barrier = get_barrier(registry, defender);
 		const double power = get_power(registry, attacker, weapon);
+		const double barrier_efficiency = std::max(0.0, barrier - power);
+		if (barrier_efficiency >= base_damage)
+		{
+			registry.ctx().get<GameLogger>().log("The attack is repelled");
+			return;
+		}
 		const double armor = get_armor(registry, defender);
 		const double armor_penetration = ECS::get_armor_penetration(registry, weapon);
-		const double barrier_efficiency = std::max(0.0, barrier - power);
 		const double armor_deflection = std::max(0.0, armor - armor_penetration);
-
 		const double damage_taken = (base_damage - barrier_efficiency) * hit_quality - armor_deflection;
-
 		const int final_damage = std::max(0, static_cast<int>(std::round(damage_taken)));
+		if (final_damage <= 0)
+		{
+			registry.ctx().get<GameLogger>().log("The attack is deflected");
+			return;
+		}
 		DamageSystem::take_damage(registry, defender, final_damage);
 	}
 
@@ -129,6 +139,7 @@ namespace CombatSystem
 		if (right_weapon != entt::null)
 		{
 			weapon_attack(registry, attacker, right_weapon, defender);
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		}
 		if (left_weapon != entt::null && left_weapon != right_weapon)
 		{

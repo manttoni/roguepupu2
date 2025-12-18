@@ -20,7 +20,6 @@ Game::Game() :
 	player(EntityFactory::instance().create_entity(world.get_registry(), "rabdin", &get_cave().get_source()))
 {
 	get_registry().ctx().emplace<GameLogger>(log);
-	get_registry().ctx().get<GameLogger>().log("Game started");
 }
 
 void Game::check_change_level()
@@ -72,7 +71,8 @@ void Game::loop()
 
 		get_cave().draw();
 		UI::instance().increase_loop_number(); // should do this with registry.ctx() instead
-		UI::instance().print_log(get_registry().ctx().get<GameLogger>().last(20));
+		UI::instance().print_log(get_registry().ctx().get<GameLogger>().last(Screen::height() / 3));
 	}
+	UI::instance().print_log(get_registry().ctx().get<GameLogger>().last(Screen::height()));
 }
 

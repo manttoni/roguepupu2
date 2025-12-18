@@ -34,7 +34,7 @@ void Cell::reduce_density(const double amount)
 	if (type != Type::ROCK)
 		return; // for now only rock can weaken
 
-	if (amount < density)
+	if (amount <= density)
 	{
 		density -= amount;
 		return;
@@ -136,4 +136,60 @@ wchar_t Cell::get_glyph() const
 	if (entity == entt::null)
 		return L' ';
 	return ECS::get_glyph(registry, entity);
+}
+
+// Use when rendering something in a single cell
+// When drawing whole Cave, use Cave::draw()
+void Cell::draw()
+{
+	auto* world = cave->get_world();
+	auto& registry = world->get_registry();
+	const auto& player = *registry.view<Player>().begin();
+	const auto& player_position = registry.get<Position>(player);
+	const size_t player_idx = player_position.cell->get_idx();
+
+	PANEL* panel = UI::instance().get_panel(UI::Panel::GAME);
+	WINDOW* window = panel_window(panel);
+	UI::instance().set_current_panel(panel);
+
+	//werase(window);
+	//UI::instance().reset_colors();
+	//reset_lights();
+
+	int window_height, window_width;
+	getmaxyx(window, window_height, window_width);
+
+	const auto width = cave->get_width();
+	size_t y_player = player_idx / width;
+	size_t x_player = player_idx % width;
+
+	size_t y_center = window_height / 2;
+	size_t x_center = window_width / 2;
+
+	const auto cell_idx = get_idx();
+	size_t y_cell = cell_idx / width;
+	size_t x_cell = cell_idx % width;
+
+	int y = y_center + y_cell - y_player;
+	int x = x_center + x_cell - x_player;
+	if (y < 0 || y >= window_height || x < 0 || x >= window_width)
+		return;
+
+	ColorPair color_pair;
+
+	if (!cave->has_vision(player_idx, cell_idx, registry.get<Vision>(player).range))
+	{
+		if (is_seen() && blocks_movement()) // "ghost" cell if it was seen before and was solid
+			color_pair = ColorPair(Color(123, 123, 123), Color(0, 0, 0));
+		else
+			return;
+	}
+	else
+		color_pair = get_color_pair();
+
+	wchar_t glyph = get_glyph();
+	UI::instance().enable_color_pair(color_pair);
+	UI::instance().print_wide(y, x, glyph);
+	set_seen(true);
+	UI::instance().update();
 }

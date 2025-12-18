@@ -174,15 +174,15 @@ namespace ECS
 
 	int get_health_max(const entt::registry& registry, const entt::entity entity)
 	{
-		return get_strength(registry, entity);
+		return get_strength(registry, entity) * 5;
 	}
 	int get_fatigue_max(const entt::registry& registry, const entt::entity entity)
 	{
-		return get_dexterity(registry, entity);
+		return get_dexterity(registry, entity) * 5;
 	}
 	int get_mana_max(const entt::registry& registry, const entt::entity entity)
 	{
-		return get_intelligence(registry, entity);
+		return get_intelligence(registry, entity) * 5;
 	}
 
 	double get_weight(const entt::registry& registry, const entt::entity entity)
@@ -192,6 +192,7 @@ namespace ECS
 		return 0;
 	}
 
+	// remake this (again). Must have order
 	std::map<std::string, std::string> get_info(const entt::registry& registry, const entt::entity entity)
 	{
 		std::map<std::string, std::string> info;
@@ -201,24 +202,27 @@ namespace ECS
 			info["level"] = std::to_string(registry.get<Level>(entity).level);
 		info["category"] = registry.get<Category>(entity).category;
 		info["subcategory"] = registry.get<Subcategory>(entity).subcategory;
-		if (registry.any_of<Damage, Equipment>(entity))
-			info["damage"] = std::to_string(get_damage_min(registry, entity)) + " - " + std::to_string(get_damage_max(registry, entity));
+		if (registry.any_of<Damage>(entity))
+		{
+			const auto& damage = registry.get<Damage>(entity);
+			info["damage"] = std::to_string(damage.min) + " - " + std::to_string(damage.max) + " " + damage.type;
+		}
 		info["weight"] = std::to_string(get_weight(registry, entity));
-		if (registry.any_of<ArmorPenetration, Equipment>(entity))
+		if (registry.any_of<ArmorPenetration>(entity))
 			info["armor penetration"] = std::to_string(get_armor_penetration(registry, entity));
 		if (registry.any_of<Armor, Equipment>(entity))
 			info["armor"] = std::to_string(get_armor(registry, entity));
-		if (registry.any_of<Accuracy, Equipment>(entity))
+		if (registry.any_of<Accuracy>(entity))
 			info["accuracy"] = std::to_string(get_accuracy(registry, entity));
 		if (registry.any_of<Evasion, Equipment>(entity))
 			info["evasion"] = std::to_string(get_evasion(registry, entity));
 		if (registry.any_of<Barrier, Equipment>(entity))
 			info["barrier"] = std::to_string(get_barrier(registry, entity));
-		if (registry.any_of<Power, Equipment>(entity))
+		if (registry.any_of<Power>(entity))
 			info["power"] = std::to_string(get_power(registry, entity));
-		if (registry.any_of<CritChance, Equipment>(entity))
+		if (registry.any_of<CritChance>(entity))
 			info["crit chance"] = std::to_string(get_crit_chance(registry, entity));
-		if (registry.any_of<CritMultiplier, Equipment>(entity))
+		if (registry.any_of<CritMultiplier>(entity))
 			info["crit multiplier"] = std::to_string(get_crit_multiplier(registry, entity));
 		if (registry.all_of<Attributes>(entity))
 		{

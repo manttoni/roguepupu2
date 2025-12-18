@@ -71,7 +71,7 @@ void UI::print(const std::string& str)
 {
 	if (str.find('{') != std::string::npos)
 		print_colors(str.c_str()); // Probably wants to print with colors
-	else
+	else if (current_panel != nullptr)
 		wprintw(panel_window(current_panel), "%s", str.c_str());
 }
 void UI::print(const size_t y, const size_t x, const std::string& str)
@@ -142,7 +142,7 @@ void UI::print_log(const std::vector<std::string>& messages)
 	WINDOW* game_window = panel_window(game_panel);
 	for (size_t i = 0; i < n; ++i)
 	{
-		wmove(game_window, height - 1 - n + i, 0);
+		wmove(game_window, height - n + i, 0);
 		print(messages[i]);
 	}
 	update();
