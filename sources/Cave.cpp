@@ -1,17 +1,12 @@
-#include <ncurses.h>       // for werase, WINDOW, getmaxyx
-#include <panel.h>         // for panel_window, PANEL
 #include <stdlib.h>        // for abs
 #include <string>          // for basic_string, string
 #include "Cave.hpp"        // for Cave
 #include "Cell.hpp"        // for Cell
 #include "Color.hpp"       // for Color
-#include "ColorPair.hpp"   // for ColorPair
-#include "Components.hpp"  // for Position, Glow, Renderable, Vision, Player...
-#include "UI.hpp"          // for UI
-#include "Utils.hpp"       // for contains, remove_element, error
+#include "Components.hpp"  // for Glow, FGColor, Position
+#include "Utils.hpp"       // for contains, remove_element, error, Vec2
 #include "World.hpp"       // for World
-#include "entt.hpp"        // for vector, size_t, map, ceil, basic_sigh_mixin
-#include "GameLogger.hpp"
+#include "entt.hpp"        // for vector, size_t, map, ceil, allocator, basi...
 
 Cave::Cave() :
 	height(0),
@@ -290,58 +285,4 @@ void Cave::reset_lights()
 	apply_lights();
 }
 
-void Cave::draw()
-{
-	auto& registry = world->get_registry();
-	const auto& player = *registry.view<Player>().begin();
-	const auto& player_position = registry.get<Position>(player);
-	const size_t player_idx = player_position.cell->get_idx();
-
-	PANEL* panel = UI::instance().get_panel(UI::Panel::GAME);
-	WINDOW* window = panel_window(panel);
-	UI::instance().set_current_panel(panel);
-
-	werase(window);
-	UI::instance().reset_colors();
-	//reset_lights();
-
-	int window_height, window_width;
-	getmaxyx(window, window_height, window_width);
-
-	size_t y_player = player_idx / width;
-	size_t x_player = player_idx % width;
-
-	size_t y_center = window_height / 2;
-	size_t x_center = window_width / 2;
-
-	for (auto& cell : cells)
-	{
-		const size_t cell_idx = cell.get_idx();
-		size_t y_cell = cell_idx / width;
-		size_t x_cell = cell_idx % width;
-
-		int y = y_center + y_cell - y_player;
-		int x = x_center + x_cell - x_player;
-		if (y < 0 || y >= window_height || x < 0 || x >= window_width)
-			continue;
-
-		ColorPair color_pair;
-
-		if (!has_vision(player_idx, cell_idx, registry.get<Vision>(player).range))
-		{
-			if (cell.is_seen() && cell.blocks_movement()) // "ghost" cell if it was seen before and was solid
-				color_pair = ColorPair(Color(123, 123, 123), Color(0, 0, 0));
-			else
-				continue;
-		}
-		else
-			color_pair = cell.get_color_pair();
-
-		wchar_t glyph = cell.get_glyph();
-		UI::instance().enable_color_pair(color_pair);
-		UI::instance().print_wide(y, x, glyph);
-		cell.set_seen(true);
-	}
-	//UI::instance().update();
-}
 

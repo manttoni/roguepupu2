@@ -1,19 +1,20 @@
-#include <ncurses.h>                    // for delwin, wclear, WINDOW
-#include <panel.h>                      // for PANEL, del_panel, panel_window
-#include <string>                       // for basic_string, allocator, oper...
-#include <utility>                      // for pair
-#include "Cave.hpp"                     // for Cave
-#include "Cell.hpp"                     // for Cell
-#include "Components.hpp"               // for Position
-#include "EntityFactory.hpp"            // for EntityFactory
-#include "Game.hpp"                     // for Game, new_game
-#include "UI.hpp"                       // for UI, KEY_ESCAPE
-#include "World.hpp"                    // for World
-#include "entt.hpp"                     // for allocator, vector, size_t
-#include "systems/ContextSystem.hpp"
-#include "systems/InventorySystem.hpp"  // for inventory_key_pressed, open_i...
-#include "systems/MovementSystem.hpp"   // for move, movement_key_pressed
-#include "ECS.hpp"
+#include <thread>
+#include <chrono>
+#include <string>                      // for basic_string, operator+, opera...
+#include "Cave.hpp"                    // for Cave
+#include "Cell.hpp"                    // for Cell
+#include "Components.hpp"              // for Actions, Position
+#include "ECS.hpp"                     // for get_cell, can_see, get_colored...
+#include "EntityFactory.hpp"           // for EntityFactory
+#include "Game.hpp"                    // for Game
+#include "GameLogger.hpp"              // for GameLogger
+#include "Renderer.hpp"                // for Renderer
+#include "UI.hpp"                      // for UI, KEY_ESCAPE, KEY_LEFT_CLICK
+#include "Utils.hpp"                   // for log, top, Vec2
+#include "World.hpp"                   // for World
+#include "entt.hpp"                    // for vector, allocator, basic_sigh_...
+#include "systems/ContextSystem.hpp"   // for show_entities_list, show_entit...
+#include "systems/MovementSystem.hpp"  // for move
 
 Game::Game() :
 	level(1),
@@ -83,41 +84,39 @@ void Game::reset_actions()
 
 void Game::environment_turn()
 {
-	auto actors = get_registry().view<Actions>(entt::exclude<Player>);
+	auto actors = get_cave().get_creature_cache();
+	const auto player_idx = ECS::get_cell(registry, player)->get_idx();
 	for (const auto actor : actors)
 	{
 		if (!ECS::can_see(registry, actor, player))
 			continue;
+
 		const auto actor_idx = ECS::get_cell(registry, actor)->get_idx();
-		const auto& path = get_cave().find_path(
-				actor_idx,
-				ECS::get_cell(registry, player)->get_idx());
-		Log::log("It has a path to player with len: " + std::to_string(path.size()));
+		const auto& path = get_cave().find_path(actor_idx, player_idx);
 		if (path.empty())
 			continue;
+
 		const auto move_to = path[1];
 		Vec2 direction = get_cave().get_direction(actor_idx, move_to);
 		MovementSystem::move(get_registry(), actor, direction);
-		get_cave().draw();
-		UI::instance().print_log(get_registry().ctx().get<GameLogger>().last(Screen::height() / 3));
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		Renderer::render(get_cave());
 	}
 }
 
 void Game::loop()
 {
-	get_cave().draw();
-	UI::instance().print_log(get_registry().ctx().get<GameLogger>().last(Screen::height() / 3));
-	UI::instance().update();
+	//Renderer::render(get_cave());
+	//get_cave().draw(); // move job to Renderer
 
 	int key = 0;
 	while ((key = UI::instance().input(500)) != KEY_ESCAPE)
 	{
-
 		handle_key(key);
 
-		get_cave().draw();
+		//get_cave().draw();
+		Renderer::render(get_cave());
 		UI::instance().increase_loop_number(); // should do this with registry.ctx() instead
-		UI::instance().print_log(get_registry().ctx().get<GameLogger>().last(Screen::height() / 3));
 
 		if (ECS::has_actions_left(get_registry(), player))
 			continue;
@@ -130,6 +129,6 @@ void Game::loop()
 		}
 		reset_actions();
 	}
-	UI::instance().print_log(get_registry().ctx().get<GameLogger>().last(Screen::height()));
+	//UI::instance().print_log(get_registry().ctx().get<GameLogger>().last(Screen::height()));
 }
 

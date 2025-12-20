@@ -68,6 +68,11 @@ class Cave
 			cells[sink].set_fg(Color(1000, 1000, 1000));
 		}
 
+	private:
+		std::vector<entt::entity> creature_cache;
+	public:
+		std::vector<entt::entity>& get_creature_cache() { return creature_cache; }
+
 	public:
 		Cave();
 		Cave(const size_t level, const size_t height, const size_t width, const size_t seed);

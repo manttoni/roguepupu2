@@ -132,23 +132,6 @@ void UI::reset_colors()
 	initialized_color_pairs.clear();
 }
 
-void UI::print_log(const std::vector<std::string>& messages)
-{
-	ColorPair log_pair = ColorPair(Color(500, 500, 500), Color{});
-	enable_color_pair(log_pair);
-	const size_t n = messages.size();
-	const size_t height = Screen::height();
-	PANEL* game_panel = panels[Panel::GAME];
-	WINDOW* game_window = panel_window(game_panel);
-	for (size_t i = 0; i < n; ++i)
-	{
-		wmove(game_window, height - n + i, 0);
-		print(messages[i]);
-	}
-	update();
-	disable_color_pair(log_pair);
-}
-
 std::string UI::dialog(const std::vector<std::string>& text, const std::vector<std::string>& options, const Screen::Coord& position, const size_t initial_selection)
 {
 	// Initialize elements for dialog box
@@ -276,6 +259,21 @@ void UI::init_panels()
 {
 	PANEL* game_panel = new_panel(newwin(Screen::height(), Screen::width(), 0, 0));
 	UI::instance().add_panel(UI::Panel::GAME, game_panel);
+	PANEL* log_panel = new_panel(newwin(Screen::height(), Screen::width(), 0, 0));
+	UI::instance().add_panel(UI::Panel::LOG, log_panel);
+	PANEL* status_panel = new_panel(newwin(Screen::height(), Screen::width(), 0, 0));
+	UI::instance().add_panel(UI::Panel::STATUS, status_panel);
+}
+
+void UI::destroy_panels()
+{
+	auto panels = UI::instance().get_panels();
+	for (auto [name, panel] : panels)
+	{
+		WINDOW* window = panel_window(panel);
+		del_panel(panel);
+		delwin(window);
+	}
 }
 
 void UI::init()
@@ -306,6 +304,8 @@ void UI::init()
 
 void UI::end()
 {
+	destroy_panels();
+
 	// this will restore normal terminal mode
 	endwin();
 

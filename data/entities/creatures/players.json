@@ -22,9 +22,9 @@
 		"equipment": true,
 		"faction": "player",
 		"attributes": {
-			"strength": 10,
-			"dexterity": 10,
-			"intelligence": 10
+			"strength": 1000,
+			"dexterity": 1000,
+			"intelligence": 1000
 		}
 	}
 }

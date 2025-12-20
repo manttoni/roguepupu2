@@ -8,6 +8,7 @@
 #include "entt.hpp"                     // for vector, allocator, basic_sigh...
 #include "systems/EquipmentSystem.hpp"  // for is_equipped, equip_or_unequip
 #include "systems/InventorySystem.hpp"  // for add_item, has_item, inventory...
+#include "Renderer.hpp"
 
 namespace InventorySystem
 {
@@ -53,7 +54,7 @@ namespace InventorySystem
 		if (registry.all_of<Glow>(item))
 		{
 			cell->get_cave()->reset_lights();
-			cell->get_cave()->draw();
+			Renderer::render(*cell->get_cave());
 		}
 	}
 

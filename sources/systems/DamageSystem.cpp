@@ -5,6 +5,7 @@
 #include "Components.hpp"
 #include "ECS.hpp"
 #include "Cell.hpp"
+#include "Cave.hpp"
 
 namespace DamageSystem
 {
@@ -12,10 +13,10 @@ namespace DamageSystem
 	{
 		registry.ctx().get<GameLogger>().log(ECS::get_colored_name(registry, entity) + " dies");
 
-		/*// Change to corpse/remains glyph
+		// Change to corpse/remains glyph
 		if (!registry.all_of<Glyph>(entity))
 			registry.emplace<Glyph>(entity);
-		registry.get<Glyph>(entity).glyph = L'X';*/
+		registry.get<Glyph>(entity).glyph = L'x';
 
 		// Add red/bloody background color to cell
 		Cell* cell = ECS::get_cell(registry, entity);
@@ -29,8 +30,10 @@ namespace DamageSystem
 		if (registry.all_of<Faction>(entity))
 			registry.remove<Faction>(entity);
 
-		if (registry.all_of<Actions>(entity))
-			registry.remove<Actions>(entity);
+		// remove from cache
+		Cave& cave = *cell->get_cave();
+		auto& cache = cave.get_creature_cache();
+		cache.erase(std::find(cache.begin(), cache.end(), entity));
 
 		registry.get<Name>(entity).name += " (corpse)";
 	}

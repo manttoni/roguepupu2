@@ -156,10 +156,12 @@ void World::form_rock()
 void World::set_source_sink()
 {
 	auto& canvas = caves.back();
+	size_t source_idx;
 	if (canvas.get_level() == 1)
-		canvas.set_source_idx(height / 2 * width + width / 2);
+		source_idx = height / 2 * width + width / 2;
 	else
-		canvas.set_source_idx((caves.end() - 2)->get_sink_idx()); // sink of last level
+		source_idx = (caves.end() - 2)->get_sink_idx();
+	canvas.set_source_idx(source_idx);
 
 	size_t sink_idx;
 	do
@@ -167,6 +169,14 @@ void World::set_source_sink()
 	while
 		(canvas.distance(canvas.get_source_idx(), sink_idx) < width / 2);
 	canvas.set_sink_idx(sink_idx);
+
+	// Clear space around them
+	const auto around_source = canvas.get_nearby_ids(source_idx, 2);
+	const auto around_sink = canvas.get_nearby_ids(sink_idx, 2);
+	for (const auto idx : around_source)
+		canvas.get_cell(idx).reduce_density(10);
+	for (const auto idx : around_sink)
+		canvas.get_cell(idx).reduce_density(10);
 }
 
 // Glowing fungi grow next to walls
@@ -258,6 +268,7 @@ void World::spawn_creatures()
 		assert(cell != nullptr);
 		assert(creature_idx < creature_pool.size());
 		const entt::entity e = EntityFactory::instance().create_entity(registry, creature_pool[creature_idx], cell);
+		canvas.get_creature_cache().push_back(e);
 		level_sum += ECS::get_level(registry, e);
 		spawn_idx++;
 	}

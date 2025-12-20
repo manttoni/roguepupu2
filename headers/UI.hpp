@@ -19,19 +19,6 @@ class ColorPair;
 class UI
 {
 	public:
-		enum class Mode
-		{
-			CAVE_VIEW,
-			GAME,
-			MAIN,
-		};
-	private:
-		Mode mode;
-	public:
-		void set_mode(const Mode mode) { this->mode = mode; }
-		Mode get_mode() const { return mode; }
-
-	public:
 		static UI& instance()
 		{
 			static UI inst;
@@ -52,12 +39,14 @@ class UI
 			STDSCR,
 			GAME,
 			LOG,
+			STATUS,
 		};
 	private:
 		std::map<Panel, PANEL*> panels;
 	public:
 		void add_panel(const Panel p, PANEL* panel) { panels[p] = panel; }
 		PANEL* get_panel(const Panel p) { return panels[p]; }
+		std::map<Panel, PANEL*> get_panels() { return panels; }
 
 	private:
 		std::map<Color, short> initialized_colors;
@@ -77,12 +66,6 @@ class UI
 		void reset_colors();
 
 	private:
-		bool show_debug = false;
-	public:
-		void set_show_debug(const bool value) { this->show_debug = value; }
-		void toggle_show_debug() { show_debug = !show_debug; }
-
-	private:
 		Screen::Coord mouse_position;
 	public:
 		Screen::Coord get_mouse_position() const { return mouse_position; }
@@ -90,10 +73,8 @@ class UI
 
 	private:
 		PANEL* current_panel;
-		std::map<std::string, Menu> menus;
 		size_t loop_number;
 	public:
-		Menu& get_menu(const std::string& name) { return menus.at(name); }
 		void set_current_panel(PANEL* current_panel, const bool make_top = false)
 		{
 			if (current_panel == nullptr)
@@ -134,14 +115,9 @@ class UI
 		void enable_color_pair(const ColorPair& color_pair);
 		void disable_color_pair(const ColorPair& color_pair);
 		void update() { update_panels(); doupdate(); }
-		void init_menus();
 		void init_panels();
+		void destroy_panels();
 		void init();
 		void end();
 };
-
-static inline void quit()
-{
-	UI::instance().end();
-}
 
