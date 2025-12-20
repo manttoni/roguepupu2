@@ -2,6 +2,7 @@
 
 #include <ncurses.h>
 #include <panel.h>
+#include <string>
 #include "entt.hpp"
 #include "Cave.hpp"
 #include "Cell.hpp"
@@ -9,6 +10,7 @@
 #include "World.hpp"
 #include "ECS.hpp"
 #include "Components.hpp"
+#include "Unicode.hpp"
 
 void Renderer::draw_cave(Cave& cave)
 {
@@ -71,30 +73,62 @@ void Renderer::print_log(const GameLogger& logger)
 	ColorPair log_pair = ColorPair(Color(500, 500, 500), Color{});
 	const size_t n = messages.size();
 	const size_t height = Screen::height();
-	PANEL* log_panel = UI::instance().get_panel(UI::Panel::GAME);
-	WINDOW* log_window = panel_window(log_panel);
-//	UI::instance().set_current_panel(log_panel, true);
+	PANEL* panel = UI::instance().get_panel(UI::Panel::GAME);
+	WINDOW* window = panel_window(panel);
 	UI::instance().enable_color_pair(log_pair);
-	/*for (size_t i = 0; i < n; ++i)
-	{
-		wmove(log_window, height - n + i, 0);
-		wclrtoeol(log_window);
-	}
-	wbkgd(panel_window(log_panel), ' ' | A_NORMAL);*/
 	for (size_t i = 0; i < n; ++i)
 	{
-		wmove(log_window, height - n + i, 0);
+		wmove(window, height - n + i, 0);
 		UI::instance().print(messages[i]);
 	}
 	UI::instance().disable_color_pair(log_pair);
 }
 
+void Renderer::draw_bar(const Color& color, const double percentage, const size_t y, const size_t width)
+{
+	const size_t full_blocks = width * percentage;
+	const double per_block = 1.0 / static_cast<double>(width);
+	const double remaining = percentage - full_blocks * per_block;
+	std::wstring bar(full_blocks, Unicode::FullBlock);
+	if (remaining > 0)
+		bar += Unicode::LeftBlocks[static_cast<size_t>(Math::map(remaining, 0, per_block, 0, 8))];
+
+	PANEL* status_panel = UI::instance().get_panel(UI::Panel::STATUS);
+
+	UI::instance().set_current_panel(status_panel, true);
+	UI::instance().enable_color_pair(ColorPair(color, Color{}));
+	UI::instance().print_wstr(y, 1, bar);
+	UI::instance().disable_color_pair(ColorPair(color, Color{}));
+}
+
+void Renderer::show_status(const entt::registry& registry)
+{
+	const size_t bar_len = 25;
+	PANEL* status_panel = UI::instance().get_panel(UI::Panel::STATUS);
+	WINDOW* status_window = panel_window(status_panel);
+	werase(status_window);
+	box(status_window, 0, 0);
+	mvwhline(status_window, 2, 1, ACS_HLINE, bar_len);
+	mvwhline(status_window, 4, 1, ACS_HLINE, bar_len);
+
+	const auto player = ECS::get_player(registry);
+	const auto& resources = registry.get<Resources>(player);
+
+	const double hp_per = static_cast<double>(resources.health) / static_cast<double>(ECS::get_health_max(registry, player));
+	draw_bar(Color(400,0,0), std::max(0.0, hp_per), 1, bar_len);
+
+	const double ft_per = static_cast<double>(resources.fatigue) / static_cast<double>(ECS::get_fatigue_max(registry, player));
+	draw_bar(Color(0,400,0), std::max(0.0, ft_per), 3, bar_len);
+
+	const double mp_per = static_cast<double>(resources.mana) / static_cast<double>(ECS::get_mana_max(registry, player));
+	draw_bar(Color(0,0,600), std::max(0.0, mp_per), 5, bar_len);
+}
 
 void Renderer::render(Cave& cave)
 {
 	const entt::registry& registry = cave.get_world()->get_registry();
 	draw_cave(cave);
 	print_log(registry.ctx().get<GameLogger>());
-	// show_status(registry);
+	show_status(registry);
 	UI::instance().update();
 }

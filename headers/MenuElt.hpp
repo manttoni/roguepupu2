@@ -30,6 +30,7 @@ class MenuElt
 		bool is_selectable() const { return type == Type::NUMBER || type == Type::BUTTON; }
 
 		virtual std::string get_text() const { return text; }
+		virtual void set_text(const std::string& text) { this->text = text; }
 		virtual size_t get_size() const = 0;
 
 		virtual void callback() const {}

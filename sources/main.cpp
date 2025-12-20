@@ -38,7 +38,8 @@ void run()
 					"Use menu with arrows or mouse",
 					"i: inventory",
 					"c: character",
-					"space: pass"});
+					"space: pass",
+					"resizing terminal works mid game"});
 		}
 		if (game != nullptr && game->is_over())
 		{

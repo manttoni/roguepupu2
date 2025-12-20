@@ -106,15 +106,12 @@ void Game::environment_turn()
 
 void Game::loop()
 {
-	//Renderer::render(get_cave());
-	//get_cave().draw(); // move job to Renderer
-
+	Renderer::render(get_cave());
 	int key = 0;
 	while ((key = UI::instance().input(500)) != KEY_ESCAPE)
 	{
 		handle_key(key);
 
-		//get_cave().draw();
 		Renderer::render(get_cave());
 		UI::instance().increase_loop_number(); // should do this with registry.ctx() instead
 
@@ -129,6 +126,5 @@ void Game::loop()
 		}
 		reset_actions();
 	}
-	//UI::instance().print_log(get_registry().ctx().get<GameLogger>().last(Screen::height()));
 }
 

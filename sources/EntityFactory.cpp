@@ -1,9 +1,6 @@
 #include <filesystem>                                     // for path
 #include <fstream>                                        // for basic_ifstream
-#include <nlohmann/detail/iterators/iter_impl.hpp>        // for iter_impl
-#include <nlohmann/detail/iterators/iteration_proxy.hpp>  // for iteration_p...
 #include <nlohmann/json.hpp>                              // for basic_json
-#include <nlohmann/json_fwd.hpp>                          // for json
 #include <regex>                                          // for regex_match
 #include <string>                                         // for string, ope...
 #include "Color.hpp"                                      // for Color

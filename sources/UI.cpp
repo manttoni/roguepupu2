@@ -21,6 +21,14 @@
 #include "entt.hpp"       // for unique_ptr, make_unique, vector, allocator
 #include "ECS.hpp"
 
+void UI::print_wstr(const size_t y, const size_t x, const std::wstring& wstr)
+{
+	mvwaddwstr(panel_window(current_panel), y, x, wstr.c_str());
+}
+void UI::print_wstr(const std::wstring& wstr)
+{
+	waddwstr(panel_window(current_panel), wstr.c_str());
+}
 void UI::print_wide(const size_t y, const size_t x, const wchar_t wc)
 {
 	wchar_t wc_str[2] = { wc, L'\0' };
@@ -160,6 +168,12 @@ std::string UI::dialog(const std::string& text, const std::vector<std::string>& 
 	return dialog(std::vector<std::string>{text}, options, position, initial_selection);
 }
 
+void UI::resize_terminal()
+{
+	destroy_panel(Panel::STATUS);
+	init_panel(Panel::STATUS);
+}
+
 // return input as int for ncurses
 // if no delay defined, will wait forever for input
 // otherwise will be non-blocking, but waiting for delay times ms
@@ -221,6 +235,9 @@ int UI::input(int delay)
 	// make getch() blocking (default)
 	timeout(-1);
 
+	if (key == KEY_RESIZE)
+		resize_terminal();
+
 	return key;
 }
 
@@ -255,25 +272,40 @@ Cell* UI::get_clicked_cell(Cave& cave)
 	return &cave.get_cell(dest_idx);
 }
 
+void UI::init_panel(Panel id)
+{
+	PANEL* panel = nullptr;
+	switch (id)
+	{
+		case Panel::GAME:
+			panel = new_panel(newwin(Screen::height(), Screen::width(), 0, 0));
+			break;
+		case Panel::STATUS:
+			panel = new_panel(newwin(7, 27, Screen::height() - 7, Screen::width() - 27));
+			break;
+	}
+	panels[id] = panel;
+}
+
 void UI::init_panels()
 {
-	PANEL* game_panel = new_panel(newwin(Screen::height(), Screen::width(), 0, 0));
-	UI::instance().add_panel(UI::Panel::GAME, game_panel);
-	PANEL* log_panel = new_panel(newwin(Screen::height(), Screen::width(), 0, 0));
-	UI::instance().add_panel(UI::Panel::LOG, log_panel);
-	PANEL* status_panel = new_panel(newwin(Screen::height(), Screen::width(), 0, 0));
-	UI::instance().add_panel(UI::Panel::STATUS, status_panel);
+	init_panel(Panel::GAME);
+	init_panel(Panel::STATUS);
+}
+
+void UI::destroy_panel(Panel id)
+{
+	PANEL* panel = panels[id];
+	WINDOW* window = panel_window(panel);
+	del_panel(panel);
+	delwin(window);
 }
 
 void UI::destroy_panels()
 {
 	auto panels = UI::instance().get_panels();
-	for (auto [name, panel] : panels)
-	{
-		WINDOW* window = panel_window(panel);
-		del_panel(panel);
-		delwin(window);
-	}
+	for (auto [id, panel] : panels)
+		destroy_panel(id);
 }
 
 void UI::init()

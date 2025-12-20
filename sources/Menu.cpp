@@ -148,7 +148,10 @@ std::string Menu::loop()
 			if (highlight == true) UI::instance().enable_attr(A_REVERSE);
 			if (elements[i]->get_text() == MenuTxt::HorizontalLine)
 			{
-				UI::instance().print("\n");
+				std::wstring line(width, L'─');
+				UI::instance().print_wstr(line);
+				//elements[i]->set_text(std::string(width - 2, ACS_HLINE));
+				//UI::instance().print("--\n");
 				//mvwhline(window, i + 1, 1, ACS_HLINE, width - 2);
 				continue;
 			}

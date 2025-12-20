@@ -36,9 +36,7 @@ class UI
 	public:
 		enum class Panel
 		{
-			STDSCR,
 			GAME,
-			LOG,
 			STATUS,
 		};
 	private:
@@ -47,6 +45,8 @@ class UI
 		void add_panel(const Panel p, PANEL* panel) { panels[p] = panel; }
 		PANEL* get_panel(const Panel p) { return panels[p]; }
 		std::map<Panel, PANEL*> get_panels() { return panels; }
+		void init_panel(Panel id);
+		void destroy_panel(Panel id);
 
 	private:
 		std::map<Color, short> initialized_colors;
@@ -93,6 +93,8 @@ class UI
 		size_t get_loop_number() const { return loop_number; }
 		void increase_loop_number() { loop_number++; }
 
+		void print_wstr(const std::wstring& wstr);
+		void print_wstr(const size_t y, const size_t x, const std::wstring& wstr);
 		void print_wide(const size_t y, const size_t x, wchar_t wc);
 		void print_wide(wchar_t wc);
 		void print_colors(const char* ptr);
@@ -102,7 +104,6 @@ class UI
 		void print(const size_t y, const size_t x, const std::string& str);
 		void println(const std::string& str = "");
 
-		void print_log(const std::vector<std::string>& messages);
 
 		std::string dialog(const std::vector<std::string>& text, const std::vector<std::string>& options = {}, const Screen::Coord& position = Screen::middle(), const size_t initial_selection = 0);
 		std::string dialog(const std::string& text, const std::vector<std::string>& options = {}, const Screen::Coord& position = Screen::middle(), const size_t initial_selection = 0);
@@ -119,5 +120,6 @@ class UI
 		void destroy_panels();
 		void init();
 		void end();
+		void resize_terminal();
 };
 
