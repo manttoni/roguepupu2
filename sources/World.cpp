@@ -268,7 +268,7 @@ void World::spawn_creatures()
 		assert(cell != nullptr);
 		assert(creature_idx < creature_pool.size());
 		const entt::entity e = EntityFactory::instance().create_entity(registry, creature_pool[creature_idx], cell);
-		canvas.get_creature_cache().push_back(e);
+		canvas.get_npcs().push_back(e);
 		level_sum += ECS::get_level(registry, e);
 		spawn_idx++;
 	}

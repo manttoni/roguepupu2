@@ -1,6 +1,7 @@
 #include "systems/DamageSystem.hpp"
 #include "systems/VisualEffectSystem.hpp"
 #include "GameLogger.hpp"
+#include "GameState.hpp"
 #include "entt.hpp"
 #include "Components.hpp"
 #include "ECS.hpp"
@@ -12,6 +13,11 @@ namespace DamageSystem
 	void kill(entt::registry& registry, const entt::entity entity)
 	{
 		registry.ctx().get<GameLogger>().log(ECS::get_colored_name(registry, entity) + " dies");
+		if (entity == ECS::get_player(registry))
+		{
+			registry.ctx().get<GameState>().running = false;
+			return;
+		}
 
 		// Change to corpse/remains glyph
 		if (!registry.all_of<Glyph>(entity))
@@ -32,8 +38,10 @@ namespace DamageSystem
 
 		// remove from cache
 		Cave& cave = *cell->get_cave();
-		auto& cache = cave.get_creature_cache();
-		cache.erase(std::find(cache.begin(), cache.end(), entity));
+		auto& npcs = cave.get_npcs();
+		auto it = std::find(npcs.begin(), npcs.end(), entity);
+		if (it != npcs.end())
+			npcs.erase(it);
 
 		registry.get<Name>(entity).name += " (corpse)";
 	}

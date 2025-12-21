@@ -54,8 +54,13 @@ namespace InventorySystem
 		if (registry.all_of<Glow>(item))
 		{
 			cell->get_cave()->reset_lights();
-			Renderer::render(*cell->get_cave());
+			Renderer::render(registry);
 		}
+	}
+
+	bool has_inventory(const entt::registry& registry, const entt::entity entity)
+	{
+		return registry.all_of<Inventory>(entity);
 	}
 
 };

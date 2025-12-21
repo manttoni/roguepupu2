@@ -90,8 +90,6 @@ class UI
 		}
 		PANEL* get_current_panel() const { return current_panel; }
 		WINDOW* get_current_window() const { return panel_window(current_panel); }
-		size_t get_loop_number() const { return loop_number; }
-		void increase_loop_number() { loop_number++; }
 
 		void print_wstr(const std::wstring& wstr);
 		void print_wstr(const size_t y, const size_t x, const std::wstring& wstr);
@@ -108,6 +106,7 @@ class UI
 		std::string dialog(const std::vector<std::string>& text, const std::vector<std::string>& options = {}, const Screen::Coord& position = Screen::middle(), const size_t initial_selection = 0);
 		std::string dialog(const std::string& text, const std::vector<std::string>& options = {}, const Screen::Coord& position = Screen::middle(), const size_t initial_selection = 0);
 		int input(int delay = -1); // wrapper for getch
+		Vec2 get_direction(const int key);
 		Cell* get_clicked_cell(Cave& cave);
 		size_t get_curs_y() const;
 		size_t get_curs_x() const;

@@ -5,6 +5,7 @@
 class Cell;
 class Color;
 struct Damage;
+class Cave;
 
 #define MELEE_RANGE 1.5
 
@@ -43,4 +44,5 @@ namespace ECS
 	int get_mana_max(const entt::registry& registry, const entt::entity entity);
 	bool is_dead(const entt::registry& registry, const entt::entity entity);
 	bool has_actions_left(const entt::registry& registry, const entt::entity entity);
+	Cave* get_active_cave(const entt::registry& registry);
 };

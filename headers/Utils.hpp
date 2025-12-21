@@ -23,7 +23,10 @@ enum class Direction
 
 struct Vec2
 {
-	int dy, dx;
+	int y, x;
+
+	bool operator!=(const Vec2& other) const { return y != other.y || x != other.x; }
+	bool operator==(const Vec2& other) const { return y == other.y && x == other.x; }
 };
 
 namespace Screen

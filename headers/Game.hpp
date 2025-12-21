@@ -1,5 +1,6 @@
 #pragma once
 
+#include "GameState.hpp"
 #include "GameLogger.hpp"  // for GameLogger
 #include "World.hpp"       // for World
 #include "entt.hpp"        // for entity, size_t, registry
@@ -9,14 +10,14 @@ class Game
 {
 	private:
 		World world;
-		GameLogger log;
+		GameLogger game_log;
+		GameState game_state;
 		size_t level;
 		entt::registry& registry;
 		entt::entity player;
-		bool over = false;
+		bool game_over = false;
 	public:
-		bool is_over() const { return over; }
-		GameLogger& get_log() { return log; }
+		bool is_over() const { return game_over; }
 		Cave& get_cave() { return world.get_cave(level); }
 		entt::registry& get_registry() { return world.get_registry(); }
 		void set_level(const size_t level) { this->level = level; }

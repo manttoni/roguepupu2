@@ -3,6 +3,7 @@
 #include <thread>
 #include "Components.hpp"
 #include "entt.hpp"
+#include "systems/ActionSystem.hpp"
 #include "systems/CombatSystem.hpp"
 #include "systems/DamageSystem.hpp"
 #include "systems/EquipmentSystem.hpp"
@@ -145,6 +146,6 @@ namespace CombatSystem
 		{
 			weapon_attack(registry, attacker, left_weapon, defender);
 		}
-		registry.get<Actions>(attacker).used++;
+		ActionSystem::use_action(registry, attacker);
 	}
 };

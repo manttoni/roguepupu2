@@ -9,6 +9,7 @@
 #include "UI.hpp"          // for UI
 #include "World.hpp"       // for World
 #include "entt.hpp"        // for vector, basic_sigh_mixin, size_t, entity
+#include "GameState.hpp"
 
 Cell::Cell() : idx(SIZE_MAX), type(Type::NONE), density(0) {}
 
@@ -68,13 +69,14 @@ ColorPair Cell::get_color_pair() const
 {
 	Color ret_fg, ret_bg;
 	const auto& entities = get_entities();
+	const auto& registry = cave->get_world()->get_registry();
+	const size_t render_frame = registry.ctx().get<GameState>().render_frame;
 
 	// foreground
 	if (entities.size() > 0)
 	{
-		size_t ln = UI::instance().get_loop_number();
-		const auto& e = entities[ln % entities.size()];
-		ret_fg = ECS::get_color(cave->get_world()->get_registry(), e);
+		const auto& e = entities[render_frame % entities.size()];
+		ret_fg = ECS::get_color(registry, e);
 	}
 	else
 		ret_fg = this->fg;
@@ -124,11 +126,11 @@ wchar_t Cell::get_glyph() const
 		return glyph;
 
 	const auto& registry = cave->get_world()->get_registry();
-	const size_t loop = UI::instance().get_loop_number();
+	const size_t render_frame = registry.ctx().get<GameState>().render_frame;
 	entt::entity entity = entt::null;
 	const auto player = ECS::get_player(registry);
 	if (ECS::can_see(registry, player, entities[0]))
-		entity = entities[loop % entities_size];
+		entity = entities[render_frame % entities_size];
 	else
 	{	// If player cant see this cell, it can remember only solid objects
 		for (const auto e : entities)

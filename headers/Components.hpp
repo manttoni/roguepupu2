@@ -56,7 +56,7 @@ struct Resources
 };
 struct Actions
 {
-	int actions, used;
+	int total, used;
 };
 
 struct Equipment
@@ -68,4 +68,8 @@ struct Equipment
 struct Inventory
 {
 	std::vector<entt::entity> inventory;
+};
+struct Portal
+{
+	entt::entity destination;
 };

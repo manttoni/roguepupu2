@@ -10,4 +10,5 @@ namespace InventorySystem
 	void take_item(entt::registry& registry, const entt::entity taker, const entt::entity owner, const entt::entity item);
 	void drop_item(entt::registry& registry, const entt::entity owner, const entt::entity item);
 	double get_inventory_weight(const entt::registry& registry, const entt::entity entity);
+	bool has_inventory(const entt::registry& registry, const entt::entity entity);
 };

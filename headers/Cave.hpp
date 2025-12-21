@@ -69,9 +69,9 @@ class Cave
 		}
 
 	private:
-		std::vector<entt::entity> creature_cache;
+		std::vector<entt::entity> npcs;
 	public:
-		std::vector<entt::entity>& get_creature_cache() { return creature_cache; }
+		std::vector<entt::entity>& get_npcs() { return npcs; }
 
 	public:
 		Cave();

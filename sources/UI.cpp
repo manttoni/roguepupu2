@@ -241,6 +241,22 @@ int UI::input(int delay)
 	return key;
 }
 
+Vec2 UI::get_direction(const int key)
+{
+	switch (key)
+	{
+		case 'w': case KEY_UP: case '8':	return {-1, 0};
+		case 's': case KEY_DOWN: case '2':	return {1, 0};
+		case 'a': case KEY_LEFT: case '4':	return {0, -1};
+		case 'd': case KEY_RIGHT: case '6':	return {0, 1};
+		case '7': return {-1, -1};
+		case '9': return {-1, 1};
+		case '1': return {1, -1};
+		case '3': return {1, 1};
+		default:  return {0, 0}; // no direction
+	}
+}
+
 Cell* UI::get_clicked_cell(Cave& cave)
 {
 	Screen::Coord mouse_position = get_mouse_position();

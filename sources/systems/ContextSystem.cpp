@@ -127,4 +127,14 @@ namespace ContextSystem
 				break;
 	}
 
+	void examine_cell(entt::registry& registry, Cell* cell)
+	{
+		if (cell == nullptr) return;
+		const auto entities = cell->get_entities();
+		if (entities.empty()) return;
+		if (entities.size() == 1)
+			show_entity_details(registry, entities[0]);
+		else
+			show_entities_list(registry, cell);
+	}
 };

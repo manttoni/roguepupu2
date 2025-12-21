@@ -124,9 +124,9 @@ void Renderer::show_status(const entt::registry& registry)
 	draw_bar(Color(0,0,600), std::max(0.0, mp_per), 5, bar_len);
 }
 
-void Renderer::render(Cave& cave)
+void Renderer::render(const entt::registry& registry)
 {
-	const entt::registry& registry = cave.get_world()->get_registry();
+	Cave& cave = *ECS::get_active_cave(registry);
 	draw_cave(cave);
 	print_log(registry.ctx().get<GameLogger>());
 	show_status(registry);

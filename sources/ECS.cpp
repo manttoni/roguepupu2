@@ -294,9 +294,9 @@ namespace ECS
 		return false;
 	}
 
-	bool has_actions_left(const entt::registry& registry, const entt::entity entity)
+	Cave* get_active_cave(const entt::registry& registry)
 	{
-		const auto& actions = registry.get<Actions>(entity);
-		return actions.used < actions.actions;
+		const auto player = get_player(registry);
+		return get_cell(registry, player)->get_cave();
 	}
 };

@@ -150,9 +150,6 @@ std::string Menu::loop()
 			{
 				std::wstring line(width, L'─');
 				UI::instance().print_wstr(line);
-				//elements[i]->set_text(std::string(width - 2, ACS_HLINE));
-				//UI::instance().print("--\n");
-				//mvwhline(window, i + 1, 1, ACS_HLINE, width - 2);
 				continue;
 			}
 			UI::instance().print("  " + elements[i]->get_text() + "\n"); // spaces bcs of box()

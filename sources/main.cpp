@@ -18,11 +18,9 @@ void run()
 		options.push_back("New Game");
 		options.push_back("Controls");
 		options.push_back("Quit");
-		selection = UI::instance().dialog("Roguepupu 2", options);
+		selection = UI::instance().dialog("*** Roguepupu 2 ***", options);
 		if (selection == "Continue" && game != nullptr)
-		{
 			game->loop();
-		}
 		else if (selection == "New Game")
 		{
 			delete game;
@@ -30,17 +28,8 @@ void run()
 			game->loop();
 		}
 		else if (selection == "Controls")
-		{
-			UI::instance().dialog("Controls", {
-					"Move with arrows or WASD",
-					"Move also diagonally with numpad",
-					"Interact with left click",
-					"Use menu with arrows or mouse",
-					"i: inventory",
-					"c: character",
-					"space: pass",
-					"resizing terminal works mid game"});
-		}
+			UI::instance().dialog("Controls", {"To be implemented"});
+
 		if (game != nullptr && game->is_over())
 		{
 			delete game;
@@ -50,15 +39,10 @@ void run()
 	delete game;
 }
 
-int main(int argc, char** argv)
+int main(void)
 {
 	Log::log("--- Run started ---");
 	EntityFactory::instance().init();
-	if (argc > 1 && std::string(argv[1]) == "test")
-	{
-		tester();
-		return 0;
-	}
 	UI::instance().init();
 	run();
 	UI::instance().end();
