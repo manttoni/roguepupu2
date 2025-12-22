@@ -3,6 +3,7 @@
 #include <random>    // for mt19937
 #include "Cave.hpp"  // for Cave
 #include "entt.hpp"  // for size_t, registry, deque, vector
+#include "nlohmann/json.hpp"
 
 class World
 {
@@ -34,26 +35,15 @@ class World
 		double erosion_b;	// Smooth cave
 		double erosion_c;	// Smooth cave
 
-		double mushroom_spawn_chance;
-		double mushroom_frequency;
-		size_t mushroom_octaves;
-		size_t mushroom_woody_radius;
-		double mushroom_woody_space_ratio;
 
-		double chest_spawn_chance;
-		size_t chest_value_power;
-		size_t chest_value_multiplier;
-		int chest_value_scalar;
-		size_t chest_item_variance;
-
+		std::vector<size_t> get_empty_cells(const Cave& cave);
 		void form_rock();
 		void form_tunnels();
 		std::vector<size_t> find_water_path();
 		void set_source_sink();
-		void spawn_mushrooms();
-		void spawn_chests();
-		void spawn_creatures();
 		void set_rock_colors();
+		void set_humidity();
+		void spawn_entities(nlohmann::json& filter);
 
 	public:
 		World();

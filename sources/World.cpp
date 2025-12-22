@@ -14,6 +14,8 @@
 #include "World.hpp"                     // for World
 #include "entt.hpp"                      // for vector, size_t, deque, map
 #include "systems/InventorySystem.hpp"   // for add_item
+#include "AbilityDatabase.hpp"
+#include "Components.hpp"
 
 World::World() : seed(Random::randsize_t(10000, 99999)), rng(seed)
 {
@@ -35,25 +37,13 @@ World::World() : seed(Random::randsize_t(10000, 99999)), rng(seed)
 		erosion_a = noise["erosion_a"].get<double>();
 		erosion_b = noise["erosion_b"].get<double>();
 		erosion_c = noise["erosion_c"].get<double>();
-
-		const auto& mushrooms = data["mushrooms"];
-		mushroom_spawn_chance = mushrooms["spawn_chance"].get<double>();
-		mushroom_frequency = mushrooms["frequency"].get<double>();
-		mushroom_octaves = mushrooms["octaves"].get<size_t>();
-		mushroom_woody_radius = mushrooms["woody_radius"].get<size_t>();
-		mushroom_woody_space_ratio = mushrooms["woody_space_ratio"].get<double>();
-
-		const auto& chests = data["chests"];
-		chest_spawn_chance = chests["spawn_chance"].get<double>();
-		chest_value_power = chests["value_power"].get<size_t>();
-		chest_value_multiplier = chests["value_multiplier"].get<size_t>();
-		chest_value_scalar = chests["value_scalar"].get<int>();
-		chest_item_variance = chests["item_variance"].get<size_t>();
 	}
 	catch (std::exception& e)
 	{
 		Log::error("Parsing world generation data went wrong");
 	}
+
+	registry.ctx().emplace<AbilityDatabase>();
 }
 
 // A* to find path of least resistance through solid rock
@@ -146,10 +136,10 @@ void World::form_rock()
 		size_t x = i % width;
 		double perlin = Random::noise3D(y, x, level, frequency, seed, octaves);
 		double density = Math::map(perlin, 0, 1, 1, 9);
-		cells[i].set_type(Cell::Type::ROCK);
+		cells[i].set_type(Cell::Type::Rock);
 		cells[i].set_density(density);
 		cells[i].set_idx(i);
-		cells[i].set_glyph(L'█');
+		cells[i].set_glyph(L' ');
 	}
 }
 
@@ -178,131 +168,167 @@ void World::set_source_sink()
 	for (const auto idx : around_sink)
 		canvas.get_cell(idx).reduce_density(10);
 }
-
-// Glowing fungi grow next to walls
-// Woody fungi grow if there is enough space
-void World::spawn_mushrooms()
-{
-	auto& canvas = caves.back();
-	auto& cells = canvas.get_cells();
-
-	for (size_t i = 0; i < height * width; ++i)
-	{
-		if (cells[i].blocks_movement())
-			continue;
-		if (Random::noise3D(i / width, i % width, canvas.get_level(), mushroom_frequency, seed, mushroom_octaves) > mushroom_spawn_chance
-			|| Random::randsize_t(0, 100, rng) >= mushroom_spawn_chance * 100)
-			continue;
-
-		Cell& cell = cells[i];
-		if (cell.get_type() != Cell::Type::FLOOR)
-			continue;
-
-		if (canvas.neighbor_has_type(i, Cell::Type::ROCK))
-		{
-			EntityFactory::instance().create_entity(registry, "glowing mushroom", &cell);
-			continue;
-		}
-		const auto& nearby = canvas.get_nearby_ids(i, mushroom_woody_radius);
-		double space = 0;
-		for (const auto& idx : nearby)
-			if (!cells[idx].blocks_movement())
-				space++;
-		double a = 3.14 * mushroom_woody_radius * mushroom_woody_radius;
-		if (space / a > mushroom_woody_space_ratio)
-			EntityFactory::instance().create_entity(registry, "woody mushroom", &cell);
-
-	}
-}
-
-void World::spawn_chests()
-{
-	auto& canvas = caves.back();
-	auto& cells = canvas.get_cells();
-
-	for (size_t i = 0; i < height * width; ++i)
-	{
-		if (cells[i].blocks_movement() || Random::randreal(0, 1) > chest_spawn_chance)
-			continue;
-
-		nlohmann::json loot_filter = {{"category", "items"}};
-		const auto& loot_pool = EntityFactory::instance().random_pool(loot_filter, chest_item_variance);
-		const auto chest = EntityFactory::instance().create_entity(registry, "chest", &cells[i]);
-		size_t amount = Random::randsize_t(0, 5);
-		for (size_t i = 0; i < amount; ++i)
-		{
-			const size_t rand_idx = Random::randsize_t(0, loot_pool.size() - 1);
-			assert(rand_idx < loot_pool.size());
-			const auto item = EntityFactory::instance().create_entity(registry, loot_pool[rand_idx]);
-			InventorySystem::add_item(registry, chest, item);
-		}
-	}
-}
-
-void World::spawn_creatures()
-{
-	auto& canvas = caves.back();
-	auto& cells = canvas.get_cells();
-	const size_t enemy_levels = 50 * canvas.get_level();
-	std::vector<size_t> spawn_cells;
-
-	for (size_t i = 0; i < height * width; ++i)
-	{
-		if (!cells[i].blocks_movement())
-			spawn_cells.push_back(i);
-	}
-
-	std::shuffle(spawn_cells.begin(), spawn_cells.end(), rng);
-	const nlohmann::json& filter =
-	{
-		{"category", "creatures"}
-	};
-	const auto& creature_pool = EntityFactory::instance().random_pool(filter, 3);
-	size_t level_sum = 0;
-	size_t spawn_idx = 0;
-	while (level_sum < enemy_levels && spawn_idx < spawn_cells.size())
-	{
-		const size_t idx = spawn_cells[spawn_idx];
-		const size_t creature_idx = Random::randsize_t(0, creature_pool.size() - 1);
-		Cell* cell = &cells[idx];
-		assert(cell != nullptr);
-		assert(creature_idx < creature_pool.size());
-		const entt::entity e = EntityFactory::instance().create_entity(registry, creature_pool[creature_idx], cell);
-		canvas.get_npcs().push_back(e);
-		level_sum += ECS::get_level(registry, e);
-		spawn_idx++;
-	}
-}
-
 void World::set_rock_colors()
 {
 	auto& canvas = caves.back();
 	for (auto& cell : canvas.get_cells())
 	{
-		if (cell.get_type() != Cell::Type::ROCK)
+		if (cell.get_type() != Cell::Type::Rock)
 			continue;
 		const short channel = 100 * static_cast<short>(std::ceil(cell.get_density()));
-		cell.set_fg(Color(channel, channel, channel));
+		cell.set_bg(Color(channel, channel, channel));
 	}
+}
+
+void World::set_humidity()
+{
+	auto& canvas = caves.back();
+	const size_t z = canvas.get_level();
+	for (const auto cell_idx : get_empty_cells(canvas))
+	{
+		const size_t y = cell_idx / width;
+		const size_t x = cell_idx % width;
+		const double value = Random::noise3D(y, x, z, 0.25, seed, 1);
+		canvas.get_cell(cell_idx).set_humidity(sqrt(value));
+	}
+}
+
+// Get cells that have nothing else than a floor
+std::vector<size_t> World::get_empty_cells(const Cave& cave)
+{
+	std::vector<size_t> empty_cells;
+	for (const auto& cell : cave.get_cells())
+	{
+		if (cell.is_empty())
+			empty_cells.push_back(cell.get_idx());
+	}
+	return empty_cells;
+}
+
+void World::spawn_entities(nlohmann::json& filter)
+{
+	auto& canvas = caves.back();
+	const auto z = canvas.get_level();
+	filter["spawn"] = "any";
+	filter["player"] = "none";
+	Log::log("Spawning entities using filter: " + filter.dump(4));
+	const auto& names = EntityFactory::instance().random_pool(filter, SIZE_MAX);
+	Log::log(std::to_string(names.size()) + " entities found");
+	const auto& LUT = EntityFactory::instance().get_LUT();
+	const auto& empty_cells = get_empty_cells(canvas);
+	auto& cells = canvas.get_cells();
+	size_t spawned = 0;
+	for (const auto& cell_idx : empty_cells)
+	{
+		Cell& cell = cells[cell_idx];
+		const size_t y = cell_idx / width;
+		const size_t x = cell_idx % width;
+		for (const auto& name : names)
+		{
+			if (!LUT.contains(name))
+				Log::error("EntityFactory LUT error with " + name);
+			const auto& data = LUT.at(name);
+			const auto& spawn = data["spawn"];
+			if (spawn.contains("chance"))
+			{
+				const double frequency = spawn.contains("frequency") ? spawn["frequency"].get<double>() : Random::randreal(0, 1);
+				const double octaves = spawn.contains("octaves") ? spawn["octaves"].get<size_t>() : Random::randsize_t(1, 8);
+				const double random = Random::noise3D(y, x, z, frequency, seed, octaves);
+				if (random > spawn["chance"].get<double>())
+					continue;
+			}
+			if (spawn.contains("near"))
+			{
+				const auto& near = spawn["near"].get<std::string>();
+				if (near == "rock")
+				{
+					if (!canvas.neighbor_has_type(cell_idx, Cell::Type::Rock))
+						continue;
+				}
+				else Log::error("Unknown near: " + near);
+			}
+			if (spawn.contains("space"))
+			{
+				const auto& space = spawn["space"].get<std::string>();
+				double radius;
+				if (space == "wide")
+					radius = 5;
+				else if (space == "narrow")
+					radius = 1.5;
+				else Log::error("Unknown space: " + space);
+
+				const auto& nearby = canvas.get_nearby_ids(cell_idx, radius);
+				double empty_space = 0;
+				for (const auto idx : nearby)
+				{
+					if (cells[idx].is_empty())
+						empty_space++;
+				}
+				const double total_space = 3.14 * radius * radius;
+
+				if (space == "wide" && empty_space / total_space < 0.9)
+					continue;
+				if (space == "narrow" && empty_space / total_space > 0.5)
+					continue;
+			}
+			if (spawn.contains("light"))
+			{
+				const auto& light = spawn["light"];
+				const auto& cell_lights = cell.get_lights();
+				size_t light_amount = 0;
+				for (const auto& [color, stacks] : cell_lights)
+					if (stacks > 0)
+						light_amount += stacks * (color.get_r() + color.get_g() + color.get_b());
+				if (light == "dark" && light_amount > 0.0)
+					continue;
+			}
+			if (spawn.contains("humidity"))
+			{
+				const auto& spawn_humidity = spawn["humidity"].get<double>();
+				if (spawn_humidity > cell.get_humidity())
+					continue;
+			}
+			// This entity really deserves to spawn here
+			entt::entity e = EntityFactory::instance().create_entity(registry, name, &cell);
+			spawned++;
+			caves.back().reset_lights();
+			if (registry.all_of<Actions>(e))
+				canvas.get_npcs().push_back(e);
+			break;
+		}
+	}
+	Log::log(std::string("Spawned ") + std::to_string(spawned) + std::string(" entities with filter: ") + filter.dump(4));
 }
 
 void World::generate_cave(const size_t level)
 {
 	UI::instance().dialog("Generating cave...");
+	Log::log("Generating cave " + std::to_string(level));
 
 	rng.seed(seed + level);
 	caves.emplace_back(level, height, width, seed);
 	caves.back().set_world(this);
 
+	// Create terrain
 	form_rock();
 	set_source_sink();
 	form_tunnels();
-	spawn_mushrooms();
-	spawn_chests();
-	spawn_creatures();
 	set_rock_colors();
+	set_humidity();
 
-	caves.back().apply_lights();
+	Log::log("Terrain generated");
+
+	// Spawn entities
+	std::vector<nlohmann::json> filters =
+	{
+		{{"subcategory", "mushrooms"}},
+		{{"category", "creatures"}}
+	};
+	for (auto& filter : filters)
+		spawn_entities(filter);
+
+	Log::log("Entities spawned");
+
 	return;
 }
 

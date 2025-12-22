@@ -24,10 +24,12 @@ Game::Game() :
 {
 	registry.ctx().emplace<GameLogger>(game_log);
 	registry.ctx().emplace<GameState>(game_state);
+	Log::log("Game object constructed");
 }
 
 void Game::loop()
 {
+	Log::log("Game loop started");
 	registry.ctx().get<GameState>().running = true;
 	while (registry.ctx().get<GameState>().running)
 	{

@@ -19,11 +19,11 @@ class Cell
 	public:
 		enum class Type
 		{
-			ROCK,	// solid rock
-			FLOOR,	// empty space with a floor
-			SOURCE,	// previous level
-			SINK,	// next level
-			NONE,	// default
+			None,	// default
+			Rock,	// solid rock
+			Floor,	// empty space with a floor
+			Source,	// previous level
+			Sink,	// next level
 		};
 	private:
 		Type type;
@@ -90,6 +90,12 @@ class Cell
 		bool is_seen() const { return seen; }
 		void set_seen(const bool seen) { this->seen = seen; }
 
+	private:
+		double humidity;
+	public:
+		double get_humidity() const { return humidity; }
+		void set_humidity(const double value) { humidity = value; }
+
 	public:
 		Cell();
 		Cell(const size_t idx, const Type& type, Cave* cave, const wchar_t symbol, const double density = 0);
@@ -101,11 +107,12 @@ class Cell
 		bool operator==(const Cell &other) const;
 		bool operator!=(const Cell &other) const;
 		bool operator<(const Cell &other) const;
-		Cell &operator=(const Cell& other) = default;
+		Cell& operator=(const Cell& other) = default;
 
 		/* CELL FEATURES */
 		bool blocks_vision() const;
 		bool blocks_movement() const;
+		bool is_empty() const;
 
 		// Get entities in this
 		std::vector<entt::entity> get_entities() const;

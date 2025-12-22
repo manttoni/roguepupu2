@@ -4,6 +4,7 @@
 #include "GameLogger.hpp"  // for GameLogger
 #include "World.hpp"       // for World
 #include "entt.hpp"        // for entity, size_t, registry
+#include "AbilityDatabase.hpp"
 class Cave;
 
 class Game
@@ -12,6 +13,7 @@ class Game
 		World world;
 		GameLogger game_log;
 		GameState game_state;
+		AbilityDatabase ability_database;
 		size_t level;
 		entt::registry& registry;
 		entt::entity player;

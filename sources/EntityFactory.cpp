@@ -10,18 +10,25 @@
 #include "Utils.hpp"                                      // for error, rand...
 #include "entt.hpp"                                       // for operator==
 #include "systems/EquipmentSystem.hpp"                    // for equip
+#include "systems/ActionSystem.hpp"
+#include "Intent.hpp"
+#include "Ability.hpp"
+#include "AbilityDatabase.hpp"
 class Cell;  // lines 18-18
 
 #define CELL_SIZE 5
 #define MELEE_RANGE 1.5
 void EntityFactory::init()
 {
-	read_definitions("data/entities/items/weapons.json");
-	read_definitions("data/entities/items/armor.json");
-	read_definitions("data/entities/plants/mushrooms.json");
-	read_definitions("data/entities/furniture/chests.json");
-	read_definitions("data/entities/creatures/players.json");
-	read_definitions("data/entities/creatures/goblins.json");
+	const std::filesystem::path root = "data/entities";
+	for (const auto& entry : std::filesystem::recursive_directory_iterator(root))
+	{
+		if (!entry.is_regular_file())
+			continue;
+		if (entry.path().extension() != ".json")
+			continue;
+		read_definitions(entry.path());
+	}
 }
 
 void EntityFactory::read_definitions(const std::filesystem::path& path)
@@ -101,7 +108,6 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			reg.template emplace<Player>(e);
 		}
 	},
-
 	{ "weight", [](auto& reg, auto e, const nlohmann::json& data)
 		{
 			reg.template emplace<Weight>(e, data.get<double>());
@@ -228,6 +234,59 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 		{
 			reg.template emplace<Actions>(e, data.get<int>(), 0);
 		}
+	},
+	{ "abilities", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			if (!data.is_array())
+				Log::error("Abilities not an array: " + data.dump(4));
+			std::map<std::string, Ability> abilities;
+			for (const auto& ability : data)
+			{
+				const auto id = ability.get<std::string>();
+				const auto& database = reg.ctx().template get<AbilityDatabase>();
+				abilities[id] = database.get_ability(id);
+			}
+			reg.template emplace<Abilities>(e, abilities);
+		}
+	},
+	{ "ai", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			if (!data.is_array())
+				Log::error("AI not an array: " + data.dump(4));
+			std::vector<Intent> intentions;
+			for (const auto& entry : data)
+			{
+				Intent intent;
+				if (entry.contains("use_ability"))
+				{
+					const auto& id = entry["use_ability"].get<std::string>();
+					intent.type = Intent::Type::UseAbility;
+					intent.ability_id = id;
+				}
+				else if (entry.contains("action"))
+				{
+					const auto& action = entry["action"].get<std::string>();
+					if (action == "hide")
+						intent.type = Intent::Type::Hide;
+					else if (action == "attack")
+						intent.type = Intent::Type::Attack;
+					else if (action == "flee")
+						intent.type = Intent::Type::Flee;
+					else
+						Log::error("Unknown action: " + action);
+				}
+				else
+					Log::error("Unknown intent: " + entry.dump(4));
+				intentions.push_back(intent);
+			}
+			reg.template emplace<AI>(e, intentions);
+		}
+	},
+	{ "spawn", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			// unused at this point
+			(void) reg; (void) e; (void) data;
+		}
 	}
 };
 
@@ -287,8 +346,20 @@ bool EntityFactory::exclude(const nlohmann::json& data, const nlohmann::json& fi
 {
 	for (const auto& [filter_field, filter_data] : filter.items())
 	{
-		if (data.contains("player"))
-			return true; // always exclude players
+		if (filter_data == "any")
+		{
+			if (data.contains(filter_field))
+				continue;
+			else
+				return true;
+		}
+		if (filter_data == "none")
+		{
+			if (data.contains(filter_field))
+				return true;
+			else
+				continue;
+		}
 		if (!data.contains(filter_field) || data[filter_field] != filter_data)
 			return true;
 	}

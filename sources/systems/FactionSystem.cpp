@@ -15,6 +15,12 @@ namespace FactionSystem
 		if (a_f == b_f)
 			return false;
 
+		if (a_f == "player" || b_f == "player")
+		{
+			if (a_f == "spiders" || b_f == "spiders")
+				return false;
+		}
+
 		return true;
 	}
 };

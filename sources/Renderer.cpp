@@ -52,8 +52,8 @@ void Renderer::draw_cave(Cave& cave)
 
 		if (!cave.has_vision(player_idx, cell_idx, registry.get<Vision>(player).range))
 		{
-			if (cell.is_seen() && cell.blocks_movement()) // "ghost" cell if it was seen before and was solid
-				color_pair = ColorPair(Color(123, 123, 123), Color(0, 0, 0));
+			if (cell.is_seen() && cell.get_type() == Cell::Type::Rock)
+				color_pair = ColorPair(Color(123, 123, 123), Color(123, 123, 123));
 			else
 				continue;
 		}

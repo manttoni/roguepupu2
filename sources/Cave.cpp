@@ -8,14 +8,6 @@
 #include "World.hpp"       // for World
 #include "entt.hpp"        // for vector, size_t, map, ceil, allocator, basi...
 
-Cave::Cave() :
-	height(0),
-	width(0),
-	level(0),
-	seed(0),
-	source(0),
-	sink(0) {}
-
 Cave::Cave(const size_t level, const size_t height, const size_t width, const size_t seed) :
 	height(height),
 	width(width),
@@ -23,7 +15,8 @@ Cave::Cave(const size_t level, const size_t height, const size_t width, const si
 	level(level),
 	seed(seed),
 	source(0),
-	sink(0)
+	sink(0),
+	humidity(Random::randreal(0, 1, seed))
 {
 	for (auto& cell : cells)
 		cell.set_cave(this);
@@ -39,10 +32,10 @@ Cave::Cave(const std::string& map, const size_t width) : height(map.size() / wid
 		switch (c)
 		{
 			case 'f':
-				type = Cell::Type::FLOOR;
+				type = Cell::Type::Floor;
 				break;
 			case 'w':
-				type = Cell::Type::ROCK;
+				type = Cell::Type::Rock;
 				break;
 		}
 		cells.push_back(Cell(i, type, this, c));

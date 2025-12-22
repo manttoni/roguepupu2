@@ -11,7 +11,7 @@
 #include "entt.hpp"        // for vector, basic_sigh_mixin, size_t, entity
 #include "GameState.hpp"
 
-Cell::Cell() : idx(SIZE_MAX), type(Type::NONE), density(0) {}
+Cell::Cell() : idx(SIZE_MAX), type(Type::None), density(0) {}
 
 Cell::Cell(const size_t idx, const Type &type, Cave* cave, const wchar_t glyph, const double density)
 	: idx(idx), type(type), cave(cave), glyph(glyph), density(density)
@@ -34,7 +34,7 @@ bool Cell::operator<(const Cell &other) const
 
 void Cell::reduce_density(const double amount)
 {
-	if (type != Type::ROCK)
+	if (type != Type::Rock)
 		return; // for now only rock can weaken
 
 	if (amount <= density)
@@ -45,7 +45,7 @@ void Cell::reduce_density(const double amount)
 
 	// rock has been destroyed
 	density = 0;
-	type = Type::FLOOR;
+	type = Type::Floor;
 	glyph = L' ';
 	bg = Color(35, 40, 30);
 }
@@ -96,7 +96,7 @@ ColorPair Cell::get_color_pair() const
 
 bool Cell::blocks_movement() const
 {
-	if (type == Type::ROCK)
+	if (type == Type::Rock)
 		return true;
 
 	for (const auto& ent : get_entities())
@@ -108,7 +108,7 @@ bool Cell::blocks_movement() const
 
 bool Cell::blocks_vision() const
 {
-	if (type == Type::ROCK)
+	if (type == Type::Rock)
 		return true;
 
 	for (const auto& ent : get_entities())
@@ -140,6 +140,13 @@ wchar_t Cell::get_glyph() const
 	if (entity == entt::null)
 		return L' ';
 	return ECS::get_glyph(registry, entity);
+}
+
+bool Cell::is_empty() const
+{
+	if (!get_entities().empty())
+		return false;
+	return type == Type::Floor;
 }
 
 // Use when rendering something in a single cell

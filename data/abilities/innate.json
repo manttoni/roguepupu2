@@ -1,0 +1,7 @@
+{
+	"spin web": {
+		"summon": "spider web",
+		"cooldown": 100,
+		"target": "self"
+	}
+}

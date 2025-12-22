@@ -3,6 +3,8 @@
 #include <string>     // for basic_string, string
 #include "Color.hpp"  // for Color
 #include "entt.hpp"   // for null, null_t, entity, vector
+#include "Intent.hpp"
+#include "Ability.hpp"
 class Cell;
 
 struct Solid {};
@@ -69,7 +71,15 @@ struct Inventory
 {
 	std::vector<entt::entity> inventory;
 };
-struct Portal
+struct Transition
 {
 	entt::entity destination;
+};
+struct AI
+{
+	std::vector<Intent> intentions;
+};
+struct Abilities
+{
+	std::map<std::string, Ability> abilities;
 };

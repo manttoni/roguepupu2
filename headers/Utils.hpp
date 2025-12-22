@@ -182,6 +182,12 @@ namespace Random
 		std::uniform_real_distribution<> dist(min, max);
 		return dist(rng());
 	}
+	inline double randreal(const double min, const double max, const size_t seed)
+	{
+		std::mt19937 gen(seed);
+		std::uniform_real_distribution<> dist(min, max);
+		return dist(gen);
+	}
 
 	// PERLIN NOISE
 	inline double noise3D(double x, double y, double z, double f, int seed, int octave)

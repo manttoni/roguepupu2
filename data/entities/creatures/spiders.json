@@ -1,0 +1,25 @@
+{
+	"small spider": {
+		"level": 0,
+		"weight": 0.0001,
+		"fgcolor": [150, 100, 150],
+		"attributes": {
+			"strength": 1,
+			"dexterity": 10,
+			"intelligence": 1
+		},
+		"vision": 1,
+		"faction": "spiders",
+		"abilities": [ "spin web" ],
+		"ai": [
+			{ "use_ability": "spin web" },
+			{ "action": "hide" }
+		],
+		"spawn": {
+			"light": "dark",
+			"space": "narrow",
+			"frequency": 0.5,
+			"chance": 0.4
+		}
+	}
+}

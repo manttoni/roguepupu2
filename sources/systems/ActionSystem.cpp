@@ -15,6 +15,7 @@
 #include "ECS.hpp"
 #include "Renderer.hpp"
 #include "Components.hpp"
+#include "Intent.hpp"
 
 namespace ActionSystem
 {
@@ -43,35 +44,35 @@ namespace ActionSystem
 	{
 		switch (intent.type)
 		{
-			case Type::ExamineCell:
+			case Intent::Type::ExamineCell:
 				ContextSystem::examine_cell(registry, intent.target_cell);
 				break;
-			case Type::OpenInventory:
+			case Intent::Type::OpenInventory:
 				ContextSystem::show_entities_list(registry, intent.target);
 				break;
-			case Type::ShowPlayer:
+			case Intent::Type::ShowPlayer:
 				ContextSystem::show_entity_details(registry, actor);
 				break;
-			case Type::Move:
+			case Intent::Type::Move:
 				MovementSystem::move(registry, actor, intent.target_cell);
 				// if (TrapSystem::is_trapped(registry, intent.target_cell))...
 				break;
-			case Type::Attack:
+			case Intent::Type::Attack:
 				CombatSystem::attack(registry, actor, intent.target);
 				break;
-			case Type::Transition:
-				TransitionSystem::transition(registry, actor, intent.target);
-				break;
-			case Type::Unlock:
+			case Intent::Type::Unlock:
 				AccessSystem::unlock(registry, actor, intent.target);
 				break;
-			case Type::Open:
+			case Intent::Type::Open:
 				AccessSystem::open(registry, actor, intent.target);
 				break;
-			case Type::DoNothing:
+			case Intent::Type::UseAbility:
+				registry.get<Abilities>(actor).abilities.at(intent.ability_id).use(registry, intent.target_cell);
+				break;
+			case Intent::Type::DoNothing:
 				use_action(registry, actor);
 				return;
-			case Type::None:
+			case Intent::Type::None:
 			default:
 				return;
 		}
@@ -88,24 +89,20 @@ namespace ActionSystem
 		const size_t target_idx = y * cave->get_width() + x;
 		Cell* target_cell = &cave->get_cell(target_idx);
 		if (target_cell == nullptr)
-			return {Type::None};
+			return {Intent::Type::None};
 		const auto& entities = target_cell->get_entities();
 		for (const auto target : entities)
 		{
 			if (AccessSystem::is_locked(registry, target))
-				return {Type::Unlock, target_cell, target};
+				return {Intent::Type::Unlock, target_cell, target};
 			if (AccessSystem::is_closed(registry, target))
-				return {Type::Open, target_cell, target};
+				return {Intent::Type::Open, target_cell, target};
 			if (FactionSystem::is_enemy(registry, actor, target))
-				return {Type::Attack, target_cell, target};
-			//if (InventorySystem::has_inventory(registry, target))
-			//	return {Type::OpenInventory, target_cell, target};
-			if (TransitionSystem::is_portal(registry, target))
-				return {Type::Transition, target_cell, target};
+				return {Intent::Type::Attack, target_cell, target};
 		}
 		if (MovementSystem::can_move(*cave, current_idx, target_idx))
-			return {.type = Type::Move, .target_cell = target_cell};
-		return {.type = Type::None};
+			return {.type = Intent::Type::Move, .target_cell = target_cell};
+		return {.type = Intent::Type::None};
 	}
 
 	Intent get_player_intent(entt::registry& registry)
@@ -124,28 +121,27 @@ namespace ActionSystem
 			switch (key)
 			{
 				case KEY_RIGHT_CLICK:
-					return {.type = Type::Attack, .target_cell = UI::instance().get_clicked_cell(*cave)};
+					return {.type = Intent::Type::Attack, .target_cell = UI::instance().get_clicked_cell(*cave)};
 				case KEY_LEFT_CLICK:
-					return {.type = Type::ExamineCell, .target_cell = UI::instance().get_clicked_cell(*cave)};
+					return {.type = Intent::Type::ExamineCell, .target_cell = UI::instance().get_clicked_cell(*cave)};
 				case 'i':
-					return {.type = Type::OpenInventory, .target = player};
+					return {.type = Intent::Type::OpenInventory, .target = player};
 				case 'c':
-					return {.type = Type::ShowPlayer};
+					return {.type = Intent::Type::ShowPlayer};
 				case KEY_ESCAPE:
 					registry.ctx().get<GameState>().running = false;
 					[[fallthrough]];
 				case ' ':
-					return {.type = Type::DoNothing};
+					return {.type = Intent::Type::DoNothing};
 				default:
 					break;
 			}
 		}
-		return {.type = Type::None};
+		return {.type = Intent::Type::None};
 	}
 
 	void player_turn(entt::registry& registry)
 	{
-		Log::log("Player turn");
 		const auto player = ECS::get_player(registry);
 		Intent intent = get_player_intent(registry);
 		resolve_intent(registry, player, intent);
@@ -154,7 +150,6 @@ namespace ActionSystem
 
 	void npc_turn(entt::registry& registry)
 	{
-		Log::log("npc turn");
 		Cave* cave = ECS::get_active_cave(registry);
 		for (const auto npc : cave->get_npcs())
 		{

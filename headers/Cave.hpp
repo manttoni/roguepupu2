@@ -52,7 +52,7 @@ class Cave
 		void set_source_idx(const size_t source)
 		{
 			this->source = source;
-			cells[source].set_type(Cell::Type::SOURCE);
+			cells[source].set_type(Cell::Type::Source);
 			cells[source].set_density(0);
 			cells[source].set_glyph(L'▴');
 			cells[source].set_bg(Color(40, 45, 35));
@@ -61,7 +61,7 @@ class Cave
 		void set_sink_idx(const size_t sink)
 		{
 			this->sink = sink;
-			cells[sink].set_type(Cell::Type::SINK);
+			cells[sink].set_type(Cell::Type::Sink);
 			cells[sink].set_density(0);
 			cells[sink].set_glyph(L'▾');
 			cells[sink].set_bg(Color(40, 45, 35));
@@ -72,6 +72,12 @@ class Cave
 		std::vector<entt::entity> npcs;
 	public:
 		std::vector<entt::entity>& get_npcs() { return npcs; }
+
+	private:
+		double humidity;
+	public:
+		double get_humidity() const { return humidity; }
+		void set_humidity(const double value) { humidity = value; }
 
 	public:
 		Cave();
