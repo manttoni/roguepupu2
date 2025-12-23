@@ -254,7 +254,7 @@ void World::spawn_entities(nlohmann::json& filter)
 				if (space == "wide")
 					radius = 5;
 				else if (space == "narrow")
-					radius = 1.5;
+					radius = 1;
 				else Log::error("Unknown space: " + space);
 
 				const auto& nearby = canvas.get_nearby_ids(cell_idx, radius);
@@ -264,11 +264,11 @@ void World::spawn_entities(nlohmann::json& filter)
 					if (cells[idx].is_empty())
 						empty_space++;
 				}
-				const double total_space = 3.14 * radius * radius;
+				const double total_space = nearby.size();
 
 				if (space == "wide" && empty_space / total_space < 0.9)
 					continue;
-				if (space == "narrow" && empty_space / total_space > 0.5)
+				if (space == "narrow" && total_space - empty_space < 2)
 					continue;
 			}
 			if (spawn.contains("light"))
