@@ -14,6 +14,7 @@
 #include "World.hpp"                     // for World
 #include "entt.hpp"                      // for vector, size_t, deque, map
 #include "systems/InventorySystem.hpp"   // for add_item
+#include "systems/TransitionSystem.hpp"
 #include "AbilityDatabase.hpp"
 #include "Components.hpp"
 
@@ -143,30 +144,58 @@ void World::form_rock()
 	}
 }
 
+size_t World::randomize_transition_idx(const size_t other)
+{
+	// select source and sink (level entrance and exit)
+	const double within = width / 2 - 5; // allow idx inside this circle
+	const double level_distance = width / 4; // min distance between source and sink
+
+	const auto& canvas = caves.back();
+	const size_t center = width * (height / 2) + width / 2;
+	while (level_distance < within * 2)
+	{
+		const size_t idx = Random::randsize_t(0, height * width - 1);
+		const double distance = canvas.distance(center, idx);
+		if (distance > within)
+			continue;
+		if (other != 0 && canvas.distance(idx, other) < level_distance)
+			continue;
+
+		return idx;
+	}
+	Log::error("Could not find transition idx");
+}
+
 void World::set_source_sink()
 {
 	auto& canvas = caves.back();
-	size_t source_idx;
-	if (canvas.get_level() == 1)
-		source_idx = height / 2 * width + width / 2;
-	else
-		source_idx = (caves.end() - 2)->get_sink_idx();
-	canvas.set_source_idx(source_idx);
+	const size_t source_idx = canvas.get_level() == 1 ?
+		randomize_transition_idx() :
+		(caves.end() - 2)->get_sink_idx();
+	const size_t sink_idx = randomize_transition_idx(source_idx);
 
-	size_t sink_idx;
-	do
-		sink_idx = Random::randsize_t(0, height * width - 1, rng);
-	while
-		(canvas.distance(canvas.get_source_idx(), sink_idx) < width / 2);
+	canvas.set_source_idx(source_idx);
 	canvas.set_sink_idx(sink_idx);
 
-	// Clear space around them
-	const auto around_source = canvas.get_nearby_ids(source_idx, 2);
-	const auto around_sink = canvas.get_nearby_ids(sink_idx, 2);
-	for (const auto idx : around_source)
-		canvas.get_cell(idx).reduce_density(10);
-	for (const auto idx : around_sink)
-		canvas.get_cell(idx).reduce_density(10);
+	canvas.get_cell(source_idx).reduce_density(DENSITY_MAX);
+	canvas.get_cell(sink_idx).reduce_density(DENSITY_MAX);
+
+	for (const auto idx : canvas.get_nearby_ids(source_idx, 2.5))
+		canvas.get_cell(idx).reduce_density(DENSITY_MAX);
+	for (const auto idx : canvas.get_nearby_ids(sink_idx, 2.5))
+		canvas.get_cell(idx).reduce_density(DENSITY_MAX);
+
+	const entt::entity this_sink = EntityFactory::instance().create_entity(registry, "sink", &canvas.get_cell(sink_idx));
+	const entt::entity next_source = EntityFactory::instance().create_entity(registry, "source");
+	TransitionSystem::link_portals(registry, this_sink, next_source);
+
+	const size_t level = canvas.get_level();
+	if (level > 1)
+	{
+		const auto prev_sink = ECS::get_sink(registry, caves[level - 2]);
+		const auto this_source = TransitionSystem::get_destination(registry, prev_sink);
+		registry.emplace<Position>(this_source, &canvas.get_cell(source_idx));
+	}
 }
 void World::set_rock_colors()
 {
@@ -332,7 +361,6 @@ void World::generate_cave(const size_t level)
 	return;
 }
 
-// generate all z levels until reaches target
 Cave& World::get_cave(const size_t level)
 {
 	while (caves.size() < level)

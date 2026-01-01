@@ -299,4 +299,27 @@ namespace ECS
 		const auto player = get_player(registry);
 		return get_cell(registry, player)->get_cave();
 	}
+
+	entt::entity get_source(const entt::registry& registry, const Cave& cave)
+	{
+		const size_t idx = cave.get_source_idx();
+		const auto& entities = cave.get_cell(idx).get_entities();
+		for (const auto e : entities)
+		{
+			if (registry.get<Name>(e).name == "source")
+				return e;
+		}
+		return entt::null;
+	}
+	entt::entity get_sink(const entt::registry& registry, const Cave& cave)
+	{
+		const size_t idx = cave.get_sink_idx();
+		const auto& entities = cave.get_cell(idx).get_entities();
+		for (const auto e : entities)
+		{
+			if (registry.get<Name>(e).name == "sink")
+				return e;
+		}
+		return entt::null;
+	}
 };

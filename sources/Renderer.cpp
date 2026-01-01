@@ -49,18 +49,24 @@ void Renderer::draw_cave(Cave& cave)
 			continue;
 
 		ColorPair color_pair;
+		wchar_t glyph = L'?';
 
 		if (!cave.has_vision(player_idx, cell_idx, registry.get<Vision>(player).range))
 		{
-			if (cell.is_seen() && cell.get_type() == Cell::Type::Rock)
-				color_pair = ColorPair(Color(123, 123, 123), Color(123, 123, 123));
+			if (cell.is_seen() && cell.has_landmark())
+			{
+				color_pair = ColorPair(Color(123,123,123), Color{});
+				glyph = cell.get_landmark_glyph();
+			}
 			else
 				continue;
 		}
 		else
+		{
 			color_pair = cell.get_color_pair();
+			glyph = cell.get_glyph();
+		}
 
-		wchar_t glyph = cell.get_glyph();
 		UI::instance().enable_color_pair(color_pair);
 		UI::instance().print_wide(y, x, glyph);
 		cell.set_seen(true);

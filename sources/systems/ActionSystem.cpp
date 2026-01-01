@@ -16,6 +16,7 @@
 #include "Renderer.hpp"
 #include "Components.hpp"
 #include "Intent.hpp"
+#include "World.hpp"
 
 namespace ActionSystem
 {
@@ -40,6 +41,30 @@ namespace ActionSystem
 			return;
 		registry.get<Actions>(actor).used = 0;
 	}
+	void resolve_events(entt::registry& registry, const entt::entity actor)
+	{
+		Cell* cell = ECS::get_cell(registry, actor);
+		const auto& entities = cell->get_entities();
+		for (const auto& e : entities)
+		{
+			if (actor == ECS::get_player(registry) &&
+				registry.all_of<Transition>(e) &&
+				registry.get<Transition>(e).destination != entt::null)
+			{
+				// Player stepped on a portal which is connected to another portal
+				const auto destination = registry.get<Transition>(e).destination;
+				if (!registry.all_of<Position>(destination) && registry.get<Name>(destination).name == "source")
+				{
+					// The destination doesn't have a position because the cave is not yet generated
+					const size_t level = cell->get_cave()->get_level();
+					cell->get_cave()->get_world()->get_cave(level + 1);
+				}
+				assert(registry.all_of<Position>(destination));
+				MovementSystem::move(registry, actor, ECS::get_cell(registry, destination));
+				break;
+			}
+		}
+	}
 	void resolve_intent(entt::registry& registry, const entt::entity actor, Intent intent)
 	{
 		switch (intent.type)
@@ -55,7 +80,7 @@ namespace ActionSystem
 				break;
 			case Intent::Type::Move:
 				MovementSystem::move(registry, actor, intent.target_cell);
-				// if (TrapSystem::is_trapped(registry, intent.target_cell))...
+				resolve_events(registry, actor);
 				break;
 			case Intent::Type::Attack:
 				CombatSystem::attack(registry, actor, intent.target);
@@ -87,9 +112,11 @@ namespace ActionSystem
 		const size_t y = current_idx / cave->get_width() + direction.y;
 		const size_t x = current_idx % cave->get_width() + direction.x;
 		const size_t target_idx = y * cave->get_width() + x;
+		if (target_idx >= cave->get_cells().size())
+			return {.type = Intent::Type::None};
 		Cell* target_cell = &cave->get_cell(target_idx);
 		if (target_cell == nullptr)
-			return {Intent::Type::None};
+			return {.type = Intent::Type::None};
 		const auto& entities = target_cell->get_entities();
 		for (const auto target : entities)
 		{
@@ -139,6 +166,8 @@ namespace ActionSystem
 		}
 		return {.type = Intent::Type::None};
 	}
+
+
 
 	void player_turn(entt::registry& registry)
 	{

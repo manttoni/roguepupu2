@@ -45,4 +45,6 @@ namespace ECS
 	bool is_dead(const entt::registry& registry, const entt::entity entity);
 	bool has_actions_left(const entt::registry& registry, const entt::entity entity);
 	Cave* get_active_cave(const entt::registry& registry);
+	entt::entity get_source(const entt::registry& registry, const Cave& cave);
+	entt::entity get_sink(const entt::registry& registry, const Cave& cave);
 };

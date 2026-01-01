@@ -28,6 +28,7 @@ class Cave
 		const std::vector<Cell>& get_cells() const { return cells; }
 		std::vector<Cell>& get_cells() { return cells; }
 		Cell& get_cell(const size_t idx) { return cells[idx]; }
+		const Cell& get_cell(const size_t idx) const { return cells[idx]; }
 
 	private:
 		size_t level;
@@ -49,24 +50,8 @@ class Cave
 		Cell& get_source() { return cells[source]; }
 		Cell& get_sink() { return cells[sink]; }
 		const std::pair<size_t, size_t> get_ends() const { return { source, sink }; }
-		void set_source_idx(const size_t source)
-		{
-			this->source = source;
-			cells[source].set_type(Cell::Type::Source);
-			cells[source].set_density(0);
-			cells[source].set_glyph(L'▴');
-			cells[source].set_bg(Color(40, 45, 35));
-			cells[source].set_fg(Color(1000, 1000, 1000));
-		}
-		void set_sink_idx(const size_t sink)
-		{
-			this->sink = sink;
-			cells[sink].set_type(Cell::Type::Sink);
-			cells[sink].set_density(0);
-			cells[sink].set_glyph(L'▾');
-			cells[sink].set_bg(Color(40, 45, 35));
-			cells[sink].set_fg(Color(1000, 1000, 1000));
-		}
+		void set_source_idx(const size_t source) { this->source = source; }
+		void set_sink_idx(const size_t sink) { this->sink = sink; }
 
 	private:
 		std::vector<entt::entity> npcs;

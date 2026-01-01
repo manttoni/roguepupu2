@@ -24,6 +24,7 @@
 			"frequency": 0.1,
 			"chance": 0.45,
 			"humidity": 0.25
-		}
+		},
+		"landmark": true
 	}
 }

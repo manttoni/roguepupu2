@@ -15,7 +15,6 @@ namespace MovementSystem
 		auto& position = registry.get<Position>(actor);
 		position.cell = target_cell;
 		ActionSystem::use_action(registry, actor);
-		// use fatigue also, not implemented yet
 	}
 
 	bool can_move(Cave& cave, const size_t from_idx, const size_t to_idx)

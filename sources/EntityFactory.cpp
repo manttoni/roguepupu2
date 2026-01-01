@@ -1,3 +1,5 @@
+#include <codecvt>
+#include <locale>
 #include <filesystem>                                     // for path
 #include <fstream>                                        // for basic_ifstream
 #include <nlohmann/json.hpp>                              // for basic_json
@@ -139,7 +141,11 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 	{ "glyph", [](auto& reg, auto e, const nlohmann::json& data)
 		{
 			const std::string glyph_str = data.get<std::string>();
-			const wchar_t glyph = static_cast<wchar_t>(glyph_str[0]);
+			std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
+			std::wstring wstr = conv.from_bytes(glyph_str);
+			if (wstr.size() != 1)
+				Log::error("Glyph is too wide");
+			const wchar_t glyph = wstr[0];
 			reg.template emplace<Glyph>(e, glyph);
 		}
 	},
@@ -286,6 +292,12 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 		{
 			// unused at this point
 			(void) reg; (void) e; (void) data;
+		}
+	},
+	{ "landmark", [](auto& reg, auto e, const nlohmann::json& data)
+		{	// this entity will be remembered by player even if outside of vision
+			reg.template emplace<Landmark>(e);
+			(void) data;
 		}
 	}
 };

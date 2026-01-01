@@ -10,6 +10,7 @@
 #include "World.hpp"       // for World
 #include "entt.hpp"        // for vector, basic_sigh_mixin, size_t, entity
 #include "GameState.hpp"
+#include "Unicode.hpp"
 
 Cell::Cell() : idx(SIZE_MAX), type(Type::None), density(0) {}
 
@@ -204,3 +205,34 @@ void Cell::draw()
 	set_seen(true);
 	UI::instance().update();
 }
+
+bool Cell::has_landmark() const
+{
+	if (type == Type::Rock)
+		return true;
+	auto* world = cave->get_world();
+	auto& registry = world->get_registry();
+	const auto& entities = get_entities();
+	for (const auto& e : entities)
+	{
+		if (registry.all_of<Landmark>(e))
+			return true;
+	}
+	return false;
+}
+
+wchar_t Cell::get_landmark_glyph() const
+{
+	if (type == Type::Rock)
+		return Unicode::FullBlock;
+	auto* world = cave->get_world();
+	auto& registry = world->get_registry();
+	const auto& entities = get_entities();
+	for (const auto& e : entities)
+	{
+		if (registry.all_of<Landmark>(e))
+			return registry.get<Glyph>(e).glyph;
+	}
+	return L'?';
+}
+

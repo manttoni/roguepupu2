@@ -11,6 +11,7 @@ struct Solid {};
 struct Opaque {};
 struct Player {};
 struct TwoHanded {};
+struct Landmark {};
 
 struct Name { std::string name; };
 struct Position { Cell* cell; };

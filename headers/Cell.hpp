@@ -2,7 +2,7 @@
 
 #include "Color.hpp"  // for Color
 #include "entt.hpp"   // for size_t, map, entity, vector
-class Cave;  // lines 12-12
+class Cave;
 class ColorPair;
 class Cell
 {
@@ -89,6 +89,8 @@ class Cell
 	public:
 		bool is_seen() const { return seen; }
 		void set_seen(const bool seen) { this->seen = seen; }
+		bool has_landmark() const;
+		wchar_t get_landmark_glyph() const;
 
 	private:
 		double humidity;
@@ -116,6 +118,5 @@ class Cell
 
 		// Get entities in this
 		std::vector<entt::entity> get_entities() const;
-
 		void draw();
 };

@@ -5,6 +5,8 @@
 #include "entt.hpp"  // for size_t, registry, deque, vector
 #include "nlohmann/json.hpp"
 
+#define DENSITY_MAX 10
+
 class World
 {
 	private:
@@ -41,6 +43,7 @@ class World
 		void form_tunnels();
 		std::vector<size_t> find_water_path();
 		void set_source_sink();
+		size_t randomize_transition_idx(const size_t other = 0);
 		void set_rock_colors();
 		void set_humidity();
 		void spawn_entities(nlohmann::json& filter);

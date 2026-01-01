@@ -5,5 +5,6 @@
 namespace TransitionSystem
 {
 	void transition(entt::registry& registry, const entt::entity entity, const entt::entity portal);
-	bool is_portal(const entt::registry& registry, const entt::entity entity);
+	void link_portals(entt::registry& registry, const entt::entity a, const entt::entity b);
+	entt::entity get_destination(const entt::registry& registry, const entt::entity portal);
 };
