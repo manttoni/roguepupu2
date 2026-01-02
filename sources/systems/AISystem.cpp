@@ -19,15 +19,19 @@ namespace AISystem
 				case Intent::Type::UseAbility: {
 					const Ability& ability = registry.get<Abilities>(npc).abilities.at(intent.ability_id);
 					if (ability.on_cooldown(registry)) continue;
-					if (ability.get_target() == "self")
+					if (ability.get_target() == "current_cell")
 					{
 						result.target_cell = ECS::get_cell(registry, npc);
 						result.target = npc;
 					}
 					return result;
 				}
+				case Intent::Type::Hide:
+					if (!registry.all_of<Hidden>(npc))
+						return {.type = Intent::Type::Hide};
+					break;
 				default:
-					return {.type = Intent::Type::DoNothing};
+					break;
 			}
 		}
 		return {.type = Intent::Type::DoNothing};

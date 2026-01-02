@@ -34,7 +34,7 @@ Renderer::Visual Renderer::get_visual(const Cell& cell) const
 	std::vector<entt::entity> entities;
 	for (const auto entity : cell.get_entities())
 	{
-		if (!registry.any_of<Hidden>(entity))
+		if (!registry.any_of<Hidden>(entity) || entity == ECS::get_player(registry))
 			entities.push_back(entity);
 	}
 	Color bg = cell.get_bg();
@@ -48,7 +48,10 @@ Renderer::Visual Renderer::get_visual(const Cell& cell) const
 	else
 	{
 		const auto visual_entity = entities[render_frame % entities.size()];
-		fg = ECS::get_color(registry, visual_entity);
+		if (registry.any_of<Hidden>(visual_entity)) // If the entity is hidden, it must be the player
+			fg = Color(234,234,234);
+		else
+			fg = ECS::get_color(registry, visual_entity);
 		glyph = ECS::get_glyph(registry, visual_entity);
 	}
 

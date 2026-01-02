@@ -95,7 +95,10 @@ namespace ActionSystem
 				registry.get<Abilities>(actor).abilities.at(intent.ability_id).use(registry, intent.target_cell);
 				break;
 			case Intent::Type::Hide:
-				registry.emplace_or_replace<Hidden>(actor);
+				if (registry.all_of<Hidden>(actor))
+					registry.erase<Hidden>(actor);
+				else
+					registry.emplace<Hidden>(actor);
 				break;
 			case Intent::Type::DoNothing:
 				use_action(registry, actor);
@@ -157,6 +160,8 @@ namespace ActionSystem
 					return {.type = Intent::Type::OpenInventory, .target = player};
 				case 'c':
 					return {.type = Intent::Type::ShowPlayer};
+				case 'h':
+					return {.type = Intent::Type::Hide};
 				case KEY_ESCAPE:
 					registry.ctx().get<GameState>().running = false;
 					[[fallthrough]];
@@ -168,8 +173,6 @@ namespace ActionSystem
 		}
 		return {.type = Intent::Type::None};
 	}
-
-
 
 	void player_turn(entt::registry& registry)
 	{
