@@ -41,7 +41,7 @@ class World
 		std::vector<size_t> get_empty_cells(const Cave& cave);
 		void form_rock();
 		void form_tunnels();
-		std::vector<size_t> find_water_path();
+		std::vector<size_t> find_water_path(const bool clamp_density = true);
 		void set_source_sink();
 		size_t randomize_transition_idx(const size_t other = 0);
 		void set_rock_colors();

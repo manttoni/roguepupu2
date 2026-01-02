@@ -48,7 +48,7 @@ World::World() : seed(Random::randsize_t(10000, 99999)), rng(seed)
 }
 
 // A* to find path of least resistance through solid rock
-std::vector<size_t> World::find_water_path()
+std::vector<size_t> World::find_water_path(const bool clamp_density)
 {
 	auto& canvas = caves.back();
 	auto& cells = canvas.get_cells();
@@ -90,7 +90,10 @@ std::vector<size_t> World::find_water_path()
 		Utils::remove_element(open_set, current_idx);
 		for (const size_t neighbor_idx : canvas.get_nearby_ids(current_idx, 1.5))
 		{
-			double tentative_g_score = g_score[current_idx] + cells[neighbor_idx].get_density() * cells[neighbor_idx].get_density();
+			const double density = clamp_density ?
+				std::max(0.0, cells[neighbor_idx].get_density()) :
+				cells[neighbor_idx].get_density();
+			double tentative_g_score = g_score[current_idx] + density * density;
 
 			// if neighbor doesnt have a g_score, init it to inf
 			if (g_score.count(neighbor_idx) == 0)
@@ -148,6 +151,7 @@ size_t World::randomize_transition_idx(const size_t other)
 {
 	// select source and sink (level entrance and exit)
 	const double within = width / 2 - 5; // allow idx inside this circle
+	const double outside = within / 2;
 	const double level_distance = width / 4; // min distance between source and sink
 
 	const auto& canvas = caves.back();
@@ -158,6 +162,8 @@ size_t World::randomize_transition_idx(const size_t other)
 		const double distance = canvas.distance(center, idx);
 		if (distance > within)
 			continue;
+		if (distance < outside)
+			continue; // keep center area clear
 		if (other != 0 && canvas.distance(idx, other) < level_distance)
 			continue;
 

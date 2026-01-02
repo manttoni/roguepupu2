@@ -35,17 +35,9 @@ bool Cell::operator<(const Cell &other) const
 
 void Cell::reduce_density(const double amount)
 {
-	if (type != Type::Rock)
-		return; // for now only rock can weaken
-
-	if (amount <= density)
-	{
-		density -= amount;
+	density -= amount;
+	if (density > 0 || type == Type::Floor)
 		return;
-	}
-
-	// rock has been destroyed
-	density = 0;
 	type = Type::Floor;
 	glyph = L' ';
 	bg = Color(35, 40, 30);
