@@ -15,6 +15,7 @@ class Cell
 		void set_idx(const size_t i) {
 			this->idx = i;
 		}
+		bool is_border() const;
 
 	public:
 		enum class Type

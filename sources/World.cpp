@@ -151,19 +151,17 @@ size_t World::randomize_transition_idx(const size_t other)
 {
 	// select source and sink (level entrance and exit)
 	const double within = width / 2 - 5; // allow idx inside this circle
-	const double outside = within / 2;
-	const double level_distance = width / 4; // min distance between source and sink
+	const double outside = within * 0.85; // but only outside this circle
+	const double level_distance = outside * 2; // min distance between source and sink
 
 	const auto& canvas = caves.back();
 	const size_t center = width * (height / 2) + width / 2;
-	while (level_distance < within * 2)
+	while (true)
 	{
 		const size_t idx = Random::randsize_t(0, height * width - 1);
 		const double distance = canvas.distance(center, idx);
-		if (distance > within)
+		if (distance > within || distance < outside)
 			continue;
-		if (distance < outside)
-			continue; // keep center area clear
 		if (other != 0 && canvas.distance(idx, other) < level_distance)
 			continue;
 
@@ -345,6 +343,7 @@ void World::generate_cave(const size_t level)
 	caves.back().set_world(this);
 
 	// Create terrain
+	UI::instance().dialog("Generating terrain...");
 	form_rock();
 	set_source_sink();
 	form_tunnels();
@@ -354,6 +353,7 @@ void World::generate_cave(const size_t level)
 	Log::log("Terrain generated");
 
 	// Spawn entities
+	UI::instance().dialog("Spawning entities...");
 	std::vector<nlohmann::json> filters =
 	{
 		{{"subcategory", "mushrooms"}},

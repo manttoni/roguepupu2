@@ -1,25 +1,11 @@
 {
-	"height": 200,
-	"width": 200,
+	"height": 150,
+	"width": 150,
 	"noise": {
 		"frequency": 0.1,
 		"octaves": 8,
 		"erosion_a": 2.0,
 		"erosion_b": 0.005,
 		"erosion_c": 0.005
-	},
-	"mushrooms": {
-		"spawn_chance": 0.45,
-		"frequency": 0.1,
-		"octaves": 1,
-		"woody_radius": 5,
-		"woody_space_ratio": 0.9
-	},
-	"chests": {
-		"spawn_chance": 0.001,
-		"value_power": 2,
-		"value_multiplier": 1,
-		"value_scalar": 5,
-		"item_variance": 5
 	}
 }

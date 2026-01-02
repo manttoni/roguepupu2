@@ -36,7 +36,8 @@ void run()
 					"Back:      esc",
 					"Inventory: i",
 					"Character: c",
-					"Hide:      h"
+					"Hide:      h",
+					"DevTools:  `"
 					});
 
 		if (game != nullptr && game->is_over())

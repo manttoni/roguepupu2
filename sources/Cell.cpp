@@ -33,10 +33,19 @@ bool Cell::operator<(const Cell &other) const
 	return idx < other.idx;
 }
 
+bool Cell::is_border() const
+{
+	const size_t width = cave->get_width();
+	const size_t height = cave->get_height();
+	const size_t y = idx / width;
+	const size_t x = idx % width;
+	return y == 0 || y == height - 1 || x == 0 || x == width - 1;
+}
+
 void Cell::reduce_density(const double amount)
 {
 	density -= amount;
-	if (density > 0 || type == Type::Floor)
+	if (density > 0 || type == Type::Floor || is_border())
 		return;
 	type = Type::Floor;
 	glyph = L' ';

@@ -17,6 +17,7 @@
 #include "Components.hpp"
 #include "Intent.hpp"
 #include "World.hpp"
+#include "DevTools.hpp"
 
 namespace ActionSystem
 {
@@ -147,6 +148,7 @@ namespace ActionSystem
 			registry.ctx().get<Renderer>().render();
 
 			int key = UI::instance().input(500);
+			if (key == '`') DevTools::dev_menu(registry);
 			const Vec2 direction = UI::instance().get_direction(key);
 			if (direction != Vec2{0, 0})
 				return get_direction_intent(registry, player, direction);
