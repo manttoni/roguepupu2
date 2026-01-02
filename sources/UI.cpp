@@ -245,15 +245,15 @@ Vec2 UI::get_direction(const int key)
 {
 	switch (key)
 	{
-		case 'w': case KEY_UP: case '8':	return {-1, 0};
-		case 's': case KEY_DOWN: case '2':	return {1, 0};
-		case 'a': case KEY_LEFT: case '4':	return {0, -1};
-		case 'd': case KEY_RIGHT: case '6':	return {0, 1};
-		case '7': return {-1, -1};
-		case '9': return {-1, 1};
-		case '1': return {1, -1};
-		case '3': return {1, 1};
-		default:  return {0, 0}; // no direction
+		case KEY_UP:	return {-1, 0};
+		case KEY_LEFT:	return {0, -1};
+		case KEY_DOWN:	return {1, 0};
+		case KEY_RIGHT:	return {0, 1};
+		case KEY_HOME:	return {-1, -1};
+		case KEY_PPAGE:	return {-1, 1};
+		case KEY_END:	return {1, -1};
+		case KEY_NPAGE:	return {1, 1};
+		default:		return {0, 0}; // no direction
 	}
 }
 

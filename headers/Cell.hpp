@@ -48,7 +48,7 @@ class Cell
 	private:
 		wchar_t glyph;
 	public:
-		wchar_t get_glyph() const;
+		wchar_t get_glyph() const { return glyph; }
 		void set_glyph(const wchar_t glyph) { this->glyph = glyph; }
 
 	private:

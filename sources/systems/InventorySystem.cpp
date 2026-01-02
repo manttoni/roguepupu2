@@ -54,7 +54,7 @@ namespace InventorySystem
 		if (registry.all_of<Glow>(item))
 		{
 			cell->get_cave()->reset_lights();
-			Renderer::render(registry);
+			registry.ctx().get<Renderer>().render();
 		}
 	}
 

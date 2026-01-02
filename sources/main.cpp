@@ -28,7 +28,16 @@ void run()
 			game->loop();
 		}
 		else if (selection == "Controls")
-			UI::instance().dialog("Controls", {"To be implemented"});
+			UI::instance().dialog("Controls", {
+					"Movement:  numpad (lock off)",
+					"Zoom:      ctrl[+/-] (terminal)",
+					"Interact:  left click",
+					"Select:    enter",
+					"Back:      esc",
+					"Inventory: i",
+					"Character: c",
+					"Hide:      h"
+					});
 
 		if (game != nullptr && game->is_over())
 		{

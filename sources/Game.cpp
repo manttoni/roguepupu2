@@ -24,6 +24,7 @@ Game::Game() :
 {
 	registry.ctx().emplace<GameLogger>(game_log);
 	registry.ctx().emplace<GameState>(game_state);
+	registry.ctx().emplace<Renderer>(registry);
 	Log::log("Game object constructed");
 }
 

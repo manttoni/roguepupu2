@@ -94,6 +94,9 @@ namespace ActionSystem
 			case Intent::Type::UseAbility:
 				registry.get<Abilities>(actor).abilities.at(intent.ability_id).use(registry, intent.target_cell);
 				break;
+			case Intent::Type::Hide:
+				registry.emplace_or_replace<Hidden>(actor);
+				break;
 			case Intent::Type::DoNothing:
 				use_action(registry, actor);
 				return;
@@ -101,7 +104,7 @@ namespace ActionSystem
 			default:
 				return;
 		}
-		Renderer::render(registry);
+		registry.ctx().get<Renderer>().render();
 	}
 
 	Intent get_direction_intent(const entt::registry& registry, const entt::entity actor, const Vec2 direction)
@@ -138,8 +141,7 @@ namespace ActionSystem
 		Cave* cave = ECS::get_active_cave(registry);
 		while (can_act(registry, player))
 		{
-			Renderer::render(registry);
-			registry.ctx().get<GameState>().render_frame++;
+			registry.ctx().get<Renderer>().render();
 
 			int key = UI::instance().input(500);
 			const Vec2 direction = UI::instance().get_direction(key);
