@@ -10,7 +10,6 @@
 
 namespace DevTools
 {
-
 	std::string get_amount(const entt::registry& registry, const std::string& category)
 	{
 		auto all = registry.view<Category>();
@@ -24,20 +23,29 @@ namespace DevTools
 		return std::to_string(matches.size()) + " " + category;
 	}
 
+	void show_entities(const entt::registry& registry)
+	{
+		std::map<std::string, size_t> groups;
+		auto all = registry.view<Category>();
+		for (const auto e : all)
+		{
+			const auto& subcategory = registry.get<Subcategory>(e).subcategory;
+			groups[subcategory]++;
+		}
+		std::vector<std::string> data;
+		for (const auto& [category, amount] : groups)
+			data.push_back(std::to_string(amount) + " " + category);
+		UI::instance().dialog(data, {"Back"});
+	}
+
 	void dev_menu(entt::registry& registry)
 	{
-		const std::vector<std::string> data =
-		{
-			"Registry has...",
-			get_amount(registry, "creatures"),
-			get_amount(registry, "mushrooms"),
-			get_amount(registry, "plants")
-		};
 		const std::vector<std::string> choices =
 		{
-			"Reveal map"
+			"Reveal map",
+			"Show entities data"
 		};
-		const auto& choice = UI::instance().dialog(data, choices);
+		const auto& choice = UI::instance().dialog("DevTools", choices);
 		if (choice == "Reveal map")
 		{
 			Cave* cave = ECS::get_active_cave(registry);
@@ -45,5 +53,7 @@ namespace DevTools
 			for (auto& cell : cells)
 				cell.set_seen(true);
 		}
+		else if (choice == "Show entities data")
+			show_entities(registry);
 	}
 };

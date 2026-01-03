@@ -322,4 +322,14 @@ namespace ECS
 		}
 		return entt::null;
 	}
+
+	void destroy_entity(entt::registry& registry, const entt::entity entity)
+	{
+		Cave* cave = get_cell(registry, entity)->get_cave();
+		auto& npcs = cave->get_npcs();
+		auto it = std::find(npcs.begin(), npcs.end(), entity);
+		if (it != npcs.end())
+			npcs.erase(it);
+		registry.destroy(entity);
+	}
 };

@@ -5,6 +5,7 @@
 		"player": true,
 		"solid": true,
 		"vision": 10,
+		"weight": 100,
 		"inventory": [
 			{
 				"filter": {

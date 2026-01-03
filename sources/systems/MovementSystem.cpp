@@ -12,9 +12,14 @@ namespace MovementSystem
 {
 	void move(entt::registry& registry, entt::entity actor, Cell* target_cell)
 	{
-		auto& position = registry.get<Position>(actor);
-		position.cell = target_cell;
-		ActionSystem::use_action(registry, actor);
+		Cell* prev = ECS::get_cell(registry, actor);
+		registry.emplace_or_replace<Position>(actor, target_cell);
+		registry.ctx().get<EventQueue>().queue.push_back({
+				.type = Event::Type::Move,
+				.actor = actor,
+				.move_from = prev,
+				.move_to = target_cell
+				});
 	}
 
 	bool can_move(Cave& cave, const size_t from_idx, const size_t to_idx)

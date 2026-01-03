@@ -1,5 +1,6 @@
 #include <string>
 #include <filesystem>
+#include "Parser.hpp"
 #include "AbilityDatabase.hpp"
 
 AbilityDatabase::AbilityDatabase()
@@ -36,18 +37,21 @@ void AbilityDatabase::read_definitions(const std::filesystem::path& path)
 	file.close();
 	const std::string category = path.stem().filename(); // innate or spells
 	add_abilities(definitions, category);
+	Log::log(path.string() + " parsed");
 }
 
 void AbilityDatabase::add_abilities(nlohmann::json& definitions, const std::string& category)
 {
 	for (const auto& [id, data] : definitions.items())
 	{
-		if (!data.contains("target")) Log::error("Ability doesn't have a target: " + id);
-		const auto target = data["target"].get<std::string>();
-		const size_t cooldown = data.contains("cooldown") ? data["cooldown"].get<size_t>() : 0;
-		const auto summon = data.contains("summon") ? data["summon"].get<std::string>() : "";
-
-		Ability ability(id, category, target, cooldown, summon);
+		Ability ability;
+		if (category == "innate")
+			ability.type = Ability::Type::Innate;
+		else if (category == "spell")
+			ability.type = Ability::Type::Spell;
+		ability.cooldown = data.contains("cooldown") ? data["cooldown"].get<size_t>() : 0;
+		ability.effect = Parser::parse_effect(data["effect"]);
+		ability.target = Parser::parse_target(data["target"]);
 		abilities[id] = ability;
 	}
 }

@@ -1,7 +1,13 @@
 {
 	"spin web": {
-		"summon": "spider web",
 		"cooldown": 1000000,
-		"target": "current_cell"
+		"target": {
+			"type": "cell",
+			"range": 0
+		},
+		"effect": {
+			"type": "create_entity",
+			"entity_id": "spider web"
+		}
 	}
 }

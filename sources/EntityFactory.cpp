@@ -13,9 +13,9 @@
 #include "entt.hpp"                                       // for operator==
 #include "systems/EquipmentSystem.hpp"                    // for equip
 #include "systems/ActionSystem.hpp"
-#include "Intent.hpp"
-#include "Ability.hpp"
+#include "Event.hpp"
 #include "AbilityDatabase.hpp"
+#include "Parser.hpp"
 class Cell;  // lines 18-18
 
 #define CELL_SIZE 5
@@ -263,34 +263,31 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			for (const auto& entry : data)
 			{
 				Intent intent;
-				if (entry.contains("use_ability"))
+				if (entry.contains("type"))
 				{
-					const auto& id = entry["use_ability"].get<std::string>();
-					intent.type = Intent::Type::UseAbility;
-					intent.ability_id = id;
-				}
-				else if (entry.contains("action"))
-				{
-					const auto& action = entry["action"].get<std::string>();
-					if (action == "hide")
+					const auto& type = entry["type"].get<std::string>();
+					if (type == "hide")
 						intent.type = Intent::Type::Hide;
-					else if (action == "attack")
+					else if (type == "attack")
 						intent.type = Intent::Type::Attack;
-					else if (action == "flee")
+					else if (type == "flee")
 						intent.type = Intent::Type::Flee;
+					else if (type == "use_ability")
+						intent.type = Intent::Type::UseAbility;
 					else
-						Log::error("Unknown action: " + action);
-				}
-				else
-					Log::error("Unknown intent: " + entry.dump(4));
+						Log::error("Unknown Intent type: " + type);
+				}	else Log::error("No intent type: " + entry.dump(4));
+				if (entry.contains("ability_id"))
+					intent.ability_id = entry["ability_id"].get<std::string>();
+				if (entry.contains("conditions"))
+					intent.conditions = Parser::parse_conditions(entry["conditions"]);
 				intentions.push_back(intent);
 			}
 			reg.template emplace<AI>(e, intentions);
 		}
 	},
 	{ "spawn", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			// unused at this point
+		{	// unused at this point
 			(void) reg; (void) e; (void) data;
 		}
 	},
@@ -298,6 +295,37 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 		{	// this entity will be remembered by player even if outside of vision
 			reg.template emplace<Landmark>(e);
 			(void) data;
+		}
+	},
+	{ "triggers", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			if (!data.is_array())
+				Log::error("Triggers not an array: " + data.dump(4));
+
+			std::vector<Trigger> triggers;
+			for (const auto& entry : data)
+			{
+				if (!entry.is_object())
+					Log::error("Trigger not object: " + entry.dump(4));
+				Trigger trigger;
+				if (entry.contains("type"))
+				{
+					const auto& type = entry["type"].get<std::string>();
+					if (type == "enter_cell")
+						trigger.type = Trigger::Type::EnterCell; // f.e. trap
+					else if (type == "stay_on_cell")
+						trigger.type = Trigger::Type::StayOnCell; // f.e. fire
+					else Log::error("Unkown trigger type: " + type);
+				} else Log::error("Trigger has no type: " + entry.dump(4));
+				if (entry.contains("effect"))
+					trigger.effect = Parser::parse_effect(entry["effect"]);
+				if (entry.contains("conditions"))
+					trigger.conditions = Parser::parse_conditions(entry["conditions"]);
+				if (entry.contains("target"))
+					trigger.target = Parser::parse_target(entry["target"]);
+				triggers.push_back(trigger);
+			}
+			reg.template emplace<Triggers>(e, triggers);
 		}
 	}
 };

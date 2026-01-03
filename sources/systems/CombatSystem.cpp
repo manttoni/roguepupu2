@@ -146,6 +146,5 @@ namespace CombatSystem
 		{
 			weapon_attack(registry, attacker, left_weapon, defender);
 		}
-		ActionSystem::use_action(registry, attacker);
 	}
 };

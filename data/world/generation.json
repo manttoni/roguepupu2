@@ -1,6 +1,6 @@
 {
-	"height": 150,
-	"width": 150,
+	"height": 50,
+	"width": 50,
 	"noise": {
 		"frequency": 0.1,
 		"octaves": 8,

@@ -47,4 +47,6 @@ namespace ECS
 	Cave* get_active_cave(const entt::registry& registry);
 	entt::entity get_source(const entt::registry& registry, const Cave& cave);
 	entt::entity get_sink(const entt::registry& registry, const Cave& cave);
+	double get_weight(const entt::registry& registry, const entt::entity entity);
+	void destroy_entity(entt::registry& registry, const entt::entity entity);
 };

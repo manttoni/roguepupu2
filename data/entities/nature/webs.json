@@ -1,6 +1,21 @@
 {
 	"spider web": {
 		"glyph": "W",
-		"weight": 0.00001
+		"fgcolor": [200, 200, 200],
+		"triggers": [
+			{
+				"type": "enter_cell",
+				"target": {
+					"type": "self"
+				},
+				"effect": {
+					"type": "destroy_entity"
+				},
+				"conditions": {
+					"weight_min": 0.1,
+					"category_not": "spiders"
+				}
+			}
+		]
 	}
 }

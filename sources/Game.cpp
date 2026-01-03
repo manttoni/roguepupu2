@@ -22,9 +22,10 @@ Game::Game() :
 	registry(world.get_registry()),
 	player(EntityFactory::instance().create_entity(registry, "rabdin", &get_cave().get_source()))
 {
-	registry.ctx().emplace<GameLogger>(game_log);
-	registry.ctx().emplace<GameState>(game_state);
+	registry.ctx().emplace<GameLogger>();
+	registry.ctx().emplace<GameState>();
 	registry.ctx().emplace<Renderer>(registry);
+	registry.ctx().emplace<EventQueue>();
 	Log::log("Game object constructed");
 }
 
@@ -34,8 +35,7 @@ void Game::loop()
 	registry.ctx().get<GameState>().running = true;
 	while (registry.ctx().get<GameState>().running)
 	{
-		ActionSystem::npc_turn(registry);
-		ActionSystem::player_turn(registry);
+		ActionSystem::act_round(registry);
 		registry.ctx().get<GameState>().turn_number++;
 	}
 	if (ECS::is_dead(registry, player))

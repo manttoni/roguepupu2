@@ -3,8 +3,7 @@
 #include <string>     // for basic_string, string
 #include "Color.hpp"  // for Color
 #include "entt.hpp"   // for null, null_t, entity, vector
-#include "Intent.hpp"
-#include "Ability.hpp"
+#include "Event.hpp"
 class Cell;
 
 struct Solid {};
@@ -84,4 +83,13 @@ struct AI
 struct Abilities
 {
 	std::map<std::string, Ability> abilities;
+};
+struct Triggers
+{
+	std::vector<Trigger> triggers;
+};
+
+struct EventQueue
+{
+	std::vector<Event> queue;
 };

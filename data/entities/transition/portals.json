@@ -1,11 +1,39 @@
 {
 	"source": {
 		"glyph": "▴",
-		"landmark": true
+		"landmark": true,
+		"triggers": [
+			{
+				"type": "enter_cell",
+				"target": {
+					"type": "actor"
+				},
+				"effect": {
+					"type": "transition"
+				},
+				"conditions": {
+					"category": "players"
+				}
+			}
+		]
 	},
 
 	"sink": {
 		"glyph": "▾",
-		"landmark": true
+		"landmark": true,
+		"triggers": [
+			{
+				"type": "enter_cell",
+				"target": {
+					"type": "actor"
+				},
+				"effect": {
+					"type": "transition"
+				},
+				"conditions": {
+					"category": "players"
+				}
+			}
+		]
 	}
 }

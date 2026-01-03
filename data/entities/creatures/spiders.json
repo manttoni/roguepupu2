@@ -12,8 +12,13 @@
 		"faction": "spiders",
 		"abilities": [ "spin web" ],
 		"ai": [
-			{ "use_ability": "spin web" },
-			{ "action": "hide" }
+			{
+				"type": "use_ability",
+				"ability_id": "spin web"
+			},
+			{
+				"type": "hide"
+			}
 		],
 		"spawn": {
 			"light": "dark",

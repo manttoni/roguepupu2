@@ -1,0 +1,62 @@
+#include "Parser.hpp"
+
+#include "Event.hpp"
+#include "nlohmann/json.hpp"
+#include "Utils.hpp"
+
+namespace Parser
+{
+	Effect parse_effect(const nlohmann::json& data)
+	{
+		Effect effect;
+		if (data.contains("type"))
+		{
+			const auto& type = data["type"].get<std::string>();
+			if (type == "create_entity")
+				effect.type = Effect::Type::CreateEntity;
+			else if (type == "transition")
+				effect.type = Effect::Type::Transition;
+			else if (type == "destroy_entity")
+				effect.type = Effect::Type::DestroyEntity;
+			else Log::error("Uknown effect type: " + type);
+		}
+		if (data.contains("entity_id"))
+			effect.entity_id = data["entity_id"].get<std::string>();
+		return effect;
+	}
+	Conditions parse_conditions(const nlohmann::json& data)
+	{
+		Conditions conditions;
+		if (data.contains("category"))
+			conditions.category = data["category"].get<std::string>();
+		if (data.contains("category_not"))
+			conditions.category_not = data["category_not"].get<std::string>();
+		if (data.contains("weight_min"))
+			conditions.weight_min = data["weight_min"].get<double>();
+		if (data.contains("weight_max"))
+			conditions.weight_max = data["weight_max"].get<double>();
+		if (data.contains("hp_min"))
+			conditions.hp_min = data["hp_min"].get<double>();
+		if (data.contains("hp_max"))
+			conditions.hp_max = data["hp_max"].get<double>();
+		return conditions;
+	}
+	Target parse_target(const nlohmann::json& data)
+	{
+		Target target;
+		if (data.contains("type"))
+		{
+			const auto& type = data["type"].get<std::string>();
+			if (type == "cell")
+				target.type = Target::Type::Cell;
+			else if (type == "self")
+				target.type = Target::Type::Self;
+			else if (type == "actor")
+				target.type = Target::Type::Actor;
+			else Log::error("Unkown target type: " + type);
+		}
+		if (data.contains("range"))
+			target.range = data["range"].get<double>();
+		return target;
+	}
+};
