@@ -18,9 +18,8 @@
 #include "systems/MovementSystem.hpp"  // for move
 
 Game::Game() :
-	level(1),
 	registry(world.get_registry()),
-	player(EntityFactory::instance().create_entity(registry, "rabdin", &get_cave().get_source()))
+	player(EntityFactory::instance().create_entity(registry, "rabdin", &world.get_cave(1).get_source()))
 {
 	registry.ctx().emplace<GameLogger>();
 	registry.ctx().emplace<GameState>();
@@ -38,7 +37,7 @@ void Game::loop()
 		ActionSystem::act_round(registry);
 		registry.ctx().get<GameState>().turn_number++;
 	}
-	if (ECS::is_dead(registry, player))
+	if (registry.all_of<Dead>(player))
 		game_over = true;
 }
 

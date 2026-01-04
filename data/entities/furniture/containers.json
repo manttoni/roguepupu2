@@ -1,0 +1,24 @@
+{
+	"basket": {
+		"glyph": "B",
+		"fgcolor": [500, 400, 400],
+		"inventory": true,
+		"weight": 2,
+		"solid": true
+	},
+
+	"toolbox": {
+		"glyph": "T",
+		"fgcolor": [300, 200, 200],
+		"inventory": [
+			{
+				"filter": {
+					"subcategory": "tools",
+					"amount": 2
+				}
+			}
+		],
+		"weight": 5,
+		"solid": true
+	}
+}

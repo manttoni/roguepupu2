@@ -7,30 +7,6 @@
 
 namespace EquipmentSystem
 {
-	Slot parse_slot(const std::string& str)
-	{
-		if (str == "one_handed")
-			return Slot::one_handed;
-		else if (str == "two_handed")
-			return Slot::two_handed;
-		else if (str == "body")
-			return Slot::body;
-		else if (str == "gloves")
-			return Slot::gloves;
-		else if (str == "helmet")
-			return Slot::helmet;
-		else if (str == "boots")
-			return Slot::boots;
-		else if (str == "ring")
-			return Slot::ring;
-		else if (str == "amulet")
-			return Slot::amulet;
-		else if (str == "cloak")
-			return Slot::cloak;
-
-		Log::error("Unknown equipment slot: " + str);
-	}
-
 	void equip_or_unequip(entt::registry& registry, const entt::entity entity, const entt::entity item)
 	{
 		if (is_equipped(registry, entity, item))
@@ -41,80 +17,54 @@ namespace EquipmentSystem
 
 	void equip(entt::registry& registry, const entt::entity entity, const entt::entity item)
 	{
-		if (is_equipped(registry, entity, item))
-			return;
-
-		const auto& subcategory = registry.get<Subcategory>(item).subcategory;
-		if (subcategory == "weapons")
-			equip_weapon(registry, entity, item);
-		else if (subcategory == "armor")
-			equip_armor(registry, entity, item);
-		else
-			return;
-	}
-
-	void equip_weapon(entt::registry& registry, const entt::entity entity, const entt::entity item)
-	{
-		if (!registry.all_of<Equipment>(entity))
-			return;
-		auto& equipment = registry.get<Equipment>(entity);
-		if (registry.all_of<TwoHanded>(item))
+		const auto slot = registry.get<Equipment>(item).slot;
+		auto& slots = registry.get<EquipmentSlots>(entity).slots;
+		using Slot = Equipment::Slot;
+		if (slot == Slot::OneHanded)
 		{
-			equipment.right_hand = item;
-			equipment.left_hand = item;
-			return;
+			if (!slots[Slot::LeftHand].has_value())
+			{	// Free left hand
+				slots[Slot::LeftHand] = item;
+			}
+			else if (!slots[Slot::RightHand].has_value())
+			{	// Free right hand
+				slots[Slot::RightHand] = item;
+			}
+			else
+			{	// Neither is free
+				if (slots[Slot::LeftHand].value() == slots[Slot::RightHand].value())
+				{	// Same weapon wielded with both hands
+					slots[Slot::RightHand] = std::nullopt;
+				}
+				slots[Slot::LeftHand] = item;
+			}
 		}
-		if (equipment.right_hand == entt::null)
-			equipment.right_hand = item;
-		else
-			equipment.left_hand = item;
-	}
-
-	void equip_armor(entt::registry& registry, const entt::entity entity, const entt::entity item)
-	{
-		if (!registry.all_of<Equipment>(entity))
-			return;
-		auto& equipment = registry.get<Equipment>(entity);
-		equipment.armor = item;
 	}
 
 	void unequip(entt::registry& registry, const entt::entity entity, const entt::entity item)
 	{
-		if (!is_equipped(registry, entity, item))
-			return;
-
-		auto& equipment = registry.get<Equipment>(entity);
-		if (equipment.right_hand == item)
-			equipment.right_hand = entt::null;
-		if (equipment.left_hand == item)
-			equipment.left_hand = entt::null;
-		if (equipment.armor == item)
-			equipment.armor = entt::null;
+		for (auto& [slot, equipped_item] : registry.get<EquipmentSlots>(entity).slots)
+		{
+			if (equipped_item == item)
+				equipped_item = std::nullopt;
+		}
 	}
 
-	bool is_equipped(const entt::registry& registry, const entt::entity& entity, const entt::entity& item)
+	bool is_equipped(const entt::registry& registry, const entt::entity entity, const entt::entity item)
 	{
-		if (!registry.all_of<Equipment>(entity) || !ECS::is_equippable(registry, item))
-			return false;
-
-		const auto& equipment = registry.get<Equipment>(entity);
-		if (equipment.right_hand == item || equipment.left_hand == item)
-			return true;
-		if (equipment.armor == item)
-			return true;
-
+		for (const auto& [slot, equipped_item] : registry.get<EquipmentSlots>(entity).slots)
+		{
+			if (equipped_item == item)
+				return true;
+		}
 		return false;
 	}
 
 	bool is_dual_wielding(const entt::registry& registry, const entt::entity entity)
 	{
-		if (!registry.all_of<Equipment>(entity))
+		auto slots = registry.get<EquipmentSlots>(entity).slots;
+		if (!slots[Equipment::Slot::LeftHand].has_value() || !slots[Equipment::Slot::RightHand].has_value())
 			return false;
-		const auto equipment = registry.get<Equipment>(entity);
-		if (equipment.right_hand == entt::null || equipment.left_hand == entt::null)
-			return false;
-		if (equipment.right_hand == equipment.left_hand)
-			return false;
-		return true;
+		return slots[Equipment::Slot::LeftHand].value() != slots[Equipment::Slot::RightHand].value();
 	}
 };

@@ -14,11 +14,9 @@ namespace TriggerSystem
 {
 	void resolve_trigger(entt::registry& registry, Trigger trigger, const entt::entity owner, const entt::entity triggerer)
 	{
-		Log::log("Resolving trigger. Owner = " + registry.get<Name>(owner).name + " | Triggerer = " + registry.get<Name>(triggerer).name);
 		if (!ConditionSystem::is_true(registry, trigger.conditions, triggerer))
 			return;
 
-		Log::log("Passed condition check");
 
 		switch (trigger.target.type)
 		{

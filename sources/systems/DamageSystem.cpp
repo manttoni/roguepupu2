@@ -14,10 +14,7 @@ namespace DamageSystem
 	{
 		registry.ctx().get<GameLogger>().log(ECS::get_colored_name(registry, entity) + " dies");
 		if (entity == ECS::get_player(registry))
-		{
 			registry.ctx().get<GameState>().running = false;
-			return;
-		}
 
 		// Change to corpse/remains glyph
 		if (!registry.all_of<Glyph>(entity))
@@ -44,6 +41,8 @@ namespace DamageSystem
 			npcs.erase(it);
 
 		registry.get<Name>(entity).name += " (corpse)";
+
+		registry.emplace_or_replace<Dead>(entity, registry.ctx().get<GameState>().turn_number);
 	}
 
 	void take_damage(entt::registry& registry, const entt::entity entity, const int damage)

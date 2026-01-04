@@ -1,9 +1,0 @@
-{
-	"chest": {
-		"glyph": "C",
-		"fgcolor": [400, 120, 90],
-		"inventory": {},
-		"solid": true,
-		"weight": 20
-	}
-}

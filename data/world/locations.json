@@ -1,0 +1,34 @@
+{
+	"goblin foraging camp": {
+		"zone": {
+			"off_path": 10,
+			"footprint": 20,
+			"radius": 5
+		},
+		"creatures": [
+			{
+				"id": "goblin forager",
+				"amount": "4-8"
+			},
+			{
+				"id": "goblin guard",
+				"amount": "1-4"
+			}
+		],
+		"furniture": [
+			{
+				"id": "basket",
+				"amount": "1-3"
+			},
+			{
+				"id": "campfire",
+				"amount": "1",
+				"position": "middle"
+			},
+			{
+				"id": "toolbox",
+				"amount": "1"
+			}
+		]
+	}
+}

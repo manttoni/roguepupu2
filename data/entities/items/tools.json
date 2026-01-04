@@ -1,0 +1,16 @@
+{
+	"axe": {
+		"weight": 2,
+		"tool": "felling"
+	},
+
+	"knife": {
+		"weight": 0.5,
+		"tool": "harvesting"
+	},
+
+	"pickaxe": {
+		"weight": 4,
+		"tool": "mining"
+	}
+}

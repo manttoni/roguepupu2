@@ -7,20 +7,10 @@
 		"vision": 10,
 		"weight": 100,
 		"inventory": [
-			{
-				"filter": {
-					"level": 1,
-					"subcategory": "weapons"
-				}
-			},
-			{
-				"filter": {
-					"level": 1,
-					"subcategory": "armor"
-				}
-			}
+			{"filter": {"name": "axe"}},
+			{"filter": {"name": "knife"}}
 		],
-		"equipment": true,
+		"equipment_slots": true,
 		"faction": "player",
 		"attributes": {
 			"strength": 20,

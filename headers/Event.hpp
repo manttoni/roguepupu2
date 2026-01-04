@@ -1,6 +1,7 @@
 #pragma once
 
 #include "entt.hpp"
+#include "Color.hpp"
 
 class Cell;
 
@@ -31,10 +32,12 @@ struct Effect
 		CreateEntity,
 		DestroyEntity,
 		Transition,
+		SetFGColor,
 	};
 
 	Type type = Type::None;
 	std::string entity_id;
+	Color fgcolor;
 };
 
 
@@ -93,7 +96,7 @@ struct Trigger
 	{
 		None,
 		EnterCell,
-		StayOnCell,
+		Gather,
 	};
 
 	Type type = Type::None;
@@ -108,10 +111,12 @@ struct Event
 	{
 		None,
 		Move,
+		Gather,
 	};
 
 	Type type = Type::None;
 	entt::entity actor = entt::null;
+	entt::entity gatherable = entt::null;
 	Cell* move_from = nullptr;
 	Cell* move_to = nullptr;
 };

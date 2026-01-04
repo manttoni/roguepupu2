@@ -244,13 +244,10 @@ void World::spawn_entities(nlohmann::json& filter)
 	const auto z = canvas.get_level();
 	filter["spawn"] = "any";
 	filter["player"] = "none";
-	Log::log("Spawning entities using filter: " + filter.dump(4));
 	const auto& names = EntityFactory::instance().random_pool(filter, SIZE_MAX);
-	Log::log(std::to_string(names.size()) + " entities found");
 	const auto& LUT = EntityFactory::instance().get_LUT();
 	const auto& empty_cells = get_empty_cells(canvas);
 	auto& cells = canvas.get_cells();
-	size_t spawned = 0;
 	for (const auto& cell_idx : empty_cells)
 	{
 		Cell& cell = cells[cell_idx];
@@ -323,14 +320,12 @@ void World::spawn_entities(nlohmann::json& filter)
 			}
 			// This entity really deserves to spawn here
 			entt::entity e = EntityFactory::instance().create_entity(registry, name, &cell);
-			spawned++;
 			caves.back().reset_lights();
-			if (registry.all_of<Actions>(e))
+			if (registry.get<Category>(e).category == "creatures")
 				canvas.get_npcs().push_back(e);
 			break;
 		}
 	}
-	Log::log(std::string("Spawned ") + std::to_string(spawned) + std::string(" entities with filter: ") + filter.dump(4));
 }
 
 void World::generate_cave(const size_t level)
@@ -344,6 +339,7 @@ void World::generate_cave(const size_t level)
 
 	// Create terrain
 	UI::instance().dialog("Generating terrain...");
+	Log::log("Generating terrain...");
 	form_rock();
 	set_source_sink();
 	form_tunnels();
@@ -354,6 +350,7 @@ void World::generate_cave(const size_t level)
 
 	// Spawn entities
 	UI::instance().dialog("Spawning entities...");
+	Log::log("Spawning entities...");
 	std::vector<nlohmann::json> filters =
 	{
 		{{"subcategory", "mushrooms"}},
@@ -363,7 +360,7 @@ void World::generate_cave(const size_t level)
 		spawn_entities(filter);
 
 	Log::log("Entities spawned");
-
+	Log::log("Cave " + std::to_string(level) + " generated");
 	return;
 }
 

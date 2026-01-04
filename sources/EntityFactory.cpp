@@ -31,20 +31,27 @@ void EntityFactory::init()
 			continue;
 		read_definitions(entry.path());
 	}
+	Log::log("Entities parsed");
 }
 
 void EntityFactory::read_definitions(const std::filesystem::path& path)
 {
+	Log::log("Parsing " + path.string());
 	std::ifstream file(path);
 	if (!file.is_open())
 		Log::error(std::string("Opening file failed: ") + path.string());
+	if (file.peek() == std::ifstream::traits_type::eof())
+	{
+		Log::log("Empty file: " + path.string());
+		file.close();
+		return;
+	}
 	nlohmann::json definitions;
 	file >> definitions;
 	file.close();
 	const std::string category = path.parent_path().filename();
 	const std::string subcategory = path.stem().filename();
 	add_entities(definitions, category, subcategory);
-	Log::log(path.string() + " parsed");
 }
 
 using FieldParser = std::function<void(entt::registry&, entt::entity, const nlohmann::json&)>;
@@ -116,9 +123,14 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 		}
 	},
 	{ "equipment", [](auto& reg, auto e, const nlohmann::json& data)
-		{	// This entity has equipment slots and can equip items
+		{	// This entity is a piece of equipment that can be equipped in slots
+			reg.template emplace<Equipment>(e, Equipment::from_string(data.get<std::string>()));
+		}
+	},
+	{ "equipment_slots", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			reg.template emplace<EquipmentSlots>(e);
 			(void) data;
-			reg.template emplace<Equipment>(e);
 		}
 	},
 	{ "category", [](auto& reg, auto e, const nlohmann::json& data)
@@ -162,46 +174,6 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			reg.template emplace<BGColor>(e, color);
 		}
 	},
-	{ "armor_penetration", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			reg.template emplace<ArmorPenetration>(e, data.get<int>());
-		}
-	},
-	{ "armor", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			reg.template emplace<Armor>(e, data.get<int>());
-		}
-	},
-	{ "accuracy", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			reg.template emplace<Accuracy>(e, data.get<int>());
-		}
-	},
-	{ "evasion", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			reg.template emplace<Evasion>(e, data.get<int>());
-		}
-	},
-	{ "barrier", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			reg.template emplace<Barrier>(e, data.get<int>());
-		}
-	},
-	{ "power", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			reg.template emplace<Power>(e, data.get<int>());
-		}
-	},
-	{ "crit_chance", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			reg.template emplace<CritChance>(e, data.get<double>());
-		}
-	},
-	{ "crit_multiplier", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			reg.template emplace<CritMultiplier>(e, data.get<double>());
-		}
-	},
 	{ "attributes", [](auto& reg, auto e, const nlohmann::json& data)
 		{
 			const int strength = data["strength"].get<int>();
@@ -216,29 +188,9 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			reg.template emplace<TwoHanded>(e);
 		}
 	},
-	{ "damage", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			if (!data.contains("amount") || !data.contains("type"))
-				Log::error("Error parsing entity: " + data.dump(4));
-
-			const std::regex pattern(R"(^\d+-\d+$)");
-			const std::string str = data["amount"].get<std::string>();
-			if (!std::regex_match(str, pattern))
-				Log::error("Invalid damage: " + str);
-			const auto dash = str.find('-');
-			const int min = std::stoi(str.substr(0, dash));
-			const int max = std::stoi(str.substr(dash + 1));
-			reg.template emplace<Damage>(e, min, max, data["type"].get<std::string>());
-		}
-	},
 	{ "level", [](auto& reg, auto e, const nlohmann::json& data)
 		{
 			reg.template emplace<Level>(e, data.get<int>());
-		}
-	},
-	{ "actions", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			reg.template emplace<Actions>(e, data.get<int>(), 0);
 		}
 	},
 	{ "abilities", [](auto& reg, auto e, const nlohmann::json& data)
@@ -312,9 +264,9 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 				{
 					const auto& type = entry["type"].get<std::string>();
 					if (type == "enter_cell")
-						trigger.type = Trigger::Type::EnterCell; // f.e. trap
-					else if (type == "stay_on_cell")
-						trigger.type = Trigger::Type::StayOnCell; // f.e. fire
+						trigger.type = Trigger::Type::EnterCell;
+					else if (type == "gather")
+						trigger.type = Trigger::Type::Gather;
 					else Log::error("Unkown trigger type: " + type);
 				} else Log::error("Trigger has no type: " + entry.dump(4));
 				if (entry.contains("effect"))
@@ -326,6 +278,25 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 				triggers.push_back(trigger);
 			}
 			reg.template emplace<Triggers>(e, triggers);
+		}
+	},
+	{ "gatherable", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			const auto tool = data.contains("tool") ?
+				Tool::from_string(data["tool"].get<std::string>()) :
+				Tool::Type::None;
+			const auto& entity = data.contains("entity_id") ?
+				data["entity_id"].get<std::string>() :
+				"";
+			const auto amount = data.contains("amount") ?
+				data["amount"].get<size_t>() :
+				1;
+			reg.template emplace<Gatherable>(e, tool, entity, amount);
+		}
+	},
+	{ "tool", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			reg.template emplace<Tool>(e, Tool::from_string(data.get<std::string>()));
 		}
 	}
 };
@@ -341,8 +312,6 @@ void EntityFactory::add_entities(nlohmann::json& json, const std::string& catego
 			data["subcategory"] = subcategory;
 		if (!data.contains("name"))
 			data["name"] = name;
-		if (data["category"] == "creatures" && !data.contains("actions"))
-			data["actions"] = 1; // all creatures get 1 action unless specified in json
 		LUT[name] = data;
 	}
 }
@@ -364,6 +333,8 @@ entt::entity EntityFactory::create_entity(entt::registry& registry, const std::s
 
 	if (cell != nullptr)
 		registry.emplace<Position>(entity, cell);
+
+	// always recalculate max hp
 	if (registry.all_of<Attributes>(entity))
 	{
 		registry.emplace<Resources>(entity,
@@ -371,11 +342,13 @@ entt::entity EntityFactory::create_entity(entt::registry& registry, const std::s
 				ECS::get_fatigue_max(registry, entity),
 				ECS::get_mana_max(registry, entity));
 	}
+
+	// Equip items
 	if (registry.all_of<Inventory>(entity))
 	{
 		for (const auto item : registry.get<Inventory>(entity).inventory)
 		{
-			if (ECS::is_equippable(registry, item))
+			if (registry.all_of<Equipment>(item))
 				EquipmentSystem::equip(registry, entity, item);
 		}
 	}

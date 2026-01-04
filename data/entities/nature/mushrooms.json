@@ -11,7 +11,25 @@
 			"frequency": 0.1,
 			"chance": 0.45,
 			"humidity": 0.75
-		}
+		},
+		"weight": 10,
+		"gatherable": {
+			"tool": "harvesting",
+			"entity_id": "glowing bulb",
+			"amount": 1
+		},
+		"triggers": [
+			{
+				"type": "gather",
+				"target": {
+					"type": "self"
+				},
+				"effect": {
+					"type": "set_fgcolor",
+					"fgcolor": [200, 0, 250]
+				}
+			}
+		]
 	},
 
 	"woody mushroom": {
@@ -25,6 +43,23 @@
 			"chance": 0.45,
 			"humidity": 0.25
 		},
-		"landmark": true
+		"landmark": true,
+		"weight": 20,
+		"gatherable": {
+			"tool": "felling",
+			"entity_id": "woody chunk",
+			"amount": 4
+		},
+		"triggers": [
+			{
+				"type": "gather",
+				"target": {
+					"type": "self"
+				},
+				"effect": {
+					"type": "destroy_entity"
+				}
+			}
+		]
 	}
 }

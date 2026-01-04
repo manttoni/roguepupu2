@@ -4,6 +4,7 @@
 #include "Color.hpp"  // for Color
 #include "entt.hpp"   // for null, null_t, entity, vector
 #include "Event.hpp"
+#include "Utils.hpp"
 class Cell;
 
 struct Solid {};
@@ -27,25 +28,7 @@ struct Faction { std::string faction; };
 struct Category { std::string category; };
 struct Subcategory { std::string subcategory; };
 
-struct ArmorPenetration { int armor_penetration; };
-struct Armor { int armor; };
-
-struct Accuracy { int accuracy; };
-struct Evasion { int evasion; };
-
-struct Barrier { int barrier; };
-struct Power { int power; };
-
-struct CritChance { double crit_chance; };
-struct CritMultiplier { double crit_multiplier; };
-
 struct Glow { double strength, radius; };
-struct Damage
-{
-	int min, max;
-	std::string type;
-};
-
 struct Level { int level; };
 struct Attributes
 {
@@ -57,16 +40,36 @@ struct Resources
 {
 	int health, fatigue, mana;
 };
-struct Actions
-{
-	int total, used;
-};
-
 struct Equipment
 {
-	entt::entity right_hand{entt::null};
-	entt::entity left_hand{entt::null};
-	entt::entity armor{entt::null};
+	enum class Slot
+	{
+		OneHanded,
+		TwoHanded,
+		Begin,
+		LeftHand,
+		RightHand,
+		Count,
+	};
+	static Slot from_string(const std::string& str)
+	{
+		static const std::map<std::string, Slot> map =
+		{
+			{"one_handed", Slot::OneHanded},
+			{"two_handed", Slot::TwoHanded},
+			{"left_hand", Slot::LeftHand},
+			{"right_hand", Slot::RightHand}
+		};
+		auto it = map.find(str);
+		if (it == map.end())
+			Log::error("Unknown equipment slot: " + str);
+		return it->second;
+	}
+	Slot slot;
+};
+struct EquipmentSlots
+{
+	std::map<Equipment::Slot, std::optional<entt::entity>> slots;
 };
 struct Inventory
 {
@@ -92,4 +95,42 @@ struct Triggers
 struct EventQueue
 {
 	std::vector<Event> queue;
+};
+
+struct Tool
+{
+	enum class Type
+	{
+		None,
+		Felling,
+		Harvesting,
+		Mining
+	};
+	static Type from_string(const std::string& str)
+	{
+		static const std::map<std::string, Type> map =
+		{
+			{"none", Type::None},
+			{"felling", Type::Felling},
+			{"harvesting", Type::Harvesting},
+			{"mining", Type::Mining}
+		};
+		auto it = map.find(str);
+		if (it == map.end())
+			Log::error("Unknown tool type: " + str);
+		return it->second;
+	}
+	Type type;
+};
+
+struct Gatherable
+{
+	Tool::Type tool_type;
+	std::string entity_id;
+	size_t amount;
+};
+
+struct Dead
+{
+	size_t turn_number;
 };

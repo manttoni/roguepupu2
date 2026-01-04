@@ -23,6 +23,7 @@ void AbilityDatabase::read_abilities()
 
 void AbilityDatabase::read_definitions(const std::filesystem::path& path)
 {
+	Log::log("Parsing " + path.string());
 	std::ifstream file(path);
 	if (!file.is_open())
 		Log::error(std::string("Opening file failed: ") + path.string());
@@ -37,7 +38,6 @@ void AbilityDatabase::read_definitions(const std::filesystem::path& path)
 	file.close();
 	const std::string category = path.stem().filename(); // innate or spells
 	add_abilities(definitions, category);
-	Log::log(path.string() + " parsed");
 }
 
 void AbilityDatabase::add_abilities(nlohmann::json& definitions, const std::string& category)

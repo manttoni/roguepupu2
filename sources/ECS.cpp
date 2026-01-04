@@ -52,103 +52,6 @@ namespace ECS
 		return nullptr;
 	}
 
-	int get_damage_min(const entt::registry& registry, const entt::entity entity)
-	{
-		if (registry.all_of<Damage>(entity))
-			return registry.get<Damage>(entity).min;
-		if (registry.all_of<Equipment>(entity))
-		{
-			const auto& equipment = registry.get<Equipment>(entity);
-			double total_min = static_cast<double>(get_damage_min(registry, equipment.right_hand));
-			if (EquipmentSystem::is_dual_wielding(registry, entity))
-			{
-				total_min += static_cast<double>(get_damage_min(registry, equipment.left_hand));
-				total_min *= 0.75;
-			}
-			return static_cast<int>(total_min);
-		}
-		return 0;
-	}
-
-	int get_damage_max(const entt::registry& registry, const entt::entity entity)
-	{
-		if (registry.all_of<Damage>(entity))
-			return registry.get<Damage>(entity).max;
-		if (registry.all_of<Equipment>(entity))
-		{
-			const auto& equipment = registry.get<Equipment>(entity);
-			double total_max = static_cast<double>(get_damage_max(registry, equipment.right_hand));
-			if (EquipmentSystem::is_dual_wielding(registry, entity))
-			{
-				total_max += static_cast<double>(get_damage_max(registry, equipment.left_hand));
-				total_max *= 0.75;
-			}
-			return static_cast<int>(total_max);
-		}
-		return 0;
-	}
-
-	int get_armor_penetration(const entt::registry& registry, const entt::entity entity)
-	{
-		if (registry.all_of<ArmorPenetration>(entity))
-			return registry.get<ArmorPenetration>(entity).armor_penetration;
-		return 0;
-	}
-
-	int get_armor(const entt::registry& registry, const entt::entity entity)
-	{
-		if (registry.all_of<Armor>(entity))
-			return registry.get<Armor>(entity).armor;
-		if (registry.all_of<Equipment, Attributes>(entity))
-		{
-			const auto& equipment = registry.get<Equipment>(entity);
-			return get_strength(registry, entity) * get_armor(registry, equipment.armor);
-		}
-		return 0;
-	}
-
-	int get_accuracy(const entt::registry& registry, const entt::entity entity)
-	{
-		if (registry.all_of<Accuracy>(entity))
-			return registry.get<Accuracy>(entity).accuracy;
-		return 0;
-	}
-
-	int get_evasion(const entt::registry& registry, const entt::entity entity)
-	{
-		if (registry.all_of<Evasion>(entity))
-			return registry.get<Evasion>(entity).evasion;
-		return 0;
-	}
-
-	int get_barrier(const entt::registry& registry, const entt::entity entity)
-	{
-		if (registry.all_of<Barrier>(entity))
-			return registry.get<Barrier>(entity).barrier;
-		return 0;
-	}
-
-	int get_power(const entt::registry& registry, const entt::entity entity)
-	{
-		if (registry.all_of<Power>(entity))
-			return registry.get<Power>(entity).power;
-		return 0;
-	}
-
-	double get_crit_chance(const entt::registry& registry, const entt::entity entity)
-	{
-		if (registry.all_of<CritChance>(entity))
-			return registry.get<CritChance>(entity).crit_chance;
-		return 0;
-	}
-
-	double get_crit_multiplier(const entt::registry& registry, const entt::entity entity)
-	{
-		if (registry.all_of<CritMultiplier>(entity))
-			return registry.get<CritMultiplier>(entity).crit_multiplier;
-		return 0;
-	}
-
 	int get_strength(const entt::registry& registry, const entt::entity entity)
 	{
 		if (registry.all_of<Attributes>(entity))
@@ -188,7 +91,6 @@ namespace ECS
 		return 0;
 	}
 
-	// remake this (again). Must have order
 	std::map<std::string, std::string> get_info(const entt::registry& registry, const entt::entity entity)
 	{
 		std::map<std::string, std::string> info;
@@ -198,28 +100,7 @@ namespace ECS
 			info["level"] = std::to_string(registry.get<Level>(entity).level);
 		info["category"] = registry.get<Category>(entity).category;
 		info["subcategory"] = registry.get<Subcategory>(entity).subcategory;
-		if (registry.any_of<Damage>(entity))
-		{
-			const auto& damage = registry.get<Damage>(entity);
-			info["damage"] = std::to_string(damage.min) + " - " + std::to_string(damage.max) + " " + damage.type;
-		}
 		info["weight"] = std::to_string(get_weight(registry, entity));
-		if (registry.any_of<ArmorPenetration>(entity))
-			info["armor penetration"] = std::to_string(get_armor_penetration(registry, entity));
-		if (registry.any_of<Armor, Equipment>(entity))
-			info["armor"] = std::to_string(get_armor(registry, entity));
-		if (registry.any_of<Accuracy>(entity))
-			info["accuracy"] = std::to_string(get_accuracy(registry, entity));
-		if (registry.any_of<Evasion, Equipment>(entity))
-			info["evasion"] = std::to_string(get_evasion(registry, entity));
-		if (registry.any_of<Barrier, Equipment>(entity))
-			info["barrier"] = std::to_string(get_barrier(registry, entity));
-		if (registry.any_of<Power>(entity))
-			info["power"] = std::to_string(get_power(registry, entity));
-		if (registry.any_of<CritChance>(entity))
-			info["crit chance"] = std::to_string(get_crit_chance(registry, entity));
-		if (registry.any_of<CritMultiplier>(entity))
-			info["crit multiplier"] = std::to_string(get_crit_multiplier(registry, entity));
 		if (registry.all_of<Attributes>(entity))
 		{
 			info["strength"] = std::to_string(get_strength(registry, entity));
@@ -247,14 +128,6 @@ namespace ECS
 			return entt::null;
 		return *players.begin();
 	}
-
-	bool is_equippable(const entt::registry& registry, const entt::entity entity)
-	{
-		const std::vector<std::string> equippable = { "weapons", "armor" };
-		const auto& subcategory = registry.get<Subcategory>(entity).subcategory;
-		return std::find(equippable.begin(), equippable.end(), subcategory) != equippable.end();
-	}
-
 	bool can_see(const entt::registry& registry, const entt::entity seer, const entt::entity target)
 	{
 		if (!registry.all_of<Vision>(seer))
@@ -279,21 +152,6 @@ namespace ECS
 		const auto& level = registry.get<Level>(entity).level;
 		return level;
 	}
-
-	bool are_enemies(const entt::registry& registry, const entt::entity a, const entt::entity b)
-	{
-		if (!registry.all_of<Faction>(a) || !registry.all_of<Faction>(b))
-			return false;
-		return registry.get<Faction>(a).faction != registry.get<Faction>(b).faction;
-	}
-
-	bool is_dead(const entt::registry& registry, const entt::entity entity)
-	{
-		if (registry.all_of<Resources>(entity))
-			return registry.get<Resources>(entity).health <= 0;
-		return false;
-	}
-
 	Cave* get_active_cave(const entt::registry& registry)
 	{
 		const auto player = get_player(registry);

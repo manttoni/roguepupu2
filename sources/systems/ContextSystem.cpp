@@ -1,4 +1,5 @@
 #include <format>
+#include "systems/GatheringSystem.hpp"
 #include "systems/ContextSystem.hpp"
 #include "systems/InventorySystem.hpp"
 #include "systems/EquipmentSystem.hpp"
@@ -36,7 +37,7 @@ namespace ContextSystem
 		const auto player = ECS::get_player(registry);
 		if (player == owner && owner != entt::null)
 		{
-			if (ECS::is_equippable(registry, entity))
+			if (registry.all_of<Equipment>(entity))
 			{
 				if (EquipmentSystem::is_equipped(registry, player, entity))
 					options.push_back("Unequip");
@@ -55,7 +56,7 @@ namespace ContextSystem
 		{
 			if (player == entity)
 				options.push_back("Inventory");
-			else if (ECS::is_dead(registry, entity))
+			else if (registry.all_of<Dead>(entity))
 				options.push_back("Loot");
 			else if (registry.get<Subcategory>(entity).subcategory == "furniture")
 				options.push_back("Open");
@@ -65,6 +66,8 @@ namespace ContextSystem
 			if (registry.get<Category>(entity).category == "items")
 				options.push_back("Take");
 		}
+		if (distance < MELEE_RANGE && GatheringSystem::can_gather(registry, player, entity))
+			options.push_back("Gather");
 		options.push_back("Back");
 		return options;
 	}
@@ -79,6 +82,8 @@ namespace ContextSystem
 			InventorySystem::drop_item(registry, player, entity);
 		if (selection == "Take")
 			InventorySystem::take_item(registry, player, owner, entity);
+		if (selection == "Gather")
+			GatheringSystem::gather(registry, player, entity);
 	}
 	void show_entity_details(entt::registry& registry, const entt::entity entity, const entt::entity owner)
 	{

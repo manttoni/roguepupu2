@@ -44,8 +44,9 @@ bool Cell::is_border() const
 
 void Cell::reduce_density(const double amount)
 {
+	if (is_border()) return;
 	density -= amount;
-	if (density > 0 || type == Type::Floor || is_border())
+	if (density > 0 || type == Type::Floor)
 		return;
 	type = Type::Floor;
 	glyph = L' ';

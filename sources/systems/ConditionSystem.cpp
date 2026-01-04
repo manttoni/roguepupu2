@@ -14,8 +14,6 @@ namespace ConditionSystem
 		if (conditions.weight_max && weight > *conditions.weight_max)
 			return false;
 
-		Log::log("Weight passed");
-
 		const auto& category = registry.get<Category>(entity).category;
 		const auto& subcategory = registry.get<Subcategory>(entity).subcategory;
 		if (conditions.category &&
@@ -30,8 +28,6 @@ namespace ConditionSystem
 		{
 			return false;
 		}
-
-		Log::log("Category passed");
 
 		const auto hp = registry.get<Resources>(entity).health;
 		const auto max_hp = ECS::get_health_max(registry, entity);

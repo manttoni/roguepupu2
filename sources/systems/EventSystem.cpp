@@ -26,6 +26,14 @@ namespace EventSystem
 		// Check LeaveCell triggers etc...
 	}
 
+	void resolve_gather_event(entt::registry& registry, const Event& event)
+	{
+		if (!registry.all_of<Triggers>(event.gatherable))
+			return;
+		for (auto trigger : registry.get<Triggers>(event.gatherable).triggers)
+			TriggerSystem::resolve_trigger(registry, trigger, event.gatherable, event.actor);
+	}
+
 	void resolve_events(entt::registry& registry)
 	{
 		std::vector<Event>& event_queue = registry.ctx().get<EventQueue>().queue;
@@ -35,6 +43,9 @@ namespace EventSystem
 			{
 				case Event::Type::Move:
 					resolve_move_event(registry, event);
+					break;
+				case Event::Type::Gather:
+					resolve_gather_event(registry, event);
 					break;
 				default:
 					break;
