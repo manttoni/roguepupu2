@@ -1,4 +1,5 @@
 #include <cassert>
+#include "Cave.hpp"
 #include "ECS.hpp"
 #include "systems/MovementSystem.hpp"
 #include "systems/EffectSystem.hpp"
@@ -45,6 +46,7 @@ namespace EffectSystem
 				break;
 			case Effect::Type::SetFGColor:
 				registry.emplace_or_replace<FGColor>(target.entity, effect.fgcolor);
+				ECS::get_active_cave(registry)->reset_lights();
 				break;
 			default:
 				break;
