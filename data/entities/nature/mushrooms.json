@@ -4,7 +4,7 @@
 		"fgcolor": [400, 0, 500],
 		"glow": {
 			"strength": 0.02,
-			"radius": 5
+			"radius": 4
 		},
 		"spawn": {
 			"near": "rock",

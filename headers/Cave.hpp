@@ -5,6 +5,7 @@
 #include "Color.hpp"  // for Color
 #include "entt.hpp"   // for size_t, vector, pair
 #include "Utils.hpp"
+#include "LocationDatabase.hpp"
 
 class World;
 class Cave
@@ -63,6 +64,13 @@ class Cave
 	public:
 		double get_humidity() const { return humidity; }
 		void set_humidity(const double value) { humidity = value; }
+
+	private:
+		std::map<size_t, Location> locations;
+	public:
+		const std::map<size_t, Location>& get_locations() const { return locations; }
+		void add_location(const size_t idx, const Location& location) { locations[idx] = location; }
+		void clear_locations() { locations.clear(); }
 
 	public:
 		Cave();

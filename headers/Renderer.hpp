@@ -20,6 +20,7 @@ class Renderer
 		void render_cave();
 		void print_log();
 		void show_status();
+		void show_debug();
 		void draw_bar(const Color& color, const double percentage, const size_t y, const size_t x);
 	public:
 		void render();

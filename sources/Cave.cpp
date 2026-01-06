@@ -260,13 +260,13 @@ void Cave::apply_lights()
 
 		const auto& ent_idx = pos.cell->get_idx();
 		const auto& area = get_nearby_ids(ent_idx, glow.radius);
-
+		Color g = color.color * glow.strength;
+		cells[ent_idx].add_light(g);
 		for (const auto& idx : area)
 		{
 			if (!has_vision(ent_idx, idx))
 				continue;
 
-			Color g = color.color * glow.strength;
 			cells[idx].add_light(g);
 		}
 	}

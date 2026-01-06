@@ -12,11 +12,8 @@ namespace TransitionSystem
 
 	void link_portals(entt::registry& registry, const entt::entity a, const entt::entity b)
 	{
-		if (registry.all_of<Transition>(a) || registry.all_of<Transition>(b))
-			Log::error("Portal already has a destination");
-
-		registry.emplace<Transition>(a, b);
-		registry.emplace<Transition>(b, a);
+		registry.emplace_or_replace<Transition>(a, b);
+		registry.emplace_or_replace<Transition>(b, a);
 	}
 
 	entt::entity get_destination(const entt::registry& registry, const entt::entity portal)
@@ -25,4 +22,5 @@ namespace TransitionSystem
 			return entt::null;
 		return registry.get<Transition>(portal).destination;
 	}
+
 };

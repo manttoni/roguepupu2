@@ -170,8 +170,8 @@ std::string UI::dialog(const std::string& text, const std::vector<std::string>& 
 
 void UI::resize_terminal()
 {
-	destroy_panel(Panel::STATUS);
-	init_panel(Panel::STATUS);
+	destroy_panel(Panel::Status);
+	init_panel(Panel::Status);
 }
 
 // return input as int for ncurses
@@ -260,7 +260,7 @@ Vec2 UI::get_direction(const int key)
 Cell* UI::get_clicked_cell(Cave& cave)
 {
 	Screen::Coord mouse_position = get_mouse_position();
-	PANEL* panel = get_panel(UI::Panel::GAME);
+	PANEL* panel = get_panel(UI::Panel::Game);
 	WINDOW* window = panel_window(panel);
 	int window_height, window_width, window_starty, window_startx;
 	getmaxyx(window, window_height, window_width);
@@ -293,10 +293,10 @@ void UI::init_panel(Panel id)
 	PANEL* panel = nullptr;
 	switch (id)
 	{
-		case Panel::GAME:
+		case Panel::Game:
 			panel = new_panel(newwin(Screen::height(), Screen::width(), 0, 0));
 			break;
-		case Panel::STATUS:
+		case Panel::Status:
 			panel = new_panel(newwin(7, 27, Screen::height() - 7, Screen::width() - 27));
 			break;
 	}
@@ -305,8 +305,8 @@ void UI::init_panel(Panel id)
 
 void UI::init_panels()
 {
-	init_panel(Panel::GAME);
-	init_panel(Panel::STATUS);
+	init_panel(Panel::Game);
+	init_panel(Panel::Status);
 }
 
 void UI::destroy_panel(Panel id)

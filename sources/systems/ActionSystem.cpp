@@ -1,4 +1,5 @@
 #include "systems/ActionSystem.hpp"
+#include "systems/GatheringSystem.hpp"
 #include "systems/EventSystem.hpp"
 #include "systems/AbilitySystem.hpp"
 #include "systems/AISystem.hpp"
@@ -49,7 +50,10 @@ namespace ActionSystem
 				AccessSystem::open(registry, intent.actor, intent.target.entity);
 				break;
 			case Intent::Type::UseAbility:
-				AbilitySystem::use_ability(registry, *intent.ability, intent.target);
+				AbilitySystem::use_ability(registry, intent.actor, *intent.ability, intent.target);
+				break;
+			case Intent::Type::Gather:
+				GatheringSystem::gather(registry, intent.actor, intent.target.entity);
 				break;
 			case Intent::Type::Hide:
 				if (registry.all_of<Hidden>(intent.actor))
@@ -152,9 +156,9 @@ namespace ActionSystem
 		const auto player = ECS::get_player(registry);
 		std::vector<entt::entity> actors = cave->get_npcs();
 		actors.push_back(player);
-		// sort with initiative when it is implemented
 		for (const auto actor : actors)
 		{
+			if (!registry.valid(actor)) continue;
 			Intent intent = actor == player ?
 				get_player_intent(registry) :
 				AISystem::get_npc_intent(registry, actor);

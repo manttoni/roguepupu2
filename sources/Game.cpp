@@ -16,15 +16,21 @@
 #include "entt.hpp"                    // for vector, allocator, basic_sigh_...
 #include "systems/ContextSystem.hpp"   // for show_entities_list, show_entit...
 #include "systems/MovementSystem.hpp"  // for move
+#include "DevTools.hpp"
 
 Game::Game() :
 	registry(world.get_registry()),
-	player(EntityFactory::instance().create_entity(registry, "rabdin", &world.get_cave(1).get_source()))
+	player(EntityFactory::instance().create_entity(registry, "rabdin"))
 {
+	const auto source = ECS::get_source(registry, world.get_cave(1));
+	auto* source_cell = ECS::get_cell(registry, source);
+	registry.emplace<Position>(player, source_cell);
+
 	registry.ctx().emplace<GameLogger>();
 	registry.ctx().emplace<GameState>();
 	registry.ctx().emplace<Renderer>(registry);
 	registry.ctx().emplace<EventQueue>();
+	registry.ctx().emplace<Dev>();
 	Log::log("Game object constructed");
 }
 
@@ -34,6 +40,7 @@ void Game::loop()
 	registry.ctx().get<GameState>().running = true;
 	while (registry.ctx().get<GameState>().running)
 	{
+		Log::log("Round " + std::to_string(registry.ctx().get<GameState>().turn_number));
 		ActionSystem::act_round(registry);
 		registry.ctx().get<GameState>().turn_number++;
 	}

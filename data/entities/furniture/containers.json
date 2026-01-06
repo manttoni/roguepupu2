@@ -10,14 +10,6 @@
 	"toolbox": {
 		"glyph": "T",
 		"fgcolor": [300, 200, 200],
-		"inventory": [
-			{
-				"filter": {
-					"subcategory": "tools",
-					"amount": 2
-				}
-			}
-		],
 		"weight": 5,
 		"solid": true
 	}

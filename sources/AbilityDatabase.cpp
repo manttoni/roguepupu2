@@ -44,7 +44,7 @@ void AbilityDatabase::add_abilities(nlohmann::json& definitions, const std::stri
 {
 	for (const auto& [id, data] : definitions.items())
 	{
-		Ability ability;
+		Ability ability = {.id = id};
 		if (category == "innate")
 			ability.type = Ability::Type::Innate;
 		else if (category == "spell")

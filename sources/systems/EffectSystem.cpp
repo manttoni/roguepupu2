@@ -42,7 +42,8 @@ namespace EffectSystem
 				}
 				break;
 			case Effect::Type::Transition:
-				registry.emplace_or_replace<Position>(target.entity, target.cell);
+				if (target.cell != nullptr)
+					registry.emplace_or_replace<Position>(target.entity, target.cell);
 				break;
 			case Effect::Type::SetFGColor:
 				registry.emplace_or_replace<FGColor>(target.entity, effect.fgcolor);

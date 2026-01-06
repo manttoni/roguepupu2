@@ -17,6 +17,7 @@ namespace TriggerSystem
 		if (!ConditionSystem::is_true(registry, trigger.conditions, triggerer))
 			return;
 
+		Log::log("Trigger! " + registry.get<Name>(owner).name);
 
 		switch (trigger.target.type)
 		{
@@ -33,23 +34,13 @@ namespace TriggerSystem
 				Log::error("Unknown trigger target type: " + std::to_string(static_cast<size_t>(trigger.target.type)));
 		}
 
-		if (registry.all_of<Transition>(owner))
+		switch (trigger.effect.type)
 		{
-			const auto destination = TransitionSystem::get_destination(registry, owner);
-			if (!registry.all_of<Position>(destination) &&
-					registry.get<Name>(destination).name == "source" &&
-					registry.get<Name>(owner).name == "sink")
-			{	// destination doesnt have a position because the cave is not yet generated
-				Cell* cell = ECS::get_cell(registry, owner);
-				Cave* cave = cell->get_cave();
-				World* world = cave->get_world();
-				const size_t level = cave->get_level();
-				world->get_cave(level + 1);
-			}
-			assert(registry.all_of<Position>(destination));
-			trigger.target.cell = ECS::get_cell(registry, destination);
+			case Effect::Type::Transition:
+				break;
+			default:
+				break;
 		}
-
 		EffectSystem::resolve_effect(registry, trigger.effect, trigger.target);
 	}
 };

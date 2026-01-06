@@ -1,0 +1,16 @@
+{
+	"goblin forager": {
+		"glyph": "f",
+		"fgcolor": [0, 333, 0],
+		"inventory": [
+			{"filter": {"subcategory": "tools"}}
+		],
+		"weight": 25
+	},
+	"goblin guard": {
+		"glyph": "g",
+		"fgcolor": [100, 433, 100],
+		"inventory": true,
+		"weight": 35
+	}
+}

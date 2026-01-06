@@ -125,7 +125,7 @@ namespace ECS
 	{
 		const auto players = registry.view<Player>();
 		if (players.empty())
-			return entt::null;
+			Log::error("Player not found");
 		return *players.begin();
 	}
 	bool can_see(const entt::registry& registry, const entt::entity seer, const entt::entity target)
@@ -160,22 +160,20 @@ namespace ECS
 
 	entt::entity get_source(const entt::registry& registry, const Cave& cave)
 	{
-		const size_t idx = cave.get_source_idx();
-		const auto& entities = cave.get_cell(idx).get_entities();
-		for (const auto e : entities)
+		for (const auto e : registry.view<Position, Name>())
 		{
-			if (registry.get<Name>(e).name == "source")
+			if (registry.get<Name>(e).name == "source" &&
+					registry.get<Position>(e).cell->get_cave() == &cave)
 				return e;
 		}
 		return entt::null;
 	}
 	entt::entity get_sink(const entt::registry& registry, const Cave& cave)
 	{
-		const size_t idx = cave.get_sink_idx();
-		const auto& entities = cave.get_cell(idx).get_entities();
-		for (const auto e : entities)
+		for (const auto e : registry.view<Position, Name>())
 		{
-			if (registry.get<Name>(e).name == "sink")
+			if (registry.get<Name>(e).name == "sink" &&
+					registry.get<Position>(e).cell->get_cave() == &cave)
 				return e;
 		}
 		return entt::null;

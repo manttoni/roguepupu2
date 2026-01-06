@@ -42,18 +42,28 @@ namespace DevTools
 	{
 		const std::vector<std::string> choices =
 		{
-			"Reveal map",
-			"Show entities data"
+			"God mode",
+			"Reveal/hide map",
+			"Show entities data",
+			"Show/hide debug"
 		};
 		const auto& choice = UI::instance().dialog("DevTools", choices);
-		if (choice == "Reveal map")
+		if (choice == "God mode")
 		{
+			registry.ctx().get<Dev>().god_mode ^= true;
+		}
+		if (choice == "Reveal/hide map")
+		{
+			static bool hidden = true;
 			Cave* cave = ECS::get_active_cave(registry);
 			auto& cells = cave->get_cells();
 			for (auto& cell : cells)
-				cell.set_seen(true);
+				cell.set_seen(hidden);
+			hidden = !hidden;
 		}
 		else if (choice == "Show entities data")
 			show_entities(registry);
+		else if (choice == "Show/hide debug")
+			registry.ctx().get<Dev>().show_debug ^= true;
 	}
 };

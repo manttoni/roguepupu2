@@ -1,6 +1,7 @@
 {
 	"source": {
 		"glyph": "▴",
+		"transition": true,
 		"landmark": true,
 		"triggers": [
 			{
@@ -20,6 +21,7 @@
 
 	"sink": {
 		"glyph": "▾",
+		"transition": true,
 		"landmark": true,
 		"triggers": [
 			{

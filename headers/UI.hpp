@@ -36,8 +36,8 @@ class UI
 	public:
 		enum class Panel
 		{
-			GAME,
-			STATUS,
+			Game,
+			Status,
 		};
 	private:
 		std::map<Panel, PANEL*> panels;
@@ -64,6 +64,8 @@ class UI
 			initialized_color_pairs[color_pair] = color_pair_id;
 		}
 		void reset_colors();
+		const std::map<Color, short>& get_initialized_colors() const { return initialized_colors; }
+		const std::map<ColorPair, short>& get_initialized_color_pairs() const { return initialized_color_pairs; }
 
 	private:
 		Screen::Coord mouse_position;

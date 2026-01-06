@@ -298,6 +298,12 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 		{
 			reg.template emplace<Tool>(e, Tool::from_string(data.get<std::string>()));
 		}
+	},
+	{ "transition", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			if (data.is_boolean() && data == true)
+				reg.template emplace<Transition>(e, entt::null);
+		}
 	}
 };
 

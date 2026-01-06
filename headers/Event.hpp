@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include "entt.hpp"
 #include "Color.hpp"
 
@@ -51,11 +52,11 @@ struct Ability
 	};
 
 	Type type = Type::None;
-	std::string id;
+	std::string id = "";
 	size_t cooldown = 0;
 	size_t last_used = 0;
-	Effect effect;
-	Target target;
+	Effect effect{};
+	Target target{};
 };
 struct Conditions
 {
@@ -80,6 +81,7 @@ struct Intent
 		UseAbility,
 		Hide,
 		Flee,
+		Gather,
 	};
 
 	Type type = Type::None;

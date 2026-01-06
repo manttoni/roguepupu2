@@ -5,7 +5,7 @@
 #include "entt.hpp"  // for size_t, registry, deque, vector
 #include "nlohmann/json.hpp"
 
-#define DENSITY_MAX 10
+#define DENSITY_MAX 9
 
 class World
 {
@@ -37,16 +37,19 @@ class World
 		double erosion_b;	// Smooth cave
 		double erosion_c;	// Smooth cave
 
-
 		std::vector<size_t> get_empty_cells(const Cave& cave);
 		void form_rock();
 		void form_tunnels();
-		std::vector<size_t> find_water_path(const bool clamp_density = true);
+		std::vector<size_t> find_water_path(const size_t start, const size_t end, const bool clamp_density = true);
 		void set_source_sink();
 		size_t randomize_transition_idx(const size_t other = 0);
 		void set_rock_colors();
 		void set_humidity();
 		void spawn_entities(nlohmann::json& filter);
+		bool all_connected();
+		bool set_locations();
+		bool place_location(const Location& location);
+		void populate_locations();
 
 	public:
 		World();

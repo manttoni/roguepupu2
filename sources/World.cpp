@@ -48,12 +48,10 @@ World::World() : seed(Random::randsize_t(10000, 99999)), rng(seed)
 }
 
 // A* to find path of least resistance through solid rock
-std::vector<size_t> World::find_water_path(const bool clamp_density)
+std::vector<size_t> World::find_water_path(const size_t start, const size_t end, const bool clamp_density)
 {
 	auto& canvas = caves.back();
 	auto& cells = canvas.get_cells();
-	size_t start = canvas.get_source_idx();
-	size_t end = canvas.get_sink_idx();
 
 	std::vector<size_t> open_set = { start };
 	std::map<size_t, size_t> came_from;
@@ -120,15 +118,6 @@ std::vector<size_t> World::find_water_path(const bool clamp_density)
 	return {};
 }
 
-void World::form_tunnels()
-{
-	auto& canvas = caves.back();
-	while (canvas.find_path(canvas.get_source_idx(), canvas.get_sink_idx()).empty())
-	{
-		find_water_path();
-	}
-}
-
 void World::form_rock()
 {
 	auto& canvas = caves.back();
@@ -139,7 +128,7 @@ void World::form_rock()
 		size_t y = i / width;
 		size_t x = i % width;
 		double perlin = Random::noise3D(y, x, level, frequency, seed, octaves);
-		double density = Math::map(perlin, 0, 1, 1, 9);
+		double density = Math::map(perlin, 0, 1, 1, DENSITY_MAX);
 		cells[i].set_type(Cell::Type::Rock);
 		cells[i].set_density(density);
 		cells[i].set_idx(i);
@@ -147,60 +136,134 @@ void World::form_rock()
 	}
 }
 
-size_t World::randomize_transition_idx(const size_t other)
+bool World::place_location(const Location& location)
 {
-	// select source and sink (level entrance and exit)
-	const double within = width / 2 - 5; // allow idx inside this circle
-	const double outside = within * 0.85; // but only outside this circle
-	const double level_distance = outside * 2; // min distance between source and sink
-
-	const auto& canvas = caves.back();
-	const size_t center = width * (height / 2) + width / 2;
-	while (true)
+	const double max_rd = static_cast<double>(width) / 2.0 - 10.0;
+	double rd;
+	if (location.radial_distance >= 0 && location.radial_distance <= 1)
+		rd = location.radial_distance;
+	else
 	{
-		const size_t idx = Random::randsize_t(0, height * width - 1);
-		const double distance = canvas.distance(center, idx);
-		if (distance > within || distance < outside)
-			continue;
-		if (other != 0 && canvas.distance(idx, other) < level_distance)
-			continue;
-
-		return idx;
+		const double min = 0.25; // keep center aka spawn area clear
+		const double max = 1;
+		rd = Random::randreal(min, max);
 	}
-	Log::error("Could not find transition idx");
+	const double angle = Random::randreal(0.0, 2.0 * M_PI);
+	const size_t cy = height / 2;
+	const size_t cx = width / 2;
+	const auto& vec2 = Math::polar_to_cartesian(Vec2(cy, cx), rd * max_rd, angle);
+	const size_t place_idx = vec2.y * width + vec2.x;
+	auto& canvas = caves.back();
+	const auto& nearby_ids = canvas.get_nearby_ids(place_idx, location.radius);
+	for (const auto idx : nearby_ids)
+	{
+		if (canvas.get_locations().contains(idx))
+			return false;
+	}
+	canvas.add_location(place_idx, location);
+	return true;
 }
 
-void World::set_source_sink()
+bool World::set_locations()
+{
+	LocationDatabase ld;
+	const auto& set = ld.get_random_set();
+	for (const auto& location : set)
+		while (place_location(location) == false);
+
+	// Check overlapping locations
+	auto& canvas = caves.back();
+	const auto& locations = canvas.get_locations();
+	for (const auto& [idx, location] : locations)
+	{
+		const auto nearby_ids = canvas.get_nearby_ids(idx, location.radius); // does not include itself
+		for (const auto nearby : nearby_ids)
+		{
+			if (locations.contains(nearby))
+				return false;
+		}
+	}
+	// Clear space
+	auto& cells = canvas.get_cells();
+	for (const auto& [idx, location] : locations)
+	{
+		cells[idx].reduce_density(DENSITY_MAX);
+		const auto nearby = canvas.get_nearby_ids(idx, location.radius);
+		for (const auto nearby_idx : nearby)
+			cells[nearby_idx].reduce_density(DENSITY_MAX);
+	}
+	return true;
+}
+
+void World::populate_locations()
 {
 	auto& canvas = caves.back();
-	const size_t source_idx = canvas.get_level() == 1 ?
-		randomize_transition_idx() :
-		(caves.end() - 2)->get_sink_idx();
-	const size_t sink_idx = randomize_transition_idx(source_idx);
-
-	canvas.set_source_idx(source_idx);
-	canvas.set_sink_idx(sink_idx);
-
-	canvas.get_cell(source_idx).reduce_density(DENSITY_MAX);
-	canvas.get_cell(sink_idx).reduce_density(DENSITY_MAX);
-
-	for (const auto idx : canvas.get_nearby_ids(source_idx, 2.5))
-		canvas.get_cell(idx).reduce_density(DENSITY_MAX);
-	for (const auto idx : canvas.get_nearby_ids(sink_idx, 2.5))
-		canvas.get_cell(idx).reduce_density(DENSITY_MAX);
-
-	const entt::entity this_sink = EntityFactory::instance().create_entity(registry, "sink", &canvas.get_cell(sink_idx));
-	const entt::entity next_source = EntityFactory::instance().create_entity(registry, "source");
-	TransitionSystem::link_portals(registry, this_sink, next_source);
-
-	const size_t level = canvas.get_level();
-	if (level > 1)
+	const auto& locations = canvas.get_locations();
+	for (const auto& [idx, location] : locations)
 	{
-		const auto prev_sink = ECS::get_sink(registry, caves[level - 2]);
-		const auto this_source = TransitionSystem::get_destination(registry, prev_sink);
-		registry.emplace<Position>(this_source, &canvas.get_cell(source_idx));
+		// Cells within radius
+		auto cell_ids = canvas.get_nearby_ids(idx, location.radius);
+		std::shuffle(cell_ids.begin(), cell_ids.end(), Random::rng());
+
+		// Entity structs with id and amount/spawn info
+		const auto& entities = location.entities;
+
+		// index of nearby cells vector
+		size_t i = 0;
+
+		// loop spawn info
+		for (const auto& entity : entities)
+		{
+			// loop for amount
+			for (size_t j = 0; j < entity.amount; ++j)
+			{
+				// get next empty cell
+				while (i < cell_ids.size() && !canvas.get_cell(cell_ids[i]).is_empty()) i++;
+				if (i >= cell_ids.size())
+					return;
+				size_t spawn_idx = cell_ids[i];
+				if (entity.amount == 1 && entity.radial_distance >= 0 && entity.radial_distance <= location.radius)
+				{
+					const auto coord = Math::polar_to_cartesian(
+							Vec2(idx / width, idx % width),
+							location.radius * entity.radial_distance,
+							Random::randreal(0, 2 * M_PI));
+					spawn_idx = coord.y * width + coord.x;
+				}
+				EntityFactory::instance().create_entity(registry, entity.id, &canvas.get_cell(spawn_idx));
+			}
+		}
 	}
 }
+
+bool World::all_connected()
+{
+	auto& canvas = caves.back();
+	const auto& locations = canvas.get_locations();
+	const size_t source_idx = height / 2 * width + width / 2;
+	for (const auto& [idx, location] : locations)
+	{
+		const auto& path = canvas.find_path(idx, source_idx);
+		if (path.empty())
+			return false;
+	}
+	return true;
+}
+
+void World::form_tunnels()
+{
+	auto& canvas = caves.back();
+	const auto& locations = canvas.get_locations();
+	const size_t source_idx = height / 2 * width + width / 2;
+	while (!all_connected())
+	{
+		for (const auto& [idx, location] : locations)
+		{
+			find_water_path(source_idx, idx);
+		}
+	}
+}
+
 void World::set_rock_colors()
 {
 	auto& canvas = caves.back();
@@ -246,7 +309,8 @@ void World::spawn_entities(nlohmann::json& filter)
 	filter["player"] = "none";
 	const auto& names = EntityFactory::instance().random_pool(filter, SIZE_MAX);
 	const auto& LUT = EntityFactory::instance().get_LUT();
-	const auto& empty_cells = get_empty_cells(canvas);
+	auto empty_cells = get_empty_cells(canvas);
+	std::shuffle(empty_cells.begin(), empty_cells.end(), Random::rng());
 	auto& cells = canvas.get_cells();
 	for (const auto& cell_idx : empty_cells)
 	{
@@ -296,7 +360,7 @@ void World::spawn_entities(nlohmann::json& filter)
 				}
 				const double total_space = nearby.size();
 
-				if (space == "wide" && empty_space / total_space < 0.9)
+				if (space == "wide" && empty_space / total_space < 0.95)
 					continue;
 				if (space == "narrow" && total_space - empty_space < 2)
 					continue;
@@ -341,7 +405,10 @@ void World::generate_cave(const size_t level)
 	UI::instance().dialog("Generating terrain...");
 	Log::log("Generating terrain...");
 	form_rock();
-	set_source_sink();
+	while (set_locations() == false)
+		caves.back().clear_locations();
+	caves.back().set_source_idx(height / 2 * width + width / 2);
+	Log::log("Set " + std::to_string(caves.back().get_locations().size()) + " locations");
 	form_tunnels();
 	set_rock_colors();
 	set_humidity();
@@ -351,6 +418,7 @@ void World::generate_cave(const size_t level)
 	// Spawn entities
 	UI::instance().dialog("Spawning entities...");
 	Log::log("Spawning entities...");
+	populate_locations();
 	std::vector<nlohmann::json> filters =
 	{
 		{{"subcategory", "mushrooms"}},

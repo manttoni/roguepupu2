@@ -145,6 +145,13 @@ namespace Math
 		}
 		value = value - T{1};
 	}
+
+	inline Vec2 polar_to_cartesian(const Vec2 center, const double radius, const double angle)
+	{
+		const size_t y = static_cast<size_t>(std::round(center.y - radius * std::sin(angle)));
+		const size_t x = static_cast<size_t>(std::round(center.x + radius * std::cos(angle)));
+		return Vec2(y, x);
+	}
 }
 
 namespace Random

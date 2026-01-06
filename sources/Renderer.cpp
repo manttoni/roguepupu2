@@ -5,11 +5,11 @@
 #include "Cave.hpp"
 #include "Cell.hpp"
 #include "ColorPair.hpp"
-#include "World.hpp"
 #include "ECS.hpp"
 #include "Components.hpp"
 #include "Unicode.hpp"
 #include "Renderer.hpp"
+#include "DevTools.hpp"
 
 Renderer::Renderer(const entt::registry& registry) : registry(registry), render_frame(0)
 {
@@ -71,7 +71,7 @@ void Renderer::render_cell(Cell& cell)
 	const auto& player_position = registry.get<Position>(player);
 	const size_t player_idx = player_position.cell->get_idx();
 
-	PANEL* panel = UI::instance().get_panel(UI::Panel::GAME);
+	PANEL* panel = UI::instance().get_panel(UI::Panel::Game);
 	WINDOW* window = panel_window(panel);
 	UI::instance().set_current_panel(panel);
 
@@ -117,12 +117,12 @@ void Renderer::render_cave()
 	const auto& player_position = registry.get<Position>(player);
 	const size_t player_idx = player_position.cell->get_idx();
 
-	PANEL* panel = UI::instance().get_panel(UI::Panel::GAME);
+	PANEL* panel = UI::instance().get_panel(UI::Panel::Game);
 	WINDOW* window = panel_window(panel);
 	UI::instance().set_current_panel(panel, true);
 
 	werase(window);
-	UI::instance().reset_colors();
+	//UI::instance().reset_colors();
 
 	int window_height, window_width;
 	getmaxyx(window, window_height, window_width);
@@ -146,7 +146,8 @@ void Renderer::render_cave()
 			continue;
 
 		Visual visual;
-		if (!cave.has_vision(player_idx, cell_idx, registry.get<Vision>(player).range))
+		if (registry.ctx().get<Dev>().god_mode == false &&
+			!cave.has_vision(player_idx, cell_idx, registry.get<Vision>(player).range))
 		{
 			if (cell.is_seen() && cell.has_landmark())
 				visual = get_ghost_visual(cell);
@@ -167,7 +168,7 @@ void Renderer::print_log()
 	ColorPair log_pair = ColorPair(Color(500, 500, 500), Color{});
 	const size_t n = messages.size();
 	const size_t height = Screen::height();
-	PANEL* panel = UI::instance().get_panel(UI::Panel::GAME);
+	PANEL* panel = UI::instance().get_panel(UI::Panel::Game);
 	WINDOW* window = panel_window(panel);
 	UI::instance().enable_color_pair(log_pair);
 	for (size_t i = 0; i < n; ++i)
@@ -187,7 +188,7 @@ void Renderer::draw_bar(const Color& color, const double percentage, const size_
 	if (remaining > 0)
 		bar += Unicode::LeftBlocks[static_cast<size_t>(Math::map(remaining, 0, per_block, 0, 8))];
 
-	PANEL* status_panel = UI::instance().get_panel(UI::Panel::STATUS);
+	PANEL* status_panel = UI::instance().get_panel(UI::Panel::Status);
 
 	UI::instance().set_current_panel(status_panel, true);
 	UI::instance().enable_color_pair(ColorPair(color, Color{}));
@@ -198,7 +199,7 @@ void Renderer::draw_bar(const Color& color, const double percentage, const size_
 void Renderer::show_status()
 {
 	const size_t bar_len = 25;
-	PANEL* status_panel = UI::instance().get_panel(UI::Panel::STATUS);
+	PANEL* status_panel = UI::instance().get_panel(UI::Panel::Status);
 	WINDOW* status_window = panel_window(status_panel);
 	werase(status_window);
 	box(status_window, 0, 0);
@@ -218,11 +219,25 @@ void Renderer::show_status()
 	draw_bar(Color(0,0,600), std::max(0.0, mp_per), 5, bar_len);
 }
 
+void Renderer::show_debug()
+{
+	UI::instance().set_current_panel(UI::instance().get_panel(UI::Panel::Game));
+	const std::vector<std::string> debug =
+	{
+		"Colors: " + std::to_string(UI::instance().get_initialized_colors().size()),
+		"ColorPairs: " + std::to_string(UI::instance().get_initialized_color_pairs().size())
+	};
+	for (size_t i = 0; i < debug.size(); ++i)
+		UI::instance().print(i, 0, debug[i]);
+}
+
 void Renderer::render()
 {
 	render_cave();
 	print_log();
 	show_status();
+	if (registry.ctx().get<Dev>().show_debug == true)
+		show_debug();
 	UI::instance().update();
 	render_frame++;
 }
