@@ -1,6 +1,7 @@
 #include <ncurses.h>
 #include <panel.h>
 #include <string>
+#include "systems/VisionSystem.hpp"
 #include "entt.hpp"
 #include "Cave.hpp"
 #include "Cell.hpp"
@@ -97,7 +98,8 @@ void Renderer::render_cell(Cell& cell)
 		return;
 
 	Visual visual;
-	if (!cave->has_vision(player_idx, cell_idx, registry.get<Vision>(player).range))
+	if (registry.ctx().get<Dev>().god_mode == false &&
+			!VisionSystem::has_vision(registry, player, cell))
 	{
 		if (cell.is_seen() && cell.has_landmark())
 			visual = get_ghost_visual(cell);
@@ -147,7 +149,7 @@ void Renderer::render_cave()
 
 		Visual visual;
 		if (registry.ctx().get<Dev>().god_mode == false &&
-			!cave.has_vision(player_idx, cell_idx, registry.get<Vision>(player).range))
+				!VisionSystem::has_vision(registry, player, cell))
 		{
 			if (cell.is_seen() && cell.has_landmark())
 				visual = get_ghost_visual(cell);

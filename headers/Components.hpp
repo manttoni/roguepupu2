@@ -21,7 +21,7 @@ struct Glyph { wchar_t glyph; };
 struct FGColor { Color color; };
 struct BGColor { Color color; };
 
-struct Vision { int range; };
+struct Vision { double range; };
 struct Weight { double weight; };
 struct Faction { std::string faction; };
 
@@ -133,4 +133,10 @@ struct Gatherable
 struct Dead
 {
 	size_t turn_number;
+};
+
+struct BaseLocation
+{
+	size_t idx;
+	double radius;
 };

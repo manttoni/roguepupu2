@@ -25,8 +25,7 @@
 					"type": "self"
 				},
 				"effect": {
-					"type": "set_fgcolor",
-					"fgcolor": [200, 0, 250]
+					"type": "destroy_entity"
 				}
 			}
 		]

@@ -15,11 +15,12 @@ namespace ECS
 	std::string get_name(const entt::registry& registry, const entt::entity entity);
 	std::string get_colored_name(const entt::registry& registry, const entt::entity entity);
 	std::vector<std::string> get_colored_names(const entt::registry& registry, const std::vector<entt::entity>& items);
+	std::string get_name(const entt::registry& registry, const entt::entity entity);
 	std::map<std::string, std::string> get_info(const entt::registry& registry, const entt::entity entity);
 	Cell* get_cell(const entt::registry& registry, const entt::entity entity);
+	Cave* get_cave(const entt::registry& registry, const entt::entity entity);
 	double distance(const entt::registry& registry, const entt::entity a, const entt::entity b);
 	entt::entity get_player(const entt::registry& registry);
-	bool can_see(const entt::registry& registry, const entt::entity seer, const entt::entity target);
 	std::vector<entt::entity> get_inventory(const entt::registry& registry, const entt::entity entity);
 	size_t get_level(const entt::registry& registry, const entt::entity entity);
 	int get_fatigue_max(const entt::registry& registry, const entt::entity entity);

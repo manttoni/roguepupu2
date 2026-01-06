@@ -2,15 +2,25 @@
 	"goblin forager": {
 		"glyph": "f",
 		"fgcolor": [0, 333, 0],
+		"weight": 25,
+		"vision": 10,
+		"solid": true,
 		"inventory": [
-			{"filter": {"subcategory": "tools"}}
+			{"filter": {"name": "axe"}},
+			{"filter": {"name": "knife"}}
 		],
-		"weight": 25
+		"ai": [
+			{
+				"type": "gather"
+			}
+		]
 	},
 	"goblin guard": {
 		"glyph": "g",
 		"fgcolor": [100, 433, 100],
 		"inventory": true,
-		"weight": 35
+		"weight": 35,
+		"solid": true,
+		"vision": 10
 	}
 }

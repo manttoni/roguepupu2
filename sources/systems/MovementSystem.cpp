@@ -10,8 +10,83 @@
 
 namespace MovementSystem
 {
+	std::vector<size_t> find_path(Cell& start, Cell& end)
+	{
+		if (start.get_cave() != end.get_cave())
+			return {};
+		return find_path(start.get_cave(), start.get_idx(), end.get_idx());
+	}
+
+	std::vector<size_t> find_path(Cave* cave, const size_t start, const size_t end)
+	{
+		if (cave == nullptr || start >= cave->get_size() || end >= cave->get_size())
+			Log::error("Cave::find_path: invalid arguments");
+		//if (cells[start].blocks_movement() || cells[end].blocks_movement())
+		//	return {}; If this can stay like this, would solve some problems
+		std::vector<size_t> open_set = { start };
+		std::map<size_t, size_t> came_from;
+		std::map<size_t, double> g_score;
+		std::map<size_t, double> f_score;
+
+		g_score[start] = 0;
+		f_score[start] = cave->distance(start, end);
+
+		while (!open_set.empty())
+		{
+			size_t current_idx = open_set[0];
+			for (const size_t cell_idx : open_set)
+			{	// all open_set elements have f_score mapped
+				if (f_score[cell_idx] < f_score[current_idx])
+					current_idx = cell_idx;
+			}
+
+			if (current_idx == end)
+			{	// found optimal path from start to end
+				std::vector<size_t> path;
+				path.push_back(current_idx);
+				while (current_idx != start)
+				{	// assign the cell from where we got to to current
+					current_idx = came_from[current_idx];
+					path.push_back(current_idx);
+				}
+				std::reverse(path.begin(), path.end());
+				return path;
+			}
+
+			Utils::remove_element(open_set, current_idx);
+			for (const size_t neighbor_idx : cave->get_nearby_ids(current_idx, 1.5))
+			{
+				if (neighbor_idx != end && !can_move(*cave, current_idx, neighbor_idx))
+					continue;
+				double tentative_g_score = g_score[current_idx] + cave->distance(current_idx, neighbor_idx);
+				if (g_score.count(neighbor_idx) == 0)
+					g_score[neighbor_idx] = std::numeric_limits<double>::infinity();
+				if (tentative_g_score < g_score[neighbor_idx])
+				{
+					came_from[neighbor_idx] = current_idx;
+					g_score[neighbor_idx] = tentative_g_score;
+					f_score[neighbor_idx] = tentative_g_score + cave->distance(neighbor_idx, end);
+					if (!Utils::contains(open_set, neighbor_idx))
+						open_set.push_back(neighbor_idx);
+				}
+			}
+		}
+		return {};
+	}
+
+	Cell* get_first_step(const entt::registry& registry, const entt::entity entity, Cell& dst)
+	{
+		Cell& src = *ECS::get_cell(registry, entity);
+		const auto path = find_path(src, dst);
+		if (path.empty())
+			return nullptr;
+		return &src.get_cave()->get_cell(path[1]);
+	}
+
 	void move(entt::registry& registry, entt::entity actor, Cell* target_cell)
 	{
+		if (target_cell == nullptr)
+			return;
 		Cell* prev = ECS::get_cell(registry, actor);
 		registry.emplace_or_replace<Position>(actor, target_cell);
 		registry.ctx().get<EventQueue>().queue.push_back({

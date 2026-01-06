@@ -38,6 +38,13 @@ namespace ECS
 		return names;
 	}
 
+	std::string get_name(const entt::registry& registry, const entt::entity entity)
+	{
+		if (entity == entt::null)
+			return "null";
+		return registry.get<Name>(entity).name;
+	}
+
 	wchar_t get_glyph(const entt::registry& registry, const entt::entity entity)
 	{
 		if (registry.all_of<Glyph>(entity))
@@ -50,6 +57,14 @@ namespace ECS
 		if (registry.all_of<Position>(entity))
 			return registry.get<Position>(entity).cell;
 		return nullptr;
+	}
+
+	Cave* get_cave(const entt::registry& registry, const entt::entity entity)
+	{
+		Cell* cell = get_cell(registry, entity);
+		if (cell == nullptr)
+			return nullptr;
+		return cell->get_cave();
 	}
 
 	int get_strength(const entt::registry& registry, const entt::entity entity)
@@ -128,15 +143,6 @@ namespace ECS
 			Log::error("Player not found");
 		return *players.begin();
 	}
-	bool can_see(const entt::registry& registry, const entt::entity seer, const entt::entity target)
-	{
-		if (!registry.all_of<Vision>(seer))
-			return false;
-		const double vision_range = registry.get<Vision>(seer).range;
-		const size_t idx_a = get_cell(registry, seer)->get_idx();
-		const size_t idx_b = get_cell(registry, target)->get_idx();
-		return get_cell(registry, seer)->get_cave()->has_vision(idx_a, idx_b, vision_range);
-	}
 
 	std::vector<entt::entity> get_inventory(const entt::registry& registry, const entt::entity entity)
 	{
@@ -187,5 +193,6 @@ namespace ECS
 		if (it != npcs.end())
 			npcs.erase(it);
 		registry.destroy(entity);
+		cave->reset_lights();
 	}
 };

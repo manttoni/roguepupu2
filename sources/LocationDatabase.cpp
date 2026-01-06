@@ -28,7 +28,7 @@ void LocationDatabase::read_locations()
 		if (data.contains("chance"))
 			location.chance = data["chance"].get<double>();
 		if (data.contains("radius"))
-			location.radius = data["radius"].get<size_t>();
+			location.radius = data["radius"].get<double>();
 		if (data.contains("radial_distance"))
 			location.radial_distance = data["radial_distance"].get<double>();
 		if (data.contains("unique"))

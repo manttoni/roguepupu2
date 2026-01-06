@@ -96,6 +96,7 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 				{
 					const size_t rand = Random::randsize_t(0, names.size() - 1);
 					inventory.push_back(EntityFactory::instance().create_entity(reg, names[rand]));
+					Log::log("got item: " + names[rand]);
 				}
 			}
 			reg.template emplace<Inventory>(e, inventory);
@@ -103,7 +104,7 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 	},
 	{ "vision", [](auto& reg, auto e, const nlohmann::json& data)
 		{	// Can see and has a vision range
-			reg.template emplace<Vision>(e, data.get<int>());
+			reg.template emplace<Vision>(e, data.get<double>());
 		}
 	},
 	{ "glow", [](auto& reg, auto e, const nlohmann::json& data)
@@ -226,6 +227,8 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 						intent.type = Intent::Type::Flee;
 					else if (type == "use_ability")
 						intent.type = Intent::Type::UseAbility;
+					else if (type == "gather")
+						intent.type = Intent::Type::Gather;
 					else
 						Log::error("Unknown Intent type: " + type);
 				}	else Log::error("No intent type: " + entry.dump(4));
@@ -326,6 +329,7 @@ entt::entity EntityFactory::create_entity(entt::registry& registry, const std::s
 {
 	if (LUT.find(name) == LUT.end())
 		Log::error("Entity not found: " + name);
+	Log::log("Creating entity: " + name);
 
 	auto entity = registry.create();
 	const auto& data = LUT[name];
@@ -336,6 +340,9 @@ entt::entity EntityFactory::create_entity(entt::registry& registry, const std::s
 			Log::error("Unknown field name: " + field_name);
 		it->second(registry, entity, field_data);
 	}
+
+	if (!registry.all_of<Category, Subcategory, Name>(entity))
+		Log::error("Entity doesn't have basic components");
 
 	if (cell != nullptr)
 		registry.emplace<Position>(entity, cell);

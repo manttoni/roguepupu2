@@ -4,6 +4,7 @@
 #include <nlohmann/json.hpp>             // for basic_json, operator>>
 #include <nlohmann/json_fwd.hpp>         // for json
 #include <string>                        // for basic_string, operator+, string
+#include "systems/MovementSystem.hpp"
 #include "Cave.hpp"                      // for Cave
 #include "Cell.hpp"                      // for Cell
 #include "Color.hpp"                     // for Color
@@ -230,7 +231,10 @@ void World::populate_locations()
 							Random::randreal(0, 2 * M_PI));
 					spawn_idx = coord.y * width + coord.x;
 				}
-				EntityFactory::instance().create_entity(registry, entity.id, &canvas.get_cell(spawn_idx));
+				const auto e = EntityFactory::instance().create_entity(registry, entity.id, &canvas.get_cell(spawn_idx));
+				registry.emplace<BaseLocation>(e, idx, location.radius);
+				if (registry.get<Category>(e).category == "creatures")
+					canvas.get_npcs().push_back(e);
 			}
 		}
 	}
@@ -243,7 +247,7 @@ bool World::all_connected()
 	const size_t source_idx = height / 2 * width + width / 2;
 	for (const auto& [idx, location] : locations)
 	{
-		const auto& path = canvas.find_path(idx, source_idx);
+		const auto& path = MovementSystem::find_path(&canvas, idx, source_idx);
 		if (path.empty())
 			return false;
 	}

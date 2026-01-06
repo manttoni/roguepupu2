@@ -7,10 +7,11 @@
 
 namespace GatheringSystem
 {
-	bool has_tool(const entt::registry& registry, const entt::entity gatherer, const Tool::Type tool_type)
+	bool has_tool(const entt::registry& registry, const entt::entity gatherer, const entt::entity gatherable)
 	{
 		if (!registry.all_of<Inventory>(gatherer))
 			return false;
+		const auto tool_type = registry.get<Gatherable>(gatherable).tool_type;
 		for (const auto item : registry.get<Inventory>(gatherer).inventory)
 		{
 			if (registry.all_of<Tool>(item) && registry.get<Tool>(item).type == tool_type)
@@ -23,8 +24,7 @@ namespace GatheringSystem
 	{
 		if (!registry.all_of<Gatherable>(gatherable))
 			return false;
-		const auto tool_type = registry.get<Gatherable>(gatherable).tool_type;
-		if (!has_tool(registry, gatherer, tool_type))
+		if (!has_tool(registry, gatherer, gatherable))
 			return false;
 		if (ECS::distance(registry, gatherer, gatherable) > MELEE_RANGE)
 			return false;
@@ -47,5 +47,6 @@ namespace GatheringSystem
 				.actor = gatherer,
 				.gatherable = gatherable
 				});
+		registry.erase<Gatherable>(gatherable);
 	}
 };

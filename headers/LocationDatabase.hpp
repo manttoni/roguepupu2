@@ -14,7 +14,7 @@ struct Location
 	};
 	std::string id = "";
 	double chance = 0;
-	size_t radius = 0;
+	double radius = 0;
 	double radial_distance = -1;
 	std::vector<Entity> entities;
 	bool unique = false;

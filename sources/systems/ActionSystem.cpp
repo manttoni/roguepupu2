@@ -26,6 +26,7 @@ namespace ActionSystem
 {
 	void resolve_intent(entt::registry& registry, Intent intent)
 	{
+		Log::log(registry.get<Name>(intent.actor).name + " intent: ");
 		switch (intent.type)
 		{
 			case Intent::Type::ExamineCell:
@@ -38,6 +39,7 @@ namespace ActionSystem
 				ContextSystem::show_entity_details(registry, intent.actor);
 				break;
 			case Intent::Type::Move:
+				Log::log("Move");
 				MovementSystem::move(registry, intent.actor, intent.target.cell);
 				break;
 			case Intent::Type::Attack:
@@ -53,6 +55,7 @@ namespace ActionSystem
 				AbilitySystem::use_ability(registry, intent.actor, *intent.ability, intent.target);
 				break;
 			case Intent::Type::Gather:
+				Log::log("Gather");
 				GatheringSystem::gather(registry, intent.actor, intent.target.entity);
 				break;
 			case Intent::Type::Hide:
