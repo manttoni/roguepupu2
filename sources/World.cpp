@@ -184,15 +184,7 @@ bool World::set_locations()
 				return false;
 		}
 	}
-	// Clear space
-	auto& cells = canvas.get_cells();
-	for (const auto& [idx, location] : locations)
-	{
-		cells[idx].reduce_density(DENSITY_MAX);
-		const auto nearby = canvas.get_nearby_ids(idx, location.radius / 2);
-		for (const auto nearby_idx : nearby)
-			cells[nearby_idx].reduce_density(DENSITY_MAX);
-	}
+
 	return true;
 }
 
@@ -247,7 +239,7 @@ bool World::all_connected()
 	const size_t source_idx = height / 2 * width + width / 2;
 	for (const auto& [idx, location] : locations)
 	{
-		const auto& path = MovementSystem::find_path(&canvas, idx, source_idx);
+		const auto& path = MovementSystem::find_path(&canvas, source_idx, idx, false);
 		if (path.empty())
 			return false;
 	}
@@ -276,7 +268,7 @@ void World::set_rock_colors()
 		if (cell.get_type() != Cell::Type::Rock)
 			continue;
 		const short channel = 100 * static_cast<short>(std::ceil(cell.get_density()));
-		cell.set_bg(Color(channel, channel, channel));
+		cell.set_bgcolor(Color(channel, channel, channel));
 	}
 }
 
@@ -289,7 +281,7 @@ void World::set_humidity()
 		const size_t y = cell_idx / width;
 		const size_t x = cell_idx % width;
 		const double value = Random::noise3D(y, x, z, 0.25, seed, 1);
-		canvas.get_cell(cell_idx).set_humidity(sqrt(value));
+		canvas.get_cell(cell_idx).set_humidity(value);
 	}
 }
 
@@ -377,6 +369,7 @@ void World::spawn_entities(nlohmann::json& filter)
 				for (const auto& [color, stacks] : cell_lights)
 					if (stacks > 0)
 						light_amount += stacks * (color.get_r() + color.get_g() + color.get_b());
+
 				if (light == "dark" && light_amount > 0.0)
 					continue;
 			}
@@ -384,6 +377,14 @@ void World::spawn_entities(nlohmann::json& filter)
 			{
 				const auto& spawn_humidity = spawn["humidity"].get<double>();
 				if (spawn_humidity > cell.get_humidity())
+					continue;
+			}
+			if (spawn.contains("water"))
+			{
+				const auto& water = spawn["water"].get<bool>();
+				if (water == true && cell.get_liquids().empty())
+					continue;
+				if (water == false && !cell.get_liquids().empty())
 					continue;
 			}
 			// This entity really deserves to spawn here
@@ -414,7 +415,45 @@ void World::normalize_negative_density()
 	for (const auto cell_idx : get_empty_cells(canvas))
 	{
 		const double density = cells[cell_idx].get_density();
-		cells[cell_idx].set_density(Math::map(density, deepest, 0.0, -1.0, 0.0));
+		cells[cell_idx].set_density(Math::map(density, deepest, 0.0, -0.9, 0.0));
+	}
+}
+
+void World::smooth_elevation()
+{
+	Cave& canvas = caves.back();
+	auto& cells = canvas.get_cells();
+	auto empty_cells = canvas.get_empty_cells();
+	std::shuffle(empty_cells.begin(), empty_cells.end(), Random::rng());
+	for (const auto cell_idx : empty_cells)
+	{
+		// make cell less deep, then deepen cells around it
+		auto& cell = cells[cell_idx];
+		assert(cell.get_density() <= 0);
+		double reduced = cell.get_density() / 4;
+		cell.reduce_density(reduced);
+		assert(cell.get_density() <= 0);
+
+		const auto around = canvas.get_nearby_ids(cell_idx, 1.5);
+		for (const auto around_idx : around)
+		{
+			if (cells[around_idx].is_empty())
+				cells[around_idx].reduce_density(reduced / around.size() * -1);
+		}
+	}
+}
+
+void World::add_water()
+{
+	Cave& canvas = caves.back();
+	auto& cells = canvas.get_cells();
+	for (const auto cell_idx : get_empty_cells(canvas))
+	{
+		auto& cell = cells[cell_idx];
+		if (cell.get_density() > -0.5)
+			continue;
+		const double amount = cell.get_humidity() * cell.get_density() * -1;
+		cell.add_liquid(Liquid::Type::Water, amount);
 	}
 }
 
@@ -425,21 +464,52 @@ void World::generate_cave(const size_t level)
 
 	rng.seed(seed + level);
 	caves.emplace_back(level, height, width, seed);
-	caves.back().set_world(this);
+	Cave& canvas = caves.back();
+	canvas.set_world(this);
 
-	// Create terrain
 	UI::instance().dialog("Generating terrain...");
 	Log::log("Generating terrain...");
+
+	// Form solid rock everywhere
+	Log::log("Forming rock...");
 	form_rock();
+
+	// Set locations randomized from locations.json
+	Log::log("Setting locations...");
 	while (set_locations() == false)
 		caves.back().clear_locations();
-	caves.back().set_source_idx(height / 2 * width + width / 2);
-	Log::log("Set " + std::to_string(caves.back().get_locations().size()) + " locations");
+	assert(canvas.get_locations().size() > 0);
+
+	// Connect all locations by water erosion algorithm
+	Log::log("Forming tunnels...");
 	form_tunnels();
+
+	// Give rock colors based on density
+	Log::log("Setting rock colors...");
 	set_rock_colors();
+
+	// Give each cell a humidity value, which affects spawning chance and water level
+	Log::log("Setting humidity...");
 	set_humidity();
+
+	// Forced values
+	Log::log("Forcing source/sink values...");
+	canvas.get_cell(canvas.get_source_idx()).set_density(0);
+	canvas.get_cell(canvas.get_sink_idx()).set_bgcolor(Color{});
+
+	// Make elevation smooth to make nicer puddles
+	Log::log("Smoothing elevation...");
+	for (size_t i = 0; i < 20; ++i) smooth_elevation();
+
+	// Elevation should be [-0.9, 0.0]
+	Log::log("Normalizing elevation...");
 	normalize_negative_density();
 
+	// Spawn water
+	Log::log("Spawning water...");
+	add_water();
+
+	canvas.get_cell(canvas.get_sink_idx()).set_density(-1000);
 	Log::log("Terrain generated");
 
 	// Spawn entities

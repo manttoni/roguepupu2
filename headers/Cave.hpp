@@ -30,6 +30,8 @@ class Cave
 		std::vector<Cell>& get_cells() { return cells; }
 		Cell& get_cell(const size_t idx) { return cells[idx]; }
 		const Cell& get_cell(const size_t idx) const { return cells[idx]; }
+		std::vector<size_t> get_empty_cells() const;
+		std::vector<size_t> get_cells_with_type(const Cell::Type type) const;
 
 	private:
 		size_t level;
@@ -43,16 +45,10 @@ class Cave
 		int get_seed() const { return seed; }
 		void set_seed(const int seed) { this->seed = seed; }
 
-	private:
-		size_t source, sink;
 	public:
-		size_t get_source_idx() const { return source; }
-		size_t get_sink_idx() const { return sink; }
-		Cell& get_source() { return cells[source]; }
-		Cell& get_sink() { return cells[sink]; }
-		const std::pair<size_t, size_t> get_ends() const { return { source, sink }; }
-		void set_source_idx(const size_t source) { this->source = source; }
-		void set_sink_idx(const size_t sink) { this->sink = sink; }
+		size_t get_source_idx() const { return height / 2 * width + width / 2; }
+		size_t get_sink_idx() const;
+		Cell& get_source() { return cells[get_source_idx()]; }
 
 	private:
 		std::vector<entt::entity> npcs;
@@ -86,7 +82,7 @@ class Cave
 		std::vector<size_t> find_path(const size_t start, const size_t end);
 		double distance(const Cell &start, const Cell &end) const;
 		double distance(const size_t start_id, const size_t end_id) const;
-		std::vector<size_t> get_nearby_ids(const size_t& middle, const double r) const;
+		std::vector<size_t> get_nearby_ids(const size_t& middle, const double r, const Cell::Type type = Cell::Type::None) const;
 		bool has_access(const size_t from_idx, const size_t to_idx) const;
 		bool neighbor_has_type(const size_t middle, const Cell::Type type) const;
 		bool has_vision(const size_t from, const size_t to, const double vision_range = 0) const;

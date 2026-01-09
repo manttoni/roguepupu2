@@ -173,8 +173,4 @@ namespace ActionSystem
 		}
 	}
 
-	void environment_turn(entt::registry& registry)
-	{
-		(void) registry;
-	}
 };

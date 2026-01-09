@@ -7,6 +7,7 @@
 #include "Cave.hpp"
 #include "Cell.hpp"
 #include "Components.hpp"
+#include "Color.hpp"
 
 namespace DevTools
 {
@@ -48,15 +49,21 @@ namespace DevTools
 			for (auto& cell : cells)
 			{
 				const double density = cell.get_density();
-				const size_t digit = static_cast<size_t>(std::round(density * -10));
+				const size_t digit = static_cast<size_t>(std::round(density * -10.0));
 				if (digit > 0 && digit < 10)
+				{
+					cell.set_fgcolor(Color(500, 500, 500));
 					cell.set_glyph(L'0' + digit);
+				}
 			}
 		}
 		else
 		{
 			for (auto& cell : cells)
+			{
+				cell.set_fgcolor(Color(35, 40, 30));
 				cell.set_glyph(L' ');
+			}
 		}
 		showing ^= true;
 	}
@@ -69,7 +76,8 @@ namespace DevTools
 			"Reveal/hide map",
 			"Show entities data",
 			"Show/hide debug",
-			"Show/hide elevation"
+			"Show/hide elevation",
+			"Spawn water"
 		};
 		const auto& choice = UI::instance().dialog("DevTools", choices);
 		if (choice == "God mode")
@@ -91,5 +99,10 @@ namespace DevTools
 			registry.ctx().get<Dev>().show_debug ^= true;
 		else if (choice == "Show/hide elevation")
 			show_elevation(registry);
+		else if (choice == "Spawn water")
+		{
+			static size_t multi = 1;
+			ECS::get_cell(registry, ECS::get_player(registry))->add_liquid(Liquid::Type::Water, 1 * multi++);
+		}
 	}
 };

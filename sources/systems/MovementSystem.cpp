@@ -17,12 +17,12 @@ namespace MovementSystem
 		return find_path(start.get_cave(), start.get_idx(), end.get_idx());
 	}
 
-	std::vector<size_t> find_path(Cave* cave, const size_t start, const size_t end)
+	std::vector<size_t> find_path(Cave* cave, const size_t start, const size_t end, const bool allow_blocked_end)
 	{
 		if (cave == nullptr || start >= cave->get_size() || end >= cave->get_size())
 			Log::error("Cave::find_path: invalid arguments");
-		//if (cells[start].blocks_movement() || cells[end].blocks_movement())
-		//	return {}; If this can stay like this, would solve some problems
+		if (allow_blocked_end == false && cave->get_cell(end).blocks_movement())
+			return {};
 		std::vector<size_t> open_set = { start };
 		std::map<size_t, size_t> came_from;
 		std::map<size_t, double> g_score;
@@ -40,7 +40,8 @@ namespace MovementSystem
 					current_idx = cell_idx;
 			}
 
-			if (current_idx == end)
+			if (current_idx == end ||
+				(allow_blocked_end == true && cave->distance(current_idx, end) < MELEE_RANGE))
 			{	// found optimal path from start to end
 				std::vector<size_t> path;
 				path.push_back(current_idx);
@@ -56,7 +57,7 @@ namespace MovementSystem
 			Utils::remove_element(open_set, current_idx);
 			for (const size_t neighbor_idx : cave->get_nearby_ids(current_idx, 1.5))
 			{
-				if (neighbor_idx != end && !can_move(*cave, current_idx, neighbor_idx))
+				if (!can_move(*cave, current_idx, neighbor_idx))
 					continue;
 				double tentative_g_score = g_score[current_idx] + cave->distance(current_idx, neighbor_idx);
 				if (g_score.count(neighbor_idx) == 0)

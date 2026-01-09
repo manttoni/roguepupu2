@@ -23,7 +23,7 @@ namespace DamageSystem
 
 		// Add red/bloody background color to cell
 		Cell* cell = ECS::get_cell(registry, entity);
-		cell->set_bg(Color(250, 0, 0));
+		cell->set_bgcolor(Color(250, 0, 0));
 
 		// Remove movement blocking component
 		if (registry.all_of<Solid>(entity))

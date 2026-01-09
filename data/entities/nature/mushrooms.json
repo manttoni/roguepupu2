@@ -10,7 +10,7 @@
 			"near": "rock",
 			"frequency": 0.1,
 			"chance": 0.4,
-			"humidity": 0.75
+			"humidity": 0.5
 		},
 		"weight": 10,
 		"gatherable": {
@@ -40,7 +40,8 @@
 			"space": "wide",
 			"frequency": 0.2,
 			"chance": 0.45,
-			"humidity": 0.25
+			"humidity": 0.25,
+			"water": false
 		},
 		"landmark": true,
 		"weight": 20,

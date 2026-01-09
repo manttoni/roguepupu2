@@ -4,10 +4,12 @@
 #include "GameLogger.hpp"
 #include "entt.hpp"
 #include "ColorPair.hpp"
+#include "Liquid.hpp"
+
 class Renderer
 {
 	private:
-		ColorPair ghost;
+		ColorPair ghost_color_pair;
 		struct Visual
 		{
 			ColorPair color_pair;
@@ -15,7 +17,7 @@ class Renderer
 		};
 		Visual get_ghost_visual(const Cell& cell) const;
 		Visual get_visual(const Cell& cell) const;
-		const entt::registry& registry;
+		entt::registry& registry;
 		size_t render_frame;
 		void render_cave();
 		void print_log();
@@ -24,6 +26,6 @@ class Renderer
 		void draw_bar(const Color& color, const double percentage, const size_t y, const size_t x);
 	public:
 		void render();
-		Renderer(const entt::registry& registry);
+		Renderer(entt::registry& registry);
 		void render_cell(Cell& cell);
 };

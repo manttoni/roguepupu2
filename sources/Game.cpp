@@ -17,6 +17,7 @@
 #include "systems/ContextSystem.hpp"   // for show_entities_list, show_entit...
 #include "systems/MovementSystem.hpp"  // for move
 #include "DevTools.hpp"
+#include "systems/EnvironmentSystem.hpp"
 
 Game::Game() :
 	registry(world.get_registry()),
@@ -42,6 +43,7 @@ void Game::loop()
 	{
 		Log::log("Round " + std::to_string(registry.ctx().get<GameState>().turn_number));
 		ActionSystem::act_round(registry);
+		EnvironmentSystem::simulate_environment(registry);
 		registry.ctx().get<GameState>().turn_number++;
 	}
 	if (registry.all_of<Dead>(player))

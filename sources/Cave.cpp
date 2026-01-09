@@ -15,8 +15,6 @@ Cave::Cave(const size_t level, const size_t height, const size_t width, const si
 	cells(std::vector<Cell>(height * width)),
 	level(level),
 	seed(seed),
-	source(0),
-	sink(0),
 	humidity(Random::randreal(0, 1, seed))
 {
 	for (auto& cell : cells)
@@ -50,7 +48,7 @@ double Cave::distance(const size_t start_id, const size_t end_id) const
 }
 
 // use with r = 1.5 to get neighbors
-std::vector<size_t> Cave::get_nearby_ids(const size_t& middle, const double r) const
+std::vector<size_t> Cave::get_nearby_ids(const size_t& middle, const double r, const Cell::Type type) const
 {
 	std::vector<size_t> neighbors;
 	size_t middle_y = middle / width;
@@ -73,12 +71,34 @@ std::vector<size_t> Cave::get_nearby_ids(const size_t& middle, const double r) c
 			size_t nid = ny * width + nx;
 			if (distance(middle, nid) > r)
 				continue;
-			neighbors.push_back(nid);
+			if (type == Cell::Type::None || type == cells[nid].get_type())
+				neighbors.push_back(nid);
 		}
 	}
-	if (middle_y != 0 && middle_y != height - 1 && middle_x != 0 && middle_x != width - 1 && r == 1.5)
-		assert(neighbors.size() == 8);
 	return neighbors;
+}
+
+std::vector<size_t> Cave::get_empty_cells() const
+{
+	std::vector<size_t> empty_cells;
+	for (const auto& cell : cells)
+	{
+		if (cell.is_empty())
+			empty_cells.push_back(cell.get_idx());
+	}
+	return empty_cells;
+}
+
+std::vector<size_t> Cave::get_cells_with_type(const Cell::Type type) const
+{
+
+	std::vector<size_t> cells_with_type;
+	for (const auto& cell : cells)
+	{
+		if (cell.get_type() == type)
+			cells_with_type.push_back(cell.get_idx());
+	}
+	return cells_with_type;
 }
 
 bool Cave::neighbor_has_type(const size_t idx, const Cell::Type type) const
@@ -97,7 +117,7 @@ void Cave::clear_lights()
 {
 	for (auto& cell : cells)
 	{
-		cell.reset_lights();
+		cell.clear_lights();
 	}
 }
 
@@ -129,4 +149,13 @@ void Cave::reset_lights()
 	apply_lights();
 }
 
-
+size_t Cave::get_sink_idx() const
+{
+	for (const auto& [idx, location] : locations)
+	{
+		Log::log("Cave has " + location.id);
+		if (location.id == "exit")
+			return idx;
+	}
+	Log::error("Cave does not have a sink");
+}

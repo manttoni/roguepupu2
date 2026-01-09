@@ -1,6 +1,7 @@
 #include <ncurses.h>
 #include <panel.h>
 #include <string>
+#include "GameState.hpp"
 #include "systems/VisionSystem.hpp"
 #include "entt.hpp"
 #include "Cave.hpp"
@@ -11,22 +12,22 @@
 #include "Unicode.hpp"
 #include "Renderer.hpp"
 #include "DevTools.hpp"
+#include "Liquid.hpp"
 
-Renderer::Renderer(const entt::registry& registry) : registry(registry), render_frame(0)
+Renderer::Renderer(entt::registry& registry) : registry(registry), render_frame(0)
 {
-	ghost = ColorPair(Color(123,123,123), Color{});
+	ghost_color_pair = ColorPair(Color(123,123,123), Color{});
 }
 
 Renderer::Visual Renderer::get_ghost_visual(const Cell& cell) const
 {
-	if (cell.get_type() == Cell::Type::Rock)
-		return {ghost, Unicode::FullBlock};
-
 	for (const auto entity : cell.get_entities())
 	{
 		if (registry.all_of<Landmark>(entity))
-			return {ghost, ECS::get_glyph(registry, entity)};
+			return {ghost_color_pair, ECS::get_glyph(registry, entity)};
 	}
+	if (cell.get_type() == Cell::Type::Rock)
+		return {ghost_color_pair, Unicode::FullBlock};
 	Log::error("get_ghost_visual fail");
 }
 
@@ -38,12 +39,12 @@ Renderer::Visual Renderer::get_visual(const Cell& cell) const
 		if (!registry.any_of<Hidden>(entity) || entity == ECS::get_player(registry))
 			entities.push_back(entity);
 	}
-	Color bg = cell.get_bg();
+	Color bg = cell.get_bgcolor();
 	Color fg;
 	wchar_t glyph = L'?';
 	if (entities.empty())
 	{
-		fg = cell.get_fg();
+		fg = cell.get_fgcolor();
 		glyph = cell.get_glyph();
 	}
 	else
@@ -124,7 +125,9 @@ void Renderer::render_cave()
 	UI::instance().set_current_panel(panel, true);
 
 	werase(window);
-	//UI::instance().reset_colors();
+	if (UI::instance().get_initialized_colors().size() > 200 ||
+			UI::instance().get_initialized_color_pairs().size() > 200)
+		UI::instance().reset_colors();
 
 	int window_height, window_width;
 	getmaxyx(window, window_height, window_width);
@@ -227,7 +230,8 @@ void Renderer::show_debug()
 	const std::vector<std::string> debug =
 	{
 		"Colors: " + std::to_string(UI::instance().get_initialized_colors().size()),
-		"ColorPairs: " + std::to_string(UI::instance().get_initialized_color_pairs().size())
+		"ColorPairs: " + std::to_string(UI::instance().get_initialized_color_pairs().size()),
+		"Turn Number: " + std::to_string(registry.ctx().get<GameState>().turn_number)
 	};
 	for (size_t i = 0; i < debug.size(); ++i)
 		UI::instance().print(i, 0, debug[i]);

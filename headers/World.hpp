@@ -51,6 +51,8 @@ class World
 		bool place_location(const Location& location);
 		void populate_locations();
 		void normalize_negative_density();
+		void smooth_elevation();
+		void add_water();
 
 	public:
 		World();

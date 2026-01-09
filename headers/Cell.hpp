@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Liquid.hpp"
 #include "Color.hpp"  // for Color
 #include "entt.hpp"   // for size_t, map, entity, vector
 class Cave;
@@ -49,7 +50,7 @@ class Cell
 	private:
 		wchar_t glyph;
 	public:
-		wchar_t get_glyph() const { return glyph; }
+		wchar_t get_glyph() const;
 		void set_glyph(const wchar_t glyph) { this->glyph = glyph; }
 
 	private:
@@ -64,12 +65,12 @@ class Cell
 		void reduce_density(const double amount);
 
 	private:
-		Color fg, bg;
+		Color fgcolor, bgcolor;
 	public:
-		Color get_fg() const { return fg; }
-		Color get_bg() const { return bg; }
-		void set_fg(const Color& fg) { this->fg = fg; }
-		void set_bg(const Color& bg) { this->bg = bg; }
+		Color get_fgcolor() const;
+		Color get_bgcolor() const;
+		void set_fgcolor(const Color& fg) { this->fgcolor = fg; }
+		void set_bgcolor(const Color& bg) { this->bgcolor = bg; }
 		ColorPair get_color_pair() const;
 
 	private:
@@ -81,9 +82,19 @@ class Cell
 		void add_light(const Color& color) {
 			lights[color]++;
 		}
-		void reset_lights() {
+		void clear_lights() {
 			lights.clear();
 		}
+
+	private:
+		std::map<Liquid::Type, double> liquids;
+	public:
+		void add_liquid(const Liquid::Type liquid, const double amount);
+		double remove_liquid(const Liquid::Type liquid, const double amount);
+		std::map<Liquid::Type, double> get_liquids() const { return liquids; }
+		double get_liquid_level() const;
+		double get_liquids_amount() const;
+		void clear_liquids() { liquids.clear(); }
 
 	private:
 		bool seen = false;
@@ -103,8 +114,6 @@ class Cell
 		Cell();
 		Cell(const size_t idx, const Type& type, Cave* cave, const wchar_t symbol, const double density = 0);
 		Cell(const Cell& other) = default;
-
-		char get_char() const;
 
 		/* OVERLOADS */
 		bool operator==(const Cell &other) const;

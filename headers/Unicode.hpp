@@ -16,4 +16,7 @@ namespace Unicode
 	constexpr wchar_t DarkShade			= L'▓';
 	constexpr wchar_t MediumShade		= L'▒';
 	constexpr wchar_t LightShade		= L'░';
+	constexpr wchar_t LiquidShallow		= L'~';
+	constexpr wchar_t LiquidMedium		= L'≈';
+	constexpr wchar_t LiquidDeep		= L'≋';
 };
