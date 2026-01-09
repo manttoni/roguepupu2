@@ -7,8 +7,7 @@
 		"vision": 10,
 		"weight": 100,
 		"inventory": [
-			{"filter": {"name": "axe"}},
-			{"filter": {"name": "knife"}}
+			{"filter": {"name": "kunai"}}
 		],
 		"equipment_slots": true,
 		"faction": "player",

@@ -38,6 +38,29 @@ namespace DevTools
 		UI::instance().dialog(data, {"Back"});
 	}
 
+	void show_elevation(const entt::registry& registry)
+	{
+		Cave* cave = ECS::get_cave(registry, ECS::get_player(registry));
+		auto& cells = cave->get_cells();
+		static bool showing = false;
+		if (showing == false)
+		{
+			for (auto& cell : cells)
+			{
+				const double density = cell.get_density();
+				const size_t digit = static_cast<size_t>(std::round(density * -10));
+				if (digit > 0 && digit < 10)
+					cell.set_glyph(L'0' + digit);
+			}
+		}
+		else
+		{
+			for (auto& cell : cells)
+				cell.set_glyph(L' ');
+		}
+		showing ^= true;
+	}
+
 	void dev_menu(entt::registry& registry)
 	{
 		const std::vector<std::string> choices =
@@ -45,7 +68,8 @@ namespace DevTools
 			"God mode",
 			"Reveal/hide map",
 			"Show entities data",
-			"Show/hide debug"
+			"Show/hide debug",
+			"Show/hide elevation"
 		};
 		const auto& choice = UI::instance().dialog("DevTools", choices);
 		if (choice == "God mode")
@@ -65,5 +89,7 @@ namespace DevTools
 			show_entities(registry);
 		else if (choice == "Show/hide debug")
 			registry.ctx().get<Dev>().show_debug ^= true;
+		else if (choice == "Show/hide elevation")
+			show_elevation(registry);
 	}
 };

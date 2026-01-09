@@ -50,6 +50,7 @@ class World
 		bool set_locations();
 		bool place_location(const Location& location);
 		void populate_locations();
+		void normalize_negative_density();
 
 	public:
 		World();

@@ -21,6 +21,7 @@
 		"inventory": true,
 		"weight": 35,
 		"solid": true,
-		"vision": 10
+		"vision": 10,
+		"faction": "goblins"
 	}
 }

@@ -103,7 +103,7 @@ struct Tool
 	{
 		None,
 		Felling,
-		Harvesting,
+		Cutting,
 		Mining
 	};
 	static Type from_string(const std::string& str)
@@ -112,7 +112,7 @@ struct Tool
 		{
 			{"none", Type::None},
 			{"felling", Type::Felling},
-			{"harvesting", Type::Harvesting},
+			{"cutting", Type::Cutting},
 			{"mining", Type::Mining}
 		};
 		auto it = map.find(str);
@@ -140,3 +140,10 @@ struct BaseLocation
 	size_t idx;
 	double radius;
 };
+
+struct Edge
+{
+	double edge;
+};
+
+struct Throwable {};

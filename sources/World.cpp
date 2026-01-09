@@ -189,7 +189,7 @@ bool World::set_locations()
 	for (const auto& [idx, location] : locations)
 	{
 		cells[idx].reduce_density(DENSITY_MAX);
-		const auto nearby = canvas.get_nearby_ids(idx, location.radius);
+		const auto nearby = canvas.get_nearby_ids(idx, location.radius / 2);
 		for (const auto nearby_idx : nearby)
 			cells[nearby_idx].reduce_density(DENSITY_MAX);
 	}
@@ -396,6 +396,28 @@ void World::spawn_entities(nlohmann::json& filter)
 	}
 }
 
+void World::normalize_negative_density()
+{
+	// if density is <= 0, its type is floor
+	// If player mines rock later, its density will become 0.
+	// Negative density represents concave floor, while positive is rock wall
+	// Water erosion simulation is the cause of negative density
+	double deepest = 0.0; // 0.0 is biggest possible value for empty cells
+	Cave& canvas = caves.back();
+	auto& cells = canvas.get_cells();
+	for (const auto cell_idx : get_empty_cells(canvas))
+	{
+		const double density = cells[cell_idx].get_density();
+		assert(density <= 0.0);
+		deepest = std::min(deepest, density);
+	}
+	for (const auto cell_idx : get_empty_cells(canvas))
+	{
+		const double density = cells[cell_idx].get_density();
+		cells[cell_idx].set_density(Math::map(density, deepest, 0.0, -1.0, 0.0));
+	}
+}
+
 void World::generate_cave(const size_t level)
 {
 	UI::instance().dialog("Generating cave...");
@@ -416,6 +438,7 @@ void World::generate_cave(const size_t level)
 	form_tunnels();
 	set_rock_colors();
 	set_humidity();
+	normalize_negative_density();
 
 	Log::log("Terrain generated");
 

@@ -86,12 +86,16 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			}
 			for (const auto& entity : data)
 			{
-				const size_t amount = entity.contains("amount") ? entity["amount"].get<size_t>() : 1;
 				if (!entity.contains("filter")) // Need to specify what kind of entities it has with a filter
 					Log::error("Cannot spawn entity to inventory: " + entity.dump(4));
 				if (entity.contains("chance") && Random::randreal(0, 1) > entity["chance"].get<double>())
 					continue;
+
+				const size_t amount = entity.contains("amount") ? entity["amount"].get<size_t>() : 1;
 				std::vector<std::string> names = EntityFactory::instance().random_pool(entity["filter"], amount);
+				if (names.empty())
+					break;
+
 				for (size_t i = 0; i < amount; ++i)
 				{
 					const size_t rand = Random::randsize_t(0, names.size() - 1);
@@ -307,6 +311,24 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			if (data.is_boolean() && data == true)
 				reg.template emplace<Transition>(e, entt::null);
 		}
+	},
+	{ "edge", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			if (!data.is_number_float())
+				Log::error("Edge is not a float");
+			const double edge = data.get<double>();
+			if (edge < 0 || edge > 1)
+				Log::error("Invalid Edge value");
+			reg.template emplace<Edge>(e, edge);
+		}
+	},
+	{ "throwable", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			if (!data.is_boolean())
+				Log::error("Throwable value type error");
+			if (data.get<bool>() == true)
+				reg.template emplace<Throwable>(e);
+		}
 	}
 };
 
@@ -327,9 +349,9 @@ void EntityFactory::add_entities(nlohmann::json& json, const std::string& catego
 
 entt::entity EntityFactory::create_entity(entt::registry& registry, const std::string& name, Cell* cell)
 {
+	Log::log("Creating entity: " + name);
 	if (LUT.find(name) == LUT.end())
 		Log::error("Entity not found: " + name);
-	Log::log("Creating entity: " + name);
 
 	auto entity = registry.create();
 	const auto& data = LUT[name];
