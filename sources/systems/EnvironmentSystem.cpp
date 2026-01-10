@@ -62,16 +62,14 @@ namespace EnvironmentSystem
 				continue;
 
 			const auto neighbors = cave->get_nearby_ids(middle_idx, 1.5, Cell::Type::Floor);
-			for (const auto neighbor : neighbors)
-			{	// Give each neighbor an amount, then take same amount back
-				auto& neighbor_mix = cells[neighbor].get_liquid_mixture();
-				if (neighbor_mix.get_volume() <= 0.01)
-					continue;
+			auto& neighbor_mix = cells[neighbors[neighbors.size() - 1]].get_liquid_mixture();
+			if (neighbor_mix.get_volume() <= 0.01)
+				continue;
 
-				const double volume = std::min(middle_mix.get_volume(), neighbor_mix.get_volume()) / 10;
-				neighbor_mix += middle_mix.flow(volume);
-				middle_mix += neighbor_mix.flow(volume);
-			}
+			const double volume = std::min(middle_mix.get_volume(), neighbor_mix.get_volume()) / 10;
+			neighbor_mix += middle_mix.flow(volume);
+			middle_mix += neighbor_mix.flow(volume);
+
 		}
 	}
 	void simulate_liquid_sources(Cave* cave)
