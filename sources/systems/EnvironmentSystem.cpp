@@ -13,17 +13,10 @@
 namespace EnvironmentSystem
 {
 
-	void simulate_liquids_flow(Cave* cave)
+	void simulate_liquid_flow(Cave* cave)
 	{
-		if (cave == nullptr) return;
 		auto& cells = cave->get_cells();
 		auto floor_cells = cave->get_cells_with_type(Cell::Type::Floor);
-		/*std::sort(floor_cells.begin(), floor_cells.end(),
-				[&](const auto a, const auto b)
-				{
-				return cells[a].get_liquid_level() > cells[b].get_liquid_level();
-				});
-		*/
 		std::shuffle(floor_cells.begin(), floor_cells.end(), Random::rng());
 		for (const auto middle_idx : floor_cells)
 		{
@@ -55,6 +48,31 @@ namespace EnvironmentSystem
 		const auto sink = ECS::get_sink(registry, *cave);
 		Cell* sink_cell = ECS::get_cell(registry, sink);
 		sink_cell->clear_liquids();
+	}
+	void simulate_liquid_diffusion(Cave* cave)
+	{
+		auto& cells = cave->get_cells();
+		auto floor_cells = cave->get_cells_with_type(Cell::Type::Floor);
+		std::shuffle(floor_cells.begin(), floor_cells.end(), Random::rng());
+		for (const auto middle_idx : floor_cells)
+		{
+			auto& middle_cell = cells[middle_idx];
+			auto& middle_mix = middle_cell.get_liquid_mixture();
+			if (middle_mix.get_volume() <= 0.01)
+				continue;
+
+			const auto neighbors = cave->get_nearby_ids(middle_idx, 1.5, Cell::Type::Floor);
+			for (const auto neighbor : neighbors)
+			{	// Give each neighbor an amount, then take same amount back
+				auto& neighbor_mix = cells[neighbor].get_liquid_mixture();
+				if (neighbor_mix.get_volume() <= 0.01)
+					continue;
+
+				const double volume = std::min(middle_mix.get_volume(), neighbor_mix.get_volume()) / 10;
+				neighbor_mix += middle_mix.flow(volume);
+				middle_mix += neighbor_mix.flow(volume);
+			}
+		}
 	}
 	void simulate_liquid_sources(Cave* cave)
 	{
@@ -88,7 +106,8 @@ namespace EnvironmentSystem
 	}
 	void simulate_liquids(Cave* cave)
 	{
-		simulate_liquids_flow(cave);
+		simulate_liquid_flow(cave);
+		simulate_liquid_diffusion(cave);
 		simulate_liquid_sources(cave);
 		simulate_condensation(cave);
 	}

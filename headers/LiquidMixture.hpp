@@ -22,11 +22,11 @@ struct Liquid
 		{
 			case Type::Water:
 				density = 1.0;
-				color = Color(0, 100, 300);
+				color = Color(0, 100, 200);
 				break;
 			case Type::Blood:
 				density = 1.0;
-				color = Color(300, 0, 100);
+				color = Color(300, 0, 50);
 				break;
 			case Type::Oil:
 				density = 0.9;
