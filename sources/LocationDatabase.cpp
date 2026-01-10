@@ -12,7 +12,19 @@ LocationDatabase::LocationDatabase()
 
 void LocationDatabase::read_locations()
 {
-	std::filesystem::path path = "data/world/locations.json";
+	const std::filesystem::path root = "data/world/locations";
+	for (const auto& entry : std::filesystem::recursive_directory_iterator(root))
+	{
+		if (!entry.is_regular_file())
+			continue;
+		if (entry.path().extension() != ".json")
+			continue;
+		read_definitions(entry.path());
+	}
+}
+
+void LocationDatabase::read_definitions(const std::filesystem::path& path)
+{
 	Log::log("Parsing " + path.string());
 	std::ifstream file(path);
 	if (!file.is_open())
@@ -25,6 +37,9 @@ void LocationDatabase::read_locations()
 	{
 		Location location;
 		location.id = id;
+		if (path.stem().filename() == "natural" ||
+			(data.contains("natural") && data["natural"].get<bool>() == true))
+			location.natural = true;
 		if (data.contains("chance"))
 			location.chance = data["chance"].get<double>();
 		if (data.contains("radius"))

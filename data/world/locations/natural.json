@@ -1,0 +1,19 @@
+{
+	"entrance": {
+		"unique": true,
+		"chance": 1.0,
+		"radial_distance": 0.0,
+		"entities": [
+			{ "id": "source", "radial_distance": 0.0 }
+		]
+	},
+
+	"exit": {
+		"unique": true,
+		"chance": 1.0,
+		"radial_distance": 1.0,
+		"entities": [
+			{ "id": "sink", "radial_distance": 0.0 }
+		]
+	}
+}
