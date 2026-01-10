@@ -424,7 +424,7 @@ void World::smooth_elevation()
 		// make cell less deep, then deepen cells around it
 		auto& cell = cells[cell_idx];
 		assert(cell.get_density() <= 0);
-		double reduced = cell.get_density() / 16;
+		double reduced = cell.get_density() / 4;
 		cell.reduce_density(reduced);
 		assert(cell.get_density() <= 0);
 
@@ -445,8 +445,6 @@ void World::add_water()
 	{
 		auto& cell = cells[cell_idx];
 		const double amount = cell.get_humidity() * cell.get_density() * -1;
-		if (amount < canvas.get_humidity())
-			continue;
 		auto& mix = cell.get_liquid_mixture();
 		mix.add_liquid(Liquid::Type::Water, amount);
 	}
@@ -535,7 +533,7 @@ void World::generate_cave(const size_t level)
 
 	// Make elevation smooth to make nicer puddles
 	Log::log("Smoothing elevation...");
-	for (size_t i = 0; i < 64; ++i) smooth_elevation();
+	for (size_t i = 0; i < 32; ++i) smooth_elevation();
 
 	// Elevation should be [-0.9, 0.0]
 	Log::log("Normalizing elevation...");
@@ -564,7 +562,7 @@ void World::generate_cave(const size_t level)
 	set_sink();
 
 	UI::instance().dialog("Simulating environment...");
-	for (size_t i = 0; i < 10000; ++i)
+	for (size_t i = 0; i < 1000; ++i)
 		EnvironmentSystem::simulate_environment(&canvas);
 
 	Log::log("Cave " + std::to_string(level) + " generated");

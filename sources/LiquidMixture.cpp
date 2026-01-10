@@ -28,7 +28,7 @@ LiquidMixture LiquidMixture::flow(const double flow_volume)
 		{
 			// percentage of this type in the whole mixture
 			const double part = volume / this_volume;
-			assert(part <= 1 && part > 0);
+			assert(part <= 1 && part >= 0);
 			const double removed = remove_liquid(type, flow_volume * part);
 			mix.add_liquid(type, removed);
 		}

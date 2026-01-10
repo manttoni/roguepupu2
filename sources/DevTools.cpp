@@ -77,7 +77,7 @@ namespace DevTools
 			"Show entities data",
 			"Show/hide debug",
 			"Show/hide elevation",
-			"Spawn water"
+			"Spawn liquid"
 		};
 		const auto& choice = UI::instance().dialog("DevTools", choices);
 		if (choice == "God mode")
@@ -99,10 +99,10 @@ namespace DevTools
 			registry.ctx().get<Dev>().show_debug ^= true;
 		else if (choice == "Show/hide elevation")
 			show_elevation(registry);
-		else if (choice == "Spawn water")
+		else if (choice == "Spawn liquid")
 		{
 			static size_t multi = 1;
-			ECS::get_cell(registry, ECS::get_player(registry))->get_liquid_mixture().add_liquid(Liquid::Type::Water, 1 * multi++);
+			ECS::get_cell(registry, ECS::get_player(registry))->get_liquid_mixture().add_liquid(Liquid::Type::Blood, 1 * multi++);
 		}
 	}
 };

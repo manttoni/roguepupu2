@@ -1,6 +1,7 @@
 {
 	"huge boulder": {
 		"glyph": "⬤",
+		"fgcolor": [400, 400, 400],
 		"weight": 1000,
 		"solid": true,
 		"opaque": true,
@@ -10,6 +11,7 @@
 
 	"small boulder": {
 		"glyph": "●",
+		"fgcolor": [400, 400, 400],
 		"weight": 500,
 		"solid": true,
 		"opaque": true,

@@ -75,10 +75,22 @@ namespace EnvironmentSystem
 			ls_component.volume_left -= volume_created;
 		}
 	}
+	void simulate_condensation(Cave* cave)
+	{
+		const auto floor_cells = cave->get_cells_with_type(Cell::Type::Floor);
+		auto& cells = cave->get_cells();
+		for (const auto idx : floor_cells)
+		{
+			Cell& cell = cells[idx];
+			auto& lm = cell.get_liquid_mixture();
+			lm.add_liquid(Liquid::Type::Water, pow(cell.get_humidity(), 100));
+		}
+	}
 	void simulate_liquids(Cave* cave)
 	{
 		simulate_liquids_flow(cave);
 		simulate_liquid_sources(cave);
+		simulate_condensation(cave);
 	}
 	void simulate_environment(Cave* cave)
 	{
