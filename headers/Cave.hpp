@@ -47,7 +47,6 @@ class Cave
 
 	public:
 		size_t get_source_idx() const { return height / 2 * width + width / 2; }
-		size_t get_sink_idx() const;
 		Cell& get_source() { return cells[get_source_idx()]; }
 
 	private:

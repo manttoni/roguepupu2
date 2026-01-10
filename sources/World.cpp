@@ -4,6 +4,7 @@
 #include <nlohmann/json.hpp>             // for basic_json, operator>>
 #include <nlohmann/json_fwd.hpp>         // for json
 #include <string>                        // for basic_string, operator+, string
+#include "systems/EnvironmentSystem.hpp"
 #include "systems/MovementSystem.hpp"
 #include "Cave.hpp"                      // for Cave
 #include "Cell.hpp"                      // for Cell
@@ -379,14 +380,7 @@ void World::spawn_entities(nlohmann::json& filter)
 				if (spawn_humidity > cell.get_humidity())
 					continue;
 			}
-			if (spawn.contains("water"))
-			{
-				const auto& water = spawn["water"].get<bool>();
-				if (water == true && cell.get_liquids().empty())
-					continue;
-				if (water == false && !cell.get_liquids().empty())
-					continue;
-			}
+
 			// This entity really deserves to spawn here
 			entt::entity e = EntityFactory::instance().create_entity(registry, name, &cell);
 			caves.back().reset_lights();
@@ -450,11 +444,54 @@ void World::add_water()
 	for (const auto cell_idx : get_empty_cells(canvas))
 	{
 		auto& cell = cells[cell_idx];
-		if (cell.get_density() > -0.5)
-			continue;
 		const double amount = cell.get_humidity() * cell.get_density() * -1;
-		cell.add_liquid(Liquid::Type::Water, amount);
+		if (amount < canvas.get_humidity())
+			continue;
+		auto& mix = cell.get_liquid_mixture();
+		mix.add_liquid(Liquid::Type::Water, amount);
 	}
+}
+
+void World::set_sink()
+{
+	auto& canvas = caves.back();
+	auto& cells = canvas.get_cells();
+	const auto sink = ECS::get_sink(registry, canvas);
+	assert(sink != entt::null);
+	Cell* sink_cell = ECS::get_cell(registry, sink);
+	assert(sink_cell != nullptr);
+	size_t sink_idx = sink_cell->get_idx();
+
+	// Find deepest spot in the same hole
+	bool flag = true;
+	while (flag)
+	{
+		flag = false;
+		const auto nearby = canvas.get_nearby_ids(sink_idx, 1.5);
+		double density = cells[sink_idx].get_density();
+		for (const auto n : nearby)
+		{
+			if (!MovementSystem::can_move(canvas, sink_idx, n))
+				continue;
+			const double n_density = cells[n].get_density();
+			if (n_density < density)
+			{
+				density = n_density;
+				sink_idx = n;
+				flag = true;
+			}
+		}
+	}
+
+	// Clear the whole cell
+	for (const auto cell_entity : cells[sink_idx].get_entities())
+		ECS::destroy_entity(registry, cell_entity);
+
+	// Set it as position of sink
+	registry.replace<Position>(sink, &cells[sink_idx]);
+	sink_cell = &cells[sink_idx];
+	sink_cell->set_bgcolor(Color{});
+	sink_cell->set_density(-1000);
 }
 
 void World::generate_cave(const size_t level)
@@ -495,11 +532,10 @@ void World::generate_cave(const size_t level)
 	// Forced values
 	Log::log("Forcing source/sink values...");
 	canvas.get_cell(canvas.get_source_idx()).set_density(0);
-	canvas.get_cell(canvas.get_sink_idx()).set_bgcolor(Color{});
 
 	// Make elevation smooth to make nicer puddles
 	Log::log("Smoothing elevation...");
-	for (size_t i = 0; i < 20; ++i) smooth_elevation();
+	for (size_t i = 0; i < 64; ++i) smooth_elevation();
 
 	// Elevation should be [-0.9, 0.0]
 	Log::log("Normalizing elevation...");
@@ -509,7 +545,6 @@ void World::generate_cave(const size_t level)
 	Log::log("Spawning water...");
 	add_water();
 
-	canvas.get_cell(canvas.get_sink_idx()).set_density(-1000);
 	Log::log("Terrain generated");
 
 	// Spawn entities
@@ -525,6 +560,13 @@ void World::generate_cave(const size_t level)
 		spawn_entities(filter);
 
 	Log::log("Entities spawned");
+
+	set_sink();
+
+	UI::instance().dialog("Simulating environment...");
+	for (size_t i = 0; i < 1000; ++i)
+		EnvironmentSystem::simulate_environment(&canvas);
+
 	Log::log("Cave " + std::to_string(level) + " generated");
 	return;
 }

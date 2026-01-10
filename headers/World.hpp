@@ -53,6 +53,7 @@ class World
 		void normalize_negative_density();
 		void smooth_elevation();
 		void add_water();
+		void set_sink();
 
 	public:
 		World();

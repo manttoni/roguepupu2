@@ -102,7 +102,7 @@ namespace DevTools
 		else if (choice == "Spawn water")
 		{
 			static size_t multi = 1;
-			ECS::get_cell(registry, ECS::get_player(registry))->add_liquid(Liquid::Type::Water, 1 * multi++);
+			ECS::get_cell(registry, ECS::get_player(registry))->get_liquid_mixture().add_liquid(Liquid::Type::Water, 1 * multi++);
 		}
 	}
 };

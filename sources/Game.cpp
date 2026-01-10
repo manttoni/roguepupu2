@@ -43,7 +43,7 @@ void Game::loop()
 	{
 		Log::log("Round " + std::to_string(registry.ctx().get<GameState>().turn_number));
 		ActionSystem::act_round(registry);
-		EnvironmentSystem::simulate_environment(registry);
+		EnvironmentSystem::simulate_environment(ECS::get_active_cave(registry));
 		registry.ctx().get<GameState>().turn_number++;
 	}
 	if (registry.all_of<Dead>(player))

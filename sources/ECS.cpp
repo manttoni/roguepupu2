@@ -182,7 +182,7 @@ namespace ECS
 					registry.get<Position>(e).cell->get_cave() == &cave)
 				return e;
 		}
-		return entt::null;
+		Log::error("Cave doesnt have sink");
 	}
 
 	void destroy_entity(entt::registry& registry, const entt::entity entity)

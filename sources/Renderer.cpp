@@ -3,6 +3,7 @@
 #include <string>
 #include "GameState.hpp"
 #include "systems/VisionSystem.hpp"
+#include "systems/EnvironmentSystem.hpp"
 #include "entt.hpp"
 #include "Cave.hpp"
 #include "Cell.hpp"
@@ -12,7 +13,7 @@
 #include "Unicode.hpp"
 #include "Renderer.hpp"
 #include "DevTools.hpp"
-#include "Liquid.hpp"
+#include "LiquidMixture.hpp"
 
 Renderer::Renderer(entt::registry& registry) : registry(registry), render_frame(0)
 {
@@ -28,7 +29,7 @@ Renderer::Visual Renderer::get_ghost_visual(const Cell& cell) const
 	}
 	if (cell.get_type() == Cell::Type::Rock)
 		return {ghost_color_pair, Unicode::FullBlock};
-	Log::error("get_ghost_visual fail");
+	return {ghost_color_pair, L'?'};
 }
 
 Renderer::Visual Renderer::get_visual(const Cell& cell) const
@@ -231,7 +232,8 @@ void Renderer::show_debug()
 	{
 		"Colors: " + std::to_string(UI::instance().get_initialized_colors().size()),
 		"ColorPairs: " + std::to_string(UI::instance().get_initialized_color_pairs().size()),
-		"Turn Number: " + std::to_string(registry.ctx().get<GameState>().turn_number)
+		"Turn Number: " + std::to_string(registry.ctx().get<GameState>().turn_number),
+		"Liquids volume: " + std::to_string(EnvironmentSystem::get_liquids_volume(ECS::get_active_cave(registry)))
 	};
 	for (size_t i = 0; i < debug.size(); ++i)
 		UI::instance().print(i, 0, debug[i]);

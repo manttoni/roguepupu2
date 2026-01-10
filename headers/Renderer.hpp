@@ -4,7 +4,6 @@
 #include "GameLogger.hpp"
 #include "entt.hpp"
 #include "ColorPair.hpp"
-#include "Liquid.hpp"
 
 class Renderer
 {

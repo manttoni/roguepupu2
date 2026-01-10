@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Liquid.hpp"
+#include "LiquidMixture.hpp"
 #include "Color.hpp"  // for Color
 #include "entt.hpp"   // for size_t, map, entity, vector
 class Cave;
@@ -87,14 +87,12 @@ class Cell
 		}
 
 	private:
-		std::map<Liquid::Type, double> liquids;
+		LiquidMixture liquid_mixture;
 	public:
-		void add_liquid(const Liquid::Type liquid, const double amount);
-		double remove_liquid(const Liquid::Type liquid, const double amount);
-		std::map<Liquid::Type, double> get_liquids() const { return liquids; }
 		double get_liquid_level() const;
-		double get_liquids_amount() const;
-		void clear_liquids() { liquids.clear(); }
+		void clear_liquids() { liquid_mixture = LiquidMixture{}; }
+		LiquidMixture& get_liquid_mixture() { return liquid_mixture; }
+		const LiquidMixture& get_liquid_mixture() const { return liquid_mixture; }
 
 	private:
 		bool seen = false;

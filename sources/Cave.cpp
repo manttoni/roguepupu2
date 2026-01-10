@@ -149,13 +149,4 @@ void Cave::reset_lights()
 	apply_lights();
 }
 
-size_t Cave::get_sink_idx() const
-{
-	for (const auto& [idx, location] : locations)
-	{
-		Log::log("Cave has " + location.id);
-		if (location.id == "exit")
-			return idx;
-	}
-	Log::error("Cave does not have a sink");
-}
+

@@ -1,10 +1,9 @@
 #pragma once
 
-#include "entt.hpp"
-
 class Cave;
 namespace EnvironmentSystem
 {
-	void simulate_environment(entt::registry& registry);
-	void simulate_liquids(entt::registry& registry);
+	void simulate_environment(Cave* cave);
+	void simulate_liquids(Cave* cave);
+	double get_liquids_volume(Cave * cave);
 };

@@ -53,72 +53,39 @@ void Cell::reduce_density(const double amount)
 	bgcolor = Color(35, 40, 30);
 }
 
-void Cell::add_liquid(const Liquid::Type liquid, const double amount)
-{
-	assert(amount >= 0);
-	liquids[liquid] += amount;
-}
-
-double Cell::remove_liquid(const Liquid::Type liquid, const double amount)
-{
-	assert(amount >= 0);
-	const double removed = std::max(amount, liquids[liquid]);
-	liquids[liquid] -= removed;
-	if (liquids[liquid] <= 0)
-		liquids.erase(liquid);
-	return removed;
-}
-
-double Cell::get_liquids_amount() const
-{
-	double liquids_amount = 0;
-	for (const auto& [type, amount] : liquids)
-		liquids_amount += amount;
-	return liquids_amount;
-}
-
-// how high is waterlevel
 double Cell::get_liquid_level() const
 {
-	double liquid_level = density;
-	for (const auto& [type, amount] : liquids)
-		liquid_level += amount;
-	return liquid_level;
+	assert(type == Type::Floor);
+	return density + liquid_mixture.get_volume();
 }
 
 Color Cell::get_fgcolor() const
 {
-	if (liquids.empty())
+	if (liquid_mixture.get_volume() == 0)
 		return fgcolor;
-	return Color(0, 100, 300);
+	return liquid_mixture.get_fgcolor();
 }
 
 Color Cell::get_bgcolor() const
 {
-	if (liquids.empty())
+	if (liquid_mixture.get_volume() == 0)
 		return bgcolor;
-	return Color(0, 10, 30);
+	return liquid_mixture.get_bgcolor();
 }
 
 wchar_t Cell::get_glyph() const
 {
-	if (glyph - L'0' >= 0 && glyph - L'9' < 10) // DevTools thing
+	if (liquid_mixture.get_volume() == 0)
 		return glyph;
-	if (liquids.empty())
-		return glyph;
-	const double liquids_amount = get_liquids_amount();
-	if (liquids_amount < 0.1)
-		return Unicode::LiquidShallow;
-	if (liquids_amount < 0.5)
-		return Unicode::LiquidMedium;
-	return Unicode::LiquidDeep;
+	return liquid_mixture.get_glyph();
 }
 
 std::vector<entt::entity> Cell::get_entities() const
 {
 	std::vector<entt::entity> entities;
 	auto& registry = cave->get_world()->get_registry();
-	registry.view<Position>().each([this, &entities](auto entity, auto& pos)
+	registry.view<Position>().each(
+			[this, &entities](const auto entity, const auto& pos)
 			{
 				if (pos.cell == this)
 					entities.push_back(entity);
