@@ -9,7 +9,7 @@
 		"spawn": {
 			"near": "rock",
 			"frequency": 0.01,
-			"chance": 0.4,
+			"chance": 0.35,
 			"humidity": 0.5
 		},
 		"weight": 10,

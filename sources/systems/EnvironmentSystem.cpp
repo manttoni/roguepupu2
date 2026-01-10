@@ -22,7 +22,7 @@ namespace EnvironmentSystem
 		{
 			auto& middle_cell = cells[middle_idx];
 			auto& middle_mix = middle_cell.get_liquid_mixture();
-			if (middle_mix.get_volume() <= 0.01)
+			if (middle_mix.get_volume() < middle_mix.get_viscosity())
 				continue;
 
 			auto neighbors = cave->get_nearby_ids(middle_idx, 1.5, Cell::Type::Floor);
@@ -99,7 +99,7 @@ namespace EnvironmentSystem
 		{
 			Cell& cell = cells[idx];
 			auto& lm = cell.get_liquid_mixture();
-			lm.add_liquid(Liquid::Type::Water, pow(cell.get_humidity(), 100));
+			lm.add_liquid(Liquid::Type::Water, pow(cell.get_humidity(), 64));
 		}
 	}
 	void simulate_liquids(Cave* cave)

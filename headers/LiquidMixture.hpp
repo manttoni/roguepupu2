@@ -14,6 +14,7 @@ struct Liquid
 	};
 	Type type;
 	double density;
+	double viscosity;
 	Color color;
 
 	Liquid(Type type) : type(type)
@@ -22,18 +23,22 @@ struct Liquid
 		{
 			case Type::Water:
 				density = 1.0;
+				viscosity = 0.01;
 				color = Color(0, 100, 200);
 				break;
 			case Type::Blood:
 				density = 1.0;
+				viscosity = 0.05;
 				color = Color(300, 0, 50);
 				break;
 			case Type::Oil:
 				density = 0.9;
+				viscosity = 0.005;
 				color = Color(300, 200, 100);
 				break;
 			default:
 				density = 0.0;
+				viscosity = 0.0;
 				color = Color{};
 				break;
 		}
@@ -71,6 +76,7 @@ class LiquidMixture
 		double remove_liquid(const Liquid::Type type, const double volume);
 		void add_liquid(const Liquid::Type type, const double volume);
 		double get_volume() const;
+		double get_viscosity() const;
 		ColorPair get_color_pair() const;
 		Color get_fgcolor() const;
 		Color get_bgcolor() const;

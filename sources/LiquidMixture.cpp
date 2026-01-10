@@ -59,6 +59,18 @@ double LiquidMixture::get_volume() const
 	return volume_total;
 }
 
+double LiquidMixture::get_viscosity() const
+{
+	double viscosity = 0;
+	const double this_volume = get_volume();
+	for (const auto& [type, volume] : mixture)
+	{
+		const double part = volume / this_volume;
+		viscosity += part * Liquid(type).viscosity;
+	}
+	return viscosity;
+}
+
 /* Rendering stuff
  * ColorPair tells most common liquid as well as least dense
  * bgcolor = biggest volume, fgcolor = least dense (floats on top) */
