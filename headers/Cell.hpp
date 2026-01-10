@@ -3,6 +3,7 @@
 #include "LiquidMixture.hpp"
 #include "Color.hpp"  // for Color
 #include "entt.hpp"   // for size_t, map, entity, vector
+
 class Cave;
 class ColorPair;
 class Cell
@@ -124,7 +125,7 @@ class Cell
 		bool blocks_movement() const;
 		bool is_empty() const;
 
-		// Get entities in this
 		std::vector<entt::entity> get_entities() const;
-		void draw();
+		entt::registry& get_registry();
+		const entt::registry& get_registry() const;
 };

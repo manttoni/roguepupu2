@@ -33,6 +33,16 @@ bool Cell::operator<(const Cell &other) const
 	return idx < other.idx;
 }
 
+entt::registry& Cell::get_registry()
+{
+	return cave->get_world()->get_registry();
+}
+
+const entt::registry& Cell::get_registry() const
+{
+	return cave->get_world()->get_registry();
+}
+
 bool Cell::is_border() const
 {
 	const size_t width = cave->get_width();
@@ -56,26 +66,31 @@ void Cell::reduce_density(const double amount)
 double Cell::get_liquid_level() const
 {
 	assert(type == Type::Floor);
-	return density + liquid_mixture.get_volume();
+	double entities_size = 0;
+	for (const auto e : get_entities())
+		entities_size += ECS::get_size(get_registry(), e);
+	return density + liquid_mixture.get_volume() + entities_size;
 }
 
 Color Cell::get_fgcolor() const
 {
-	if (liquid_mixture.get_volume() == 0)
+	if (liquid_mixture.get_volume() <= 0.01)
 		return fgcolor;
 	return liquid_mixture.get_fgcolor();
 }
 
 Color Cell::get_bgcolor() const
 {
-	if (liquid_mixture.get_volume() == 0)
+	if (liquid_mixture.get_volume() <= 0.01)
 		return bgcolor;
 	return liquid_mixture.get_bgcolor();
 }
 
 wchar_t Cell::get_glyph() const
 {
-	if (liquid_mixture.get_volume() == 0)
+	if (glyph - L'0' > 0 && glyph - L'0' < 10)
+		return glyph; // DevTools thing to show cell values
+	if (liquid_mixture.get_volume() <= 0.01)
 		return glyph;
 	return liquid_mixture.get_glyph();
 }

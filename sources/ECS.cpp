@@ -116,6 +116,7 @@ namespace ECS
 		info["category"] = registry.get<Category>(entity).category;
 		info["subcategory"] = registry.get<Subcategory>(entity).subcategory;
 		info["weight"] = std::to_string(get_weight(registry, entity));
+		info["size"] = std::to_string(get_size(registry, entity));
 		if (registry.all_of<Attributes>(entity))
 		{
 			info["strength"] = std::to_string(get_strength(registry, entity));
@@ -146,6 +147,7 @@ namespace ECS
 
 	std::vector<entt::entity> get_inventory(const entt::registry& registry, const entt::entity entity)
 	{
+
 		if (!registry.all_of<Inventory>(entity))
 			return {};
 		return registry.get<Inventory>(entity).inventory;
@@ -194,5 +196,12 @@ namespace ECS
 			npcs.erase(it);
 		registry.destroy(entity);
 		cave->reset_lights();
+	}
+
+	double get_size(const entt::registry& registry, const entt::entity entity)
+	{
+		if (!registry.all_of<Size>(entity))
+			return 0.0;
+		return registry.get<Size>(entity).size;
 	}
 };

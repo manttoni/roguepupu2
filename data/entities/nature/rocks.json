@@ -1,0 +1,19 @@
+{
+	"huge boulder": {
+		"glyph": "⬤",
+		"weight": 1000,
+		"solid": true,
+		"opaque": true,
+		"landmark": true,
+		"size": 1.0
+	},
+
+	"small boulder": {
+		"glyph": "●",
+		"weight": 500,
+		"solid": true,
+		"opaque": true,
+		"landmark": true,
+		"size": 0.5
+	}
+}

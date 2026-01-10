@@ -1,5 +1,5 @@
 {
-	"entrance": {
+	"source": {
 		"unique": true,
 		"chance": 1.0,
 		"radial_distance": 0.0,
@@ -8,12 +8,28 @@
 		]
 	},
 
-	"exit": {
+	"sink": {
 		"unique": true,
 		"chance": 1.0,
 		"radial_distance": 1.0,
 		"entities": [
 			{ "id": "sink", "radial_distance": 0.0 }
+		]
+	},
+
+	"freshwater spring": {
+		"chance": 0.2,
+		"entities": [
+			{ "id": "freshwater spring", "radial_distance": 0.0 }
+		]
+	},
+
+	"collapsed tunnel": {
+		"chance": 0.2,
+		"radius": 10,
+		"entities": [
+			{ "id": "huge boulder", "amount": 5 },
+			{ "id": "small boulder", "amount": 10 }
 		]
 	}
 }

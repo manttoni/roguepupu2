@@ -28,7 +28,8 @@
 					"type": "destroy_entity"
 				}
 			}
-		]
+		],
+		"size": 0.25
 	},
 
 	"woody mushroom": {
@@ -39,7 +40,7 @@
 		"spawn": {
 			"space": "wide",
 			"frequency": 0.2,
-			"chance": 0.45,
+			"chance": 0.55,
 			"humidity": 0.25,
 			"water": false
 		},
@@ -60,6 +61,7 @@
 					"type": "destroy_entity"
 				}
 			}
-		]
+		],
+		"size": 0.75
 	}
 }

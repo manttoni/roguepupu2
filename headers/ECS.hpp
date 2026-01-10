@@ -31,4 +31,5 @@ namespace ECS
 	entt::entity get_sink(const entt::registry& registry, const Cave& cave);
 	double get_weight(const entt::registry& registry, const entt::entity entity);
 	void destroy_entity(entt::registry& registry, const entt::entity entity);
+	double get_size(const entt::registry& registry, const entt::entity entity);
 };

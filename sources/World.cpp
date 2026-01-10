@@ -424,7 +424,7 @@ void World::smooth_elevation()
 		// make cell less deep, then deepen cells around it
 		auto& cell = cells[cell_idx];
 		assert(cell.get_density() <= 0);
-		double reduced = cell.get_density() / 4;
+		double reduced = cell.get_density() / 16;
 		cell.reduce_density(reduced);
 		assert(cell.get_density() <= 0);
 
@@ -564,7 +564,7 @@ void World::generate_cave(const size_t level)
 	set_sink();
 
 	UI::instance().dialog("Simulating environment...");
-	for (size_t i = 0; i < 1000; ++i)
+	for (size_t i = 0; i < 10000; ++i)
 		EnvironmentSystem::simulate_environment(&canvas);
 
 	Log::log("Cave " + std::to_string(level) + " generated");

@@ -1,0 +1,9 @@
+{
+	"freshwater spring": {
+		"glyph": "¤",
+		"liquid_source": {
+			"rate": 0.05,
+			"type": "water"
+		}
+	}
+}

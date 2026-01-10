@@ -38,6 +38,20 @@ struct Liquid
 				break;
 		}
 	}
+
+	static Type from_string(const std::string& str)
+	{
+		static const std::map<std::string, Type> map =
+		{
+			{"water", Type::Water},
+			{"blood", Type::Blood},
+			{"oil", Type::Oil}
+		};
+		auto it = map.find(str);
+		if (it == map.end())
+			Log::error("Unknown liquid type: " + str);
+		return it->second;
+	}
 };
 
 class LiquidMixture

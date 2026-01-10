@@ -329,6 +329,25 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			if (data.get<bool>() == true)
 				reg.template emplace<Throwable>(e);
 		}
+	},
+	{ "liquid_source", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			if (!data.is_object())
+				Log::error("liquid_source not an object: " + data.dump(4));
+			reg.template emplace<LiquidSource>(e);
+			auto& ls = reg.template get<LiquidSource>(e);
+			if (data.contains("type"))
+				ls.type = Liquid::from_string(data["type"].get<std::string>());
+			if (data.contains("rate"))
+				ls.rate = data["rate"].get<double>();
+		}
+	},
+	{ "size", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			if (!data.is_number_float() || data.get<double>() < 0)
+				Log::error("Invalid size: " + data.dump(4));
+			reg.template emplace<Size>(e, data.get<double>());
+		}
 	}
 };
 

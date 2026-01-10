@@ -5,6 +5,7 @@
 #include "entt.hpp"   // for null, null_t, entity, vector
 #include "Event.hpp"
 #include "Utils.hpp"
+#include "LiquidMixture.hpp"
 class Cell;
 
 struct Solid {};
@@ -147,3 +148,15 @@ struct Edge
 };
 
 struct Throwable {};
+
+struct LiquidSource
+{
+	Liquid::Type type = Liquid::Type::None;
+	double rate = 0.0;
+	double volume_left = std::numeric_limits<double>::infinity();
+};
+
+struct Size
+{
+	double size = 0.0;
+};
