@@ -14,6 +14,7 @@ class World
 	public:
 		void generate_cave(const size_t level);
 		Cave& get_cave(const size_t level);
+		Cave& get_cave();
 
 	private:
 		size_t height;

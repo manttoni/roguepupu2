@@ -19,11 +19,11 @@ namespace AbilitySystem
 
 	void use_ability(entt::registry& registry, const entt::entity actor, Ability& ability, const Target& target)
 	{
+		(void) actor;
 		assert(target.type != Target::Type::None);
 		const size_t turn_number = registry.ctx().get<GameState>().turn_number;
 		const Effect& effect = ability.effect;
 		EffectSystem::resolve_effect(registry, effect, target);
 		ability.last_used = turn_number;
-		Log::log(registry.get<Name>(actor).name + " used ability " + ability.id);
 	}
 };

@@ -576,3 +576,10 @@ Cave& World::get_cave(const size_t level)
 
 	return caves[level - 1];
 }
+
+Cave& World::get_cave()
+{
+	const size_t levels = caves.size();
+	Cave& next = get_cave(levels + 1);
+	return next;
+}

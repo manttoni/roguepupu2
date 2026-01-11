@@ -37,6 +37,7 @@ namespace TriggerSystem
 		switch (trigger.effect.type)
 		{
 			case Effect::Type::Transition:
+				trigger.target.cell = TransitionSystem::get_destination_cell(registry, owner);
 				break;
 			default:
 				break;

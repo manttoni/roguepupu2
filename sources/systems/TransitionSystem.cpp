@@ -1,4 +1,7 @@
 #include "systems/TransitionSystem.hpp"
+#include "World.hpp"
+#include "Cave.hpp"
+#include "ECS.hpp"
 #include "entt.hpp"
 #include "Components.hpp"
 #include "Utils.hpp"
@@ -23,4 +26,15 @@ namespace TransitionSystem
 		return registry.get<Transition>(portal).destination;
 	}
 
+	Cell* get_destination_cell(entt::registry& registry, const entt::entity portal)
+	{
+		entt::entity destination = get_destination(registry, portal);
+		if (destination == entt::null)
+		{
+			Cave& next_cave = ECS::get_active_cave(registry)->get_world()->get_cave();
+			destination = ECS::get_source(registry, next_cave);
+			link_portals(registry, portal, destination);
+		}
+		return ECS::get_cell(registry, destination);
+	}
 };
