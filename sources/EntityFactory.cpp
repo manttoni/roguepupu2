@@ -446,3 +446,35 @@ std::vector<std::string> EntityFactory::random_pool(const nlohmann::json& filter
 		pool.resize(amount);
 	return pool;
 }
+
+std::vector<std::string> EntityFactory::get_category_names() const
+{
+	std::vector<std::string> category_names;
+	for (const auto& [name, data] : LUT)
+	{
+		if (!data.contains("category"))
+			Log::error("Uncategorized entity: " + name);
+		const auto category = data["category"].get<std::string>();
+		auto it = std::find(category_names.begin(), category_names.end(), category);
+		if (it == category_names.end())
+			category_names.push_back(category);
+	}
+	return category_names;
+}
+
+std::vector<std::string> EntityFactory::get_subcategory_names(const std::string& category) const
+{
+	std::vector<std::string> subcategory_names;
+	for (const auto& [name, data] : LUT)
+	{
+		if (!data.contains("category") || !data.contains("subcategory"))
+			Log::error("Uncategorized entity: " + name);
+		if (data["category"].get<std::string>() != category)
+			continue;
+		const auto subcategory = data["subcategory"].get<std::string>();
+		auto it = std::find(subcategory_names.begin(), subcategory_names.end(), subcategory);
+		if (it == subcategory_names.end())
+			subcategory_names.push_back(subcategory);
+	}
+	return subcategory_names;
+}

@@ -26,4 +26,6 @@ class EntityFactory
 		entt::entity create_entity(entt::registry& registry, const std::string& name, Cell* cell = nullptr);
 		std::vector<std::string> random_pool(const nlohmann::json& filter, const size_t amount);
 		const std::unordered_map<std::string, nlohmann::json>& get_LUT() const { return LUT; }
+		std::vector<std::string> get_category_names() const;
+		std::vector<std::string> get_subcategory_names(const std::string& category) const;
 };

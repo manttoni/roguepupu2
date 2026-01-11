@@ -6,6 +6,20 @@
 #include "Utils.hpp"          // for log
 #include "Tester.hpp"
 
+/* Capture this from ncurses so it will print */
+extern "C" void __assert_fail(
+    const char* expr,
+    const char* file,
+    unsigned int line,
+    const char* func)
+{
+    endwin();
+    fprintf(stderr,
+        "Assertion failed: %s\nFile: %s:%u\nFunction: %s\n",
+        expr, file, line, func);
+    abort();
+}
+
 void run()
 {
 	Game* game = nullptr;

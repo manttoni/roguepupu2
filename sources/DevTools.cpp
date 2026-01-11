@@ -1,5 +1,6 @@
 #include <vector>
 #include <string>
+#include "EntityFactory.hpp"
 #include "DevTools.hpp"
 #include "UI.hpp"
 #include "entt.hpp"
@@ -80,6 +81,20 @@ namespace DevTools
 				UI::instance().dialog("Choose liquid", choices));
 	}
 
+	void spawn_entity(entt::registry& registry)
+	{
+		const std::vector<std::string> categories = EntityFactory::instance().get_category_names();
+		const std::string category = UI::instance().dialog("Choose category", categories);
+		const std::vector<std::string> subcategories = EntityFactory::instance().get_subcategory_names(category);
+		const std::string subcategory = UI::instance().dialog("Choose subcategory", subcategories);
+		const nlohmann::json filter = {{"subcategory", subcategory}};
+		std::vector<std::string> entity_names = EntityFactory::instance().random_pool(filter, SIZE_MAX);
+		std::sort(entity_names.begin(), entity_names.end());
+		const std::string entity_name = UI::instance().dialog("Choose entity", entity_names);
+		Cell* cell = ECS::get_cell(registry, ECS::get_player(registry));
+		EntityFactory::instance().create_entity(registry, entity_name, cell);
+	}
+
 	void dev_menu(entt::registry& registry)
 	{
 		const std::vector<std::string> choices =
@@ -90,7 +105,8 @@ namespace DevTools
 			"Show/hide debug",
 			"Show/hide elevation",
 			"Change liquid",
-			"Spawn liquid"
+			"Spawn liquid",
+			"Spawn entity"
 		};
 		const auto& choice = UI::instance().dialog("DevTools", choices);
 		if (choice == "God mode")
@@ -119,5 +135,7 @@ namespace DevTools
 			static size_t multi = 1;
 			ECS::get_cell(registry, ECS::get_player(registry))->get_liquid_mixture().add_liquid(registry.ctx().get<Dev>().liquid_type, 1 * multi++);
 		}
+		else if (choice == "Spawn entity")
+			spawn_entity(registry);
 	}
 };
