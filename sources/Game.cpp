@@ -27,9 +27,6 @@ Game::Game() :
 	auto* source_cell = ECS::get_cell(registry, source);
 	registry.emplace<Position>(player, source_cell);
 
-	// testing
-	registry.emplace<LiquidSource>(player, Liquid::Type::Blood, 0.01);
-
 	registry.ctx().emplace<GameLogger>();
 	registry.ctx().emplace<GameState>();
 	registry.ctx().emplace<Renderer>(registry);

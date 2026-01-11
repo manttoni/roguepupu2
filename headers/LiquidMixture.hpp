@@ -11,6 +11,7 @@ struct Liquid
 		Water,
 		Blood,
 		Oil,
+		Count
 	};
 	Type type;
 	double density;
@@ -44,19 +45,32 @@ struct Liquid
 		}
 	}
 
+
+	static constexpr std::pair<const char*, Type> table[] = {
+		{"water", Type::Water},
+		{"blood", Type::Blood},
+		{"oil",   Type::Oil}
+	};
+
 	static Type from_string(const std::string& str)
 	{
-		static const std::map<std::string, Type> map =
-		{
-			{"water", Type::Water},
-			{"blood", Type::Blood},
-			{"oil", Type::Oil}
-		};
-		auto it = map.find(str);
-		if (it == map.end())
-			Log::error("Unknown liquid type: " + str);
-		return it->second;
+		for (auto& [name, type] : table)
+			if (str == name)
+				return type;
+
+		Log::error("Unknown liquid type: " + str);
+		return Type::None;
 	}
+
+	static std::string to_string(Type type)
+	{
+		for (auto& [name, t] : table)
+			if (t == type)
+				return name;
+
+		return "none";
+	}
+
 };
 
 class LiquidMixture
