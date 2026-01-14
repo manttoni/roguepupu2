@@ -1,4 +1,6 @@
 #include "systems/ActionSystem.hpp"
+#include "systems/RenderingSystem.hpp"
+#include "systems/PositionSystem.hpp"
 #include "systems/GatheringSystem.hpp"
 #include "systems/EventSystem.hpp"
 #include "systems/AbilitySystem.hpp"
@@ -16,7 +18,6 @@
 #include "entt.hpp"
 #include "GameState.hpp"
 #include "ECS.hpp"
-#include "Renderer.hpp"
 #include "Components.hpp"
 #include "Event.hpp"
 #include "World.hpp"
@@ -29,7 +30,7 @@ namespace ActionSystem
 		switch (intent.type)
 		{
 			case Intent::Type::ExamineCell:
-				ContextSystem::examine_cell(registry, intent.target.cell);
+				ContextSystem::examine_cell(registry, intent.target.position);
 				break;
 			case Intent::Type::OpenInventory:
 				ContextSystem::show_entities_list(registry, intent.target.entity);
@@ -38,7 +39,7 @@ namespace ActionSystem
 				ContextSystem::show_entity_details(registry, intent.actor);
 				break;
 			case Intent::Type::Move:
-				MovementSystem::move(registry, intent.actor, intent.target.cell);
+				MovementSystem::move(registry, intent.actor, intent.target.position);
 				break;
 			case Intent::Type::Attack:
 				CombatSystem::attack(registry, intent.actor, intent.target.entity);
@@ -50,7 +51,7 @@ namespace ActionSystem
 				AccessSystem::open(registry, intent.actor, intent.target.entity);
 				break;
 			case Intent::Type::UseAbility:
-				AbilitySystem::use_ability(registry, intent.actor, *intent.ability, intent.target);
+				AbilitySystem::use_ability(registry, intent.actor, intent.ability_id, intent.target);
 				break;
 			case Intent::Type::Gather:
 				GatheringSystem::gather(registry, intent.actor, intent.target.entity);
@@ -66,23 +67,22 @@ namespace ActionSystem
 			default:
 				return;
 		}
-		registry.ctx().get<Renderer>().render();
+		RenderingSystem::render(registry);
 	}
 
 	Intent get_direction_intent(const entt::registry& registry, const entt::entity actor, const Vec2 direction)
 	{
-		Cave* cave = ECS::get_active_cave(registry);
-		Cell* current_cell = ECS::get_cell(registry, actor);
-		const size_t current_idx = current_cell->get_idx();
-		const size_t y = current_idx / cave->get_width() + direction.y;
-		const size_t x = current_idx % cave->get_width() + direction.x;
-		const size_t target_idx = y * cave->get_width() + x;
-		if (target_idx >= cave->get_cells().size())
+		const auto& current_pos = registry.get<Position>(actor);
+		const auto& cave = PositionSystem::get_cave(registry, current_pos);
+		const size_t current_idx = current_pos.cell_idx;
+		const size_t y = current_idx / cave.get_size() + direction.y;
+		const size_t x = current_idx % cave.get_size() + direction.x;
+		const size_t target_idx = y * cave.get_size() + x;
+		if (target_idx >= cave.get_cells().size())
 			return {.type = Intent::Type::None};
-		Cell* target_cell = &cave->get_cell(target_idx);
-		if (target_cell == nullptr)
-			return {.type = Intent::Type::None};
-		const auto& entities = target_cell->get_entities();
+
+		const Position target_pos{target_idx, cave.get_idx()};
+		const auto& entities = ECS::get_entities(registry, target_pos);
 		for (const auto target : entities)
 		{
 			if (FactionSystem::is_enemy(registry, actor, target))
@@ -92,10 +92,10 @@ namespace ActionSystem
 				return intent;
 			}
 		}
-		if (MovementSystem::can_move(*cave, current_idx, target_idx))
+		if (MovementSystem::can_move(registry, current_pos, target_pos))
 		{
 			Intent intent = {.type = Intent::Type::Move};
-			intent.target.cell = target_cell;
+			intent.target.position = target_pos;
 			return intent;
 		}
 		return {.type = Intent::Type::None};
@@ -104,10 +104,9 @@ namespace ActionSystem
 	Intent get_player_intent(entt::registry& registry)
 	{
 		const auto player = ECS::get_player(registry);
-		Cave* cave = ECS::get_active_cave(registry);
 		while (true)
 		{
-			registry.ctx().get<Renderer>().render();
+			RenderingSystem::render(registry);
 
 			int key = UI::instance().input(500);
 			if (key == '`') DevTools::dev_menu(registry);
@@ -119,13 +118,13 @@ namespace ActionSystem
 				case KEY_RIGHT_CLICK:
 					{
 					Intent intent = {.type = Intent::Type::Attack};
-					intent.target.cell = UI::instance().get_clicked_cell(*cave);
+					intent.target.position = UI::instance().get_clicked_cell(registry);
 					return intent;
 					}
 				case KEY_LEFT_CLICK:
 					{
 					Intent intent = {.type = Intent::Type::ExamineCell};
-					intent.target.cell = UI::instance().get_clicked_cell(*cave);
+					intent.target.position = UI::instance().get_clicked_cell(registry);
 					return intent;
 					}
 				case 'i':
@@ -152,10 +151,14 @@ namespace ActionSystem
 
 	void act_round(entt::registry& registry)
 	{
-		Cave* cave = ECS::get_active_cave(registry);
+		Cave& cave = ECS::get_active_cave(registry);
 		const auto player = ECS::get_player(registry);
-		std::vector<entt::entity> actors = cave->get_npcs();
-		actors.push_back(player);
+		std::vector<entt::entity> actors;
+		for (const auto entity : ECS::get_entities(registry, cave.get_idx()))
+		{
+			if (registry.get<Category>(entity).category == "creatures")
+				actors.push_back(entity);
+		}
 		for (const auto actor : actors)
 		{
 			if (!registry.valid(actor)) continue;
@@ -165,7 +168,7 @@ namespace ActionSystem
 			intent.actor = actor;
 			resolve_intent(registry, intent);
 			EventSystem::resolve_events(registry);
-			if (cave != ECS::get_active_cave(registry))
+			if (cave.get_idx() != registry.get<Position>(player).cave_idx)
 				return;
 		}
 	}

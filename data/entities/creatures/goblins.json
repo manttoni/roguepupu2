@@ -6,14 +6,15 @@
 		"vision": 10,
 		"solid": true,
 		"inventory": [
-			{"filter": {"name": "axe"}},
-			{"filter": {"name": "knife"}}
+			{"filter": {"name": "kunai"}},
+			{"filter": {"name": "kunai"}}
 		],
 		"ai": [
 			{
 				"type": "gather"
 			}
-		]
+		],
+		"equipment_slots": true
 	},
 	"goblin guard": {
 		"glyph": "g",

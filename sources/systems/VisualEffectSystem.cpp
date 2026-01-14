@@ -4,7 +4,6 @@
 #include "Components.hpp"
 #include "ECS.hpp"
 #include "Cell.hpp"
-#include "Renderer.hpp"
 
 namespace VisualEffectSystem
 {

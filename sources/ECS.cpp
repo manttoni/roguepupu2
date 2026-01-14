@@ -7,9 +7,28 @@
 #include "Utils.hpp"                    // for capitalize
 #include "entt.hpp"                     // for allocator, entity, registry
 #include "systems/EquipmentSystem.hpp"  // for is_dual_wielding, is_equipped
+#include "GameLogger.hpp"
+#include "GameState.hpp"
+#include "DevTools.hpp"
+#include "AbilityDatabase.hpp"
+#include "World.hpp"
+#include "RenderData.hpp"
 
 namespace ECS
 {
+	entt::registry init_registry()
+	{
+		entt::registry registry;
+		registry.ctx().emplace<GameLogger>();		// Log game events
+		registry.ctx().emplace<GameState>();		// Turn number, game_running
+		registry.ctx().emplace<RenderData>();		// frame, seen and visible cells
+		registry.ctx().emplace<EventQueue>();		// Resolve events after actions
+		registry.ctx().emplace<Dev>();				// Cheats
+		registry.ctx().emplace<AbilityDatabase>();	// Parsed abilities for creatures
+		registry.ctx().emplace<World>();			// Holds all caves
+		return registry;
+	}
+
 	Color get_color(const entt::registry& registry, const entt::entity entity)
 	{
 		if (registry.all_of<FGColor>(entity))
@@ -52,20 +71,7 @@ namespace ECS
 		return registry.get<Name>(entity).name.front();
 	}
 
-	Cell* get_cell(const entt::registry& registry, const entt::entity entity)
-	{
-		if (registry.all_of<Position>(entity))
-			return registry.get<Position>(entity).cell;
-		return nullptr;
-	}
 
-	Cave* get_cave(const entt::registry& registry, const entt::entity entity)
-	{
-		Cell* cell = get_cell(registry, entity);
-		if (cell == nullptr)
-			return nullptr;
-		return cell->get_cave();
-	}
 
 	int get_strength(const entt::registry& registry, const entt::entity entity)
 	{
@@ -129,14 +135,6 @@ namespace ECS
 		return info;
 	}
 
-	double distance(const entt::registry& registry, const entt::entity a, const entt::entity b)
-	{
-		Cell* ac = get_cell(registry, a);
-		Cell* bc = get_cell(registry, b);
-
-		return ac->get_cave()->distance(*ac, *bc);
-	}
-
 	entt::entity get_player(const entt::registry& registry)
 	{
 		const auto players = registry.view<Player>();
@@ -160,42 +158,24 @@ namespace ECS
 		const auto& level = registry.get<Level>(entity).level;
 		return level;
 	}
-	Cave* get_active_cave(const entt::registry& registry)
+	const Cave& get_active_cave(const entt::registry& registry)
 	{
 		const auto player = get_player(registry);
-		return get_cell(registry, player)->get_cave();
+		const size_t idx = registry.get<Position>(player).cave_idx;
+		return registry.ctx().get<World>().get_cave(idx);
+	}
+	Cave& get_active_cave(entt::registry& registry)
+	{
+		const auto player = get_player(registry);
+		const size_t idx = registry.get<Position>(player).cave_idx;
+		return registry.ctx().get<World>().get_cave(idx);
 	}
 
-	entt::entity get_source(const entt::registry& registry, const Cave& cave)
-	{
-		for (const auto e : registry.view<Position, Name>())
-		{
-			if (registry.get<Name>(e).name == "source" &&
-					registry.get<Position>(e).cell->get_cave() == &cave)
-				return e;
-		}
-		return entt::null;
-	}
-	entt::entity get_sink(const entt::registry& registry, const Cave& cave)
-	{
-		for (const auto e : registry.view<Position, Name>())
-		{
-			if (registry.get<Name>(e).name == "sink" &&
-					registry.get<Position>(e).cell->get_cave() == &cave)
-				return e;
-		}
-		Log::error("Cave doesnt have sink");
-	}
+
 
 	void destroy_entity(entt::registry& registry, const entt::entity entity)
 	{
-		Cave* cave = get_cell(registry, entity)->get_cave();
-		auto& npcs = cave->get_npcs();
-		auto it = std::find(npcs.begin(), npcs.end(), entity);
-		if (it != npcs.end())
-			npcs.erase(it);
 		registry.destroy(entity);
-		cave->reset_lights();
 	}
 
 	double get_size(const entt::registry& registry, const entt::entity entity)
@@ -204,4 +184,29 @@ namespace ECS
 			return 0.0;
 		return registry.get<Size>(entity).size;
 	}
+
+	std::vector<entt::entity> get_entities(const entt::registry& registry, const Position& position)
+	{
+		std::vector<entt::entity> entities;
+		for (const auto entity : registry.view<Position>())
+		{
+			if (registry.get<Position>(entity) == position)
+				entities.push_back(entity);
+		}
+		return entities;
+	}
+
+	std::vector<entt::entity> get_entities(const entt::registry& registry, const size_t cave_idx)
+	{
+		std::vector<entt::entity> entities;
+		for (const auto entity : registry.view<Position>())
+		{
+			if (registry.get<Position>(entity).cave_idx == cave_idx)
+				entities.push_back(entity);
+		}
+		return entities;
+	}
+
+
+
 };

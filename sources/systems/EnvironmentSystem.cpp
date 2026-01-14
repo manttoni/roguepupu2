@@ -12,11 +12,11 @@
 
 namespace EnvironmentSystem
 {
-
-	void simulate_liquid_flow(Cave* cave)
+	void simulate_liquid_flow(const entt::registry& registry, const size_t cave_idx)
 	{
-		auto& cells = cave->get_cells();
-		auto floor_cells = cave->get_cells_with_type(Cell::Type::Floor);
+		auto& cave = PositionSystem::get_cave(registry, cave_idx);
+		auto& cells = cave.get_cells();
+		auto floor_cells = cave.get_cells_with_type(Cell::Type::Floor);
 		std::shuffle(floor_cells.begin(), floor_cells.end(), Random::rng());
 		for (const auto middle_idx : floor_cells)
 		{
@@ -25,7 +25,7 @@ namespace EnvironmentSystem
 			if (middle_mix.get_volume() < middle_mix.get_viscosity())
 				continue;
 
-			auto neighbors = cave->get_nearby_ids(middle_idx, 1.5, Cell::Type::Floor);
+			auto neighbors = cave.get_nearby_ids(middle_idx, 1.5, Cell::Type::Floor);
 			std::sort(neighbors.begin(), neighbors.end(),
 					[&](const auto a, const auto b)
 					{
@@ -44,13 +44,12 @@ namespace EnvironmentSystem
 				neighbor_mix += flow;
 			}
 		}
-		const auto& registry = cave->get_world()->get_registry();
-		const auto sink = ECS::get_sink(registry, *cave);
-		Cell* sink_cell = ECS::get_cell(registry, sink);
-		sink_cell->clear_liquids();
+		for (const auto idx : cave.get_sinks())
+			ECS::get_cell(registry, {idx, cave.get_idx()}).clear_liquids();
 	}
-	void simulate_liquid_diffusion(Cave* cave)
+	void simulate_liquid_diffusion(const entt::registry& registry, const size_t cave_idx)
 	{
+		auto& cave = PositionSystem::get_cave(registry, cave_idx);
 		auto& cells = cave->get_cells();
 		auto floor_cells = cave->get_cells_with_type(Cell::Type::Floor);
 		std::shuffle(floor_cells.begin(), floor_cells.end(), Random::rng());
@@ -72,9 +71,8 @@ namespace EnvironmentSystem
 
 		}
 	}
-	void simulate_liquid_sources(Cave* cave)
+	void simulate_liquid_sources(const entt::registry& registry, const size_t cave_idx)
 	{
-		auto& registry = cave->get_world()->get_registry();
 		auto liquid_sources = registry.view<LiquidSource, Position>();
 		for (const auto liquid_source : liquid_sources)
 		{
@@ -84,17 +82,19 @@ namespace EnvironmentSystem
 			if (ls_component.volume_left == 0 || ls_component.type == Liquid::Type::None)
 				continue;
 
-			Cell* source_cell = ECS::get_cell(registry, liquid_source);
-			auto& lm = source_cell->get_liquid_mixture();
+			Cell& source_cell = PositionSystem::get_cell(registry, liquid_source);
+			auto& lm = source_cell.get_liquid_mixture();
 			const double volume_created = std::min(ls_component.rate, ls_component.volume_left);
 			lm.add_liquid(ls_component.type, std::min(ls_component.rate, volume_created));
 			ls_component.volume_left -= volume_created;
 		}
 	}
-	void simulate_condensation(Cave* cave)
+
+	void simulate_condensation(const entt::registry& registry, const size_t cave_idx)
 	{
-		const auto floor_cells = cave->get_cells_with_type(Cell::Type::Floor);
-		auto& cells = cave->get_cells();
+		auto& cave = PositionSystem::get_cave(registry, cave_idx);
+		const auto floor_cells = cave.get_cells_with_type(Cell::Type::Floor);
+		auto& cells = cave.get_cells();
 		for (const auto idx : floor_cells)
 		{
 			Cell& cell = cells[idx];
@@ -102,21 +102,22 @@ namespace EnvironmentSystem
 			lm.add_liquid(Liquid::Type::Water, pow(cell.get_humidity(), 64));
 		}
 	}
-	void simulate_liquids(Cave* cave)
+	void simulate_liquids(const entt::registry& registry, const size_t cave_idx)
 	{
-		simulate_liquid_flow(cave);
-		simulate_liquid_diffusion(cave);
-		simulate_liquid_sources(cave);
-		simulate_condensation(cave);
+		simulate_liquid_flow(registry, cave_idx);
+		simulate_liquid_diffusion(registry, cave_idx);
+		simulate_liquid_sources(registry, cave_idx);
+		simulate_condensation(registry, cave_idx);
 	}
-	void simulate_environment(Cave* cave)
+	void simulate_environment(const entt::registry& registry, const size_t cave_idx)
 	{
-		simulate_liquids(cave);
+		simulate_liquids(registry, cave_idx);
 	}
-	double get_liquids_volume(Cave* cave)
+	double get_liquids_volume(const entt::registry& registry, const size_t cave_idx)
 	{
 		double volume = 0;
-		const auto& cells = cave->get_cells();
+		const auto& cave = PositionSystem::get_cave(registry, cave_idx);
+		const auto& cells = cave.get_cells();
 		for (const auto& cell : cells)
 			volume += cell.get_liquid_mixture().get_volume();
 		return volume;

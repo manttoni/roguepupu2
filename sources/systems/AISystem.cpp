@@ -1,4 +1,5 @@
 #include <cassert>
+#include "systems/PositionSystem.hpp"
 #include "systems/MovementSystem.hpp"
 #include "systems/GatheringSystem.hpp"
 #include "systems/VisionSystem.hpp"
@@ -19,12 +20,11 @@ namespace AISystem
 	{
 		Ability& ability = registry.get<Abilities>(npc).abilities.at(intent.ability_id);
 		assert(ability.target.type != Target::Type::None);
-		intent.ability = &ability;
 		intent.target = ability.target;
 		if (AbilitySystem::on_cooldown(registry, ability))
 			return false;
 		if (intent.target.type == Target::Type::Cell && intent.target.range == 0)
-			intent.target.cell = ECS::get_cell(registry, npc);
+			intent.target.position = registry.get<Position>(npc);
 		else if (intent.target.type == Target::Type::Self)
 			intent.target.entity = npc;
 		assert(intent.target.type != Target::Type::None);
@@ -33,26 +33,27 @@ namespace AISystem
 
 	bool configure_gather(const entt::registry& registry, const entt::entity npc, Intent& intent)
 	{
-		Cell* cell = ECS::get_cell(registry, npc);
-		Cave* cave = cell->get_cave();
-		const auto npc_idx = cell->get_idx();
-
+		const auto& npc_pos = registry.get<Position>(npc);
+		const auto cave_idx = npc_pos.cave_idx;
 		auto visible_cells = VisionSystem::get_visible_cells(registry, npc);
 		std::sort(visible_cells.begin(), visible_cells.end(), [&](const size_t a, const size_t b){
-				return cave->distance(npc_idx, a) < cave->distance(npc_idx, b);
+				const auto a_distance = PositionSystem::distance(registry, npc_pos, {a, cave_idx});
+				const auto b_distance = PositionSystem::distance(registry, npc_pos, {b, cave_idx});
+				return a_distance < b_distance;
 				});
 
 		for (const auto idx : visible_cells)
 		{
-			const auto& entities = cave->get_cell(idx).get_entities();
+			const auto visible_position = Position{idx, cave_idx};
+			const auto& entities = ECS::get_entities(registry, visible_position);
 			for (const auto entity : entities)
 			{
 				if (!registry.all_of<Gatherable>(entity) || !GatheringSystem::has_tool(registry, npc, entity))
 					continue;
-				if (cave->distance(npc_idx, idx) > MELEE_RANGE)
+				if (PositionSystem::distance(registry, npc_pos, visible_position) > MELEE_RANGE)
 				{
 					intent.type = Intent::Type::Move;
-					intent.target.cell = MovementSystem::get_first_step(registry, npc, cave->get_cell(idx));
+					intent.target.position = MovementSystem::get_first_step(registry, npc_pos, visible_position);
 					return true;
 				}
 				intent.target.entity = entity;

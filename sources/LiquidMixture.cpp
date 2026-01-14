@@ -51,11 +51,15 @@ void LiquidMixture::add_liquid(const Liquid::Type type, const double volume)
 	mixture[type] += volume;
 }
 
-double LiquidMixture::get_volume() const
+double LiquidMixture::get_volume(const Liquid::Type type) const
 {
 	double volume_total = 0;
-	for (const auto& [type, volume] : mixture)
-		volume_total += volume;
+	for (const auto& [liquid_type, liquid_volume] : mixture)
+	{
+		if (type != Liquid::Type::None && type != liquid_type)
+			continue;
+		volume_total += liquid_volume;
+	}
 	return volume_total;
 }
 

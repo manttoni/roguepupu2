@@ -1,0 +1,13 @@
+{
+	"goblin foraging camp": {
+		"chance": 0.5,
+		"radius": 5,
+		"entities": [
+			{"id": "goblin forager", "amount": 5},
+			{"id": "goblin guard", "amount": 2},
+			{"id": "basket", "amount": 2},
+			{"id": "campfire", "amount": 1, "radial_distance": 0.0},
+			{"id": "toolbox", "amount": 1}
+		]
+	}
+}

@@ -7,7 +7,14 @@
 		"vision": 10,
 		"weight": 100,
 		"inventory": [
-			{"filter": {"name": "kunai"}}
+			{
+				"id": "kunai",
+				"amount": 2
+			},
+			{
+				"filter": {"name": "glowing bulb"},
+				"amount": "1-2"
+			}
 		],
 		"equipment_slots": true,
 		"faction": "player",

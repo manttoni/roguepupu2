@@ -17,11 +17,11 @@ namespace AbilitySystem
 		return ability.last_used + ability.cooldown >= turn_number;
 	}
 
-	void use_ability(entt::registry& registry, const entt::entity actor, Ability& ability, const Target& target)
+	void use_ability(entt::registry& registry, const entt::entity actor, const std::string& ability_id, const Target& target)
 	{
-		(void) actor;
 		assert(target.type != Target::Type::None);
 		const size_t turn_number = registry.ctx().get<GameState>().turn_number;
+		Ability& ability = registry.get<Abilities>(actor).abilities[ability_id];
 		const Effect& effect = ability.effect;
 		EffectSystem::resolve_effect(registry, effect, target);
 		ability.last_used = turn_number;

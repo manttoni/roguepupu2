@@ -15,15 +15,15 @@ namespace VisionSystem
 		return registry.get<Vision>(entity).range;
 	}
 
-	bool has_vision(const entt::registry& registry, const entt::entity entity, const Cell& cell)
+	/* Return true if nothing blocks vision between */
+	bool has_line_of_sight(const Cell& a, const Cell& b)
 	{
-		const auto vision_range = get_vision_range(registry, entity);
-		Cave* cave = ECS::get_cave(registry, entity);
-		const auto& cells = cave->get_cells();
-		const auto start = ECS::get_cell(registry, entity)->get_idx();
-		const auto end = cell.get_idx();
-		if (vision_range > 0 && cave->distance(start, end) > vision_range)
+		if (a.get_cave() != b.get_cave())
 			return false;
+		const Cave* cave = a.get_cave();
+		const auto& cells = cave->get_cells();
+		const auto start = a.get_idx();
+		const auto end = b.get_idx();
 		const size_t width = cave->get_width();
 		int x0 = static_cast<int>(start % width);
 		int y0 = static_cast<int>(start / width);
@@ -60,6 +60,15 @@ namespace VisionSystem
 		}
 
 		return true;
+	}
+
+	/* Retirn true if has line of sight and is within vision range */
+	bool has_vision(const entt::registry& registry, const entt::entity entity, const Cell& cell)
+	{
+		const Cave& cave = *cell.get_cave();
+		const Cell& entity_cell = *ECS::get_cell(registry, entity);
+		return has_line_of_sight(entity_cell, cell) &&
+			cave.distance(entity_cell, cell) <= get_vision_range(registry, entity);
 	}
 
 	std::vector<size_t> get_visible_cells(const entt::registry& registry, const entt::entity entity)

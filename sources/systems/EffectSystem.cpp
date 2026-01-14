@@ -1,6 +1,7 @@
 #include <cassert>
 #include "Cave.hpp"
 #include "ECS.hpp"
+#include "systems/LightingSystem.hpp"
 #include "systems/MovementSystem.hpp"
 #include "systems/EffectSystem.hpp"
 #include "entt.hpp"
@@ -22,9 +23,7 @@ namespace EffectSystem
 					switch (target.type)
 					{
 						case Target::Type::Cell:
-							if (target.cell == nullptr)
-								Log::error("Creating on nullptr");
-							MovementSystem::move(registry, entity, target.cell);
+							MovementSystem::move(registry, entity, target.position);
 							break;
 						default:
 							break;
@@ -35,19 +34,19 @@ namespace EffectSystem
 				switch (target.type)
 				{
 					case Target::Type::Self:
-						ECS::destroy_entity(registry, target.entity); // wipe from existence
+						ECS::destroy_entity(registry, target.entity);
 						break;
 					default:
 						break;
 				}
 				break;
 			case Effect::Type::Transition:
-				if (target.cell != nullptr)
-					registry.emplace_or_replace<Position>(target.entity, target.cell);
+				if (target.position != Position{})
+					registry.emplace_or_replace<Position>(target.entity, target.position);
 				break;
 			case Effect::Type::SetFGColor:
 				registry.emplace_or_replace<FGColor>(target.entity, effect.fgcolor);
-				ECS::get_active_cave(registry)->reset_lights();
+				LightingSystem::reset_lights(registry, ECS::get_active_cave(registry).get_idx());
 				break;
 			default:
 				break;

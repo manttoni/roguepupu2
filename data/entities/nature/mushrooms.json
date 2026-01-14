@@ -7,10 +7,18 @@
 			"radius": 4
 		},
 		"spawn": {
-			"near": "rock",
-			"frequency": 0.01,
-			"chance": 0.35,
-			"humidity": 0.5
+			"space": {
+				"radius": 1,
+				"blockers": 1
+			},
+			"perlin": {
+				"frequency": 0.01,
+				"treshold": 0.35
+			},
+			"water": {
+				"radius": 10,
+				"amount": "2-20"
+			}
 		},
 		"weight": 10,
 		"gatherable": {
@@ -38,11 +46,18 @@
 		"opaque": true,
 		"solid": true,
 		"spawn": {
-			"space": "wide",
-			"frequency": 0.2,
-			"chance": 0.55,
-			"humidity": 0.25,
-			"water": false
+			"space": {
+				"radius": 5,
+				"blockers": "0-5"
+			},
+			"perlin": {
+				"frequency": 0.2,
+				"treshold": 0.55
+			},
+			"water": {
+				"radius": 10,
+				"amount": "1-10"
+			}
 		},
 		"landmark": true,
 		"weight": 20,

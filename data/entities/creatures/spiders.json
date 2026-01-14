@@ -21,10 +21,18 @@
 			}
 		],
 		"spawn": {
-			"light": "dark",
-			"space": "narrow",
-			"frequency": 0.5,
-			"chance": 0.3
+			"light": {
+				"radius": 2,
+				"amount": 0
+			},
+			"space": {
+				"radius": 1.5,
+				"blockers": "2-3"
+			},
+			"perlin": {
+				"frequency": 0.5,
+				"treshold": 0.3
+			}
 		}
 	}
 }

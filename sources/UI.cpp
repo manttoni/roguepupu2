@@ -20,6 +20,7 @@
 #include "Utils.hpp"      // for Coord, botleft, height, middle, topright
 #include "entt.hpp"       // for unique_ptr, make_unique, vector, allocator
 #include "ECS.hpp"
+#include "systems/PositionSystem.hpp"
 
 void UI::print_wstr(const size_t y, const size_t x, const std::wstring& wstr)
 {
@@ -257,7 +258,7 @@ Vec2 UI::get_direction(const int key)
 	}
 }
 
-Cell* UI::get_clicked_cell(Cave& cave)
+Position UI::get_clicked_cell(const entt::registry& registry)
 {
 	Screen::Coord mouse_position = get_mouse_position();
 	PANEL* panel = get_panel(UI::Panel::Game);
@@ -275,17 +276,17 @@ Cell* UI::get_clicked_cell(Cave& cave)
 	int offset_y = mouse_y - window_center_y;
 	int offset_x = mouse_x - window_center_x;
 
-	auto& registry = cave.get_world()->get_registry();
 	const auto player = ECS::get_player(registry);
-	const size_t player_idx = ECS::get_cell(registry, player)->get_idx();
-	int player_y = player_idx / cave.get_width();
-	int player_x = player_idx % cave.get_width();
+	const size_t player_idx = registry.get<Position>(player).cell_idx;
+	const auto& cave = ECS::get_active_cave(registry);
+	int player_y = player_idx / cave.get_size();
+	int player_x = player_idx % cave.get_size();
 
 	int dest_y = player_y + offset_y;
 	int dest_x = player_x + offset_x;
-	const size_t dest_idx = dest_y * cave.get_width() + dest_x;
+	const size_t dest_idx = dest_y * cave.get_size() + dest_x;
 
-	return &cave.get_cell(dest_idx);
+	return Position{.cell_idx = dest_idx, .cave_idx = cave.get_idx()};
 }
 
 void UI::init_panel(Panel id)

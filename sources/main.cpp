@@ -63,10 +63,12 @@ void run()
 	delete game;
 }
 
-int main(void)
+int main(int argc, char **argv)
 {
 	Log::log("--- Run started ---");
 	EntityFactory::instance().init();
+	if (argc == 2 && std::string(argv[1]) == "test")
+		return Tester::test();
 	UI::instance().init();
 	run();
 	UI::instance().end();

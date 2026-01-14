@@ -1,56 +1,67 @@
-#include <iostream>
-#include <stdexcept>
-#include <nlohmann/json.hpp>
-#include <vector>
 #include <string>
-#include <map>
-#include "ECS.hpp"
+#include <iostream>
+#include <fstream>
+#include "systems/VisionSystem.hpp"
 #include "EntityFactory.hpp"
+#include "Tester.hpp"
 #include "Utils.hpp"
 #include "entt.hpp"
-#include "systems/EquipmentSystem.hpp"
+#include "World.hpp"
+#include "Cave.hpp"
+#include "Cell.hpp"
+#include "ECS.hpp"
 
-
-size_t test_equipping_all_weapons()
+namespace Tester
 {
-	size_t failed = 0;
-	Log::tester_log(Log::Type::INFO, "Starting test_equipping_all_weapons");
-	nlohmann::json filter = {{"subcategory", "weapons"}};
-	const std::vector<std::string>& all_weapon_names = EntityFactory::instance().random_pool(filter, SIZE_MAX);
+	Results test_results{};
 
-	// Key is name of tester entity, value is expected amount of succesful equippings
-	// Failed equipping happens when they don't have proficiency
-	const std::map<std::string, size_t> tests =
+	void log(const bool success, const std::string& message)
 	{
-		{"rabdin", all_weapon_names.size()} // has to be able to equip any item (at least now)
-	};
+		std::ofstream logfile("logs/tester.log", std::ios::app);
+		if (!logfile)
+			Log::error("Can't open tester.log");
 
-	entt::registry test_registry;
+		logfile << Log::timestamp() << " ";
+		logfile << "[" << (success ? "Success" : "Fail") << "] ";
+		logfile << message;
+		logfile.close();
+	}
 
-	for (const auto& [tester_name, expected_equippings] : tests)
+	void test_assert(const bool condition, const std::string& message)
 	{
-		const auto test_entity = EntityFactory::instance().create_entity(test_registry, tester_name);
-		for (const auto& weapon_name : all_weapon_names)
+		if (condition == false)
+			test_results.failed_tests++;
+		if (condition == false || test_results.log_success)
+			log(condition, message);
+	}
+/*
+	size_t test_glowing_mushroom()
+	{
+		entt::registry registry = ECS::init_registry();
+		Cave test_cave = Cave(10, Cell::Type::Floor);
+		const size_t cave_idx = registry.ctx().get<World>().add_cave(test_cave);
+		//const size_t cell_idx = 55;
+		const Position& position = {.cell_idx = 55, .cave_idx = cave_idx};
+
+		//const auto mushroom = EntityFactory::instance()
+		//	.create_entity(registry, "glowing mushroom", position);
+		for (const auto& cell : test_cave.get_cells())
 		{
-			const auto test_weapon = EntityFactory::instance().create_entity(test_registry, weapon_name);
-			EquipmentSystem::equip(test_registry, test_entity, test_weapon);
-			if (!EquipmentSystem::is_equipped(test_registry, test_entity, test_weapon))
-			{
-				Log::tester_log(Log::Type::TEST_FAIL, "Expected " + weapon_name + " to be equipped, but it's not");
-				failed++;
-			}
+			if (VisionSystem::has_line_of_sight(registry, cave_idx, cell_idx, cell) &&
+					PositionSystem::distance(test_cave, spawn_cell, cell) <= glow_radius)
+				test_assert(LightingSystem::get_illumination(cell) > 0, "Cell should be illuminated");
+			else
+				test_assert(LightingSystem::get_illumination(cell) == 0, "Cell should be dark");
 		}
 	}
-	Log::tester_log(Log::Type::INFO, "Finished test_equipping_all_weapons with " + std::to_string(failed) + " failed tests");
-	return failed;
-}
+*/
 
-size_t tester()
-{
-	size_t failed = 0;
-	Log::tester_log(Log::Type::INFO, "-- Starting tester --");
-	failed += test_equipping_all_weapons();
-	Log::tester_log(Log::Type::INFO, "Tester finished with " + std::to_string(failed) + " failed tests");
-	std::cout << "Tester finished with " << failed << " failed tests" << std::endl;
-	return failed;
-}
+	bool test()
+	{
+	//	test_glowing_mushroom();
+
+		log(test_results.failed_tests == 0, "Failed tests: " + std::to_string(test_results.failed_tests));
+		std::cout << "Failed tests: " << test_results.failed_tests << std::endl;
+		return test_results.failed_tests != 0;
+	}
+};

@@ -40,35 +40,6 @@ namespace DevTools
 		UI::instance().dialog(data, {"Back"});
 	}
 
-	void show_elevation(const entt::registry& registry)
-	{
-		Cave* cave = ECS::get_cave(registry, ECS::get_player(registry));
-		auto& cells = cave->get_cells();
-		static bool showing = false;
-		if (showing == false)
-		{
-			for (auto& cell : cells)
-			{
-				const double density = cell.get_density();
-				const size_t digit = static_cast<size_t>(std::round(density * -10.0));
-				if (digit > 0 && digit < 10)
-				{
-					cell.set_fgcolor(Color(500, 500, 500));
-					cell.set_glyph(L'0' + digit);
-				}
-			}
-		}
-		else
-		{
-			for (auto& cell : cells)
-			{
-				cell.set_fgcolor(Color(35, 40, 30));
-				cell.set_glyph(L' ');
-			}
-		}
-		showing ^= true;
-	}
-
 	void change_liquid(entt::registry& registry)
 	{
 		std::vector<std::string> choices;
@@ -91,8 +62,7 @@ namespace DevTools
 		std::vector<std::string> entity_names = EntityFactory::instance().random_pool(filter, SIZE_MAX);
 		std::sort(entity_names.begin(), entity_names.end());
 		const std::string entity_name = UI::instance().dialog("Choose entity", entity_names);
-		Cell* cell = ECS::get_cell(registry, ECS::get_player(registry));
-		EntityFactory::instance().create_entity(registry, entity_name, cell);
+		EntityFactory::instance().create_entity(registry, entity_name, registry.get<Position>(ECS::get_player(registry)));
 	}
 
 	void dev_menu(entt::registry& registry)
@@ -103,7 +73,6 @@ namespace DevTools
 			"Reveal/hide map",
 			"Show entities data",
 			"Show/hide debug",
-			"Show/hide elevation",
 			"Change liquid",
 			"Spawn liquid",
 			"Spawn entity"
@@ -116,8 +85,8 @@ namespace DevTools
 		if (choice == "Reveal/hide map")
 		{
 			static bool hidden = true;
-			Cave* cave = ECS::get_active_cave(registry);
-			auto& cells = cave->get_cells();
+			Cave& cave = ECS::get_active_cave(registry);
+			auto& cells = cave.get_cells();
 			for (auto& cell : cells)
 				cell.set_seen(hidden);
 			hidden = !hidden;
@@ -126,14 +95,11 @@ namespace DevTools
 			show_entities(registry);
 		else if (choice == "Show/hide debug")
 			registry.ctx().get<Dev>().show_debug ^= true;
-		else if (choice == "Show/hide elevation")
-			show_elevation(registry);
 		else if (choice == "Change liquid")
 			change_liquid(registry);
 		else if (choice == "Spawn liquid")
 		{
-			static size_t multi = 1;
-			ECS::get_cell(registry, ECS::get_player(registry))->get_liquid_mixture().add_liquid(registry.ctx().get<Dev>().liquid_type, 1 * multi++);
+			//spawn_liquid();
 		}
 		else if (choice == "Spawn entity")
 			spawn_entity(registry);

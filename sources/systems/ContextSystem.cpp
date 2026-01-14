@@ -1,4 +1,5 @@
 #include <format>
+#include "systems/PositionSystem.hpp"
 #include "systems/GatheringSystem.hpp"
 #include "systems/ContextSystem.hpp"
 #include "systems/InventorySystem.hpp"
@@ -49,9 +50,9 @@ namespace ContextSystem
 
 		double distance;
 		if (registry.all_of<Position>(entity))
-			distance = ECS::distance(registry, player, entity);
+			distance = PositionSystem::distance(registry, player, entity);
 		else
-			distance = ECS::distance(registry, player, owner);
+			distance = PositionSystem::distance(registry, player, owner);
 		if (distance < MELEE_RANGE && registry.all_of<Inventory>(entity))
 		{
 			if (player == entity)
@@ -124,22 +125,22 @@ namespace ContextSystem
 		if (ECS::get_inventory(registry, owner).empty())
 			UI::instance().dialog("No items", {"Back"}, Screen::topleft());
 	}
-	void show_entities_list(entt::registry& registry, Cell* cell)
+	void show_entities_list(entt::registry& registry, const Position& position)
 	{
-		if (cell == nullptr) return;
-		while (!cell->get_entities().empty())
-			if (show_entities_list(registry, cell->get_entities(), entt::null) == true)
+		while (!ECS::get_entities(registry, position).empty())
+		{
+			if (show_entities_list(registry, ECS::get_entities(registry, position), entt::null) == true)
 				break;
+		}
 	}
 
-	void examine_cell(entt::registry& registry, Cell* cell)
+	void examine_cell(entt::registry& registry, const Position& position)
 	{
-		if (cell == nullptr) return;
-		const auto entities = cell->get_entities();
+		const auto& entities = ECS::get_entities(registry, position);
 		if (entities.empty()) return;
 		if (entities.size() == 1)
 			show_entity_details(registry, entities[0]);
 		else
-			show_entities_list(registry, cell);
+			show_entities_list(registry, position);
 	}
 };

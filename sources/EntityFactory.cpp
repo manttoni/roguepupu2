@@ -13,10 +13,12 @@
 #include "entt.hpp"                                       // for operator==
 #include "systems/EquipmentSystem.hpp"                    // for equip
 #include "systems/ActionSystem.hpp"
+#include "systems/LightingSystem.hpp"
 #include "Event.hpp"
 #include "AbilityDatabase.hpp"
 #include "Parser.hpp"
-class Cell;  // lines 18-18
+#include "Cell.hpp"
+#include "Cave.hpp"
 
 #define CELL_SIZE 5
 #define MELEE_RANGE 1.5
@@ -84,23 +86,32 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 					reg.template emplace<Inventory>(e, inventory);
 				return;
 			}
-			for (const auto& entity : data)
+			if (!data.is_array())
+				Log::error("Inventory format error: " + data.dump(4));
+
+			for (const auto& entry : data)
 			{
-				if (!entity.contains("filter")) // Need to specify what kind of entities it has with a filter
-					Log::error("Cannot spawn entity to inventory: " + entity.dump(4));
-				if (entity.contains("chance") && Random::randreal(0, 1) > entity["chance"].get<double>())
-					continue;
-
-				const size_t amount = entity.contains("amount") ? entity["amount"].get<size_t>() : 1;
-				std::vector<std::string> names = EntityFactory::instance().random_pool(entity["filter"], amount);
-				if (names.empty())
-					break;
-
+				size_t amount = 1;
+				if (entry.contains("amount"))
+				{
+					const auto [min, max] = Parser::parse_range(entry["amount"]);
+					amount = Random::randsize_t(min, max);
+				}
+				std::vector<std::string> name_pool;
+				if (entry.contains("id"))
+					name_pool.push_back(entry["id"].get<std::string>());
+				else if (entry.contains("filter"))
+					name_pool = EntityFactory::instance()
+						.random_pool(entry["filter"], amount);
+				if (name_pool.empty())
+					Log::error("Missing id or invalid filter: " + data.dump(4));
 				for (size_t i = 0; i < amount; ++i)
 				{
-					const size_t rand = Random::randsize_t(0, names.size() - 1);
-					inventory.push_back(EntityFactory::instance().create_entity(reg, names[rand]));
-					Log::log("got item: " + names[rand]);
+					const size_t random_index = Random::randsize_t(0, name_pool.size() - 1);
+					assert(random_index < name_pool.size());
+					const entt::entity e = EntityFactory::instance()
+						.create_entity(reg, name_pool[random_index]);
+					inventory.push_back(e);
 				}
 			}
 			reg.template emplace<Inventory>(e, inventory);
@@ -185,12 +196,6 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			const int dexterity = data["dexterity"].get<int>();
 			const int intelligence = data["intelligence"].get<int>();
 			reg.template emplace<Attributes>(e, strength, dexterity, intelligence);
-		}
-	},
-	{ "two_handed", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			(void) data;
-			reg.template emplace<TwoHanded>(e);
 		}
 	},
 	{ "level", [](auto& reg, auto e, const nlohmann::json& data)
@@ -344,9 +349,13 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 	},
 	{ "size", [](auto& reg, auto e, const nlohmann::json& data)
 		{
-			if (!data.is_number_float() || data.get<double>() < 0)
-				Log::error("Invalid size: " + data.dump(4));
-			reg.template emplace<Size>(e, data.get<double>());
+			double size = 0;
+			if (data.is_string() && data.get<std::string>() == "-inf")
+				size = -std::numeric_limits<double>::infinity();
+			else if (data.is_number_float())
+				size = data.get<double>();
+			else Log::error("Unhandled size type: " + data.dump(4));
+			reg.template emplace<Size>(e, size);
 		}
 	}
 };
@@ -366,7 +375,7 @@ void EntityFactory::add_entities(nlohmann::json& json, const std::string& catego
 	}
 }
 
-entt::entity EntityFactory::create_entity(entt::registry& registry, const std::string& name, Cell* cell)
+entt::entity EntityFactory::create_entity(entt::registry& registry, const std::string& name, const std::optional<Position>& position)
 {
 	Log::log("Creating entity: " + name);
 	if (LUT.find(name) == LUT.end())
@@ -379,14 +388,19 @@ entt::entity EntityFactory::create_entity(entt::registry& registry, const std::s
 		auto it = field_parsers.find(field_name);
 		if (it == field_parsers.end())
 			Log::error("Unknown field name: " + field_name);
+		Log::log("Field name: " + field_name);
 		it->second(registry, entity, field_data);
 	}
 
 	if (!registry.all_of<Category, Subcategory, Name>(entity))
 		Log::error("Entity doesn't have basic components");
 
-	if (cell != nullptr)
-		registry.emplace<Position>(entity, cell);
+	if (position.has_value())
+	{
+		registry.emplace<Position>(entity, *position);
+		if (registry.all_of<Glow>(entity))
+			LightingSystem::reset_lights(registry, position->cave_idx);
+	}
 
 	// always recalculate max hp
 	if (registry.all_of<Attributes>(entity))
@@ -406,6 +420,8 @@ entt::entity EntityFactory::create_entity(entt::registry& registry, const std::s
 				EquipmentSystem::equip(registry, entity, item);
 		}
 	}
+
+	Log::log("Entity created");
 	return entity;
 }
 
