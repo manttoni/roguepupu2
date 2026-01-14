@@ -1,7 +1,7 @@
 #pragma once
 
-#include "entt.hpp"
-#include "Event.hpp"
+#include "domain/Trigger.hpp"
+#include "external/entt/fwd.hpp"
 
 namespace TriggerSystem
 {

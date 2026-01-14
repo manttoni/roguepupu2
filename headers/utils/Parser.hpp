@@ -2,7 +2,9 @@
 
 #include <utility>
 #include "nlohmann/json.hpp"
-#include "Event.hpp"
+#include "domain/Effect.hpp"
+#include "domain/Conditions.hpp"
+#include "domain/Target.hpp"
 
 namespace Parser
 {

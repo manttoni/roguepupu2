@@ -1,7 +1,9 @@
 #pragma once
 
-#include "entt.hpp"
-#include "Event.hpp"
+#include "external/entt/fwd.hpp"
+
+struct Effect;
+struct Target;
 
 namespace EffectSystem
 {

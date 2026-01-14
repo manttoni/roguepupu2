@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Cave.hpp"
-#include "entt.hpp"
 
 class CaveGenerator
 {
@@ -58,10 +57,6 @@ class CaveGenerator
 
 		// Pass time to let water drain or collect in pools
 		void simulate_environment(Cave& cave, const size_t rounds = 1000) const;
-
-		void spawn_entities(const Cave& cave, entt::registry& registry) const;
-
-		// Pass some time with simulate_cave before player comes in
 
 	public:
 		// Construct with conf

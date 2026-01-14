@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cwchar>
-
 namespace Unicode
 {
 	constexpr wchar_t LeftOneEighth		= L'▏';

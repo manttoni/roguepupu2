@@ -1,9 +1,6 @@
 #pragma once
 
-#include <curses.h>       // for init_pair
 #include "Color.hpp"      // for Color
-#include "ColorPair.hpp"  // for ColorPair
-#include "UI.hpp"         // for UI
 
 class ColorPair
 {
@@ -18,7 +15,7 @@ class ColorPair
 		ColorPair() = default;
 		ColorPair(const Color& fg, const Color& bg);
 
-		bool operator==(const ColorPair& other) const;
-		bool operator<(const ColorPair& other) const;
+		bool operator==(const ColorPair& other) const = default;
+		bool operator!=(const ColorPair& other) const = default;
 		short init() const;
 };

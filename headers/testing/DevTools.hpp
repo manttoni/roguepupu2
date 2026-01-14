@@ -1,7 +1,7 @@
 #pragma once
 
-#include "entt.hpp"
-#include "LiquidMixture.hpp"
+#include "domain/Liquid.hpp"
+#include "external/entt/fwd.hpp"
 
 struct Dev
 {

@@ -1,7 +1,8 @@
 #pragma once
 
-#include "entt.hpp"
+#include <cstdint>
 #include "Event.hpp"
+#include "external/entt/fwd.hpp"
 
 namespace AISystem
 {

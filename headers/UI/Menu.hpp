@@ -3,8 +3,8 @@
 #include <ncurses.h>
 #include <panel.h>
 #include <memory>
-#include "Utils.hpp"
 #include "MenuElt.hpp"
+#include "utils/Vec2.hpp"
 
 class Menu
 {
@@ -28,16 +28,15 @@ class Menu
 	public:
 		Menu();
 		Menu(	std::vector<std::unique_ptr<MenuElt>> elements,
-				const Screen::Coord& start,
+				const Vec2& start,
 				void (*loop_cb)() = nullptr);
 		Menu(const Menu& other);
 		Menu& operator=(Menu&& other) noexcept;
 		~Menu();
 
-		// Can return users chosen string from multiple choices
 		std::string loop();
 
-		// MenuNum
+		// MenuNum, remove MenuNum class because might just be useless
 		std::any get_value(const std::string& str) const;
 		void set_value(const std::string& str, std::any value);
 };

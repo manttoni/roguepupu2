@@ -5,11 +5,11 @@
 #include <map>            // for map
 #include <string>         // for string, allocator
 #include <vector>         // for vector
-#include "Color.hpp"      // for Color
-#include "ColorPair.hpp"  // for ColorPair
+#include "domain/Color.hpp"      // for Color
+#include "domain/ColorPair.hpp"  // for ColorPair
 #include "Menu.hpp"       // for Menu
-#include "Utils.hpp"      // for middle, Coord
-#include "entt.hpp"
+#include "utils/Utils.hpp"      // for middle, Coord
+#include "external/entt.hpp"
 
 struct Position;
 class Cave;

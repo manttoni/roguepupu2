@@ -1,6 +1,9 @@
 #pragma once
 
-#include "entt.hpp"
+namespace entt
+{
+	using entity = std::uint32_t;
+};
 
 namespace EntitySpawner
 {

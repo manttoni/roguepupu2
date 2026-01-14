@@ -1,7 +1,7 @@
 #pragma once
 
-#include "entt.hpp"
-class Cell;
+#include <cstdint>
+#include "external/entt/fwd.hpp"
 
 namespace ActionSystem
 {

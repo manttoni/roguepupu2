@@ -1,8 +1,8 @@
 #pragma once
 
-#include "entt.hpp"
-#include "Cave.hpp"
+#include "external/entt/fwd.hpp"
 
+class Cave, Cell;
 namespace LightingSystem
 {
 	void clear_lights(Cave& cave);

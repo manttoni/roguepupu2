@@ -1,9 +1,9 @@
 #pragma once
 
+#include <vector>
 #include <string>     // for string
 #include "Cell.hpp"   // for Cell
 #include "Color.hpp"  // for Color
-#include "Utils.hpp"
 
 class Cave
 {
@@ -39,12 +39,7 @@ class Cave
 		Cave(Cave&& other) = default;
 		Cave& operator=(Cave&& other) = default;
 
-		/* CELL TO CELL */
-		double distance(const Cell &start, const Cell &end) const;
-		double distance(const size_t start_id, const size_t end_id) const;
-
 		std::vector<size_t> get_nearby_ids(const Cell& middle, const double r = 1.5, const Cell::Type type = Cell::Type::None) const;
 		std::vector<size_t> get_nearby_ids(const size_t& middle, const double r = 1.5, const Cell::Type type = Cell::Type::None) const;
-
 		bool neighbor_has_type(const size_t middle, const Cell::Type type) const;
 };

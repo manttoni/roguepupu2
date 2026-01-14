@@ -5,8 +5,9 @@
 #include <limits>
 #include <string>
 #include <filesystem>
-#include "Utils.hpp"
-#include "Parser.hpp"
+#include <cstddef>
+#include "utils/Parser.hpp"
+#include "utils/Vec2.hpp"
 
 struct Location
 {

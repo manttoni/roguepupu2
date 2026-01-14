@@ -2,10 +2,10 @@
 
 #define CELL_DENSITY_MAX 9
 
+#include <limits>
 #include "LiquidMixture.hpp"
 #include "Color.hpp"  // for Color
 
-class ColorPair;
 class Cell
 {
 	private:
@@ -24,7 +24,8 @@ class Cell
 			Sink
 		};
 	public:
-		Type get_type() const {
+		Type get_type() const
+		{
 			if (density == std::numeric_limits<double>::infinity())
 				return Type::Source;
 			if (density == -std::numeric_limits<double>::infinity())
@@ -32,7 +33,12 @@ class Cell
 			return density > 0 ? Type::Rock : Type::Floor;
 		}
 
-	// Probably unused, but can be useful with DevTools
+	private:
+		Color fgcolor, bgcolor;
+	public:
+		Color get_fgcolor() const { return fgcolor; }
+		Color get_bgcolor() const { return bgcolor; }
+
 	private:
 		wchar_t glyph;
 	public:
@@ -42,26 +48,16 @@ class Cell
 	private:
 		double density;
 	public:
-		void set_density(const double d) {
-			this->density = d;
-		}
-		double get_density() const {
-			return density;
-		}
+		void set_density(const double d) { this->density = d; }
+		double get_density() const { return density; }
 		void reduce_density(const double amount);
 
 	private:
 		std::map<Color, size_t> lights;
 	public:
-		auto get_lights() const {
-			return lights;
-		}
-		void add_light(const Color& color) {
-			lights[color]++;
-		}
-		void clear_lights() {
-			lights.clear();
-		}
+		auto get_lights() const { return lights; }
+		void add_light(const Color& color) { lights[color]++; }
+		void clear_lights() { lights.clear(); }
 
 	private:
 		LiquidMixture liquid_mixture;
@@ -70,12 +66,6 @@ class Cell
 		void clear_liquids() { liquid_mixture = LiquidMixture{}; }
 		LiquidMixture& get_liquid_mixture() { return liquid_mixture; }
 		const LiquidMixture& get_liquid_mixture() const { return liquid_mixture; }
-
-	private:
-		bool seen;
-	public:
-		bool is_seen() const { return seen; }
-		void set_seen(const bool seen) { this->seen = seen; }
 
 	public:
 		Cell(const size_t idx, const Cell::Type type = Cell::Type::Rock);

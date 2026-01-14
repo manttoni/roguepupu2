@@ -1,7 +1,6 @@
 #pragma once
 
-#include <string>
-#include "entt.hpp"
+#include "external/entt/fwd.hpp"
 
 namespace EquipmentSystem
 {

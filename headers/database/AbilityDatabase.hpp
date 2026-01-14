@@ -4,9 +4,9 @@
 #include <filesystem>
 #include <map>
 #include <fstream>
-#include "Event.hpp"
 #include "nlohmann/json.hpp"
-#include "Utils.hpp"
+
+struct Ability;
 class AbilityDatabase
 {
 	private:

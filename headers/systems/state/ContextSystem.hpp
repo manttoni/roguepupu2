@@ -1,9 +1,8 @@
 #pragma once
 
-#include "entt.hpp"
-class Cell;
-struct Position;
+#include "external/entt/fwd.hpp"
 
+struct Position;
 namespace ContextSystem
 {
 	void show_entity_details(entt::registry& registry, const entt::entity entity, const entt::entity owner = entt::null);

@@ -9,7 +9,7 @@
 #include <typeinfo>     // for type_info
 #include <utility>      // for pair
 #include "MenuElt.hpp"  // for MenuElt
-#include "Utils.hpp"    // for error
+#include "utils/Utils.hpp"    // for error
 
 template <typename T>
 class MenuNum : public MenuElt

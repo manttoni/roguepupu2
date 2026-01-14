@@ -1,7 +1,7 @@
 #pragma once
 
-#include "entt.hpp"
-#include "ColorPair.hpp"
+#include "domain/ColorPair.hpp"
+#include "external/entt/fwd.hpp"
 
 #define TRESHOLD_LIQUID_BGCOLOR 0.0
 #define TRESHOLD_LIQUID_FGCOLOR 0.0

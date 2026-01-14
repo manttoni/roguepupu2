@@ -1,56 +1,63 @@
 #pragma once
 
-#include <string>     // for basic_string, string
-#include "Color.hpp"  // for Color
-#include "entt.hpp"   // for null, null_t, entity, vector
-#include "Utils.hpp"
-#include "LiquidMixture.hpp"
-#include "Liquid.hpp"
-class Cell;
-struct Intent;
-struct Ability;
-struct Trigger;
-struct Event;
+#include <string>
+#include <map>
+#include <vector>
+#include <optional>
+#include "utils/Log.hpp"
+#include "domain/Color.hpp"
+#include "domain/Intent.hpp"
+#include "domain/Ability.hpp"
+#include "domain/Trigger.hpp"
+#include "external/entt/fwd.hpp"
 
+/* Core components */
+struct Name { std::string name; }; // id
+struct Category { std::string category; }; // data/entities/category/subcategory.json
+struct Subcategory { std::string subcategory; };
+
+/* Optional components... */
+/* Physical */
 struct Solid {};
 struct Opaque {};
-struct Player {};
-struct Landmark {};
-struct Hidden {};
-struct Invisible {};
+struct Landmark {}; // probably unused
+struct Size { double size = 0.0; };
+struct Weight { double weight; };
 
-struct Name { std::string name; };
-struct Position
-{
-	size_t cell_idx;
-	size_t cave_idx;
-
-	bool operator==(const Position& other) const = default;
-};
+/* Rendering */
 struct Glyph { wchar_t glyph; };
-
 struct FGColor { Color color; };
 struct BGColor { Color color; };
 
+/* State */
 struct Vision { double range; };
-struct Weight { double weight; };
-struct Faction { std::string faction; };
+struct Hidden {};
+struct Invisible {};
+struct Experience { size_t amount; }	// Derived: level
+struct Dead { size_t turn_number; };
 
-struct Category { std::string category; };
-struct Subcategory { std::string subcategory; };
+// combat system, needs more planning
+struct Strength { int value; }			// Derived: damage with blunt, stamina loss
+struct Dexterity { int value; }			// Derived: damage with sharp, stamina loss
+struct Intelligence { int value; }		// Derived: ?
+struct Vitality { int value; }			// Derived: max_health
+struct Endurance { int value; }			// Derived: max_stamina
+struct Willpower { int value; }			// Derived: max_mana
 
-struct Glow { double strength, radius; };
-struct Level { int level; };
-struct Attributes
+struct Health { int current; }
+struct Stamina { int current; }
+struct Mana { int current; }
+
+struct EquipmentSlots
 {
-	int strength;
-	int dexterity;
-	int intelligence;
+	std::map<Equipment::Slot, std::optional<entt::entity>> slots;
 };
-struct Resources
+struct Inventory
 {
-	int health, fatigue, mana;
+	std::vector<entt::entity> inventory;
 };
+
+/* Equipment, weapons etc... */
 struct Equipment
 {
 	enum class Slot
@@ -78,36 +85,6 @@ struct Equipment
 	}
 	Slot slot;
 };
-struct EquipmentSlots
-{
-	std::map<Equipment::Slot, std::optional<entt::entity>> slots;
-};
-struct Inventory
-{
-	std::vector<entt::entity> inventory;
-};
-struct Transition
-{
-	entt::entity destination = entt::null;
-};
-struct AI
-{
-	std::vector<Intent> intentions;
-};
-struct Abilities
-{
-	std::map<std::string, Ability> abilities;
-};
-struct Triggers
-{
-	std::vector<Trigger> triggers;
-};
-
-struct EventQueue
-{
-	std::vector<Event> queue;
-};
-
 struct Tool
 {
 	enum class Type
@@ -133,7 +110,10 @@ struct Tool
 	}
 	Type type;
 };
+struct Edge { double sharpness; };	// Derived: damage
+struct Throwable { double range = 0.0; };
 
+/* Crafting related */
 struct Gatherable
 {
 	Tool::Type tool_type;
@@ -141,32 +121,35 @@ struct Gatherable
 	size_t amount;
 };
 
-struct Dead
-{
-	size_t turn_number;
-};
-
-struct BaseLocation
+/* Faction, bases, home */
+struct Faction { std::string faction; }; // needs planning
+struct BaseLocation // spawnpoint
 {
 	size_t idx;
 	double radius;
 };
 
-struct Edge
+/* Light */
+struct Glow { double strength, radius; };
+
+/* Other */
+struct Transition
 {
-	double edge;
+	entt::entity destination = entt::null;
+};
+struct AI // Intent structs in order of priority
+{
+	std::vector<Intent> intentions;
+};
+struct Abilities
+{
+	std::map<std::string, Ability> abilities;
+};
+struct Triggers
+{
+	std::vector<Trigger> triggers;
 };
 
-struct Throwable {};
 
-struct LiquidSource
-{
-	Liquid::Type type = Liquid::Type::None;
-	double rate = 0.0;
-	double volume_left = std::numeric_limits<double>::infinity();
-};
 
-struct Size
-{
-	double size = 0.0;
-};
+

@@ -1,7 +1,9 @@
 #pragma once
 
-#include "entt.hpp"
-#include "Event.hpp"
+#include <cstdint>
+#include "external/entt/fwd.hpp"
+
+struct Conditions;
 
 namespace ConditionSystem
 {
