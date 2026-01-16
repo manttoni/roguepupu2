@@ -29,11 +29,9 @@
 		"triggers": [
 			{
 				"type": "gather",
-				"target": {
-					"type": "self"
-				},
+				"target": "self",
 				"effect": {
-					"type": "destroy_entity"
+					"type": "destroy"
 				}
 			}
 		],
@@ -59,7 +57,6 @@
 				"amount": "1-10"
 			}
 		},
-		"landmark": true,
 		"weight": 20,
 		"gatherable": {
 			"tool": "felling",
@@ -69,11 +66,9 @@
 		"triggers": [
 			{
 				"type": "gather",
-				"target": {
-					"type": "self"
-				},
+				"target": "self",
 				"effect": {
-					"type": "destroy_entity"
+					"type": "destroy"
 				}
 			}
 		],

@@ -1,0 +1,11 @@
+{
+	"glass bottle": {
+		"glyph": "𐃰",
+		"liquid_container": {
+			"volume": 0.5
+		},
+		"size": 0.6,
+		"weight": 0.1,
+		"health": 1
+	}
+}

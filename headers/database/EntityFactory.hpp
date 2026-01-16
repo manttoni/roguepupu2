@@ -30,4 +30,5 @@ class EntityFactory
 		void add_entities(nlohmann::json& json, const std::string& category, const std::string& subcategory);
 		void init();
 		void read_definitions(const std::filesystem::path& path);
+		entt::entity create_potion(entt::registry& registry, const LiquidMixture& lm);
 };

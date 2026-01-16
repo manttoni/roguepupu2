@@ -1,22 +1,36 @@
 #pragma once
 
 #include "Effect.hpp"
-#include "Target.hpp"
+#include "Actor.hpp"
 #include "Conditions.hpp"
-#include "Event.hpp"
+
+/* Triggers are owned by entities
+ * When Trigger::Type happens to that entity,
+ * effect will happen to target if conditions are true
+ *
+ * Trigger is similar to ability
+ *
+ * When parsing from json:
+ * - self = owner of trigger
+ * - actor = triggerer
+ * - self_cell = cell of owner
+ * - actor_cell = cell of triggerer
+ * */
 
 struct Trigger
 {
-	// Check conditions when this type of event happens to the owner of this Trigger
-	// Examples:
-	// Type = gather, conditions = none, effect = destroy entity, target = self
-	// When owned by a mushroom, it will get destoyed when something gathers from it
-	// Type = gather, conditions = none, effect = gain xp, target = self
-	// When owned by player, gain xp when gathering from anything
-	// Type = EnterCell, conditions = weight > x, effect = create_entity, spike, target = cell
-	// When something heavier than x enters cell of owner of this trigger, create a spike on the cell
-	Event::Type type = Event::Type::None;
-	Conditions conditions{};	// If these conditions are true
-	Effect effect{};			// This effect will happen
-	Target target{};			// To this target
+	enum class Type
+	{
+		None,
+		Gather,		// triggers when owner gathers or is gathered from
+		EnterCell,	// triggers when something enters the same cell as owner
+		Destroy,	// triggers when owner is destroyed
+		Create,		// triggers when owner is created
+		Damage,		// triggers when owner is damaged
+		Light,		// triggers when owner is illuminated by light
+		Ignite,		// triggers when owner is ignited
+	};
+	Conditions conditions{};
+	Effect effect{};
+	Actor target{};
 };

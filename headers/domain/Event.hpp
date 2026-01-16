@@ -1,19 +1,21 @@
 #pragma once
 
-#include "external/entt/fwd.hpp"
-#include <optional>
-#include "Position.hpp"
+#include "Actor.hpp"
+#include "Effect.hpp"
+
+/* Describes something that has happaned
+ * "actor causes effect on target"
+ * Can be logged as a message
+ * "Rabdin crafts something"
+ * "Rabdin ignites goblin"
+ * "Rabdin moves"
+ *
+ * Target can also be an area around target.position
+ * */
 
 struct Event
 {
-	enum class Type
-	{
-		None,
-		Move,
-		Gather,
-	};
-
-	Type type = Type::None;
-	std::optional<entt::entity> gatherable;
-	std::optional<Position> move_from, move_to;
+	Actor actor{};		// who/what does from where
+	Effect effect{};	// what they do
+	Actor target{};		// to who/what/where
 };

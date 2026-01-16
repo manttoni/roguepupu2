@@ -60,6 +60,23 @@ class Cell
 		void clear_lights() { lights.clear(); }
 
 	private:
+		// what liquids are flowing into the cave from this source
+		// not used for non-source cells unless some condensation effect is implemented
+		LiquidMixture liquid_source;
+	public:
+		void set_liquid_source(const LiquidMixture& liquid_source)
+		{
+			assert(get_type() == Type::Source);
+			this->liquid_source = liquid_source;
+		}
+		LiquidMixture get_liquid_source() const
+		{
+			assert(get_type() == Type::Source);
+			return liquid_source;
+		}
+
+	private:
+		// what liquids are now in this cell
 		LiquidMixture liquid_mixture;
 	public:
 		double get_liquid_level() const;
