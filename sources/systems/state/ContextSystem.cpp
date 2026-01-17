@@ -1,14 +1,13 @@
 #include <format>
-#include "systems/PositionSystem.hpp"
-#include "systems/GatheringSystem.hpp"
-#include "systems/ContextSystem.hpp"
-#include "systems/InventorySystem.hpp"
-#include "systems/EquipmentSystem.hpp"
-#include "ECS.hpp"
-#include "UI.hpp"
-#include "Utils.hpp"
-#include "Components.hpp"
-#include "Cell.hpp"
+#include "external/entt/entity/handle.hpp"
+#include "systems/position/PositionSystem.hpp"
+#include "systems/crafting/GatheringSystem.hpp"
+#include "systems/state/ContextSystem.hpp"
+#include "systems/state/InventorySystem.hpp"
+#include "systems/state/EquipmentSystem.hpp"
+#include "utils/ECS.hpp"
+#include "UI/UI.hpp"
+#include "components/Components.hpp"
 
 #define MELEE_RANGE 1.5
 
@@ -16,7 +15,7 @@ namespace ContextSystem
 {
 	std::vector<std::string> get_details(const entt::registry& registry, const entt::entity entity)
 	{
-		const auto& info = ECS::get_info(registry, entity);
+		/*const auto& info = ECS::get_info(registry, entity);
 		size_t leftcol = 0;
 		size_t rightcol = 0;
 		for (const auto& [left, right] : info)
@@ -29,7 +28,9 @@ namespace ContextSystem
 		{
 			const std::string line = std::format("{: <{}} : {: >{}}", left, leftcol, right, rightcol);
 			details.push_back(Utils::capitalize(line));
-		}
+		}*/
+		std::vector<std::string> details = { ECS::get_colored_name(registry, entity) };
+
 		return details;
 	}
 	std::vector<std::string> get_options(const entt::registry& registry, const entt::entity entity, const entt::entity owner)
@@ -119,10 +120,10 @@ namespace ContextSystem
 	void show_entities_list(entt::registry& registry, const entt::entity owner)
 	{
 		if (!registry.all_of<Inventory>(owner)) return;
-		while (!ECS::get_inventory(registry, owner).empty())
-			if (show_entities_list(registry, ECS::get_inventory(registry, owner), owner) == true)
+		while (!registry.get<Inventory>(owner).inventory.empty())
+			if (show_entities_list(registry, registry.get<Inventory>(owner).inventory, owner) == true)
 				break;
-		if (ECS::get_inventory(registry, owner).empty())
+		if (registry.get<Inventory>(owner).inventory.empty())
 			UI::instance().dialog("No items", {"Back"}, Screen::topleft());
 	}
 	void show_entities_list(entt::registry& registry, const Position& position)

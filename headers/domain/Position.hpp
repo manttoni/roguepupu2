@@ -1,10 +1,11 @@
 #pragma once
 
 #include <climits>
+#include <cstdint>
 
 struct Position
 {
-	constexpr size_t invalid_id = SIZE_MAX;
+	static constexpr size_t invalid_id = SIZE_MAX;
 	size_t cell_idx = invalid_id;
 	size_t cave_idx = invalid_id;
 

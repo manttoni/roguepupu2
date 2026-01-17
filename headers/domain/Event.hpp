@@ -15,7 +15,9 @@
 
 struct Event
 {
-	Actor actor{};		// who/what does from where
+	Actor actor;		// who/what does from where
 	Effect effect{};	// what they do
-	Actor target{};		// to who/what/where
+	Actor target;		// to who/what/where
+
+
 };

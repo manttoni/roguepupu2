@@ -3,8 +3,8 @@
 #include <utility>
 #include <string>
 #include <map>
-#include "Color.hpp"
-#include "Utils.hpp"
+#include "domain/Color.hpp"
+#include "utils/Log.hpp"
 
 struct Liquid
 {

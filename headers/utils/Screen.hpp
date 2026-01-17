@@ -1,12 +1,12 @@
-#pragme once
+#pragma once
 
 #include <ncurses.h>
-#include "Vec2.hpp"
+#include "utils/Vec2.hpp"
 
 namespace Screen
 {
-	inline size_t height()	{ return static_cast<size_t>(LINES); }
-	inline size_t width()	{ return static_cast<size_t>(COLS); }
+	inline int height()	{ return LINES; }
+	inline int width()	{ return COLS; }
 
 	inline Vec2 bot()			{ return { height(), width() / 2 }; }
 	inline Vec2 botleft()		{ return { height(), 0 }; }

@@ -5,6 +5,7 @@
 struct Vec2
 {
 	int y, x;
+	Vec2() : y(0), x(0) {}
 	Vec2(const int y, const int x) : y(y), x(x) {}
 	explicit Vec2(const size_t idx, const size_t size) :
 		y(static_cast<int>(idx / size)),

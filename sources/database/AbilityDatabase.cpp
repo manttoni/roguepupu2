@@ -1,7 +1,8 @@
 #include <string>
 #include <filesystem>
 #include "utils/Parser.hpp"
-#include "systems/AbilityDatabase.hpp"
+#include "utils/Log.hpp"
+#include "database/AbilityDatabase.hpp"
 
 AbilityDatabase::AbilityDatabase()
 {
@@ -44,14 +45,13 @@ void AbilityDatabase::add_abilities(nlohmann::json& definitions, const std::stri
 {
 	for (const auto& [id, data] : definitions.items())
 	{
-		Ability ability = {.id = id};
-		if (category == "innate")
-			ability.type = Ability::Type::Innate;
-		else if (category == "spell")
-			ability.type = Ability::Type::Spell;
-		ability.cooldown = data.contains("cooldown") ? data["cooldown"].get<size_t>() : 0;
+		Ability ability;
+		ability.id = id;
+		if (category == "innate" || (data.contains("innate") && data["innate"].get<bool>() == true))
+			ability.innate = true;
+		if (data.contains("cooldown"))
+			ability.cooldown = data["cooldown"].get<size_t>();
 		ability.effect = Parser::parse_effect(data["effect"]);
-		ability.target = Parser::parse_target(data["target"]);
 		abilities[id] = ability;
 	}
 }

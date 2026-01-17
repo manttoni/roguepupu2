@@ -20,12 +20,6 @@ short ColorPair::init() const
 	UI::instance().set_initialized_color_pair(*this, pair_id);
 	return pair_id;
 }
-
-bool ColorPair::operator==(const ColorPair& other) const
-{
-	return fg == other.fg && bg == other.bg;
-}
-
 bool ColorPair::operator<(const ColorPair& other) const
 {
 	if (fg != other.fg)

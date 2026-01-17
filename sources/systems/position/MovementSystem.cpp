@@ -1,27 +1,20 @@
-#include <curses.h>                    // for KEY_DOWN, KEY_LEFT, KEY_RIGHT
-#include "ECS.hpp"
-#include "Cave.hpp"                    // for Cave
-#include "Cell.hpp"                    // for Cell
-#include "Components.hpp"              // for Position
-#include "Utils.hpp"                   // for Vec2
-#include "entt.hpp"                    // for size_t, map, entity, registry
-#include "systems/MovementSystem.hpp"  // for move, movement_key_pressed
-#include "systems/ActionSystem.hpp"
+#include <vector>
+#include "utils/ECS.hpp"
+#include "external/entt/entt.hpp"
+#include "systems/position/PositionSystem.hpp"
+#include "systems/position/MovementSystem.hpp"
+#include "domain/Cell.hpp"
+#include "domain/Cave.hpp"
+
+#define MELEE_RANGE 1.5
 
 namespace MovementSystem
 {
-	std::vector<size_t> find_path(Cell& start, Cell& end)
+	std::vector<size_t> find_path(const Cave& cave, const size_t start, const size_t end, const bool allow_blocked_end)
 	{
-		if (start.get_cave() != end.get_cave())
-			return {};
-		return find_path(start.get_cave(), start.get_idx(), end.get_idx());
-	}
-
-	std::vector<size_t> find_path(Cave* cave, const size_t start, const size_t end, const bool allow_blocked_end)
-	{
-		if (cave == nullptr || start >= cave->get_size() || end >= cave->get_size())
-			Log::error("Cave::find_path: invalid arguments");
-		if (allow_blocked_end == false && cave->get_cell(end).blocks_movement())
+		if (start >= cave.get_size() || end >= cave.get_size())
+			Log::error("Find path idx out of bounds");
+		if (allow_blocked_end == false && cave.get_cell(end).get_type() == Cell::Type::Rock)
 			return {};
 		std::vector<size_t> open_set = { start };
 		std::map<size_t, size_t> came_from;
@@ -29,7 +22,7 @@ namespace MovementSystem
 		std::map<size_t, double> f_score;
 
 		g_score[start] = 0;
-		f_score[start] = cave->distance(start, end);
+		f_score[start] = cave.distance(start, end);
 
 		while (!open_set.empty())
 		{
@@ -41,7 +34,7 @@ namespace MovementSystem
 			}
 
 			if (current_idx == end ||
-				(allow_blocked_end == true && cave->distance(current_idx, end) < MELEE_RANGE))
+				(allow_blocked_end == true && cave.distance(current_idx, end) < MELEE_RANGE))
 			{	// found optimal path from start to end
 				std::vector<size_t> path;
 				path.push_back(current_idx);
@@ -54,20 +47,21 @@ namespace MovementSystem
 				return path;
 			}
 
-			Utils::remove_element(open_set, current_idx);
-			for (const size_t neighbor_idx : cave->get_nearby_ids(current_idx, 1.5))
+			open_set.erase(std::find(open_set.begin(), open_set.end(), current_idx)); // is found
+			for (const size_t neighbor_idx : cave.get_nearby_ids(current_idx, 1.5))
 			{
-				if (!can_move(*cave, current_idx, neighbor_idx))
+				if (!can_move(cave, current_idx, neighbor_idx))
 					continue;
-				double tentative_g_score = g_score[current_idx] + cave->distance(current_idx, neighbor_idx);
+				double tentative_g_score = g_score[current_idx] + cave.distance(current_idx, neighbor_idx);
 				if (g_score.count(neighbor_idx) == 0)
 					g_score[neighbor_idx] = std::numeric_limits<double>::infinity();
 				if (tentative_g_score < g_score[neighbor_idx])
 				{
 					came_from[neighbor_idx] = current_idx;
 					g_score[neighbor_idx] = tentative_g_score;
-					f_score[neighbor_idx] = tentative_g_score + cave->distance(neighbor_idx, end);
-					if (!Utils::contains(open_set, neighbor_idx))
+					f_score[neighbor_idx] = tentative_g_score + cave.distance(neighbor_idx, end);
+					auto it = std::find(open_set.begin(), open_set.end(), neighbor_idx);
+					if (it == open_set.end())
 						open_set.push_back(neighbor_idx);
 				}
 			}
@@ -75,23 +69,29 @@ namespace MovementSystem
 		return {};
 	}
 
-	Cell* get_first_step(const entt::registry& registry, const entt::entity entity, Cell& dst)
+	std::vector<size_t> find_path(const entt::registry& registry, const Position& start, const Position& end, const bool allow_blocked_end)
 	{
-		Cell& src = *ECS::get_cell(registry, entity);
-		const auto path = find_path(src, dst);
-		if (path.empty())
-			return nullptr;
-		return &src.get_cave()->get_cell(path[1]);
+		if (start.cave_idx != end.cave_idx)
+			return {};
+		const auto& cave = PositionSystem::get_cave(registry, start);
+		return find_path(cave, start.cell_idx, end.cell_idx, allow_blocked_end);
 	}
 
-	void move(entt::registry& registry, const Actor& actor, const Target& target)
+	Position get_first_step(const entt::registry& registry, const Position& start, const Position& end)
 	{
-		registry.emplace_or_replace<Position>(actor.entity, target.position);
-		ECS::add_event(registry, {
-				.type = Event::Type::Move,
-				.actor = actor,
-				.target = target
-				});
+		const auto path = find_path(registry, start, end);
+		assert(!path.empty() && "asking for non-existent first step");
+		return Position(path[1], start.cave_idx);
+	}
+
+	void move(entt::registry& registry, const entt::entity entity, const Position& position)
+	{
+		registry.emplace_or_replace<Position>(entity, position);
+		Event move_event;
+		move_event.actor.entity = entity;
+		move_event.effect.type = Effect::Type::Move;
+		move_event.target.position = position;
+		ECS::queue_event(registry, move_event);
 	}
 
 	bool can_move(Cave& cave, const size_t from_idx, const size_t to_idx)

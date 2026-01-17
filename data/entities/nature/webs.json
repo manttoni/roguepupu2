@@ -5,11 +5,8 @@
 		"triggers": [
 			{
 				"type": "enter_cell",
-				"target": {
-					"type": "self"
-				},
 				"effect": {
-					"type": "destroy_entity"
+					"type": "self_destruct"
 				},
 				"conditions": {
 					"weight_min": 0.1,

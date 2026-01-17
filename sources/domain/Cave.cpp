@@ -1,8 +1,10 @@
 #include <string>          // for basic_string, string
 #include <vector>
-#include <math>
+#include <cmath>
+#include <cassert>
+#include "utils/Vec2.hpp"
 #include "domain/Cave.hpp"        // for Cave
-#include "comain/Cell.hpp"        // for Cell
+#include "domain/Cell.hpp"        // for Cell
 
 Cave::Cave(const size_t size, const Cell::Type fill) : size(size)
 {
@@ -14,14 +16,12 @@ std::vector<size_t> Cave::get_nearby_ids(const Cell& middle, const double r, con
 {
 	return get_nearby_ids(middle.get_idx(), r, type);
 }
-double Cave::distance(const size_t a, const size_t b)
+double Cave::distance(const size_t a, const size_t b) const
 {
-	int start_y = start_id / width;
-	int start_x = start_id % width;
-	int end_y = end_id / width;
-	int end_x = end_id % width;
-
-	return std::hypot(start_y - end_y, start_x - end_x);
+	assert(a < size && b < size);
+	const Vec2 start(a, size);
+	const Vec2 end(b, size);
+	return std::hypot(start.y - end.y, start.x - end.x);
 }
 
 // use with r = 1.5 to get neighbors
@@ -78,3 +78,8 @@ bool Cave::neighbor_has_type(const size_t idx, const Cell::Type type) const
 	return false;
 }
 
+void Cave::clear_lights()
+{
+	for (auto& cell : cells)
+		cell.clear_lights();
+}

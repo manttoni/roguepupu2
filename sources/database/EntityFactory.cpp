@@ -5,14 +5,16 @@
 #include <nlohmann/json.hpp>                              // for basic_json
 #include <regex>                                          // for regex_match
 #include <string>                                         // for string, ope...
-#include "domain/Color.hpp"                                      // for Color
+#include "systems/state/StateSystem.hpp"
 #include "components/Components.hpp"                                 // for Resources
-#include "generation/EntityFactory.hpp"                              // for EntityFactory
-#include "systems/EquipmentSystem.hpp"                    // for equip
-#include "systems/ActionSystem.hpp"
-#include "systems/LightingSystem.hpp"
 #include "database/AbilityDatabase.hpp"
+#include "database/EntityFactory.hpp"                              // for EntityFactory
+#include "domain/Color.hpp"                                      // for Color
 #include "utils/Parser.hpp"
+#include "utils/Random.hpp"
+#include "external/entt/entt.hpp"
+#include "utils/ECS.hpp"
+#include "domain/Event.hpp"
 
 #define CELL_SIZE 5
 #define MELEE_RANGE 1.5
@@ -69,7 +71,7 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 	},
 	{ "opaque", [](auto& reg, auto e, const nlohmann::json& data)
 		{
-			if (!data.is_number() || data.get<double>() < 0 || data.get<double() > 1)
+			if (!data.is_number() || data.get<double>() < 0 || data.get<double>() > 1)
 				Log::error("Opaqueness should be number [0,1]");
 			reg.template emplace<Opaque>(e, data.get<double>());
 		}
@@ -209,7 +211,9 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 		{
 			if (!data.is_number() || data.get<int>() < 0)
 				Log::error("Level should be positive integer: " + data.dump(4));
-			reg.template emplace<Level>(e, data.get<int>());
+
+			const size_t xp = StateSystem::level_to_xp(data["level"].get<size_t>());
+			reg.template emplace<Experience>(e, xp);
 		}
 	},
 	{ "abilities", [](auto& reg, auto e, const nlohmann::json& data)
@@ -288,8 +292,6 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 					trigger.effect = Parser::parse_effect(entry["effect"]);
 				if (entry.contains("conditions"))
 					trigger.conditions = Parser::parse_conditions(entry["conditions"]);
-				if (entry.contains("target"))
-					trigger.target = Parser::parse_target(entry["target"]);
 				triggers.push_back(trigger);
 			}
 			reg.template emplace<Triggers>(e, triggers);
@@ -336,18 +338,6 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 				Log::error("Throwable value type error");
 			if (data.get<bool>() == true)
 				reg.template emplace<Throwable>(e);
-		}
-	},
-	{ "liquid_source", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			if (!data.is_object())
-				Log::error("liquid_source not an object: " + data.dump(4));
-			reg.template emplace<LiquidSource>(e);
-			auto& ls = reg.template get<LiquidSource>(e);
-			if (data.contains("type"))
-				ls.type = Liquid::from_string(data["type"].get<std::string>());
-			if (data.contains("rate"))
-				ls.rate = data["rate"].get<double>();
 		}
 	},
 	{ "size", [](auto& reg, auto e, const nlohmann::json& data)
@@ -403,18 +393,11 @@ entt::entity EntityFactory::create_entity(entt::registry& registry, const std::s
 	if (position.has_value())
 	{
 		registry.emplace<Position>(entity, *position);
-		if (registry.all_of<Glow>(entity))
-			LightingSystem::reset_lights(registry, position->cave_idx);
-	}
-
-	// Equip items
-	if (registry.all_of<Inventory>(entity))
-	{
-		for (const auto item : registry.get<Inventory>(entity).inventory)
-		{
-			if (registry.all_of<Equipment>(item))
-				EquipmentSystem::equip(registry, entity, item);
-		}
+		Event spawn_event;
+		spawn_event.effect.type = Effect::Type::Spawn;
+		spawn_event.target.entity = entity;
+		spawn_event.target.position = *position;
+		ECS::queue_event(registry, spawn_event);
 	}
 
 	Log::log("Entity created");

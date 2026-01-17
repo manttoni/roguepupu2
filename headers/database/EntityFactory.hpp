@@ -9,6 +9,7 @@
 #include <cstddef>
 #include "domain/Position.hpp"
 #include "external/entt/fwd.hpp"
+#include "domain/LiquidMixture.hpp"
 
 class EntityFactory
 {

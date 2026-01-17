@@ -1,41 +1,36 @@
 # Compiler and flags
 CXX := g++
 CXXFLAGS := -Wall -Wextra -Werror -Iheaders -MMD -MP -std=c++20 -flarge-source-files -g -O3
-
 LDFLAGS := -lncursesw -lpanelw -lm
 
 # Directories
 SRC_DIR := sources
-SYSTEMS_DIR := sources/systems
 OBJ_DIR := build
 BIN := roguepupu2
 
-# Find all .c files in sources directory
-SRCS := $(wildcard $(SRC_DIR)/*.cpp)
-# Add files in sources/systems/
-SRCS += $(wildcard $(SYSTEMS_DIR)/*.cpp)
+# Source files (recursive)
+SRCS := $(shell find $(SRC_DIR) -name '*.cpp')
 
-# Create corresponding .o filenames in build/
-OBJS := $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SRCS))
+# Object files in build/
+OBJS := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRCS))
 
-# Depending on headers
+# Dependencies
 DEP := $(OBJS:.o=.d)
 
 # Default target
 all: $(BIN)
 
-# Link object files into binary
+# Link binary
 $(BIN): $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 	@mkdir -p logs
 
-# Compile source files into object files
+# Compile object files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
-	@mkdir -p $(OBJ_DIR)
-	@mkdir -p $(OBJ_DIR)/systems
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-# Clean build files
+# Clean
 clean:
 	rm -rf $(OBJ_DIR)
 
@@ -49,3 +44,4 @@ re: fclean all
 .PHONY: all clean fclean re
 
 -include $(DEP)
+

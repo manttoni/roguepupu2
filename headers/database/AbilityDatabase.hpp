@@ -5,8 +5,8 @@
 #include <map>
 #include <fstream>
 #include "nlohmann/json.hpp"
+#include "domain/Ability.hpp"
 
-struct Ability;
 class AbilityDatabase
 {
 	private:

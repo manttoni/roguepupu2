@@ -1,34 +1,38 @@
-#include "systems/LightingSystem.hpp"
+#include "external/entt/entt.hpp"
+#include "systems/perception/VisionSystem.hpp"
+#include "systems/position/PositionSystem.hpp"
+#include "systems/rendering/LightingSystem.hpp"
+#include "components/Components.hpp"
+#include "domain/Color.hpp"
+#include "domain/Cave.hpp"
+#include "domain/Cell.hpp"
 
 namespace LightingSystem
 {
-	void apply_lights(const entt::registry& registry, const size_t cave_idx)
+	void apply_lights(entt::registry& registry, const size_t cave_idx)
 	{
-		auto& world = registry.ctx().get<World>();
-		auto& cave = world.get_cave(cave_idx);
-		auto& cells = cave.get_cells();
-		for (const auto entity : cave.get_cache())
+		auto& cave = PositionSystem::get_cave(registry, cave_idx);
+		for (const auto entity : registry.view<Glow, Position, FGColor>())
 		{
-			if (!registry.all_of<Glow, Position, Color>(entity))
-				continue;
-
 			const auto& [glow, position, color] = registry.get<Glow, Position, FGColor>(entity);
+			if (position.cave_idx != cave_idx)
+				continue;
 			Color glow_color = color.color * glow.strength;
 
-			for (const auto affected_idx : cave.get_nearby_ids(*position.cell, glow.radius))
+			for (const auto affected_idx : cave.get_nearby_ids(position.cell_idx, glow.radius))
 			{
-				if (!VisionSystem::has_line_of_sight(cells[affected_idx], *position.cell))
+				const Position affected_position(affected_idx, cave_idx);
+				if (!VisionSystem::has_line_of_sight(registry, affected_position, position))
 					continue;
 
-				cells[affected_idx].add_light(glow_color);
+				cave.get_cell(affected_idx).add_light(glow_color);
 			}
 		}
 	}
 
-	void reset_lights(const entt::registry& registry, const size_t cave_idx)
+	void reset_lights(entt::registry& registry, const size_t cave_idx)
 	{
-		auto& world = registry.ctx().get<World>();
-		auto& cave = world.get_cave(cave_idx);
+		auto& cave = PositionSystem::get_cave(registry, cave_idx);
 		cave.clear_lights();
 		apply_lights(registry, cave_idx);
 	}

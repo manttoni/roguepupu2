@@ -7,14 +7,7 @@
 /* Triggers are owned by entities
  * When Trigger::Type happens to that entity,
  * effect will happen to target if conditions are true
- *
- * Trigger is similar to ability
- *
- * When parsing from json:
- * - self = owner of trigger
- * - actor = triggerer
- * - self_cell = cell of owner
- * - actor_cell = cell of triggerer
+ * Target is usually triggerer, but can be self.
  * */
 
 struct Trigger
@@ -30,7 +23,7 @@ struct Trigger
 		Light,		// triggers when owner is illuminated by light
 		Ignite,		// triggers when owner is ignited
 	};
+	Type type = Type::None;
 	Conditions conditions{};
 	Effect effect{};
-	Actor target{};
 };

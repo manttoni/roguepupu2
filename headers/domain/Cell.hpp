@@ -3,6 +3,7 @@
 #define CELL_DENSITY_MAX 9
 
 #include <limits>
+#include <cassert>
 #include "LiquidMixture.hpp"
 #include "Color.hpp"  // for Color
 

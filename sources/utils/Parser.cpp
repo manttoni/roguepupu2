@@ -26,14 +26,10 @@ namespace Parser
 				effect.type = Effect::Type::Transition;
 			else if (type == "destroy_entity")
 				effect.type = Effect::Type::DestroyEntity;
-			else if (type == "set_fgcolor")
-				effect.type = Effect::Type::SetFGColor;
 			else Log::error("Uknown effect type: " + type);
 		}
 		if (data.contains("entity_id"))
 			effect.entity_id = data["entity_id"].get<std::string>();
-		if (data.contains("fgcolor"))
-			effect.fgcolor = parse_color(data["fgcolor"]);
 		return effect;
 	}
 	Conditions parse_conditions(const nlohmann::json& data)

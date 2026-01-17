@@ -4,9 +4,9 @@
 #define TRESHOLD_LIQUID_MEDIUM 0.5
 #define TRESHOLD_LIQUID_SHALLOW 0.0
 
-#include "Color.hpp"
-#include "ColorPair.hpp"
-#include "Liquid.hpp"
+#include <map>
+#include "domain/Color.hpp"
+#include "domain/Liquid.hpp"
 
 class LiquidMixture
 {
@@ -26,8 +26,5 @@ class LiquidMixture
 		void add_liquid(const Liquid::Type type, const double volume);
 		double get_volume(const Liquid::Type type = Liquid::Type::None) const;
 		double get_viscosity() const;
-		ColorPair get_color_pair() const;
-		Color get_fgcolor() const;
-		Color get_bgcolor() const;
-		wchar_t get_glyph() const;
+		Color get_color() const;
 };

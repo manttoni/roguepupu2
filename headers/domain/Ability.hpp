@@ -16,5 +16,5 @@ struct Ability
 	size_t cooldown = 0;
 	size_t last_used = 0;
 	double range = 0.0;
-	Effect effect{};
+	Effect effect;
 };

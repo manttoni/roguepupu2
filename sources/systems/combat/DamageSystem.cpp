@@ -1,36 +1,31 @@
-#include "systems/DamageSystem.hpp"
-#include "systems/VisualEffectSystem.hpp"
-#include "GameLogger.hpp"
-#include "GameState.hpp"
-#include "entt.hpp"
-#include "Components.hpp"
-#include "ECS.hpp"
+#include "systems/combat/DamageSystem.hpp"
+#include "systems/rendering/VisualEffectSystem.hpp"
+#include "infrastructure/GameLogger.hpp"
+#include "infrastructure/GameState.hpp"
+#include "external/entt/entt.hpp"
+#include "components/Components.hpp"
+#include "utils/ECS.hpp"
 
 namespace DamageSystem
 {
-	void kill(entt::registry& registry, const entt::entity entity)
+	void take_damage(entt::registry& registry, const entt::entity entity, const Damage& damage)
 	{
-		registry.ctx().get<GameLogger>().log(ECS::get_colored_name(registry, entity) + " dies");
-		if (entity == ECS::get_player(registry))
-			registry.ctx().get<GameState>().running = false;
-
-		registry.emplace_or_replace<Glyph>(entity, L'x');
-		registry.emplace_or_replace<Dead>(entity, registry.ctx().get<GameState>().turn_number);
-		if (registry.all_of<Solid>(entity))
-			registry.remove<Solid>(entity);
-
-		registry.get<Name>(entity).name += " (corpse)";
-
-	}
-
-	void take_damage(entt::registry& registry, const entt::entity entity, const int damage)
-	{
-		assert(damage >= 0);
-		auto& resources = registry.get<Resources>(entity);
-		resources.health -= damage;
-		registry.ctx().get<GameLogger>().log(ECS::get_colored_name(registry, entity) + " takes {500,0,0}" + std::to_string(damage) + "{reset} physical damage");
+		if (!registry.all_of<Health>(entity))
+			return;
+		auto& hp = registry.get<Health>(entity).current;
+		hp -= damage.amount;
+		Event damage_event;
+		damage_event.effect.type = Effect::Type::Damage;
+		damage_event.effect.damage = damage;
+		damage_event.target.entity = entity;
+		ECS::queue_event(registry, damage_event);
 		VisualEffectSystem::damage_flash(registry, entity);
-		if (resources.health <= 0)
-			kill(registry, entity);
+		if (hp <= 0)
+		{
+			Event death_event;
+			death_event.effect.type = Effect::Type::Death;
+			death_event.target.entity = entity;
+			ECS::queue_event(registry, death_event);
+		}
 	}
 };

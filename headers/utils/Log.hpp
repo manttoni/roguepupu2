@@ -1,9 +1,10 @@
-#pragme once
+#pragma once
 
+#include <fstream>
 #include <string>
 #include <chrono>
 #include <sstream>
-#include <stdexception>
+#include <stdexcept>
 
 namespace Log
 {

@@ -1,10 +1,10 @@
 #include <string>             // for allocator, basic_string
-#include "Game.hpp"
-#include "EntityFactory.hpp"  // for EntityFactory
-#include "Menu.hpp"           // for Menu
-#include "UI.hpp"             // for UI
-#include "Utils.hpp"          // for log
-#include "Tester.hpp"
+#include "infrastructure/Game.hpp"
+#include "database/EntityFactory.hpp"  // for EntityFactory
+#include "UI/Menu.hpp"           // for Menu
+#include "UI/UI.hpp"             // for UI
+#include "utils/Log.hpp"          // for log
+#include "testing/Tester.hpp"
 
 /* Capture this from ncurses so it will print */
 extern "C" void __assert_fail(

@@ -4,20 +4,21 @@
 #include <cassert>      // for assert
 #include <memory>       // for unique_ptr, allocator
 #include <string>       // for basic_string, operator+, operator==, char_traits
-#include "Menu.hpp"     // for Menu
-#include "MenuElt.hpp"  // for MenuElt
-#include "MenuTxt.hpp"  // for MenuTxt
-#include "UI.hpp"       // for UI, KEY_ESCAPE, KEY_LEFT_CLICK
+#include "UI/Menu.hpp"     // for Menu
+#include "UI/MenuElt.hpp"  // for MenuElt
+#include "UI/MenuTxt.hpp"  // for MenuTxt
+#include "UI/UI.hpp"       // for UI, KEY_ESCAPE, KEY_LEFT_CLICK
+#include "utils/Math.hpp"
 
 Menu::Menu(	std::vector<std::unique_ptr<MenuElt>> elements_,
-			const Screen::Coord& start,
+			const Vec2& start,
 			void (*loop_cb)())
 			: elements(std::move(elements_)), loop_cb(loop_cb), read_only(false)
 {
 	height = elements.size() + 2; // add border
 	width = 4; // add border and space next to it
 	for (size_t i = 0; i < elements.size(); ++i)
-		width = std::max(elements[i]->get_size() + 4, width);
+		width = std::max(static_cast<int>(elements[i]->get_size()) + 4, width);
 
 	while (width > Screen::width() || height > Screen::height())
 		UI::instance().dialog("Window is too large, please resize terminal");
@@ -96,10 +97,10 @@ void Menu::set_value(const std::string& str, std::any value)
 int Menu::get_mouse_selection() const
 {
 	WINDOW* window = panel_window(panel);
-	Screen::Coord start;
+	Vec2 start;
 	getbegyx(window, start.y, start.x);
-	Screen::Coord end = { start.y + height, start.x + width };
-	Screen::Coord mouse = UI::instance().get_mouse_position();
+	Vec2 end = { start.y + height, start.x + width };
+	Vec2 mouse = UI::instance().get_mouse_position();
 
 	// Not inside menu, borders excluded
 	if (mouse.x <= start.x || mouse.x >= end.x

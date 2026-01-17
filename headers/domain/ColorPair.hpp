@@ -17,5 +17,7 @@ class ColorPair
 
 		bool operator==(const ColorPair& other) const = default;
 		bool operator!=(const ColorPair& other) const = default;
+		bool operator<(const ColorPair& other) const;
+
 		short init() const;
 };

@@ -1,15 +1,4 @@
-#include <vector>
-#include <chrono>
-#include <thread>
-#include "Components.hpp"
-#include "entt.hpp"
-#include "systems/ActionSystem.hpp"
-#include "systems/CombatSystem.hpp"
-#include "systems/DamageSystem.hpp"
-#include "systems/EquipmentSystem.hpp"
-#include "ECS.hpp"
-#include "GameLogger.hpp"
-#include "Utils.hpp"
+#include "external/entt/entt.hpp"
 
 namespace CombatSystem
 {

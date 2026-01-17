@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Cave.hpp"
+#include "domain/Cave.hpp"
 
 class CaveGenerator
 {

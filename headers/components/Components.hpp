@@ -12,14 +12,34 @@
 #include "external/entt/fwd.hpp"
 
 /* Core components */
-struct Name { std::string name; }; // id
-struct Category { std::string category; }; // data/entities/category/subcategory.json
-struct Subcategory { std::string subcategory; };
+struct Name
+{
+	std::string name;
+
+	bool operator==(const Name& other) const = default;
+}; // id
+struct Category
+{
+	std::string category;
+
+	bool operator==(const Category& other) const = default;
+}; // data/entities/category/subcategory.json
+struct Subcategory
+{
+	std::string subcategory;
+
+	bool operator==(const Subcategory& other) const = default;
+};
 
 /* Optional components... */
 /* Physical */
-struct Solid {};
-struct Opaque {};
+struct Solid
+{
+	bool value = true;
+
+	bool operator==(const Solid& other) const = default;
+};
+struct Opaque { double value; };	// value [0,1] is how much this entity blocks vision. 1 = completely opaque, 0, transparent
 struct Landmark {}; // probably unused
 struct Size { double size = 0.0; };
 struct Weight { double weight; };
@@ -33,24 +53,22 @@ struct BGColor { Color color; };
 struct Vision { double range; };
 struct Hidden {};
 struct Invisible {};
-struct Experience { size_t amount; }	// Derived: level
+struct Experience { size_t amount; };	// Derived: level
 struct Dead { size_t turn_number; };
 
 // combat system, needs more planning
-struct Strength { int value; }			// Derived: damage with blunt, stamina loss
-struct Dexterity { int value; }			// Derived: damage with sharp, stamina loss
-struct Intelligence { int value; }		// Derived: ?
-struct Vitality { int value; }			// Derived: max_health
-struct Endurance { int value; }			// Derived: max_stamina
-struct Willpower { int value; }			// Derived: max_mana
+struct Vitality { int value; };			// Derived: max_health
+struct Endurance { int value; };		// Derived: max_stamina
+struct Willpower { int value; };		// Derived: max_mana
+struct Perception { int value; };		// Derived: vision_range
 
-struct Health { int current; }
-struct Stamina { int current; }
-struct Mana { int current; }
+struct Health { int current; };
+struct Stamina { int current; };
+struct Mana { int current; };
 
 struct EquipmentSlots
 {
-	std::map<Equipment::Slot, std::optional<entt::entity>> slots;
+	std::vector<entt::entity> equipped_items;
 };
 struct Inventory
 {
@@ -64,9 +82,6 @@ struct Equipment
 	{
 		OneHanded,
 		TwoHanded,
-		Begin,
-		LeftHand,
-		RightHand,
 		Count,
 	};
 	static Slot from_string(const std::string& str)
@@ -75,8 +90,6 @@ struct Equipment
 		{
 			{"one_handed", Slot::OneHanded},
 			{"two_handed", Slot::TwoHanded},
-			{"left_hand", Slot::LeftHand},
-			{"right_hand", Slot::RightHand}
 		};
 		auto it = map.find(str);
 		if (it == map.end())
@@ -149,7 +162,7 @@ struct Triggers
 {
 	std::vector<Trigger> triggers;
 };
-
+struct Player {};
 
 
 

@@ -42,4 +42,6 @@ class Cave
 		std::vector<size_t> get_nearby_ids(const Cell& middle, const double r = 1.5, const Cell::Type type = Cell::Type::None) const;
 		std::vector<size_t> get_nearby_ids(const size_t& middle, const double r = 1.5, const Cell::Type type = Cell::Type::None) const;
 		bool neighbor_has_type(const size_t middle, const Cell::Type type) const;
+		double distance(const size_t a, const size_t b) const;
+		void clear_lights();
 };

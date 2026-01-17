@@ -5,8 +5,7 @@
 
 Cell::Cell(const size_t idx, const Cell::Type type) :
 	idx(idx),
-	glyph(L' '),
-	seen(false)
+	glyph(L' ')
 {
 	switch (type)
 	{

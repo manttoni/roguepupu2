@@ -9,12 +9,10 @@
 #include "domain/ColorPair.hpp"  // for ColorPair
 #include "Menu.hpp"       // for Menu
 #include "utils/Utils.hpp"      // for middle, Coord
-#include "external/entt.hpp"
+#include "external/entt/entt.hpp"
+#include "utils/Screen.hpp"
+#include "utils/Log.hpp"
 
-struct Position;
-class Cave;
-class Cell;
-class ColorPair;
 #define KEY_ESCAPE 27
 #define KEY_LEFT_CLICK 420
 #define KEY_RIGHT_CLICK 421
@@ -71,10 +69,10 @@ class UI
 		const std::map<ColorPair, short>& get_initialized_color_pairs() const { return initialized_color_pairs; }
 
 	private:
-		Screen::Coord mouse_position;
+		Vec2 mouse_position;
 	public:
-		Screen::Coord get_mouse_position() const { return mouse_position; }
-		void set_mouse_position(Screen::Coord& mouse_position) { this->mouse_position = mouse_position; }
+		Vec2 get_mouse_position() const { return mouse_position; }
+		void set_mouse_position(const Vec2& mouse_position) { this->mouse_position = mouse_position; }
 
 	private:
 		PANEL* current_panel;
@@ -96,6 +94,8 @@ class UI
 		PANEL* get_current_panel() const { return current_panel; }
 		WINDOW* get_current_window() const { return panel_window(current_panel); }
 
+	public:
+		UI() = default;
 		void print_wstr(const std::wstring& wstr);
 		void print_wstr(const size_t y, const size_t x, const std::wstring& wstr);
 		void print_wide(const size_t y, const size_t x, wchar_t wc);
@@ -108,11 +108,11 @@ class UI
 		void println(const std::string& str = "");
 
 
-		std::string dialog(const std::vector<std::string>& text, const std::vector<std::string>& options = {}, const Screen::Coord& position = Screen::middle(), const size_t initial_selection = 0);
-		std::string dialog(const std::string& text, const std::vector<std::string>& options = {}, const Screen::Coord& position = Screen::middle(), const size_t initial_selection = 0);
+		std::string dialog(const std::vector<std::string>& text, const std::vector<std::string>& options = {}, const Vec2& position = Screen::middle(), const size_t initial_selection = 0);
+		std::string dialog(const std::string& text, const std::vector<std::string>& options = {}, const Vec2& position = Screen::middle(), const size_t initial_selection = 0);
 		int input(int delay = -1); // wrapper for getch
 		Vec2 get_direction(const int key);
-		Position get_clicked_cell(const entt::registry& registry);
+		size_t get_clicked_cell_idx(const entt::registry& registry);
 		size_t get_curs_y() const;
 		size_t get_curs_x() const;
 		void enable_attr(const chtype attr) { wattron(panel_window(current_panel), attr); }

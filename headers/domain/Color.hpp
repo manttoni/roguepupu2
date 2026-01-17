@@ -32,4 +32,5 @@ class Color
 
 		static inline Color black() { return Color(0, 0, 0); }
 		static inline Color grey() { return Color(100, 100, 100); }
+		static inline Color white() { return Color(500, 500, 500); }
 };

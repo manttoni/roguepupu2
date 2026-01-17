@@ -11,7 +11,7 @@ class Menu
 	private:
 		PANEL* panel;
 		std::vector<std::unique_ptr<MenuElt>> elements;
-		size_t height, width; // calculated automatically, no override atm
+		int height, width; // calculated automatically, no override atm
 		void (*loop_cb)(); // call every loop
 		bool read_only;
 		int get_mouse_selection() const;
@@ -22,8 +22,8 @@ class Menu
 		void set_read_only(const bool value) { read_only = value; }
 		bool get_read_only() const { return read_only; }
 		PANEL* get_panel() const { return panel; }
-		size_t get_height() const { return height; }
-		size_t get_width() const { return width; }
+		int get_height() const { return height; }
+		int get_width() const { return width; }
 
 	public:
 		Menu();

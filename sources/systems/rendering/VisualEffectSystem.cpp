@@ -1,23 +1,21 @@
 #include <chrono>
 #include <thread>
-#include "systems/VisualEffectSystem.hpp"
-#include "Components.hpp"
-#include "ECS.hpp"
-#include "Cell.hpp"
+#include "systems/rendering/VisualEffectSystem.hpp"
+#include "systems/rendering/RenderingSystem.hpp"
+#include "components/Components.hpp"
+#include "utils/ECS.hpp"
 
 namespace VisualEffectSystem
 {
 	void flash_entity(entt::registry& registry, const entt::entity entity, const Color& fgcolor, const size_t ms)
 	{
-		if (!registry.all_of<FGColor>(entity))
-			return;
 		Color original = ECS::get_color(registry, entity);
 		registry.get<FGColor>(entity).color = fgcolor;
-		Cell* cell = ECS::get_cell(registry, entity);
-		registry.ctx().get<Renderer>().render_cell(*cell);
+		const Position& position = registry.get<Position>(entity);
+		RenderingSystem::render_cell(registry, position, true);
 		std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 		registry.get<FGColor>(entity).color = original;
-		registry.ctx().get<Renderer>().render_cell(*cell);
+		RenderingSystem::render_cell(registry, position, true);
 	}
 	void damage_flash(entt::registry& registry, const entt::entity entity)
 	{

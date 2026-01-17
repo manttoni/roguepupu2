@@ -1,12 +1,15 @@
 #include <algorithm>
+#include <cassert>
 #include <vector>
 #include <limits>
+#include "utils/Math.hpp"
+#include "systems/position/PositionSystem.hpp"
 #include "domain/LiquidMixture.hpp"
 #include "generation/CaveGenerator.hpp"
 #include "domain/Cave.hpp"
 #include "domain/Cell.hpp"
-#include "systems/EnvironmentSystem.hpp"
-#include "systems/MovementSystem.hpp"
+#include "systems/environment/LiquidSystem.hpp"
+#include "systems/position/MovementSystem.hpp"
 #include "utils/Random.hpp"
 
 CaveGenerator::CaveGenerator(const GenerationConf& conf) : conf(conf) {}
@@ -107,7 +110,7 @@ void CaveGenerator::erosion_simulation(Cave& cave, const size_t start, const siz
 		// Erosion here is very large scale and interesting
 		cells[current_idx].reduce_density(conf.erosion_a);
 
-		Utils::remove_element(open_set, current_idx);
+		open_set.erase(std::find(open_set.begin(), open_set.end(), current_idx)); // is found
 		for (const size_t neighbor_idx : cave.get_nearby_ids(current_idx))
 		{
 			// Clamp density, otherwise goes crazy
@@ -131,7 +134,8 @@ void CaveGenerator::erosion_simulation(Cave& cave, const size_t start, const siz
 				came_from[neighbor_idx] = current_idx;
 				g_score[neighbor_idx] = tentative_g_score;
 				f_score[neighbor_idx] = tentative_g_score + cave.distance(neighbor_idx, end);
-				if (!Utils::contains(open_set, neighbor_idx))
+				auto it = std::find(open_set.begin(), open_set.end(), neighbor_idx);
+				if (it == open_set.end())
 					open_set.push_back(neighbor_idx);
 			}
 		}
@@ -175,7 +179,7 @@ void CaveGenerator::add_water(Cave& cave) const
 void CaveGenerator::simulate_environment(Cave& cave, const size_t rounds) const
 {
 	for (size_t i = 0; i < rounds; ++i)
-		EnvironmentSystem::simulate_environment(cave);
+		LiquidSystem::simulate_liquids(cave);
 }
 
 /*Not important right now

@@ -1,15 +1,14 @@
 #include <string>
 #include <iostream>
 #include <fstream>
-#include "systems/VisionSystem.hpp"
-#include "EntityFactory.hpp"
-#include "Tester.hpp"
-#include "Utils.hpp"
-#include "entt.hpp"
-#include "World.hpp"
-#include "Cave.hpp"
-#include "Cell.hpp"
-#include "ECS.hpp"
+#include "systems/perception/VisionSystem.hpp"
+#include "database/EntityFactory.hpp"
+#include "testing/Tester.hpp"
+#include "domain/World.hpp"
+#include "domain/Cave.hpp"
+#include "domain/Cell.hpp"
+#include "utils/ECS.hpp"
+#include "utils/Log.hpp"
 
 namespace Tester
 {

@@ -1,14 +1,14 @@
 #include <vector>
 #include <string>
-#include "EntityFactory.hpp"
-#include "DevTools.hpp"
-#include "UI.hpp"
-#include "entt.hpp"
-#include "ECS.hpp"
-#include "Cave.hpp"
-#include "Cell.hpp"
-#include "Components.hpp"
-#include "Color.hpp"
+#include "database/EntityFactory.hpp"
+#include "testing/DevTools.hpp"
+#include "UI/UI.hpp"
+#include "external/entt/entt.hpp"
+#include "utils/ECS.hpp"
+#include "domain/Cave.hpp"
+#include "domain/Cell.hpp"
+#include "components/Components.hpp"
+#include "domain/Color.hpp"
 
 namespace DevTools
 {
@@ -70,7 +70,6 @@ namespace DevTools
 		const std::vector<std::string> choices =
 		{
 			"God mode",
-			"Reveal/hide map",
 			"Show entities data",
 			"Show/hide debug",
 			"Change liquid",
@@ -81,15 +80,6 @@ namespace DevTools
 		if (choice == "God mode")
 		{
 			registry.ctx().get<Dev>().god_mode ^= true;
-		}
-		if (choice == "Reveal/hide map")
-		{
-			static bool hidden = true;
-			Cave& cave = ECS::get_active_cave(registry);
-			auto& cells = cave.get_cells();
-			for (auto& cell : cells)
-				cell.set_seen(hidden);
-			hidden = !hidden;
 		}
 		else if (choice == "Show entities data")
 			show_entities(registry);

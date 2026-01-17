@@ -2,13 +2,14 @@
 #include <vector>
 #include <map>
 #include "utils/Parser.hpp"
-#include "systems/LightingSystem.hpp"
-#include "systems/PositionSystem.hpp"
+#include "systems/rendering/LightingSystem.hpp"
+#include "systems/position/PositionSystem.hpp"
 #include "components/Components.hpp"
 #include "domain/Cave.hpp"
 #include "nlohmann/json.hpp"
 #include "database/EntityFactory.hpp"
 #include "utils/Random.hpp"
+#include "utils/ECS.hpp"
 
 namespace EntitySpawner
 {
@@ -23,7 +24,7 @@ namespace EntitySpawner
 		const auto seed = Random::randsize_t(0, 99999);
 		for (const auto spawn_idx : floor_cells)
 		{
-			const Position spawn_pos = {.cell_idx = spawn_idx, .cave_idx = cave.get_idx()};
+			const Position spawn_pos(spawn_idx, cave.get_idx());
 			if (!ECS::get_entities(registry, spawn_pos).empty())
 				continue;
 			std::shuffle(id_pool.begin(), id_pool.end(), Random::rng());
@@ -51,47 +52,48 @@ namespace EntitySpawner
 					size_t blockers = cave.get_nearby_ids(spawn_idx, radius, Cell::Type::Rock).size();
 					for (const auto nearby_idx : cave.get_nearby_ids(spawn_idx, radius, Cell::Type::Floor))
 					{
-						const auto entities = ECS::get_entities(registry, Position{.cell_idx = nearby_idx, .cave_idx = cave.get_idx()});
-							for (const auto entity : entities)
-							{
-								if (ECS::get_size(registry, entity) > 0.5)
-									blockers++;
-							}
+						const auto pos = Position(nearby_idx, cave.get_idx());
+						const auto entities = ECS::get_entities(registry, pos, Solid(true));
+						for (const auto entity : entities)
+						{
+							if (registry.get<Category>(entity).category != "creatures")
+								blockers++;
 						}
-						if (blockers < min_blockers || blockers > max_blockers)
-							continue;
 					}
-					if (spawn_data.contains("water"))
+					if (blockers < min_blockers || blockers > max_blockers)
+						continue;
+				}
+				if (spawn_data.contains("water"))
+				{
+					const auto& water = spawn_data["water"];
+					const auto radius = water["radius"].get<double>();
+					const auto& [min, max] = Parser::parse_range(water["amount"]);
+					double liquid_volume = cave.get_cell(spawn_idx)
+						.get_liquid_mixture()
+						.get_volume(Liquid::Type::Water);
+					for (const auto nearby_idx : cave.get_nearby_ids(spawn_idx, radius, Cell::Type::Floor))
 					{
-						const auto& water = spawn_data["water"];
-						const auto radius = water["radius"].get<double>();
-						const auto& [min, max] = Parser::parse_range(water["amount"]);
-						double liquid_volume = cave.get_cell(spawn_idx)
+						liquid_volume += cave.get_cell(nearby_idx)
 							.get_liquid_mixture()
 							.get_volume(Liquid::Type::Water);
-						for (const auto nearby_idx : cave.get_nearby_ids(spawn_idx, radius, Cell::Type::Floor))
-						{
-							liquid_volume += cave.get_cell(nearby_idx)
-								.get_liquid_mixture()
-								.get_volume(Liquid::Type::Water);
-						}
-						if (liquid_volume < min || liquid_volume > max)
-							continue;
 					}
-					if (spawn_data.contains("light"))
-					{
-						const auto& light = spawn_data["light"];
-						const auto radius = light["radius"].get<double>();
-						const auto& [min, max] = Parser::parse_range(light["amount"]);
-						double illumination = LightingSystem::get_illumination(cave.get_cell(spawn_idx));
-						for (const auto nearby_idx : cave.get_nearby_ids(spawn_idx, radius))
-							illumination += LightingSystem::get_illumination(cave.get_cell(nearby_idx));
-						if (illumination < min || illumination > max)
-							continue;
-					}
-					EntityFactory::instance().create_entity(registry, id, spawn_pos);
-					break;
+					if (liquid_volume < min || liquid_volume > max)
+						continue;
 				}
+				if (spawn_data.contains("light"))
+				{
+					const auto& light = spawn_data["light"];
+					const auto radius = light["radius"].get<double>();
+					const auto& [min, max] = Parser::parse_range(light["amount"]);
+					double illumination = LightingSystem::get_illumination(cave.get_cell(spawn_idx));
+					for (const auto nearby_idx : cave.get_nearby_ids(spawn_idx, radius))
+						illumination += LightingSystem::get_illumination(cave.get_cell(nearby_idx));
+					if (illumination < min || illumination > max)
+						continue;
+				}
+				EntityFactory::instance().create_entity(registry, id, spawn_pos);
+				break;
 			}
 		}
-	};
+	}
+};
