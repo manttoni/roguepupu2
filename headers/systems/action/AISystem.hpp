@@ -1,8 +1,7 @@
 #pragma once
 
-#include <cstdint>
-#include "Event.hpp"
 #include "external/entt/fwd.hpp"
+#include "domain/Intent.hpp"
 
 namespace AISystem
 {

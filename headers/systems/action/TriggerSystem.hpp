@@ -5,5 +5,5 @@
 
 namespace TriggerSystem
 {
-	void resolve_trigger(entt::registry& registry, Trigger trigger, const entt::entity owner, const entt::entity triggerer);
+	void resolve_trigger(entt::registry& registry, const Trigger& trigger, const Event& event);
 };

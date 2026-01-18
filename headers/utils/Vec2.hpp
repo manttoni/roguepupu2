@@ -35,5 +35,18 @@ struct Vec2
 	{
 		return { y * s, x * s };
 	}
+
+	bool out_of_bounds(const int min, const int max) const
+	{
+		return y < min || x < min || y > max || x > max;
+	}
+
+	// Convert this to a cell_idx
+	size_t to_idx(const size_t cave_size) const
+	{
+		assert(x >= 0 && x < static_cast<int>(cave_size));
+		assert(y >= 0 && y < static_cast<int>(cave_size));
+		return static_cast<size_t>(y) * cave_size + static_cast<size_t>(x);
+	}
 };
 

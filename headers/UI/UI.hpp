@@ -7,11 +7,12 @@
 #include <vector>         // for vector
 #include "domain/Color.hpp"      // for Color
 #include "domain/ColorPair.hpp"  // for ColorPair
-#include "Menu.hpp"       // for Menu
+#include "UI/Menu.hpp"       // for Menu
 #include "utils/Utils.hpp"      // for middle, Coord
 #include "external/entt/entt.hpp"
 #include "utils/Screen.hpp"
 #include "utils/Log.hpp"
+#include "domain/Position.hpp" // to return clicked position
 
 #define KEY_ESCAPE 27
 #define KEY_LEFT_CLICK 420
@@ -112,7 +113,7 @@ class UI
 		std::string dialog(const std::string& text, const std::vector<std::string>& options = {}, const Vec2& position = Screen::middle(), const size_t initial_selection = 0);
 		int input(int delay = -1); // wrapper for getch
 		Vec2 get_direction(const int key);
-		size_t get_clicked_cell_idx(const entt::registry& registry);
+		Position get_clicked_position(const entt::registry& registry);
 		size_t get_curs_y() const;
 		size_t get_curs_x() const;
 		void enable_attr(const chtype attr) { wattron(panel_window(current_panel), attr); }
@@ -125,5 +126,7 @@ class UI
 		void init();
 		void end();
 		void resize_terminal();
+		Vec2 get_window_dimensions(const WINDOW* const window) const;
+		Vec2 get_window_start(const WINDOW* const window) const;
 };
 

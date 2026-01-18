@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Actor.hpp"
-#include "Effect.hpp"
+#include "domain/Actor.hpp"
+#include "domain/Effect.hpp"
+#include "domain/Target.hpp"
 
 /* Describes something that has happaned
  * "actor causes effect on target"
@@ -10,14 +11,13 @@
  * "Rabdin ignites goblin"
  * "Rabdin moves"
  *
- * Target can also be an area around target.position
+ * Actor and Target are the same thing with different type,
+ * to force type
  * */
 
 struct Event
 {
-	Actor actor;		// who/what does from where
+	Actor actor{};		// who/what does from where
 	Effect effect{};	// what they do
-	Actor target;		// to who/what/where
-
-
+	Target target{};	// to who/what/where
 };

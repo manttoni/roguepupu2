@@ -12,24 +12,35 @@ Cave::Cave(const size_t size, const Cell::Type fill) : size(size)
 		cells.push_back(Cell(i, fill));
 }
 
-std::vector<size_t> Cave::get_nearby_ids(const Cell& middle, const double r, const Cell::Type type) const
+std::vector<Position> Cave::get_positions() const
 {
-	return get_nearby_ids(middle.get_idx(), r, type);
+	std::vector<Position> positions;
+	for (size_t i = 0; i < size * size; ++i)
+		positions.push_back(Position(i, idx));
+	return positions;
 }
+
+double Cave::distance(const Position& a, const Position& b) const
+{
+	assert(a.cave_idx == idx && b.cave_idx == idx);
+	assert(a.cell_idx < size && b.cell_idx < size);
+	const Vec2 start(a.cell_idx, size);
+	const Vec2 end(b.cell_idx, size);
+	return std::hypot(start.y - end.y, start.x - end.x);
+}
+
 double Cave::distance(const size_t a, const size_t b) const
 {
-	assert(a < size && b < size);
 	const Vec2 start(a, size);
 	const Vec2 end(b, size);
 	return std::hypot(start.y - end.y, start.x - end.x);
 }
 
-// use with r = 1.5 to get neighbors
-std::vector<size_t> Cave::get_nearby_ids(const size_t& middle, const double r, const Cell::Type type) const
+std::vector<Position> Cave::get_nearby_positions(const Position& middle_pos, const double r, const Cell::Type type) const
 {
-	std::vector<size_t> neighbors;
-	size_t middle_y = middle / size;
-	size_t middle_x = middle % size;
+	assert(middle_pos.cave_idx == idx);
+	std::vector<Position> neighbors;
+	const Vec2 middle(middle_pos.cell_idx, size);
 
 	for (int dy = - std::ceil(r); dy <= std::ceil(r); ++dy)
 	{
@@ -38,44 +49,33 @@ std::vector<size_t> Cave::get_nearby_ids(const size_t& middle, const double r, c
 			if (dy == 0 && dx == 0)
 				continue; // middle
 
-			int ny = middle_y + dy;
-			int nx = middle_x + dx;
+			int ny = middle.y + dy;
+			int nx = middle.x + dx;
 
 			if (ny < 0 || ny >= static_cast<int>(size) ||
 					nx < 0 || nx >= static_cast<int>(size))
 				continue;
 
-			size_t nid = ny * size + nx;
-			if (distance(middle, nid) > r)
+			const size_t neighbor_idx = ny * size + nx;
+			const Position neighbor_pos(neighbor_idx, idx);
+			if (distance(middle_pos, neighbor_pos) > r)
 				continue;
-			if (type == Cell::Type::None || type == cells[nid].get_type())
-				neighbors.push_back(nid);
+			if (type == Cell::Type::None || type == get_cell(neighbor_pos).get_type())
+				neighbors.push_back(neighbor_pos);
 		}
 	}
 	return neighbors;
 }
 
-std::vector<size_t> Cave::get_cells_with_type(const Cell::Type type) const
+std::vector<Position> Cave::get_positions_with_type(const Cell::Type type) const
 {
-	std::vector<size_t> cells_with_type;
+	std::vector<Position> positions;
 	for (const auto& cell : cells)
 	{
 		if (cell.get_type() == type)
-			cells_with_type.push_back(cell.get_idx());
+			positions.push_back(Position(cell.get_idx(), idx));
 	}
-	return cells_with_type;
-}
-
-bool Cave::neighbor_has_type(const size_t idx, const Cell::Type type) const
-{
-	const auto& neighbors = get_nearby_ids(idx, 1.5);
-	for (const auto& cell_idx : neighbors)
-	{
-		const auto& cell = cells[cell_idx];
-		if (cell.get_type() == type)
-			return true;
-	}
-	return false;
+	return positions;
 }
 
 void Cave::clear_lights()

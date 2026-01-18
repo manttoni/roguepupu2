@@ -1,126 +1,147 @@
 #include <vector>
+#include <cassert>
 #include "utils/ECS.hpp"
 #include "external/entt/entt.hpp"
-#include "systems/position/PositionSystem.hpp"
 #include "systems/position/MovementSystem.hpp"
 #include "domain/Cell.hpp"
 #include "domain/Cave.hpp"
-
-#define MELEE_RANGE 1.5
+#include "utils/ECS.hpp"
+#include "utils/Vec2.hpp"
 
 namespace MovementSystem
 {
-	std::vector<size_t> find_path(const Cave& cave, const size_t start, const size_t end, const bool allow_blocked_end)
+
+	/* A cell blocks movement if it is Rock or there is a Solid entity
+	 * */
+	bool blocks_movement(const entt::registry& registry, const Position& position)
 	{
-		if (start >= cave.get_size() || end >= cave.get_size())
+		if (ECS::get_cell(registry, position).get_type() == Cell::Type::Rock)
+			return true;
+		for (const auto entity : ECS::get_entities(registry, position))
+		{
+			if (registry.any_of<Solid>(entity))
+				return true;
+		}
+		return false;
+	}
+
+	/* Entities can move to neighboring cells,
+	 * even diagonally if there is no corner to go around.
+	 * */
+	bool can_move(const entt::registry& registry, const Position& from_pos, const Position& to_pos)
+	{
+		const auto& cave = ECS::get_cave(registry, from_pos);
+		assert(from_pos.cave_idx == to_pos.cave_idx);
+		assert(from_pos.cell_idx < cave.get_area());
+		assert(to_pos.cell_idx < cave.get_area());
+
+		if (blocks_movement(registry, to_pos))
+			return false;
+
+		const auto cave_size = cave.get_size();
+		const Vec2 from(from_pos.cell_idx, cave_size);
+		const Vec2 to(to_pos.cell_idx, cave_size);
+
+		if (abs(from.y - to.y) > 1 || abs(from.x - to.x) > 1) // is not a neighbor
+			return false;
+
+		// there is access from "from" to "to" if they are on same x or y axis
+		if (from.y == to.y || from.x == to.x)
+			return true;
+
+		// there is access diagonally if there is no corner to go around
+		const auto corner1 = Position(from.y * cave_size + to.x, cave.get_idx());
+		const auto corner2 = Position(to.y * cave_size + from.x, cave.get_idx());
+		if (blocks_movement(registry, corner1) || blocks_movement(registry, corner2))
+			return false;
+		return true;
+	}
+
+	/* A* algorithm to find path from start position to end position.
+	 * If blocked end is allowed, AI can use this to conveniently move
+	 * towards a cell even if it is blocked.
+	 * */
+	std::vector<Position> find_path(const entt::registry& registry, const Position& start, const Position& end, const bool allow_blocked_end)
+	{
+		assert(start.cave_idx == end.cave_idx);
+		const auto& cave = ECS::get_cave(registry, start);
+		if (start.cell_idx >= cave.get_area() || end.cell_idx >= cave.get_area())
 			Log::error("Find path idx out of bounds");
-		if (allow_blocked_end == false && cave.get_cell(end).get_type() == Cell::Type::Rock)
+		if (allow_blocked_end == false && blocks_movement(registry, end))
 			return {};
-		std::vector<size_t> open_set = { start };
-		std::map<size_t, size_t> came_from;
-		std::map<size_t, double> g_score;
-		std::map<size_t, double> f_score;
+		std::vector<Position> open_set = { start };
+		std::map<Position, Position> came_from;
+		std::map<Position, double> g_score;
+		std::map<Position, double> f_score;
 
 		g_score[start] = 0;
 		f_score[start] = cave.distance(start, end);
 
 		while (!open_set.empty())
 		{
-			size_t current_idx = open_set[0];
-			for (const size_t cell_idx : open_set)
+			Position current_pos = open_set[0];
+			for (const Position cell_pos : open_set)
 			{	// all open_set elements have f_score mapped
-				if (f_score[cell_idx] < f_score[current_idx])
-					current_idx = cell_idx;
+				if (f_score[cell_pos] < f_score[current_pos])
+					current_pos = cell_pos;
 			}
 
-			if (current_idx == end ||
-				(allow_blocked_end == true && cave.distance(current_idx, end) < MELEE_RANGE))
+			if (current_pos == end ||
+				(allow_blocked_end == true && cave.distance(current_pos, end) < 1.5))
 			{	// found optimal path from start to end
-				std::vector<size_t> path;
-				path.push_back(current_idx);
-				while (current_idx != start)
-				{	// assign the cell from where we got to to current
-					current_idx = came_from[current_idx];
-					path.push_back(current_idx);
+				std::vector<Position> path;
+				path.push_back(current_pos);
+				while (current_pos != start)
+				{	// assign the cell from where we got to to current in backwards order
+					current_pos = came_from[current_pos];
+					path.push_back(current_pos);
 				}
 				std::reverse(path.begin(), path.end());
 				return path;
 			}
 
-			open_set.erase(std::find(open_set.begin(), open_set.end(), current_idx)); // is found
-			for (const size_t neighbor_idx : cave.get_nearby_ids(current_idx, 1.5))
+			open_set.erase(std::find(open_set.begin(), open_set.end(), current_pos)); // is found
+			for (const auto& neighbor_pos : cave.get_nearby_positions(current_pos, 1.5, Cell::Type::Floor))
 			{
-				if (!can_move(cave, current_idx, neighbor_idx))
+				if (!can_move(registry, current_pos, neighbor_pos))
 					continue;
-				double tentative_g_score = g_score[current_idx] + cave.distance(current_idx, neighbor_idx);
-				if (g_score.count(neighbor_idx) == 0)
-					g_score[neighbor_idx] = std::numeric_limits<double>::infinity();
-				if (tentative_g_score < g_score[neighbor_idx])
+				double tentative_g_score = g_score[current_pos] + cave.distance(current_pos, neighbor_pos);
+				if (g_score.count(neighbor_pos) == 0)
+					g_score[neighbor_pos] = std::numeric_limits<double>::infinity();
+				if (tentative_g_score < g_score[neighbor_pos])
 				{
-					came_from[neighbor_idx] = current_idx;
-					g_score[neighbor_idx] = tentative_g_score;
-					f_score[neighbor_idx] = tentative_g_score + cave.distance(neighbor_idx, end);
-					auto it = std::find(open_set.begin(), open_set.end(), neighbor_idx);
+					came_from[neighbor_pos] = current_pos;
+					g_score[neighbor_pos] = tentative_g_score;
+					f_score[neighbor_pos] = tentative_g_score + cave.distance(neighbor_pos, end);
+					auto it = std::find(open_set.begin(), open_set.end(), neighbor_pos);
 					if (it == open_set.end())
-						open_set.push_back(neighbor_idx);
+						open_set.push_back(neighbor_pos);
 				}
 			}
 		}
 		return {};
 	}
 
-	std::vector<size_t> find_path(const entt::registry& registry, const Position& start, const Position& end, const bool allow_blocked_end)
-	{
-		if (start.cave_idx != end.cave_idx)
-			return {};
-		const auto& cave = PositionSystem::get_cave(registry, start);
-		return find_path(cave, start.cell_idx, end.cell_idx, allow_blocked_end);
-	}
-
 	Position get_first_step(const entt::registry& registry, const Position& start, const Position& end)
 	{
+		if (start == end)
+			return start;
 		const auto path = find_path(registry, start, end);
-		assert(!path.empty() && "asking for non-existent first step");
-		return Position(path[1], start.cave_idx);
+		assert(path.size() > 1);
+		return path[1];
 	}
 
+	/* Does not require entity to have existing Position
+	 * Use this when summoning so they will immediately trigger EnterCell Triggers
+	 * */
 	void move(entt::registry& registry, const entt::entity entity, const Position& position)
 	{
 		registry.emplace_or_replace<Position>(entity, position);
-		Event move_event;
-		move_event.actor.entity = entity;
-		move_event.effect.type = Effect::Type::Move;
-		move_event.target.position = position;
-		ECS::queue_event(registry, move_event);
+		ECS::queue_event(registry, Event(
+					{.entity = entity},
+					{.type = Effect::Type::Move},
+					{.position = position}
+					));
 	}
 
-	bool can_move(Cave& cave, const size_t from_idx, const size_t to_idx)
-	{
-		const auto& cells = cave.get_cells();
-		if (from_idx >= cells.size() || to_idx >= cells.size())
-			return false;
-		const auto& to = cells[to_idx];
-		if (to.blocks_movement()) // can't move to "to"
-			return false;
-
-		const auto width = cave.get_width();
-		int fy = from_idx / width;
-		int fx = from_idx % width;
-		int ty = to_idx / width;
-		int tx = to_idx % width;
-
-		if (abs(fy - ty) > 1 || abs(fx - tx) > 1) // is not a neighbor
-			return false;
-
-		// there is access from "from" to "to" if they are on same x or y axis
-		if (fy == ty || fx == tx)
-			return true;
-
-		// there is access diagonally if there is no corner to go around
-		const auto& corner1 = cells[fy * width + tx];
-		const auto& corner2 = cells[ty * width + fx];
-		if (corner1.blocks_movement() || corner2.blocks_movement())
-			return false;
-		return true;
-	}
 };

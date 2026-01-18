@@ -1,6 +1,6 @@
 #include "external/entt/entt.hpp"
+#include "utils/ECS.hpp"
 #include "systems/perception/VisionSystem.hpp"
-#include "systems/position/PositionSystem.hpp"
 #include "systems/rendering/LightingSystem.hpp"
 #include "components/Components.hpp"
 #include "domain/Color.hpp"
@@ -11,7 +11,7 @@ namespace LightingSystem
 {
 	void apply_lights(entt::registry& registry, const size_t cave_idx)
 	{
-		auto& cave = PositionSystem::get_cave(registry, cave_idx);
+		auto& cave = ECS::get_cave(registry, cave_idx);
 		for (const auto entity : registry.view<Glow, Position, FGColor>())
 		{
 			const auto& [glow, position, color] = registry.get<Glow, Position, FGColor>(entity);
@@ -19,20 +19,19 @@ namespace LightingSystem
 				continue;
 			Color glow_color = color.color * glow.strength;
 
-			for (const auto affected_idx : cave.get_nearby_ids(position.cell_idx, glow.radius))
+			for (const auto affected_pos : cave.get_nearby_positions(position, glow.radius))
 			{
-				const Position affected_position(affected_idx, cave_idx);
-				if (!VisionSystem::has_line_of_sight(registry, affected_position, position))
+				if (!VisionSystem::has_line_of_sight(registry, affected_pos, position))
 					continue;
 
-				cave.get_cell(affected_idx).add_light(glow_color);
+				cave.get_cell(affected_pos).add_light(glow_color);
 			}
 		}
 	}
 
 	void reset_lights(entt::registry& registry, const size_t cave_idx)
 	{
-		auto& cave = PositionSystem::get_cave(registry, cave_idx);
+		auto& cave = ECS::get_cave(registry, cave_idx);
 		cave.clear_lights();
 		apply_lights(registry, cave_idx);
 	}

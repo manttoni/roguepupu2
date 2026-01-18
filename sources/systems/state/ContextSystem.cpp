@@ -1,6 +1,5 @@
 #include <format>
 #include "external/entt/entity/handle.hpp"
-#include "systems/position/PositionSystem.hpp"
 #include "systems/crafting/GatheringSystem.hpp"
 #include "systems/state/ContextSystem.hpp"
 #include "systems/state/InventorySystem.hpp"
@@ -8,8 +7,6 @@
 #include "utils/ECS.hpp"
 #include "UI/UI.hpp"
 #include "components/Components.hpp"
-
-#define MELEE_RANGE 1.5
 
 namespace ContextSystem
 {
@@ -51,10 +48,10 @@ namespace ContextSystem
 
 		double distance;
 		if (registry.all_of<Position>(entity))
-			distance = PositionSystem::distance(registry, player, entity);
+			distance = ECS::distance(registry, player, entity);
 		else
-			distance = PositionSystem::distance(registry, player, owner);
-		if (distance < MELEE_RANGE && registry.all_of<Inventory>(entity))
+			distance = ECS::distance(registry, player, owner);
+		if (distance < 1.5 && registry.all_of<Inventory>(entity))
 		{
 			if (player == entity)
 				options.push_back("Inventory");
@@ -63,12 +60,12 @@ namespace ContextSystem
 			else if (registry.get<Subcategory>(entity).subcategory == "furniture")
 				options.push_back("Open");
 		}
-		if (distance < MELEE_RANGE && player != owner)
+		if (distance < 1.5 && player != owner)
 		{
 			if (registry.get<Category>(entity).category == "items")
 				options.push_back("Take");
 		}
-		if (distance < MELEE_RANGE && GatheringSystem::can_gather(registry, player, entity))
+		if (distance < 1.5 && GatheringSystem::can_gather(registry, player, entity))
 			options.push_back("Gather");
 		options.push_back("Back");
 		return options;

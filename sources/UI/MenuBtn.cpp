@@ -1,8 +1,8 @@
 #include <stddef.h>     // for size_t
 #include <functional>   // for function
 #include <string>       // for basic_string, allocator, string
-#include "MenuBtn.hpp"  // for MenuBtn
-#include "MenuElt.hpp"  // for MenuElt
+#include "UI/MenuBtn.hpp"  // for MenuBtn
+#include "UI/MenuElt.hpp"  // for MenuElt
 
 MenuBtn::MenuBtn() : MenuElt("", MenuElt::Type::BUTTON), func(nullptr) {}
 MenuBtn::MenuBtn(const std::string& text, std::function<void()> func) : MenuElt(text, MenuElt::Type::BUTTON), func(func) {}

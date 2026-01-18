@@ -29,9 +29,8 @@
 		"triggers": [
 			{
 				"type": "gather",
-				"target": "self",
 				"effect": {
-					"type": "destroy"
+					"type": "self_destruct"
 				}
 			}
 		],
@@ -66,9 +65,8 @@
 		"triggers": [
 			{
 				"type": "gather",
-				"target": "self",
 				"effect": {
-					"type": "destroy"
+					"type": "self_destruct"
 				}
 			}
 		],

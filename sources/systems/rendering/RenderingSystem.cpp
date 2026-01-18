@@ -2,23 +2,32 @@
 #include <unordered_set>
 #include <vector>
 #include <unordered_map>
-#include "systems/RenderingSystem.hpp"
-#include "entt.hpp"
-#include "systems/PositionSystem.hpp"
-#include "ECS.hpp"
-#include "Components.hpp"
-#include "LiquidMixture.hpp"
-#include "Color.hpp"
-#include "ColorPair.hpp"
-#include "Cell.hpp"
-
+#include "UI/UI.hpp"
+#include "components/Components.hpp"
+#include "domain/Cell.hpp"
+#include "domain/Color.hpp"
+#include "domain/ColorPair.hpp"
+#include "domain/LiquidMixture.hpp"
+#include "external/entt/entt.hpp"
+#include "systems/perception/VisionSystem.hpp"
+#include "systems/rendering/RenderData.hpp"
+#include "systems/rendering/RenderingSystem.hpp"
+#include "utils/ECS.hpp"
+#include "utils/Unicode.hpp"
+#include "infrastructure/GameLogger.hpp"
+#include "utils/Math.hpp"
+#include "testing/DevTools.hpp"
 
 namespace RenderingSystem
 {
+	/* Get a struct with glyph and color_pair that will be rendered.
+	 * If is_visible, then show everything except hidden entities.
+	 * Else show some stuff with grey color
+	 * */
 	Visual get_visual(const entt::registry& registry, const Position& position, const bool is_visible)
 	{
 		Visual visual;
-		const auto& cell = PositionSystem::get_cell(registry, position);
+		const auto& cell = ECS::get_cell(registry, position);
 		std::vector<entt::entity> visible_entities;
 		for (const auto entity : ECS::get_entities(registry, position))
 		{
@@ -53,7 +62,7 @@ namespace RenderingSystem
 				visual.glyph = cell.get_glyph();
 
 			if (lm_volume > TRESHOLD_LIQUID_FGCOLOR)
-				fg = lm.get_fgcolor();
+				fg = lm.get_color();
 			else if (is_visible)
 				fg = cell.get_fgcolor();
 			else if (cell.get_type() != Cell::Type::Floor)
@@ -77,10 +86,11 @@ namespace RenderingSystem
 
 	void render_cell(const entt::registry& registry, const Position& position, const bool is_visible)
 	{
+		const auto& cave = ECS::get_cave(registry, position);
 		const Visual visual = get_visual(registry, position, is_visible);
-		Vec2 middle = Screen::middle();
-		Vec2 cell = PositionSystem::get_coorinates(position);
-		Vec2 player = PositionSystem::get_coordinates(registry.get<Position>(ECS::get_player));
+		const Vec2 middle = Screen::middle();
+		const Vec2 cell(position.cell_idx, cave.get_size());
+		const Vec2 player(registry.get<Position>(ECS::get_player(registry)).cell_idx, cave.get_size());
 		const size_t y = middle.y + cell.y - player.y;
 		const size_t x = middle.x + cell.x - player.x;
 
@@ -88,23 +98,25 @@ namespace RenderingSystem
 		UI::instance().print_wide(y, x, visual.glyph);
 	}
 
-	void render_active_cave(const entt::registry& registry)
+	void render_active_cave(entt::registry& registry)
 	{
 		const auto& cave = ECS::get_active_cave(registry);
-		const size_t cave_idx = cave.get_idx();
 
 		auto& render_data = registry.ctx().get<RenderData>();
-		render_data.visible_cells = VisionSystem::get_visible_cells(registry, ECS::get_player(registry));
-		for (const auto visible_cell : visible_cells)
-			render_data.seen_cells[cave_idx].insert(visible_cell);
-
-		for (size_t i = 0; i < cave.get_area() - 1; ++i)
+		render_data.visible_cells = VisionSystem::get_visible_positions(registry, ECS::get_player(registry));
+		for (const auto visible_cell : render_data.visible_cells)
 		{
-			const Position pos = {.cell_idx = i, .cave_idx = cave_idx};
+			auto it = std::find(render_data.seen_cells.begin(), render_data.seen_cells.end(), visible_cell);
+			if (it == render_data.seen_cells.end())
+				render_data.seen_cells.push_back(visible_cell);
+		}
+
+		for (const auto& pos : cave.get_positions())
+		{
 			auto visible_it = std::find(
 					render_data.visible_cells.begin(),
 					render_data.visible_cells.end(),
-					i);
+					pos);
 			if (visible_it != render_data.visible_cells.end())
 			{
 				render_cell(registry, pos, true);
@@ -112,10 +124,10 @@ namespace RenderingSystem
 			}
 
 			auto seen_it = std::find(
-					render_data.seen_cells[cave_idx].begin(),
-					render_data.seen_cells[cave_idx].end(),
-					i);
-			if (seen_it != render_data.seen_cells[cave_idx].end())
+					render_data.seen_cells.begin(),
+					render_data.seen_cells.end(),
+					pos);
+			if (seen_it != render_data.seen_cells.end())
 				render_cell(registry, pos, false);
 		}
 	}
@@ -155,7 +167,7 @@ namespace RenderingSystem
 		UI::instance().disable_color_pair(ColorPair(color, Color{}));
 	}
 
-	void show_player_status(const entt::registry& registry)
+	/*void show_player_status(const entt::registry& registry)
 	{
 		const size_t bar_len = 25;
 		PANEL* status_panel = UI::instance().get_panel(UI::Panel::Status);
@@ -176,9 +188,9 @@ namespace RenderingSystem
 
 		const double mp_per = static_cast<double>(resources.mana) / static_cast<double>(ECS::get_mana_max(registry, player));
 		draw_bar(Color(0,0,600), std::max(0.0, mp_per), 5, bar_len);
-	}
+	}*/
 
-	void show_debug(const entt::registry& registry)
+	/*void show_debug(const entt::registry& registry)
 	{
 		if (registry.ctx().get<Dev>().show_debug == false)
 			return;
@@ -192,14 +204,14 @@ namespace RenderingSystem
 		};
 		for (size_t i = 0; i < debug.size(); ++i)
 			UI::instance().print(i, 0, debug[i]);
-	}
+	}*/
 
-	void render(const entt::registry& registry)
+	void render(entt::registry& registry)
 	{
 		render_active_cave(registry);
 		print_log(registry);
-		show_player_status(registry);
-		show_debug(registry);
+		//show_player_status(registry);
+		//show_debug(registry);
 		UI::instance().update();
 	}
 };

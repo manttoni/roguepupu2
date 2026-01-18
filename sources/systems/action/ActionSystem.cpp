@@ -4,8 +4,8 @@
 #include "domain/Cell.hpp"
 #include "domain/Event.hpp"
 #include "domain/World.hpp"
-#include "entt.hpp"
-#include "infrastructureGameState.hpp"
+#include "external/entt/entt.hpp"
+#include "infrastructure/GameState.hpp"
 #include "systems/action/AISystem.hpp"
 #include "systems/action/AbilitySystem.hpp"
 #include "systems/action/ActionSystem.hpp"
@@ -13,7 +13,6 @@
 #include "systems/combat/CombatSystem.hpp"
 #include "systems/crafting/GatheringSystem.hpp"
 #include "systems/position/MovementSystem.hpp"
-#include "systems/position/PositionSystem.hpp"
 #include "systems/position/TransitionSystem.hpp"
 #include "systems/rendering/RenderingSystem.hpp"
 #include "systems/state/ContextSystem.hpp"
@@ -35,25 +34,25 @@ namespace ActionSystem
 				ContextSystem::show_entities_list(registry, intent.target.entity);
 				break;
 			case Intent::Type::ShowPlayer:
-				ContextSystem::show_entity_details(registry, intent.actor);
+				ContextSystem::show_entity_details(registry, ECS::get_player(registry));
 				break;
 			case Intent::Type::Move:
-				MovementSystem::move(registry, intent.actor, intent.target.position);
+				MovementSystem::move(registry, intent.actor.entity, intent.target.position);
 				break;
 			case Intent::Type::Attack:
-				CombatSystem::attack(registry, intent.actor, intent.target.entity);
+				CombatSystem::attack(registry, intent.actor.entity, intent.target.entity);
 				break;
 			case Intent::Type::UseAbility:
 				AbilitySystem::use_ability(registry, intent.actor, intent.ability_id, intent.target);
 				break;
 			case Intent::Type::Gather:
-				GatheringSystem::gather(registry, intent.actor, intent.target.entity);
+				GatheringSystem::gather(registry, intent.actor.entity, intent.target.entity);
 				break;
 			case Intent::Type::Hide:
-				if (registry.all_of<Hidden>(intent.actor))
-					registry.erase<Hidden>(intent.actor);
+				if (registry.all_of<Hidden>(intent.actor.entity))
+					registry.erase<Hidden>(intent.actor.entity);
 				else
-					registry.emplace<Hidden>(intent.actor);
+					registry.emplace<Hidden>(intent.actor.entity);
 				break;
 			case Intent::Type::DoNothing:
 			case Intent::Type::None:
@@ -63,53 +62,65 @@ namespace ActionSystem
 		RenderingSystem::render(registry);
 	}
 
-	Intent get_direction_intent(const entt::registry& registry, const entt::entity actor, const Vec2 direction)
+	/* Figure out what actor.entity wants to do with direction
+	 * If there is some interactable entity like an enemy, attack instead of moving.
+	 * If there is just an empty cell, intent to move is very likely.
+	 * */
+	Intent get_direction_intent(const entt::registry& registry, const Actor& actor, const Vec2 direction)
 	{
-		const auto& current_pos = registry.get<Position>(actor);
-		const auto& cave = PositionSystem::get_cave(registry, current_pos);
+		assert(actor.entity != entt::null && actor.position.is_valid());
+		const auto& cave = ECS::get_cave(registry, actor.position);
 		const auto cave_size = cave.get_size();
 
-		const Vec2 current(current_pos.cell_idx, cave_size);
-		const Vec2 dst = current + direction;
+		const Vec2 current(actor.position.cell_idx, cave_size);
+		const Vec2 destination = current + direction;
 
-		if (dst.out_of_bounds(0, cave_size() - 1))
+		if (destination.out_of_bounds(0, cave_size - 1))
 			Log::error("Destination position out of bounds");
 
-		const size_t dst_idx = dst.to_idx(cave_size);
-		const Position dst_pos{ dst_idx, cave.get_idx() };
-		if (MovementSystem::can_move(registry, current_pos, dst_pos))
+		const Position destination_pos(destination.to_idx(cave_size), cave.get_idx());
+		if (MovementSystem::can_move(registry, actor.position, destination_pos))
 		{
 			Intent intent = {.type = Intent::Type::Move};
-			intent.target.position = dst_pos;
+			intent.target.position = destination_pos;
 			return intent;
 		}
+		/* Check attack and other interactions also but need Faction system first */
 		return {.type = Intent::Type::None};
 	}
 
 	Intent get_player_intent(entt::registry& registry)
 	{
 		const auto player = ECS::get_player(registry);
+		const Actor player_actor = {
+			.entity = player,
+			.position = registry.get<Position>(player)
+		}; // Making very explicit who is acting and where
 		while (true)
 		{
 			RenderingSystem::render(registry);
 
-			int key = UI::instance().input(500);
-			if (key == '`') DevTools::dev_menu(registry);
+			const int key = UI::instance().input(500);
+			if (key == '`')
+			{
+				DevTools::dev_menu(registry);
+				continue;
+			}
 			const Vec2 direction = UI::instance().get_direction(key);
 			if (direction != Vec2{0, 0})
-				return get_direction_intent(registry, player, direction);
+				return get_direction_intent(registry, player_actor, direction);
 			switch (key)
 			{
-				case KEY_RIGHT_CLICK:
+				case KEY_RIGHT_CLICK: // make this work when combat system is implemented
 					{
 					Intent intent = {.type = Intent::Type::Attack};
-					intent.target.position = UI::instance().get_clicked_cell(registry);
+					intent.target.position = UI::instance().get_clicked_position(registry);
 					return intent;
 					}
 				case KEY_LEFT_CLICK:
 					{
 					Intent intent = {.type = Intent::Type::ExamineCell};
-					intent.target.position = UI::instance().get_clicked_cell(registry);
+					intent.target.position = UI::instance().get_clicked_position(registry);
 					return intent;
 					}
 				case 'i':
@@ -136,20 +147,42 @@ namespace ActionSystem
 
 	void act_round(entt::registry& registry)
 	{
-		Cave& cave = ECS::get_active_cave(registry);
 		const auto player = ECS::get_player(registry);
-		std::vector<entt::entity> actors = ECS::get_entities(registry, Category("creatures"), cave);
-		for (const auto actor : actors)
+		const auto& player_pos = registry.get<Position>(player);
+		const auto cave_idx = player_pos.cave_idx;
+
+		std::vector<entt::entity> entities = ECS::get_entities_in_cave(
+				registry,
+				cave_idx,
+				Category("creatures")
+				);
+
+		for (const auto entity : entities)
 		{
-			if (!registry.valid(actor)) continue;
-			Intent intent = actor == player ?
+			// entity might have been somehow disabled by some Event
+			// Probably should not happen, but check anyway
+			if (!registry.valid(entity)) continue;
+
+			// Get entity intent. Intent is what they want to do.
+			Intent intent = entity == player ?
 				get_player_intent(registry) :
-				AISystem::get_npc_intent(registry, actor);
-			intent.actor = actor;
+				AISystem::get_npc_intent(registry, entity);
+
+			// This information has to be valid
+			intent.actor.entity = entity;
+			intent.actor.position = registry.get<Position>(entity);
+
+			// Intent has been validated and will not be executed
 			resolve_intent(registry, intent);
+
+			// Events are things that happened.
+			// They can have consequences,
+			// which will be resolved by EventSystem
 			EventSystem::resolve_events(registry);
-			if (cave.get_idx() != registry.get<Position>(player).cave_idx)
-				return; // player left cave, end round
+
+			// If player leaves cave, end round
+			if (cave_idx != registry.get<Position>(player).cave_idx)
+				return;
 		}
 	}
 

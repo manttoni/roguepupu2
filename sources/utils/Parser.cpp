@@ -1,8 +1,8 @@
-#include "Parser.hpp"
-
-#include "Event.hpp"
-#include "nlohmann/json.hpp"
-#include "Utils.hpp"
+#include <nlohmann/json.hpp>
+#include "utils/Parser.hpp"
+#include "domain/Event.hpp"
+#include "domain/Color.hpp"
+#include "utils/Log.hpp"
 
 namespace Parser
 {
@@ -43,30 +43,10 @@ namespace Parser
 			conditions.weight_min = data["weight_min"].get<double>();
 		if (data.contains("weight_max"))
 			conditions.weight_max = data["weight_max"].get<double>();
-		if (data.contains("hp_min"))
-			conditions.hp_min = data["hp_min"].get<double>();
-		if (data.contains("hp_max"))
-			conditions.hp_max = data["hp_max"].get<double>();
+
 		return conditions;
 	}
-	Target parse_target(const nlohmann::json& data)
-	{
-		Target target;
-		if (data.contains("type"))
-		{
-			const auto& type = data["type"].get<std::string>();
-			if (type == "cell")
-				target.type = Target::Type::Cell;
-			else if (type == "self")
-				target.type = Target::Type::Self;
-			else if (type == "actor")
-				target.type = Target::Type::Actor;
-			else Log::error("Unkown target type: " + type);
-		}
-		if (data.contains("range"))
-			target.range = data["range"].get<double>();
-		return target;
-	}
+
 	std::pair<size_t, size_t> parse_range(const nlohmann::json& data)
 	{
 		if (data.is_number())

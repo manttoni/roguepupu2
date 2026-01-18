@@ -1,6 +1,5 @@
 #include "external/entt/entt.hpp"
 #include "utils/ECS.hpp"
-#include "systems/position/PositionSystem.hpp"
 #include "systems/state/StateSystem.hpp"
 #include "components/Components.hpp"
 #include "domain/Cell.hpp"
@@ -16,7 +15,7 @@ namespace VisionSystem
 
 	double get_opaqueness(const entt::registry& registry, const Position& position)
 	{
-		if (PositionSystem::get_cell(registry, position).get_type() == Cell::Type::Rock)
+		if (ECS::get_cell(registry, position).get_type() == Cell::Type::Rock)
 			return 1.0;
 		double opaqueness = 0.0;
 		for (const auto entity : ECS::get_entities(registry, position))
@@ -32,7 +31,7 @@ namespace VisionSystem
 	{
 		if (a.cave_idx != b.cave_idx)
 			return false;
-		const Cave& cave = PositionSystem::get_cave(registry, a);
+		const Cave& cave = ECS::get_cave(registry, a);
 		const auto start = a.cell_idx;
 		const auto end = b.cell_idx;
 		const size_t size = cave.get_size();
@@ -83,25 +82,26 @@ namespace VisionSystem
 			return false;
 		const Position& entity_pos = registry.get<Position>(entity);
 		const bool los = has_line_of_sight(registry, entity_pos, position);
-		const double distance = PositionSystem::distance(registry, entity_pos, position);
+		const double distance = ECS::distance(registry, entity_pos, position);
 		const double vision_range = StateSystem::get_vision_range(registry, entity);
 
 		return los && distance <= vision_range;
 	}
 
-	std::vector<size_t> get_visible_cells(const entt::registry& registry, const entt::entity entity)
+	std::vector<Position> get_visible_positions(const entt::registry& registry, const entt::entity entity)
 	{
-		if (!registry.all_of<Perception>(entity))
+		if (!registry.all_of<Perception, Position>(entity))
 			return {};
-		std::vector<size_t> visible_cells;
+
+		std::vector<Position> visible_positions;
 		const auto& pos = registry.get<Position>(entity);
-		const auto& cave = PositionSystem::get_cave(registry, pos);
+		const auto& cave = ECS::get_cave(registry, pos);
 		const auto vision_range = StateSystem::get_vision_range(registry, entity);
-		for (const auto nearby_idx : cave.get_nearby_ids(pos.cell_idx, vision_range))
+		for (const auto nearby_pos : cave.get_nearby_positions(pos, vision_range))
 		{
-			if (has_line_of_sight(registry, pos, Position(nearby_idx, cave.get_idx())))
-				visible_cells.push_back(nearby_idx);
+			if (has_line_of_sight(registry, pos, nearby_pos))
+				visible_positions.push_back(nearby_pos);
 		}
-		return visible_cells;
+		return visible_positions;
 	}
 };

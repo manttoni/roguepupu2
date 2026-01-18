@@ -40,9 +40,8 @@ struct Solid
 	bool operator==(const Solid& other) const = default;
 };
 struct Opaque { double value; };	// value [0,1] is how much this entity blocks vision. 1 = completely opaque, 0, transparent
-struct Landmark {}; // probably unused
 struct Size { double size = 0.0; };
-struct Weight { double weight; };
+struct Weight { double kilograms; };
 
 /* Rendering */
 struct Glyph { wchar_t glyph; };
@@ -149,6 +148,8 @@ struct Glow { double strength, radius; };
 struct Transition
 {
 	entt::entity destination = entt::null;
+
+	bool operator==(const Transition& other) const = default;
 };
 struct AI // Intent structs in order of priority
 {

@@ -15,5 +15,5 @@ namespace RenderingSystem
 		ColorPair color_pair{};
 	};
 	void render_cell(const entt::registry& registry, const Position& position, const bool is_seen);
-	void render(const entt::registry& registry);
+	void render(entt::registry& registry);
 };

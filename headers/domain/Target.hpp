@@ -1,10 +1,9 @@
 #pragma once
 
-#include "external/entt/fwd.hpp"
 #include "external/entt/entity/handle.hpp"
 #include "domain/Position.hpp"
 
-/* Actor is a participant in an Event
+/* Target is a participant in an Event
  * Event struct:
  * Actor: the one who had a turn and did something
  * Effect: What they did
@@ -14,7 +13,7 @@
  * entity and position
  * */
 
-struct Actor
+struct Target
 {
 	entt::entity entity = entt::null;
 	Position position{};

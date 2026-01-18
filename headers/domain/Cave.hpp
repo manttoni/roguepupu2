@@ -1,9 +1,10 @@
 #pragma once
 
+#include <cassert>
 #include <vector>
 #include <string>     // for string
-#include "Cell.hpp"   // for Cell
-#include "Color.hpp"  // for Color
+#include "domain/Cell.hpp"   // for Cell
+#include "domain/Position.hpp"
 
 class Cave
 {
@@ -25,23 +26,21 @@ class Cave
 		const std::vector<Cell>& get_cells() const { return cells; }
 		std::vector<Cell>& get_cells() { return cells; }
 
-		const Cell& get_cell(const size_t idx) const { return cells[idx]; }
-		Cell& get_cell(const size_t idx) { return cells[idx]; }
+		std::vector<Position> get_positions() const;
 
-		std::vector<size_t> get_empty_cells() const;
-		std::vector<size_t> get_cells_with_type(const Cell::Type type) const;
+		const Cell& get_cell(const Position& position) const { assert(position.cave_idx == idx); return cells[position.cell_idx]; }
+		Cell& get_cell(const Position& position) { assert(position.cave_idx == idx); return cells[position.cell_idx]; }
+
+		std::vector<Position> get_nearby_positions(const Position& middle, const double r = 1.5, const Cell::Type type = Cell::Type::None) const;
+		std::vector<Position> get_positions_with_type(const Cell::Type type) const;
 
 	public:
 		Cave(const size_t size, const Cell::Type fill = Cell::Type::Rock);
 
 		Cave(const Cave& other) = default;
 		Cave& operator=(const Cave& other) = default;
-		Cave(Cave&& other) = default;
-		Cave& operator=(Cave&& other) = default;
 
-		std::vector<size_t> get_nearby_ids(const Cell& middle, const double r = 1.5, const Cell::Type type = Cell::Type::None) const;
-		std::vector<size_t> get_nearby_ids(const size_t& middle, const double r = 1.5, const Cell::Type type = Cell::Type::None) const;
-		bool neighbor_has_type(const size_t middle, const Cell::Type type) const;
+		double distance(const Position& a, const Position& b) const;
 		double distance(const size_t a, const size_t b) const;
 		void clear_lights();
 };

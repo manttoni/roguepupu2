@@ -7,31 +7,32 @@
 #include "domain/LiquidMixture.hpp"
 #include "domain/Liquid.hpp"
 #include "utils/Random.hpp"
+#include "utils/ECS.hpp"
 
 namespace LiquidSystem
 {
-	void simulate_liquid_flow(Cave& cave)
+	void simulate_liquid_flow(entt::registry& registry, const size_t cave_idx)
 	{
-		auto& cells = cave.get_cells();
-		auto floor_cells = cave.get_cells_with_type(Cell::Type::Floor);
+		auto& cave = ECS::get_cave(registry, cave_idx);
+		auto floor_cells = cave.get_positions_with_type(Cell::Type::Floor);
 		std::shuffle(floor_cells.begin(), floor_cells.end(), Random::rng());
-		for (const auto middle_idx : floor_cells)
+		for (const auto middle_pos : floor_cells)
 		{
-			auto& middle_cell = cells[middle_idx];
+			auto& middle_cell = cave.get_cell(middle_pos);
 			auto& middle_mix = middle_cell.get_liquid_mixture();
 			if (middle_mix.get_volume() < middle_mix.get_viscosity())
 				continue;
 
-			auto neighbors = cave.get_nearby_ids(middle_idx, 1.5, Cell::Type::Floor);
+			auto neighbors = cave.get_nearby_positions(middle_pos, 1.5, Cell::Type::Floor);
 			std::sort(neighbors.begin(), neighbors.end(),
 					[&](const auto a, const auto b)
 					{
-					return cells[a].get_liquid_level() < cells[b].get_liquid_level();
+					return cave.get_cell(a).get_liquid_level() < cave.get_cell(b).get_liquid_level();
 					});
 
-			for (const auto neighbor_idx : neighbors)
+			for (const auto neighbor_pos : neighbors)
 			{
-				auto& neighbor = cells[neighbor_idx];
+				auto& neighbor = cave.get_cell(neighbor_pos);
 				auto& neighbor_mix = neighbor.get_liquid_mixture();
 				const double diff = middle_cell.get_liquid_level() - neighbor.get_liquid_level();
 				if (diff <= 0 || middle_mix.get_volume() == 0)
@@ -41,23 +42,23 @@ namespace LiquidSystem
 				neighbor_mix += flow;
 			}
 		}
-		for (const auto idx : cave.get_sinks())
-			cave.get_cell(idx).clear_liquids();
+		for (const auto sink_pos : cave.get_positions_with_type(Cell::Type::Sink))
+			cave.get_cell(sink_pos).clear_liquids();
 	}
-	void simulate_liquid_diffusion(Cave& cave)
+	void simulate_liquid_diffusion(entt::registry& registry, const size_t cave_idx)
 	{
-		auto& cells = cave->get_cells();
-		auto floor_cells = cave->get_cells_with_type(Cell::Type::Floor);
+		auto& cave = ECS::get_cave(registry, cave_idx);
+		auto floor_cells = cave.get_positions_with_type(Cell::Type::Floor);
 		std::shuffle(floor_cells.begin(), floor_cells.end(), Random::rng());
-		for (const auto middle_idx : floor_cells)
+		for (const auto middle_pos : floor_cells)
 		{
-			auto& middle_cell = cells[middle_idx];
+			auto& middle_cell = cave.get_cell(middle_pos);
 			auto& middle_mix = middle_cell.get_liquid_mixture();
 			if (middle_mix.get_volume() <= middle_mix.get_viscosity())
 				continue;
 
-			const auto neighbors = cave->get_nearby_ids(middle_idx, 1.5, Cell::Type::Floor);
-			auto& neighbor_mix = cells[neighbors[neighbors.size() - 1]].get_liquid_mixture();
+			const auto neighbors = cave.get_nearby_positions(middle_pos, 1.5, Cell::Type::Floor);
+			auto& neighbor_mix = cave.get_cell(neighbors[neighbors.size() - 1]).get_liquid_mixture(); // i dont understand this line but i think the liquids were mixing with this
 			if (neighbor_mix.get_volume() <= neighbor_mix.get_viscosity())
 				continue;
 
@@ -67,9 +68,10 @@ namespace LiquidSystem
 		}
 	}
 
-	void simulate_liquid_sources(Cave& cave)
+	void simulate_liquid_sources(entt::registry& registry, const size_t cave_idx)
 	{
-		const auto sources = cave.get_cells_with_type(Cell::Type::Source);
+		auto& cave = ECS::get_cave(registry, cave_idx);
+		const auto sources = cave.get_positions_with_type(Cell::Type::Source);
 		for (const auto source : sources)
 		{
 			auto& cell = cave.get_cell(source);
@@ -83,16 +85,18 @@ namespace LiquidSystem
 		}
 	}
 
-	void simulate_liquids(Cave& cave)
+	void simulate_liquids(entt::registry& registry, size_t cave_idx)
 	{
-		simulate_liquid_flow(cave);
-		simulate_liquid_diffusion(cave);
-		simulate_liquid_sources(cave);
+		if (cave_idx == Position::invalid_idx)
+			cave_idx = ECS::get_active_cave(registry).get_idx();
+		simulate_liquid_flow(registry, cave_idx);
+		simulate_liquid_diffusion(registry, cave_idx);
+		simulate_liquid_sources(registry, cave_idx);
 	}
 	double get_liquids_volume(const entt::registry& registry, const size_t cave_idx)
 	{
 		double volume = 0;
-		const auto& cave = PositionSystem::get_cave(registry, cave_idx);
+		const auto& cave = ECS::get_cave(registry, cave_idx);
 		const auto& cells = cave.get_cells();
 		for (const auto& cell : cells)
 			volume += cell.get_liquid_mixture().get_volume();

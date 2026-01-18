@@ -16,8 +16,6 @@
 #include "utils/ECS.hpp"
 #include "domain/Event.hpp"
 
-#define CELL_SIZE 5
-#define MELEE_RANGE 1.5
 void EntityFactory::init()
 {
 	const std::filesystem::path root = "data/entities";

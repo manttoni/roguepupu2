@@ -30,7 +30,7 @@ struct Effect
 	Type type = Type::None;
 
 	// Entity of CreateEntity effect. Maybe even DestroyEntity?
-	std::string entity_id;
+	std::string entity_id = "";
 
 	// Affects everything within
 	double radius = 0.0;	// 0.0 will be just one cell
@@ -41,7 +41,6 @@ struct Effect
 	// When dealing direct damage
 	Damage damage{};
 
-	Effect() = default;
-	Effect(const Damage& damage) : type(Type::Damage), damage(damage) {}
+
 
 };

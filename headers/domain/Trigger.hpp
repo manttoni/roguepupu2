@@ -25,5 +25,5 @@ struct Trigger
 	};
 	Type type = Type::None;
 	Conditions conditions{};
-	Effect effect{};
+	Effect effect{}; // what will happen
 };

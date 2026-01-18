@@ -1,11 +1,12 @@
 #include <cassert>
 #include <string>
-#include "external/entt.hpp"
+#include "external/entt/entt.hpp"
 #include "domain/Actor.hpp"
 #include "domain/Effect.hpp"
 #include "domain/Target.hpp"
 #include "database/EntityFactory.hpp"
 #include "systems/position/MovementSystem.hpp"
+#include "systems/state/InventorySystem.hpp"
 #include "utils/ECS.hpp"
 
 namespace EffectSystem
@@ -13,49 +14,40 @@ namespace EffectSystem
 	// Actor causes some Effect to Target
 	void resolve_effect(entt::registry& registry, const Actor& actor, const Effect& effect, const Target& target)
 	{
-		assert(target.type != Target::Type::None);
 		switch (effect.type)
 		{
 			case Effect::Type::CreateEntity:
 				{
 					const auto entity = EntityFactory::instance().create_entity(registry, effect.entity_id);
-					switch (target.type)
-					{
-						case Target::Type::Cell:
-							MovementSystem::move(registry, entity, target.position);
-							break;
-						case Target::Type::Self: // add to inventory
-							.
-						default:
-							break;
-					}
-				}
-				break;
-			case Effect::Type::DestroyEntity:
-				switch (target.type)
-				{
-					case Target::Type::Self:
-						ECS::destroy_entity(registry, target.entity);
-						ECS::add_event(registry, {
-								.type = Event::Type::DestroyEntity,
-								.actor = actor.entity,
-								.target = target.entity
-								});
-						break;
-					default:
-						break;
+					if (target.position.is_valid())
+						// "Effect entity is created in target position"
+						MovementSystem::move(registry, entity, target.position);
+					else if (target.entity != entt::null)
+						// "Effect entity is created and added to target entity inventory"
+						InventorySystem::add_item(registry, target.entity, entity);
+					else
+						Log::error("Effect target is invalid");
 				}
 				break;
 			case Effect::Type::Transition:
-				if (target.position != Position{})
-					registry.emplace_or_replace<Position>(target.entity, target.position);
+				if (actor.entity != entt::null && target.position.is_valid())
+					// Dont use move() here to not trigger infinite loop
+					// "Actor entity transitions to target position"
+					// Transitioning is like moving but can be trans-cave
+					registry.emplace_or_replace<Position>(actor.entity, target.position);
 				break;
-			case Effect::Type::SetFGColor:
-				registry.emplace_or_replace<FGColor>(target.entity, effect.fgcolor);
-				LightingSystem::reset_lights(registry, ECS::get_active_cave(registry).get_idx());
+			case Effect::Type::DestroyEntity:
+				// "Target entity is destroyed"
+				ECS::limbo(registry, target.entity);
 				break;
 			default:
-				break;
+				Log::error("Unhandled effect type");
 		}
+
+		ECS::queue_event(registry, Event(
+					actor,
+					effect,
+					target
+					));
 	}
 };

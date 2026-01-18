@@ -8,6 +8,7 @@
 #include <cstdlib>        // for atoi, exit
 #include <cstring>        // for strchr, strncmp
 #include <string>         // for basic_string, string
+#include "utils/ECS.hpp"
 #include "domain/Color.hpp"      // for Color
 #include "domain/ColorPair.hpp"  // for ColorPair
 #include "UI/Menu.hpp"       // for Menu
@@ -16,6 +17,7 @@
 #include "UI/MenuTxt.hpp"    // for MenuTxt
 #include "UI/UI.hpp"         // for UI, KEY_LEFT_CLICK, KEY_RIGHT_CLICK, quit
 #include "utils/Vec2.hpp"
+#include "infrastructure/GameState.hpp"
 
 void UI::print_wstr(const size_t y, const size_t x, const std::wstring& wstr)
 {
@@ -214,8 +216,8 @@ int UI::input(int delay)
 			{
 				// save new mouse position
 				mouse_position = {
-					static_cast<size_t>(mouse_event.y),
-					static_cast<size_t>(mouse_event.x)
+					mouse_event.y,
+					mouse_event.x
 				};
 				key = ERR; // make it known that there was no input
 				continue; // go back to beginning and wait for real input
@@ -252,27 +254,27 @@ Vec2 UI::get_direction(const int key)
 	}
 }
 
-Vec2 UI::get_window_dimensions(const WINDOW* const window)
+Vec2 UI::get_window_dimensions(const WINDOW* const window) const
 {
 	Vec2 dimensions;
 	getmaxyx(window, dimensions.y, dimensions.x);
 	return dimensions;
 }
 
-Vec2 UI::get_window_start(const WINDOW* const window)
+Vec2 UI::get_window_start(const WINDOW* const window) const
 {
 	Vec2 start;
 	getbegyx(window, start.y, start.x);
 	return start;
 }
 
-size_t UI::get_clicked_cell_idx(const entt::registry& registry)
+Position UI::get_clicked_position(const entt::registry& registry)
 {
 	PANEL* panel = get_panel(UI::Panel::Game);
 	WINDOW* window = panel_window(panel);
 	const auto player = registry.ctx().get<GameState>().player;
 	const auto& player_position = registry.get<Position>(player);
-	const auto& cave = PositionSystem::get_cave(registry, player_position.cave_idx);
+	const auto& cave = ECS::get_cave(registry, player_position.cave_idx);
 
 	const Vec2 window_dimensions = get_window_dimensions(window);
 	const Vec2 window_start = get_window_start(window);
@@ -284,7 +286,7 @@ size_t UI::get_clicked_cell_idx(const entt::registry& registry)
 	const Vec2 click_coords = player_coords + offset;
 	const size_t click_idx = click_coords.to_idx(cave.get_size());
 
-	return click_idx;
+	return Position(click_idx, cave.get_idx());
 }
 
 void UI::init_panel(const Panel id)
