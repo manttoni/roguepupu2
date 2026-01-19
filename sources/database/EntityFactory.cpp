@@ -32,19 +32,7 @@ void EntityFactory::init()
 
 void EntityFactory::read_definitions(const std::filesystem::path& path)
 {
-	Log::log("Parsing " + path.string());
-	std::ifstream file(path);
-	if (!file.is_open())
-		Log::error(std::string("Opening file failed: ") + path.string());
-	if (file.peek() == std::ifstream::traits_type::eof())
-	{
-		Log::log("Empty file: " + path.string());
-		file.close();
-		return;
-	}
-	nlohmann::json definitions;
-	file >> definitions;
-	file.close();
+	nlohmann::json definitions = Parser::read_file(path);
 	const std::string category = path.parent_path().filename();
 	const std::string subcategory = path.stem().filename();
 	add_entities(definitions, category, subcategory);
@@ -210,7 +198,7 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			if (!data.is_number() || data.get<int>() < 0)
 				Log::error("Level should be positive integer: " + data.dump(4));
 
-			const size_t xp = StateSystem::level_to_xp(data["level"].get<size_t>());
+			const size_t xp = StateSystem::level_to_xp(data.get<size_t>());
 			reg.template emplace<Experience>(e, xp);
 		}
 	},

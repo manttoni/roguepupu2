@@ -3,7 +3,7 @@
 		"fgcolor": [400, 0, 250],
 		"weight": 0.2,
 		"glow": {
-			"strength": 0.01,
+			"intensity": 0.01,
 			"radius": 2.5
 		}
 	},

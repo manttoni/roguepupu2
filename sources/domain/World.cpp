@@ -1,6 +1,7 @@
 #include <utility>
 #include "domain/World.hpp"
 #include "domain/Cave.hpp"
+#include "utils/Parser.hpp"
 
 Cave& World::get_cave(const size_t idx)
 {
@@ -16,8 +17,10 @@ const Cave& World::get_cave(const size_t idx) const
 	return caves[idx];
 }
 
-size_t World::new_cave(const size_t size, const Cell::Type fill)
+size_t World::new_cave(size_t size, const Cell::Type fill)
 {
+	if (size == SIZE_MAX)
+		size = Parser::read_file("data/generation/cave/sizes.json")["default"].get<size_t>();
 	Cave cave(size, fill);
 	const size_t idx = caves.size();
 	cave.set_idx(idx);

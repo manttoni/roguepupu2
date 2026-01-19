@@ -17,4 +17,6 @@ namespace Unicode
 	constexpr wchar_t LiquidShallow		= L'~';
 	constexpr wchar_t LiquidMedium		= L'≈';
 	constexpr wchar_t LiquidDeep		= L'≋';
+	constexpr wchar_t Triangle			= L'▴';
+	constexpr wchar_t InvertedTriangle	= L'▾';
 };

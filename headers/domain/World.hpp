@@ -14,6 +14,6 @@ class World
 		Cave& get_cave(const size_t idx);
 		const Cave& get_cave(const size_t idx) const;
 
-		size_t new_cave(const size_t size = 150, const Cell::Type fill = Cell::Type::Rock);
+		size_t new_cave(const size_t size = SIZE_MAX, const Cell::Type fill = Cell::Type::Rock);
 };
 

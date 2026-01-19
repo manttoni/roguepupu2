@@ -9,13 +9,13 @@ namespace VisualEffectSystem
 {
 	void flash_entity(entt::registry& registry, const entt::entity entity, const Color& fgcolor, const size_t ms)
 	{
-		Color original = ECS::get_color(registry, entity);
+		Color original = ECS::get_fgcolor(registry, entity);
 		registry.get<FGColor>(entity).color = fgcolor;
 		const Position& position = registry.get<Position>(entity);
-		RenderingSystem::render_cell(registry, position, true);
+		RenderingSystem::render_cell(registry, position);
 		std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 		registry.get<FGColor>(entity).color = original;
-		RenderingSystem::render_cell(registry, position, true);
+		RenderingSystem::render_cell(registry, position);
 	}
 	void damage_flash(entt::registry& registry, const entt::entity entity)
 	{

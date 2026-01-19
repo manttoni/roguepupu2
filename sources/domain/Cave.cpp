@@ -22,8 +22,10 @@ std::vector<Position> Cave::get_positions() const
 
 double Cave::distance(const Position& a, const Position& b) const
 {
+	assert(a.is_valid());
+	assert(b.is_valid());
 	assert(a.cave_idx == idx && b.cave_idx == idx);
-	assert(a.cell_idx < size && b.cell_idx < size);
+	assert(a.cell_idx < get_area() && b.cell_idx < get_area());
 	const Vec2 start(a.cell_idx, size);
 	const Vec2 end(b.cell_idx, size);
 	return std::hypot(start.y - end.y, start.x - end.x);
@@ -31,6 +33,7 @@ double Cave::distance(const Position& a, const Position& b) const
 
 double Cave::distance(const size_t a, const size_t b) const
 {
+	assert(a < get_size() && b < get_size());
 	const Vec2 start(a, size);
 	const Vec2 end(b, size);
 	return std::hypot(start.y - end.y, start.x - end.x);
@@ -38,7 +41,9 @@ double Cave::distance(const size_t a, const size_t b) const
 
 std::vector<Position> Cave::get_nearby_positions(const Position& middle_pos, const double r, const Cell::Type type) const
 {
+	assert(middle_pos.is_valid());
 	assert(middle_pos.cave_idx == idx);
+	assert(middle_pos.cell_idx < get_area());
 	std::vector<Position> neighbors;
 	const Vec2 middle(middle_pos.cell_idx, size);
 

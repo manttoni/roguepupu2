@@ -93,8 +93,8 @@ namespace VisionSystem
 		if (!registry.all_of<Perception, Position>(entity))
 			return {};
 
-		std::vector<Position> visible_positions;
 		const auto& pos = registry.get<Position>(entity);
+		std::vector<Position> visible_positions = {pos};
 		const auto& cave = ECS::get_cave(registry, pos);
 		const auto vision_range = StateSystem::get_vision_range(registry, entity);
 		for (const auto nearby_pos : cave.get_nearby_positions(pos, vision_range))
@@ -103,5 +103,28 @@ namespace VisionSystem
 				visible_positions.push_back(nearby_pos);
 		}
 		return visible_positions;
+	}
+
+	std::vector<entt::entity> get_visible_entities_in_position(const entt::registry& registry, const entt::entity seer, const Position& position)
+	{
+		std::vector<entt::entity> visible_entities;
+		for (const auto entity : ECS::get_entities(registry, position))
+		{
+			// Skip adding if it's not visible, unless it's seer. (Always see yourself)
+			if (registry.any_of<Hidden, Invisible>(entity) && entity != seer)
+				continue;
+			visible_entities.push_back(entity);
+		}
+		return visible_entities;
+	}
+	std::vector<entt::entity> get_visible_entities(const entt::registry& registry, const entt::entity seer)
+	{
+		std::vector<entt::entity> visible_entities;
+		for (const auto position : get_visible_positions(registry, seer))
+		{
+			const auto& in_position = get_visible_entities_in_position(registry, seer, position);
+			visible_entities.insert(visible_entities.end(), in_position.begin(), in_position.end());
+		}
+		return visible_entities;
 	}
 };

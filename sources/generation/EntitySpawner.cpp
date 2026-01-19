@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <vector>
 #include <map>
+#include <cassert>
 #include "utils/Parser.hpp"
 #include "systems/rendering/LightingSystem.hpp"
 #include "components/Components.hpp"
@@ -9,23 +10,40 @@
 #include "database/EntityFactory.hpp"
 #include "utils/Random.hpp"
 #include "utils/ECS.hpp"
+#include "UI/UI.hpp"
 
 namespace EntitySpawner
 {
-	void spawn_entities(entt::registry& registry, const size_t cave_idx)
+	void spawn_entities(entt::registry& registry, nlohmann::json filter, const size_t cave_idx)
 	{
+		// Add to filter that spawn data is needed
+		filter["spawn"] = "any";
+
 		const auto& cave = ECS::get_cave(registry, cave_idx);
-		nlohmann::json filter = {{"spawn", "any"}, {"player"}, {"none"}};
+
+		// Get all entities names that match the filter
 		auto id_pool = EntityFactory::instance().random_pool(filter);
+		assert(id_pool.size() > 0);
+
+		// Get look up table which contains all info from json
 		const auto& LUT = EntityFactory::instance().get_LUT();
+
+		// By decision allow spawning on floor cells only
 		auto floor_cells = cave.get_positions_with_type(Cell::Type::Floor);
 		std::shuffle(floor_cells.begin(), floor_cells.end(), Random::rng());
 		const auto seed = Random::randsize_t(0, 99999);
+
+		// Evaluate each cell individually
 		for (const auto& spawn_pos : floor_cells)
 		{
+			// Allow only one entity per cell
 			if (!ECS::get_entities(registry, spawn_pos).empty())
 				continue;
+
+			// Randomize order each cell
 			std::shuffle(id_pool.begin(), id_pool.end(), Random::rng());
+
+			// Check each entity and their spawn conditions
 			for (const auto& id : id_pool)
 			{
 				const auto& spawn_data = LUT.at(id)["spawn"];
@@ -41,24 +59,21 @@ namespace EntitySpawner
 							spawn_pos.cell_idx % cave.get_size(),
 							frequency, octaves, seed);
 					if (noise < treshold)
+					{
 						continue;
+					}
 				}
 				if (spawn_data.contains("space"))
 				{
 					const auto& space = spawn_data["space"];
+					if (!space.contains("radius") || !space.contains("neighbors"))
+						Log::error(id + ": Space missing data: " + spawn_data.dump(4));
 					const auto radius = space["radius"].get<double>();
-					const auto& [min_blockers, max_blockers] = Parser::parse_range(space["blockers"]);
-					size_t blockers = cave.get_nearby_positions(spawn_pos, radius, Cell::Type::Rock).size();
+					const auto& [min_neighbors, max_neighbors] = Parser::parse_range(space["neighbors"]);
+					size_t neighbors = cave.get_nearby_positions(spawn_pos, radius, Cell::Type::Rock).size();
 					for (const auto nearby_pos : cave.get_nearby_positions(spawn_pos, radius, Cell::Type::Floor))
-					{
-						const auto entities = ECS::get_entities(registry, nearby_pos, Solid(true));
-						for (const auto entity : entities)
-						{
-							if (registry.get<Category>(entity).category != "creatures")
-								blockers++;
-						}
-					}
-					if (blockers < min_blockers || blockers > max_blockers)
+						neighbors += ECS::get_entities(registry, nearby_pos).size();
+					if (neighbors < min_neighbors || neighbors > max_neighbors)
 						continue;
 				}
 				if (spawn_data.contains("water"))
@@ -76,7 +91,9 @@ namespace EntitySpawner
 							.get_volume(Liquid::Type::Water);
 					}
 					if (liquid_volume < min || liquid_volume > max)
+					{
 						continue;
+					}
 				}
 				if (spawn_data.contains("light"))
 				{
@@ -87,7 +104,9 @@ namespace EntitySpawner
 					for (const auto nearby_pos : cave.get_nearby_positions(spawn_pos, radius))
 						illumination += LightingSystem::get_illumination(cave.get_cell(nearby_pos));
 					if (illumination < min || illumination > max)
+					{
 						continue;
+					}
 				}
 				EntityFactory::instance().create_entity(registry, id, spawn_pos);
 				break;

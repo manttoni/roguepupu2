@@ -3,11 +3,6 @@
 		"level": 0,
 		"weight": 0.0001,
 		"fgcolor": [150, 100, 150],
-		"attributes": {
-			"strength": 1,
-			"dexterity": 10,
-			"intelligence": 1
-		},
 		"vision": 1,
 		"faction": "spiders",
 		"abilities": [ "spin web" ],
@@ -27,7 +22,7 @@
 			},
 			"space": {
 				"radius": 1.5,
-				"blockers": "2-3"
+				"neighbors": "2-3"
 			},
 			"perlin": {
 				"frequency": 0.5,

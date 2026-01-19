@@ -55,18 +55,23 @@ namespace ECS
 
 
 
-	inline Color get_color(const entt::registry& registry, const entt::entity entity)
+	inline Color get_fgcolor(const entt::registry& registry, const entt::entity entity)
 	{
 		if (!registry.all_of<FGColor>(entity))
 			return Color::white();
 		return registry.get<FGColor>(entity).color;
 	}
 
-	inline std::string get_colored_name(const entt::registry& registry, const entt::entity entity)
+	inline std::string get_name(const entt::registry& registry, const entt::entity entity)
 	{
 		const std::string& name = Utils::capitalize(registry.get<Name>(entity).name);
-		const Color& fgcolor = get_color(registry, entity);
-		return fgcolor.markup() + name + "{reset}";
+		return name;
+	}
+
+	inline std::string get_colored_name(const entt::registry& registry, const entt::entity entity)
+	{
+		const Color& fgcolor = get_fgcolor(registry, entity);
+		return fgcolor.markup() + get_name(registry, entity) + "{reset}";
 	}
 
 	inline std::vector<std::string> get_colored_names(const entt::registry& registry, const std::vector<entt::entity> entities)
@@ -195,4 +200,16 @@ namespace ECS
 			return registry.get<Glyph>(entity).glyph;
 		return registry.get<Name>(entity).name[0];
 	}
+
+	inline double get_liquid_level(const entt::registry& registry, const Position& pos)
+	{
+		double liquid_level = get_cell(registry, pos).get_liquid_level();
+		for (const auto entity : get_entities(registry, pos))
+		{
+			if (registry.all_of<Size>(entity))
+				liquid_level += registry.get<Size>(entity).liters;
+		}
+		return liquid_level;
+	}
+
 };

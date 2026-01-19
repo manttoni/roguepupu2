@@ -101,7 +101,7 @@ namespace MovementSystem
 			}
 
 			open_set.erase(std::find(open_set.begin(), open_set.end(), current_pos)); // is found
-			for (const auto& neighbor_pos : cave.get_nearby_positions(current_pos, 1.5, Cell::Type::Floor))
+			for (const auto& neighbor_pos : cave.get_nearby_positions(current_pos, 1.5))
 			{
 				if (!can_move(registry, current_pos, neighbor_pos))
 					continue;
@@ -137,6 +137,7 @@ namespace MovementSystem
 	void move(entt::registry& registry, const entt::entity entity, const Position& position)
 	{
 		registry.emplace_or_replace<Position>(entity, position);
+		Log::log(ECS::get_name(registry, entity) + " moves");
 		ECS::queue_event(registry, Event(
 					{.entity = entity},
 					{.type = Effect::Type::Move},

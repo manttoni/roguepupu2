@@ -33,6 +33,26 @@ class Cell
 				return Type::Sink;
 			return density > 0 ? Type::Rock : Type::Floor;
 		}
+		void set_type(const Cell::Type type)
+		{
+			switch (type)
+			{
+				case Cell::Type::Rock:
+					density = CELL_DENSITY_MAX;
+					break;
+				case Cell::Type::Floor:
+					density = 0;
+					break;
+				case Cell::Type::Source:
+					density = std::numeric_limits<double>::infinity();
+					break;
+				case Cell::Type::Sink:
+					density = -std::numeric_limits<double>::infinity();
+					break;
+				default:
+					break;
+			}
+		}
 
 	private:
 		Color fgcolor, bgcolor;

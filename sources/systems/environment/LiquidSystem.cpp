@@ -14,27 +14,28 @@ namespace LiquidSystem
 	void simulate_liquid_flow(entt::registry& registry, const size_t cave_idx)
 	{
 		auto& cave = ECS::get_cave(registry, cave_idx);
-		auto floor_cells = cave.get_positions_with_type(Cell::Type::Floor);
-		std::shuffle(floor_cells.begin(), floor_cells.end(), Random::rng());
-		for (const auto middle_pos : floor_cells)
+		auto positions = cave.get_positions();
+		std::shuffle(positions.begin(), positions.end(), Random::rng());
+		for (const auto middle_pos : positions)
 		{
 			auto& middle_cell = cave.get_cell(middle_pos);
 			auto& middle_mix = middle_cell.get_liquid_mixture();
-			if (middle_mix.get_volume() < middle_mix.get_viscosity())
+			if (middle_mix.get_volume() == 0)
 				continue;
 
-			auto neighbors = cave.get_nearby_positions(middle_pos, 1.5, Cell::Type::Floor);
+			auto neighbors = cave.get_nearby_positions(middle_pos, 1.5);
 			std::sort(neighbors.begin(), neighbors.end(),
 					[&](const auto a, const auto b)
 					{
-					return cave.get_cell(a).get_liquid_level() < cave.get_cell(b).get_liquid_level();
+					return ECS::get_liquid_level(registry, a) < ECS::get_liquid_level(registry, b);
 					});
 
 			for (const auto neighbor_pos : neighbors)
 			{
 				auto& neighbor = cave.get_cell(neighbor_pos);
+				if (neighbor.get_type() == Cell::Type::Rock) continue; // dont simulate liquids for rock cells
 				auto& neighbor_mix = neighbor.get_liquid_mixture();
-				const double diff = middle_cell.get_liquid_level() - neighbor.get_liquid_level();
+				const double diff = ECS::get_liquid_level(registry, middle_pos) - ECS::get_liquid_level(registry, neighbor_pos);
 				if (diff <= 0 || middle_mix.get_volume() == 0)
 					break;
 
@@ -54,12 +55,13 @@ namespace LiquidSystem
 		{
 			auto& middle_cell = cave.get_cell(middle_pos);
 			auto& middle_mix = middle_cell.get_liquid_mixture();
-			if (middle_mix.get_volume() <= middle_mix.get_viscosity())
+			if (middle_mix.get_volume() == 0)
 				continue;
 
 			const auto neighbors = cave.get_nearby_positions(middle_pos, 1.5, Cell::Type::Floor);
-			auto& neighbor_mix = cave.get_cell(neighbors[neighbors.size() - 1]).get_liquid_mixture(); // i dont understand this line but i think the liquids were mixing with this
-			if (neighbor_mix.get_volume() <= neighbor_mix.get_viscosity())
+			if (neighbors.empty()) continue;
+			auto& neighbor_mix = cave.get_cell(neighbors.front()).get_liquid_mixture();
+			if (neighbor_mix.get_volume() == 0)
 				continue;
 
 			const double volume = std::min(middle_mix.get_volume(), neighbor_mix.get_volume()) / 10;

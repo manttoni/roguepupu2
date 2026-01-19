@@ -28,8 +28,20 @@ class Cave
 
 		std::vector<Position> get_positions() const;
 
-		const Cell& get_cell(const Position& position) const { assert(position.cave_idx == idx); return cells[position.cell_idx]; }
-		Cell& get_cell(const Position& position) { assert(position.cave_idx == idx); return cells[position.cell_idx]; }
+		const Cell& get_cell(const Position& position) const
+		{
+			assert(position.is_valid());
+			assert(position.cave_idx == idx);
+			assert(position.cell_idx < get_area());
+			return cells[position.cell_idx];
+		}
+		Cell& get_cell(const Position& position)
+		{
+			assert(position.is_valid());
+			assert(position.cave_idx == idx);
+			assert(position.cell_idx < get_area());
+			return cells[position.cell_idx];
+		}
 
 		std::vector<Position> get_nearby_positions(const Position& middle, const double r = 1.5, const Cell::Type type = Cell::Type::None) const;
 		std::vector<Position> get_positions_with_type(const Cell::Type type) const;

@@ -26,20 +26,21 @@ namespace CaveGenerator
 		{
 			double intensity = 0.0;
 			size_t iterations = 0;
+			bool rock = false;
 		};
 		struct Features
 		{	// What geological features does the cave have.
 			// Could have some Chambers or something
 			//
 			// These are the basic way to generate caves
-			size_t sinks = 1;	// water flows here
-			size_t sources = 1;	// from here
+			size_t sinks = 2;	// water flows here
+			size_t sources = 2;	// from here
 			// Chamber chamber?
 		};
 		struct Margin
 		{
-			size_t size = 10;
-			size_t multiplier = 2;
+			size_t size = 1;
+			size_t multiplier = 1000;
 		};
 
 		entt::registry& registry;	// To be able to use systems and spawn entities
@@ -69,7 +70,7 @@ namespace CaveGenerator
 	void form_tunnels(Data& data);
 
 	// Create a path of least resistance through the rock, while reducing density
-	void erosion_simulation(Data& data, const size_t start, const size_t end);
+	void erosion_simulation(Data& data, const Position& start, const Position& end);
 
 	// Smooth terrain without changing liquid sinks so it will drain properly/as intended
 	void smooth_terrain(Data& data);

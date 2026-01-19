@@ -39,8 +39,8 @@ struct Solid
 
 	bool operator==(const Solid& other) const = default;
 };
-struct Opaque { double value; };	// value [0,1] is how much this entity blocks vision. 1 = completely opaque, 0, transparent
-struct Size { double size = 0.0; };
+struct Opaque { double value = 1.0; };	// value [0,1] is how much this entity blocks vision. 1 = completely opaque, 0, transparent
+struct Size { double liters; };
 struct Weight { double kilograms; };
 
 /* Rendering */

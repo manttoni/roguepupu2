@@ -41,7 +41,7 @@ namespace EffectSystem
 				ECS::limbo(registry, target.entity);
 				break;
 			default:
-				Log::error("Unhandled effect type");
+				Log::error("Unhandled effect type: " + std::to_string(static_cast<int>(effect.type)));
 		}
 
 		ECS::queue_event(registry, Event(

@@ -1,0 +1,26 @@
+{
+	"default": {
+		"density": {
+			"frequency": 0.1,
+			"octaves": 8
+		},
+		"erosion": {
+			"erosion_a": 3.0,
+			"erosion_b": 0.05,
+			"erosion_c": 0.05
+		},
+		"smooth": {
+			"intensity": 0.001,
+			"iterations": 0,
+			"rock": false
+		},
+		"features": {
+			"sinks": 2,
+			"sources": 2
+		},
+		"margin": {
+			"size": 1,
+			"multiplier": 1000
+		}
+	}
+}

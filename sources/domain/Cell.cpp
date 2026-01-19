@@ -2,6 +2,8 @@
 #include "domain/Cell.hpp"        // for Cell
 #include "utils/Log.hpp"
 #include "domain/LiquidMixture.hpp"
+#include "domain/Color.hpp"
+#include "utils/Unicode.hpp"
 
 Cell::Cell(const size_t idx, const Cell::Type type) :
 	idx(idx),
@@ -27,7 +29,6 @@ void Cell::reduce_density(const double amount)
 
 double Cell::get_liquid_level() const
 {
-	assert(density <= 0);
 	return density + liquid_mixture.get_volume();
 }
 

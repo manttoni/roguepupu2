@@ -17,77 +17,124 @@
 #include "infrastructure/GameLogger.hpp"
 #include "utils/Math.hpp"
 #include "testing/DevTools.hpp"
+#include "systems/environment/LiquidSystem.hpp"
 
 namespace RenderingSystem
 {
-	/* Get a struct with glyph and color_pair that will be rendered.
-	 * If is_visible, then show everything except hidden entities.
-	 * Else show some stuff with grey color
-	 * */
-	Visual get_visual(const entt::registry& registry, const Position& position, const bool is_visible)
+	wchar_t get_glyph(const entt::registry& registry, const Position& position)
 	{
-		Visual visual;
 		const auto& cell = ECS::get_cell(registry, position);
-		std::vector<entt::entity> visible_entities;
-		for (const auto entity : ECS::get_entities(registry, position))
-		{
-			if (registry.any_of<Hidden, Invisible>(entity) && entity != ECS::get_player(registry))
-				continue;
-			if (!is_visible && registry.get<Category>(entity).category == "creatures")
-				continue;
-			visible_entities.push_back(entity);
-		}
 
 		const auto& lm = cell.get_liquid_mixture();
-		const auto& lm_volume = lm.get_volume();
+		if (lm.get_volume() > 100.0)
+			return Unicode::LiquidDeep;
+		if (lm.get_volume() > 10.0)
+			return Unicode::LiquidMedium;
+		if (lm.get_volume() > 1)
+			return Unicode::LiquidShallow;
 
-		// Background color always from cell/liquid
-		Color fg, bg;
-		if (!is_visible)
-			bg = Color::black();
-		else if (lm_volume > TRESHOLD_LIQUID_BGCOLOR)
-			bg = lm.get_color() / 10;
-		else
-			bg = cell.get_bgcolor();
-
-		if (visible_entities.empty())
+		const auto type = cell.get_type();
+		switch (type)
 		{
-			if (lm_volume > TRESHOLD_LIQUID_DEEP)
-				visual.glyph = Unicode::LiquidDeep;
-			else if (lm_volume > TRESHOLD_LIQUID_MEDIUM)
-				visual.glyph = Unicode::LiquidMedium;
-			else if (lm_volume > TRESHOLD_LIQUID_SHALLOW)
-				visual.glyph = Unicode::LiquidShallow;
-			else if (is_visible || cell.get_type() != Cell::Type::Floor)
-				visual.glyph = cell.get_glyph();
-
-			if (lm_volume > TRESHOLD_LIQUID_FGCOLOR)
-				fg = lm.get_color();
-			else if (is_visible)
-				fg = cell.get_fgcolor();
-			else if (cell.get_type() != Cell::Type::Floor)
-				fg = Color::grey();
+			case Cell::Type::Rock:
+				return Unicode::FullBlock;
+			case Cell::Type::Floor:
+				return L' '; // can make it some random debris
+			case Cell::Type::Source:
+				return Unicode::Triangle;
+			case Cell::Type::Sink:
+				return Unicode::InvertedTriangle;
+			default:
+				return L'?';
 		}
-		else
+	}
+
+	Color get_fgcolor(const entt::registry& registry, const Position& position)
+	{
+		const auto& cell = ECS::get_cell(registry, position);
+
+		const auto& lm = ECS::get_cell(registry, position).get_liquid_mixture();
+		if (lm.get_volume() > 0)
+			return lm.get_color();
+
+		const auto type = cell.get_type();
+
+		switch (type)
 		{
-			const size_t render_frame = registry.ctx().get<RenderData>().render_frame;
-			const auto visible_entity = visible_entities[render_frame % visible_entities.size()];
+			case Cell::Type::Rock:
+				// Previous version had shades of grey based on density
+				// Which was ok, but uses color ids
+				return Color(10, 20, 10) * static_cast<int>(std::round(0.5 + cell.get_density()));
+			case Cell::Type::Floor:
+				return Color(5, 10, 5);
+			case Cell::Type::Source:
+			case Cell::Type::Sink:
+				return Color(80, 160, 80);
+			default:
+				return Color(0,0,1000);
+		}
+	}
+
+	Color get_bgcolor(const entt::registry& registry, const Position& position)
+	{
+		const auto& cell = ECS::get_cell(registry, position);
+
+		const auto& lm = ECS::get_cell(registry, position).get_liquid_mixture();
+		if (lm.get_volume() >= 1)
+			return lm.get_color() / 10;
+
+		const auto type = cell.get_type();
+
+		switch (type)
+		{
+			case Cell::Type::Rock:
+			case Cell::Type::Floor:
+			case Cell::Type::Source:
+			case Cell::Type::Sink:
+				return Color(4, 8, 4);
+			default:
+				return Color(0,0,1000);
+		}
+	}
+
+	Visual get_visual(const entt::registry& registry, const Position& position)
+	{
+		const size_t render_frame = registry.ctx().get<RenderData>().render_frame;
+		std::vector<entt::entity> visible_entities =
+			VisionSystem::get_visible_entities_in_position(registry, ECS::get_player(registry), position);
+		const auto visible_entity =
+			!visible_entities.empty() ?
+			visible_entities[render_frame % visible_entities.size()] :
+			entt::null;
+
+		Visual visual;
+		if (visible_entity != entt::null)
+		{
 			visual.glyph = ECS::get_glyph(registry, visible_entity);
-			fg = ECS::get_color(registry, visible_entity);
+			visual.fg = ECS::get_fgcolor(registry, visible_entity);
+			visual.bg = get_bgcolor(registry, position);
 		}
-		for (const auto& [light_color, light_stacks] : cell.get_lights())
+		else
 		{
-			fg += light_color * static_cast<int>(light_stacks);
-			bg += light_color * static_cast<int>(light_stacks);
+			visual.glyph = get_glyph(registry, position);
+			visual.fg = get_fgcolor(registry, position);
+			visual.bg = get_bgcolor(registry, position);
 		}
-		visual.color_pair = ColorPair(fg, bg);
+
+		for (const auto& [light_color, light_stacks] : ECS::get_cell(registry, position).get_lights())
+		{
+			visual.fg += light_color * static_cast<int>(light_stacks);
+			visual.bg += light_color * static_cast<int>(light_stacks);
+		}
+		visual.color_pair = ColorPair(visual.fg, visual.bg);
+
 		return visual;
 	}
 
-	void render_cell(const entt::registry& registry, const Position& position, const bool is_visible)
+	void render_cell(const entt::registry& registry, const Position& position)
 	{
 		const auto& cave = ECS::get_cave(registry, position);
-		const Visual visual = get_visual(registry, position, is_visible);
+		const Visual visual = get_visual(registry, position);
 		const Vec2 middle = Screen::middle();
 		const Vec2 cell(position.cell_idx, cave.get_size());
 		const Vec2 player(registry.get<Position>(ECS::get_player(registry)).cell_idx, cave.get_size());
@@ -96,40 +143,19 @@ namespace RenderingSystem
 
 		UI::instance().enable_color_pair(visual.color_pair);
 		UI::instance().print_wide(y, x, visual.glyph);
+		UI::instance().disable_color_pair(visual.color_pair);
 	}
 
 	void render_active_cave(entt::registry& registry)
 	{
-		const auto& cave = ECS::get_active_cave(registry);
+		UI::instance().set_current_panel(UI::Panel::Game, true);
+		werase(panel_window(UI::instance().get_current_panel()));
 
-		auto& render_data = registry.ctx().get<RenderData>();
-		render_data.visible_cells = VisionSystem::get_visible_positions(registry, ECS::get_player(registry));
-		for (const auto visible_cell : render_data.visible_cells)
-		{
-			auto it = std::find(render_data.seen_cells.begin(), render_data.seen_cells.end(), visible_cell);
-			if (it == render_data.seen_cells.end())
-				render_data.seen_cells.push_back(visible_cell);
-		}
+		// print seen cells with black and grey, probably only rock and (floor)
 
-		for (const auto& pos : cave.get_positions())
-		{
-			auto visible_it = std::find(
-					render_data.visible_cells.begin(),
-					render_data.visible_cells.end(),
-					pos);
-			if (visible_it != render_data.visible_cells.end())
-			{
-				render_cell(registry, pos, true);
-				continue;
-			}
-
-			auto seen_it = std::find(
-					render_data.seen_cells.begin(),
-					render_data.seen_cells.end(),
-					pos);
-			if (seen_it != render_data.seen_cells.end())
-				render_cell(registry, pos, false);
-		}
+		const auto visible_positions = VisionSystem::get_visible_positions(registry, ECS::get_player(registry));
+		for (const auto position : visible_positions)
+			render_cell(registry, position);
 	}
 
 	void print_log(const entt::registry& registry)
@@ -190,28 +216,44 @@ namespace RenderingSystem
 		draw_bar(Color(0,0,600), std::max(0.0, mp_per), 5, bar_len);
 	}*/
 
-	/*void show_debug(const entt::registry& registry)
+	void show_debug(const entt::registry& registry)
 	{
 		if (registry.ctx().get<Dev>().show_debug == false)
 			return;
-		UI::instance().set_current_panel(UI::instance().get_panel(UI::Panel::Game));
+		UI::instance().set_current_panel(UI::Panel::Game);
 		const std::vector<std::string> debug =
 		{
 			"Colors: " + std::to_string(UI::instance().get_initialized_colors().size()),
 			"ColorPairs: " + std::to_string(UI::instance().get_initialized_color_pairs().size()),
 			"Turn Number: " + std::to_string(registry.ctx().get<GameState>().turn_number),
-			"Liquids volume: " + std::to_string(EnvironmentSystem::get_liquids_volume(ECS::get_active_cave(registry)))
+			"Liquids volume: " + std::to_string(LiquidSystem::get_liquids_volume(registry, ECS::get_active_cave(registry).get_idx()))
 		};
 		for (size_t i = 0; i < debug.size(); ++i)
 			UI::instance().print(i, 0, debug[i]);
-	}*/
+	}
 
 	void render(entt::registry& registry)
 	{
 		render_active_cave(registry);
 		print_log(registry);
 		//show_player_status(registry);
-		//show_debug(registry);
+		show_debug(registry);
 		UI::instance().update();
 	}
+
+	void render_generation(const entt::registry& registry, const size_t cave_idx)
+	{
+		UI::instance().set_current_panel(UI::Panel::Game);
+		const auto& cave = ECS::get_cave(registry, cave_idx);
+		for (const auto& pos : cave.get_positions())
+		{
+			const Visual visual = get_visual(registry, pos);
+			const Vec2 coords(pos.cell_idx, cave.get_size());
+			UI::instance().enable_color_pair(visual.color_pair);
+			UI::instance().print_wide(coords.y, coords.x, visual.glyph);
+			UI::instance().disable_color_pair(visual.color_pair);
+		}
+		UI::instance().update();
+	}
+
 };

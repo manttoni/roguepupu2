@@ -1,10 +1,12 @@
 #include "components/Components.hpp"
+#include "systems/rendering/LightingSystem.hpp"
 #include "domain/Cell.hpp"
 #include "domain/Event.hpp"
 #include "external/entt/entt.hpp"
 #include "systems/action/EventSystem.hpp"
 #include "systems/action/TriggerSystem.hpp"
 #include "utils/ECS.hpp"
+#include "infrastructure/GameLogger.hpp"
 
 namespace EventSystem
 {
@@ -44,6 +46,39 @@ namespace EventSystem
 			TriggerSystem::resolve_trigger(registry, trigger, event);
 	}
 
+	void resolve_spawn_event(entt::registry& registry, const Event& event)
+	{
+		if (registry.all_of<Glow, Position, FGColor>(event.target.entity))
+			LightingSystem::reset_lights(registry, registry.get<Position>(event.target.entity).cave_idx);
+	}
+
+	void log_event(entt::registry& registry, const Event& event)
+	{
+		std::string message;
+		if (event.actor.entity != entt::null)
+			message += ECS::get_colored_name(registry, event.actor.entity) + " ";
+		switch (event.effect.type)
+		{
+			case Effect::Type::Gather:
+				message += "gathers from ";
+				break;
+			case Effect::Type::Equip:
+				message += "equips ";
+				break;
+			case Effect::Type::Unequip:
+				message += "unequips ";
+				break;
+			case Effect::Type::Drop:
+				message += "drops ";
+				break;
+			default:
+				return;
+		}
+		if (event.target.entity != entt::null)
+			message += ECS::get_colored_name(registry, event.target.entity);
+		registry.ctx().get<GameLogger>().log(message);
+	}
+
 	void resolve_events(entt::registry& registry)
 	{
 		std::vector<Event>& event_queue = registry.ctx().get<EventQueue>().queue;
@@ -52,15 +87,25 @@ namespace EventSystem
 			switch (event.effect.type)
 			{
 				case Effect::Type::Move:
-					// If there will be separate LeaveCell and EnterCell, split this before
 					resolve_move_event(registry, event);
 					break;
 				case Effect::Type::Gather:
 					resolve_gather_event(registry, event);
 					break;
+				case Effect::Type::Spawn:
+					resolve_spawn_event(registry, event);
+					break;
+				case Effect::Type::Equip:
+				case Effect::Type::Unequip:
+					// if there will be equipment effects handle them here
+					break;
+				case Effect::Type::Drop:
+					resolve_spawn_event(registry, event);
+					break;
 				default:
-					Log::error("Unhandled effect type in resolve_events");
+					Log::error("Unhandled effect type: " + std::to_string(static_cast<int>(event.effect.type)));
 			}
+			log_event(registry, event);
 		}
 		event_queue.clear();
 	}
