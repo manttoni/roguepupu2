@@ -1,6 +1,5 @@
 {
 	"small spider": {
-		"level": 0,
 		"weight": 0.0001,
 		"fgcolor": [150, 100, 150],
 		"vision": 1,
@@ -18,11 +17,12 @@
 		"spawn": {
 			"light": {
 				"radius": 2,
-				"amount": 0
+				"amount": "0-0.1"
 			},
 			"space": {
 				"radius": 1.5,
-				"neighbors": "2-3"
+				"solid": 2,
+				"empty": 2
 			},
 			"perlin": {
 				"frequency": 0.5,

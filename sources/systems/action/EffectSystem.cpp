@@ -38,7 +38,7 @@ namespace EffectSystem
 				break;
 			case Effect::Type::DestroyEntity:
 				// "Target entity is destroyed"
-				ECS::limbo(registry, target.entity);
+				registry.destroy(target.entity);
 				break;
 			default:
 				Log::error("Unhandled effect type: " + std::to_string(static_cast<int>(effect.type)));

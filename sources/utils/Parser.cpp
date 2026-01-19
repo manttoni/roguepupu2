@@ -52,28 +52,6 @@ namespace Parser
 		return conditions;
 	}
 
-	std::pair<size_t, size_t> parse_range(const nlohmann::json& data)
-	{
-		if (data.is_number())
-		{
-			const size_t n = data.get<size_t>();
-			return {n, n};
-		}
-		if (data.is_string())
-		{
-			const auto str = data.get<std::string>();
-			auto pos = str.find('-');
-			if (pos == std::string::npos)
-				Log::error("Invalid range: " + str);
-			const size_t min = std::stoi(str.substr(0, pos));
-			const size_t max = std::stoi(str.substr(pos + 1));
-			if (min > max)
-				Log::error("Invalid range: " + str);
-			return {min, max};
-		}
-		Log::error("Unsupported range format: " + data.dump(4));
-	}
-
 	nlohmann::json read_file(const std::filesystem::path& path)
 	{
 		Log::log("Reading " + path.string());

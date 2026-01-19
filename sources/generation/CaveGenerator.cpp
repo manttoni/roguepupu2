@@ -18,7 +18,6 @@
 
 namespace CaveGenerator
 {
-
 	bool is_on_edge(const Data& data, const Vec2& coords)
 	{
 		const auto margin_size = static_cast<int>(data.margin.size);
@@ -122,7 +121,10 @@ namespace CaveGenerator
 	{
 		static size_t i = 0;
 		if (i++ % 10 == 0)
-			EntitySpawner::spawn_entities(data.registry, {{"category", "nature"}}, data.cave.get_idx());
+		{
+			EntitySpawner::despawn_entities(data.registry, data.cave.get_idx());
+			EntitySpawner::spawn_entities(data.registry, data.cave.get_idx(), {{"category", "nature"}});
+		}
 		for (size_t i = 0; i < 32; ++i)
 			LiquidSystem::simulate_liquids(data.registry, data.cave.get_idx());
 	}
@@ -262,8 +264,6 @@ namespace CaveGenerator
 		set_water_features(data);
 		echo("Forming tunnels");
 		form_tunnels(data);
-		EntitySpawner::spawn_entities(data.registry, {{"category", "nature"}}, data.cave.get_idx());
-		//EntitySpawner::spawn_entities(data.registry, {{"subcategory", "spiders"}}, data.cave.get_idx());
 		render(data);
 	}
 
@@ -276,7 +276,7 @@ namespace CaveGenerator
 			choice = UI::instance().dialog("Cave ready", {"Simulate", "OK"});
 			if (choice == "Simulate")
 			{
-				for (size_t i = 0; i < 10; ++i)
+				for (size_t i = 0; i < 100; ++i)
 				{
 					simulate_environment(data);
 					render(data);

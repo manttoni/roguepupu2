@@ -79,7 +79,7 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 				size_t amount = 1;
 				if (entry.contains("amount"))
 				{
-					const auto [min, max] = Parser::parse_range(entry["amount"]);
+					const auto [min, max] = Parser::parse_range<size_t>(entry["amount"]);
 					amount = Random::randsize_t(min, max);
 				}
 				std::vector<std::string> name_pool;

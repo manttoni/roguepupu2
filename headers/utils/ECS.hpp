@@ -164,7 +164,7 @@ namespace ECS
 	 * to be valid for logging etc...
 	 * Just strip it of some components
 	 * */
-	inline void limbo(entt::registry& registry, const entt::entity entity)
+	inline void destroy_entity(entt::registry& registry, const entt::entity entity)
 	{
 		if (registry.all_of<Position>(entity))
 			registry.erase<Position>(entity);
@@ -180,6 +180,12 @@ namespace ECS
 			registry.erase<Triggers>(entity);
 		if (registry.all_of<AI>(entity))
 			registry.erase<AI>(entity);
+
+		queue_event(registry, Event(
+					{},
+					{.type = Effect::Type::DestroyEntity},
+					{.entity = entity}
+					));
 	}
 
 	inline double distance(const entt::registry& registry, const Position& a, const Position& b)

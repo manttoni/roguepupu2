@@ -9,25 +9,27 @@
 		"opaque": 0.2,
 		"spawn": {
 			"space": {
-				"radius": 1.5,
-				"neighbors": 1
+				"radius": 1,
+				"solid": 1,
+				"empty": 3
 			},
 			"perlin": {
 				"frequency": 0.01,
 				"treshold": 0.4
 			},
-			"water": {
-				"radius": 10,
-				"amount": "2-20"
+			"liquid": {
+				"type": "water",
+				"radius": 15,
+				"amount": "4-20"
 			}
 		},
-		"weight": 10,
+		"weight": 5,
 		"gatherable": {
 			"tool": "cutting",
 			"entity_id": "glowing bulb",
 			"amount": 1
 		},
-		"size": 0.25
+		"size": 5
 	},
 
 	"woody mushroom": {
@@ -37,25 +39,26 @@
 		"solid": true,
 		"spawn": {
 			"space": {
-				"radius": 4,
-				"neighbors": "0-4"
+				"radius": 3,
+				"solid": "0-2"
 			},
 			"perlin": {
 				"frequency": 0.2,
 				"octaves": 16,
 				"treshold": 0.5
 			},
-			"water": {
+			"liquid": {
+				"type": "water",
 				"radius": 10,
-				"amount": "0-10"
+				"amount": "0.5-5"
 			}
 		},
-		"weight": 20,
+		"weight": 40,
 		"gatherable": {
 			"tool": "felling",
 			"entity_id": "woody chunk",
 			"amount": 4
 		},
-		"size": 0.75
+		"size": 40
 	}
 }
