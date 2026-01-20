@@ -1,4 +1,5 @@
 #include "components/Components.hpp"
+#include "systems/rendering/RenderingSystem.hpp"
 #include "systems/rendering/LightingSystem.hpp"
 #include "domain/Cell.hpp"
 #include "domain/Event.hpp"
@@ -108,5 +109,6 @@ namespace EventSystem
 			log_event(registry, event);
 		}
 		event_queue.clear();
+		RenderingSystem::render(registry);
 	}
 };

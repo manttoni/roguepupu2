@@ -1,4 +1,5 @@
 #include <format>
+#include "systems/action/EventSystem.hpp"
 #include "external/entt/entity/handle.hpp"
 #include "systems/crafting/GatheringSystem.hpp"
 #include "systems/state/ContextSystem.hpp"
@@ -83,6 +84,8 @@ namespace ContextSystem
 			InventorySystem::take_item(registry, player, owner, entity);
 		if (selection == "Gather")
 			GatheringSystem::gather(registry, player, entity);
+
+		EventSystem::resolve_events(registry);
 	}
 	void show_entity_details(entt::registry& registry, const entt::entity entity, const entt::entity owner)
 	{
