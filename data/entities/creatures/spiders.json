@@ -2,32 +2,16 @@
 	"small spider": {
 		"weight": 0.0001,
 		"fgcolor": [150, 100, 150],
-		"vision": 1,
 		"faction": "spiders",
-		"abilities": [ "spin web" ],
-		"ai": [
-			{
-				"type": "use_ability",
-				"ability_id": "spin web"
-			},
-			{
-				"type": "hide"
-			}
-		],
 		"spawn": {
-			"light": {
-				"radius": 2,
-				"amount": "0-0.1"
-			},
-			"space": {
-				"radius": 1.5,
-				"solid": 2,
-				"empty": 2
-			},
-			"perlin": {
-				"frequency": 0.5,
-				"treshold": 0.3
-			}
-		}
+			"light": { "radius": 2, "amount": "0-0.1" },
+			"space": { "radius": 1.5, "solid": 2, "empty": 2 },
+			"perlin": { "frequency": 0.5, "treshold": 0.8 },
+			"liquid": { "type": "none", "radius": 1.5, "amount": "0-0.1" }
+		},
+		"ai": {
+			"hide": true
+		},
+		"webspinner": {}
 	}
 }

@@ -33,8 +33,7 @@ struct Intent
 	};
 
 	Type type = Type::None;
-	std::string ability_id = "";
-	Conditions conditions{};
 	Actor actor{};
 	Target target{};
+	std::string ability_id = "";
 };

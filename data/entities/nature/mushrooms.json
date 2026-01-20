@@ -1,6 +1,6 @@
 {
 	"glowing mushroom": {
-		"glyph": "*",
+		"glyph": "⋇",
 		"fgcolor": [400, 0, 500],
 		"glow": {
 			"intensity": 0.02,

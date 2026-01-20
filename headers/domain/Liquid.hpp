@@ -50,6 +50,7 @@ struct Liquid
 
 
 	static constexpr std::pair<const char*, Type> table[] = {
+		{"none", Type::None},
 		{"water", Type::Water},
 		{"blood", Type::Blood},
 		{"oil",   Type::Oil}

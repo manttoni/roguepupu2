@@ -12,12 +12,17 @@
 			]
 		},
 		"equipment_slots": true,
-		"faction": "player",
 		"attributes": {
 			"endurance": 10,
 			"willpower": 10,
 			"vitality": 10,
-			"perception": 10
+			"perception": 10,
+			"charisma": 10
+		},
+		"alignment": {
+			"tolerance": 0,
+			"chaos_law": 1,
+			"evil_good": -1
 		}
 	}
 }

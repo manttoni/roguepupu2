@@ -18,6 +18,7 @@
 #include "systems/state/ContextSystem.hpp"
 #include "systems/state/InventorySystem.hpp"
 #include "testing/DevTools.hpp"
+#include "systems/state/AlignmentSystem.hpp"
 #include "utils/ECS.hpp"
 
 namespace ActionSystem
@@ -79,14 +80,24 @@ namespace ActionSystem
 			Log::error("Destination position out of bounds");
 
 		const Position destination_pos(destination.to_idx(cave_size), cave.get_idx());
+		Intent intent;
+		intent.actor = actor;
+		intent.target.position = destination_pos;
 		if (MovementSystem::can_move(registry, actor.position, destination_pos))
+			intent.type = Intent::Type::Move;
+
+		/* Check attack and other interactions */
+		for (const auto entity : ECS::get_entities(registry, destination_pos))
 		{
-			Intent intent = {.type = Intent::Type::Move};
-			intent.target.position = destination_pos;
-			return intent;
+			if (intent.type != Intent::Type::None) break;
+			if (AlignmentSystem::is_hostile(registry, actor.entity, entity))
+			{	// actor.entity wants to attack entity
+				intent.type = Intent::Type::Attack;
+				intent.target.entity = entity;
+			}
 		}
-		/* Check attack and other interactions also but need Faction system first */
-		return {.type = Intent::Type::None};
+
+		return intent;
 	}
 
 	Intent get_player_intent(entt::registry& registry)

@@ -284,6 +284,8 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			}
 			if (data.contains("perception"))
 				reg.template emplace<Perception>(e, data["perception"].get<int>());
+			if (data.contains("charisma"))
+				reg.template emplace<Charisma>(e, data["charisma"].get<int>());
 		}
 	},
 	{ "health", [](auto& reg, auto e, const nlohmann::json& data)
@@ -294,6 +296,15 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 	{ "liquid_container", [](auto& reg, auto e, const nlohmann::json& data)
 		{
 			reg.template emplace<LiquidContainer>(e, data["capacity"].get<double>());
+		}
+	},
+	{ "alignment", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			Alignment alignment;
+			alignment.tolerance = data["tolerance"].get<double>();
+			alignment.chaos_law = data["chaos_law"].get<double>();
+			alignment.evil_good = data["evil_good"].get<double>();
+			reg.template emplace<Alignment>(e, alignment);
 		}
 	}
 };

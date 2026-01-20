@@ -1,28 +1,27 @@
 {
-	"goblin forager": {
-		"glyph": "f",
-		"fgcolor": [0, 333, 0],
-		"weight": 25,
-		"vision": 10,
+	"crazy goblin": {
+		"fgcolor": [0, 166, 0],
 		"solid": true,
-		"inventory": [
-			{"filter": {"name": "kunai"}},
-			{"filter": {"name": "kunai"}}
-		],
-		"ai": [
-			{
-				"type": "gather"
-			}
-		],
-		"equipment_slots": true
-	},
-	"goblin guard": {
-		"glyph": "g",
-		"fgcolor": [100, 433, 100],
-		"inventory": true,
-		"weight": 35,
-		"solid": true,
-		"vision": 10,
-		"faction": "goblins"
+		"weight": 50,
+		"size": 50,
+		"inventory": {
+			"loot_tables": [
+				"lt_any_weapon",
+				"lt_any_item"
+			]
+		},
+		"equipment_slots": true,
+		"attributes": {
+			"endurance": 10,
+			"willpower": 10,
+			"vitality": 10,
+			"perception": 10,
+			"charisma": 10
+		},
+		"alignment": {
+			"tolerance": 0,
+			"chaos_law": -1,
+			"evil_good": -1
+		}
 	}
 }

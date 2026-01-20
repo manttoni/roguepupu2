@@ -4,9 +4,8 @@
 		"fgcolor": [400, 400, 400],
 		"weight": 1000,
 		"solid": true,
-		"opaque": true,
-		"landmark": true,
-		"size": 1.0
+		"opaque": 0.75,
+		"size": 1000
 	},
 
 	"small boulder": {
@@ -14,8 +13,7 @@
 		"fgcolor": [400, 400, 400],
 		"weight": 500,
 		"solid": true,
-		"opaque": true,
-		"landmark": true,
-		"size": 0.5
+		"opaque": 0.5,
+		"size": 500
 	}
 }

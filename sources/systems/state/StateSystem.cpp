@@ -17,28 +17,19 @@ namespace StateSystem
 	}
 
 	double get_vision_range(const entt::registry& registry, const entt::entity entity)
-	{	(void) registry; (void) entity;
-		// temporary
-		return 13;
+	{
+		return get_attribute<Perception>(registry, entity);
 	}
-
 	int get_max_health(const entt::registry& registry, const entt::entity entity)
 	{
-		assert(registry.all_of<Vitality>(entity));
-		const auto& vitality = registry.get<Vitality>(entity);
-		return vitality.value;
+		return get_attribute<Vitality>(registry, entity);
 	}
 	int get_max_stamina(const entt::registry& registry, const entt::entity entity)
 	{
-		assert(registry.all_of<Endurance>(entity));
-		const auto& endurance = registry.get<Endurance>(entity);
-		return endurance.value;
+		return get_attribute<Endurance>(registry, entity);
 	}
 	int get_max_mana(const entt::registry& registry, const entt::entity entity)
 	{
-		assert(registry.all_of<Willpower>(entity));
-		const auto& willpower = registry.get<Willpower>(entity);
-		return willpower.value;
+		return get_attribute<Willpower>(registry, entity);
 	}
-
 };

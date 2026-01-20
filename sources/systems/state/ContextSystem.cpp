@@ -1,4 +1,6 @@
 #include <format>
+#include "UI/MenuTxt.hpp"
+#include "systems/state/StateSystem.hpp"
 #include "systems/action/EventSystem.hpp"
 #include "external/entt/entity/handle.hpp"
 #include "systems/crafting/GatheringSystem.hpp"
@@ -11,23 +13,96 @@
 
 namespace ContextSystem
 {
+	std::vector<std::string> get_attribute_details(const entt::registry& registry, const entt::entity entity)
+	{
+		std::vector<std::string> details;
+		if (registry.all_of<Vitality>(entity))
+			details.push_back("Vitality : " + std::to_string(StateSystem::get_attribute<Vitality>(registry, entity)));
+		if (registry.all_of<Endurance>(entity))
+			details.push_back("Endurance : " + std::to_string(StateSystem::get_attribute<Endurance>(registry, entity)));
+		if (registry.all_of<Willpower>(entity))
+			details.push_back("Willpower : " + std::to_string(StateSystem::get_attribute<Willpower>(registry, entity)));
+		if (registry.all_of<Perception>(entity))
+			details.push_back("Perception : " + std::to_string(StateSystem::get_attribute<Perception>(registry, entity)));
+		if (registry.all_of<Charisma>(entity))
+			details.push_back("Charisma : " + std::to_string(StateSystem::get_attribute<Charisma>(registry, entity)));
+		return details;
+	}
+	std::vector<std::string> get_resource_details(const entt::registry& registry, const entt::entity entity)
+	{
+		std::vector<std::string> details;
+		if (registry.all_of<Health>(entity))
+		{
+			std::string health = "Health : " + std::to_string(registry.get<Health>(entity).current);
+			if (registry.all_of<Vitality>(entity))
+				health += " / " + std::to_string(StateSystem::get_max_health(registry, entity));
+			details.push_back(health);
+		}
+		if (registry.all_of<Stamina>(entity))
+		{
+			std::string stamina = "Stamina : " + std::to_string(registry.get<Stamina>(entity).current);
+			if (registry.all_of<Endurance>(entity))
+				stamina += " / " + std::to_string(StateSystem::get_max_stamina(registry, entity));
+			details.push_back(stamina);
+		}
+		if (registry.all_of<Mana>(entity))
+		{
+			std::string mana = "Mana : " + std::to_string(registry.get<Mana>(entity).current);
+			if (registry.all_of<Willpower>(entity))
+				mana += " / " + std::to_string(StateSystem::get_max_mana(registry, entity));
+			details.push_back(mana);
+		}
+		return details;
+	}
+
+	std::vector<std::string> get_alignment_details(const entt::registry& registry, const entt::entity entity)
+	{
+		if (!registry.all_of<Alignment>(entity))
+			return {};
+		std::vector<std::string> details;
+		const auto& alignment = registry.get<Alignment>(entity);
+		if (alignment.chaos_law <= -0.5)
+			details.push_back("Chaotic : " + std::to_string(alignment.chaos_law));
+		else if (alignment.chaos_law >= 0.5)
+			details.push_back("Lawful : " + std::to_string(alignment.chaos_law));
+		else
+			details.push_back("Neutral : " + std::to_string(alignment.chaos_law));
+		if (alignment.evil_good <= -0.5)
+			details.push_back("Evil : " + std::to_string(alignment.evil_good));
+		else if (alignment.evil_good >= 0.5)
+			details.push_back("Good : " + std::to_string(alignment.evil_good));
+		else
+			details.push_back("Neutral : " + std::to_string(alignment.evil_good));
+		details.push_back("Tolerance : " + std::to_string(alignment.tolerance));
+		return details;
+	}
+
 	std::vector<std::string> get_details(const entt::registry& registry, const entt::entity entity)
 	{
-		/*const auto& info = ECS::get_info(registry, entity);
-		size_t leftcol = 0;
-		size_t rightcol = 0;
-		for (const auto& [left, right] : info)
+		std::vector<std::string> details = { ECS::get_colored_name(registry, entity) };
+		details.push_back(registry.get<Category>(entity).category + " / " + registry.get<Subcategory>(entity).subcategory);
+		details.push_back(MenuTxt::HorizontalLine);
+
+		const auto& resources = get_resource_details(registry, entity);
+		if (!resources.empty())
 		{
-			leftcol = std::max(leftcol, left.size());
-			rightcol = std::max(rightcol, right.size());
+			details.insert(details.end(), resources.begin(), resources.end());
+			details.push_back(MenuTxt::HorizontalLine);
 		}
-		std::vector<std::string> details = { ECS::get_colored_name(registry, entity) };
-		for (const auto& [left, right] : info)
+
+		const auto& attributes = get_attribute_details(registry, entity);
+		if (!attributes.empty())
 		{
-			const std::string line = std::format("{: <{}} : {: >{}}", left, leftcol, right, rightcol);
-			details.push_back(Utils::capitalize(line));
-		}*/
-		std::vector<std::string> details = { ECS::get_colored_name(registry, entity) };
+			details.insert(details.end(), attributes.begin(), attributes.end());
+			details.push_back(MenuTxt::HorizontalLine);
+		}
+
+		const auto& alignment = get_alignment_details(registry, entity);
+		if (!alignment.empty())
+		{
+			details.insert(details.end(), alignment.begin(), alignment.end());
+			details.push_back(MenuTxt::HorizontalLine);
+		}
 
 		return details;
 	}

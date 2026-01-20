@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 #include <string>
 #include <map>
 #include <vector>
@@ -54,16 +55,36 @@ struct Invisible {};
 struct Experience { size_t amount; };	// Derived: level
 struct Dead { size_t turn_number; };
 
-// combat system, needs more planning
 struct Vitality { int value; };			// Derived: max_health
 struct Endurance { int value; };		// Derived: max_stamina
 struct Willpower { int value; };		// Derived: max_mana
 struct Perception { int value; };		// Derived: vision_range
+struct Charisma { int value; };			// Affects opinion
+template<typename T> struct Buff
+{
+	int value;
+	std::optional<size_t> duration;
+};
+template<typename T> struct BuffContainer
+{
+	std::vector<Buff<T>> buffs;
+};
 
 struct Health { int current; };
 struct Stamina { int current; };
 struct Mana { int current; };
+struct Alignment
+{
+	double tolerance = 0.0;
+	double chaos_law = 0.0;
+	double evil_good = 0.0;
 
+	double distance(const Alignment& other) const
+	{
+		return hypot(chaos_law - other.chaos_law, evil_good - other.evil_good);
+	}
+};
+/* Inventory, gear, equipment... */
 struct EquipmentSlots
 {
 	std::vector<entt::entity> equipped_items;

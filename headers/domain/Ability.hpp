@@ -12,7 +12,7 @@
 struct Ability
 {
 	std::string id = "";
-	bool innate = false; // if true cannot be learned
+	std::string category = "";
 	size_t cooldown = 0;
 	size_t last_used = 0;
 	double range = 0.0;

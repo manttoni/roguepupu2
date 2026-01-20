@@ -1,18 +1,12 @@
 {
 	"spider web": {
-		"glyph": "W",
+		"glyph": "#",
 		"fgcolor": [200, 200, 200],
-		"triggers": [
-			{
-				"type": "enter_cell",
-				"effect": {
-					"type": "self_destruct"
-				},
-				"conditions": {
-					"weight_min": 0.1,
-					"category_not": "spiders"
-				}
-			}
-		]
+		"spawn": {
+			"light": { "radius": 2, "amount": "0-0.1" },
+			"space": { "radius": 1.5, "solid": 2, "empty": 2 },
+			"perlin": { "frequency": 0.5, "treshold": 0.8 },
+			"liquid": { "type": "none", "radius": 1.5, "amount": "0-0.1" }
+		}
 	}
 }

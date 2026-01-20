@@ -35,8 +35,7 @@ void AbilityDatabase::add_abilities(nlohmann::json& definitions, const std::stri
 	{
 		Ability ability;
 		ability.id = id;
-		if (category == "innate" || (data.contains("innate") && data["innate"].get<bool>() == true))
-			ability.innate = true;
+		ability.category = category;
 		if (data.contains("cooldown"))
 			ability.cooldown = data["cooldown"].get<size_t>();
 		ability.effect = Parser::parse_effect(data["effect"]);
