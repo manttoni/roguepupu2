@@ -30,5 +30,10 @@
 			"subcategory": "weapons"
 		},
 		"amount": 1
+	},
+	"lt_all_gemstones": {
+		"filter": {
+			"subcategory": "gemstones"
+		}
 	}
 }

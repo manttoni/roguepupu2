@@ -132,12 +132,6 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			reg.template emplace<Subcategory>(e, data.get<std::string>());
 		}
 	},
-	{ "faction", [](auto& reg, auto e, const nlohmann::json& data)
-		{	// this will get updated at some point when plans are ready
-			const std::string faction = data.get<std::string>();
-			reg.template emplace<Faction>(e, faction);
-		}
-	},
 	{ "glyph", [](auto& reg, auto e, const nlohmann::json& data)
 		{
 			if (!data.is_string())
@@ -145,9 +139,7 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			const std::string glyph_str = data.get<std::string>();
 			std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
 			std::wstring wstr = conv.from_bytes(glyph_str);
-			if (wstr.size() != 1)
-				Log::error("Glyph is too wide");
-			const wchar_t glyph = wstr[0];
+			const wchar_t glyph = wstr[Random::randsize_t(0, wstr.size() - 1)];
 			reg.template emplace<Glyph>(e, glyph);
 		}
 	},

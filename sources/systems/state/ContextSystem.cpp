@@ -62,18 +62,18 @@ namespace ContextSystem
 		std::vector<std::string> details;
 		const auto& alignment = registry.get<Alignment>(entity);
 		if (alignment.chaos_law <= -0.5)
-			details.push_back("Chaotic : " + std::to_string(alignment.chaos_law));
+			details.push_back("Chaotic : " + std::format("{:.2f}", alignment.chaos_law));
 		else if (alignment.chaos_law >= 0.5)
-			details.push_back("Lawful : " + std::to_string(alignment.chaos_law));
+			details.push_back("Lawful : " + std::format("{:.2f}", alignment.chaos_law));
 		else
-			details.push_back("Neutral : " + std::to_string(alignment.chaos_law));
+			details.push_back("Neutral : " + std::format("{:.2f}", alignment.chaos_law));
 		if (alignment.evil_good <= -0.5)
-			details.push_back("Evil : " + std::to_string(alignment.evil_good));
+			details.push_back("Evil : " + std::format("{:.2f}", alignment.evil_good));
 		else if (alignment.evil_good >= 0.5)
-			details.push_back("Good : " + std::to_string(alignment.evil_good));
+			details.push_back("Good : " + std::format("{:.2f}", alignment.evil_good));
 		else
-			details.push_back("Neutral : " + std::to_string(alignment.evil_good));
-		details.push_back("Tolerance : " + std::to_string(alignment.tolerance));
+			details.push_back("Neutral : " + std::format("{:.2f}", alignment.evil_good));
+		details.push_back("Tolerance : " + std::format("{:.2f}", alignment.tolerance));
 		return details;
 	}
 
@@ -81,27 +81,26 @@ namespace ContextSystem
 	{
 		std::vector<std::string> details = { ECS::get_colored_name(registry, entity) };
 		details.push_back(registry.get<Category>(entity).category + " / " + registry.get<Subcategory>(entity).subcategory);
-		details.push_back(MenuTxt::HorizontalLine);
 
 		const auto& resources = get_resource_details(registry, entity);
 		if (!resources.empty())
 		{
-			details.insert(details.end(), resources.begin(), resources.end());
 			details.push_back(MenuTxt::HorizontalLine);
+			details.insert(details.end(), resources.begin(), resources.end());
 		}
 
 		const auto& attributes = get_attribute_details(registry, entity);
 		if (!attributes.empty())
 		{
-			details.insert(details.end(), attributes.begin(), attributes.end());
 			details.push_back(MenuTxt::HorizontalLine);
+			details.insert(details.end(), attributes.begin(), attributes.end());
 		}
 
 		const auto& alignment = get_alignment_details(registry, entity);
 		if (!alignment.empty())
 		{
-			details.insert(details.end(), alignment.begin(), alignment.end());
 			details.push_back(MenuTxt::HorizontalLine);
+			details.insert(details.end(), alignment.begin(), alignment.end());
 		}
 
 		return details;
