@@ -27,7 +27,7 @@ class EntityFactory
 		entt::entity create_entity(entt::registry& registry, const std::string& name, const std::optional<Position>& position = std::nullopt);
 		std::vector<std::string> get_category_names() const;
 		std::vector<std::string> get_subcategory_names(const std::string& category) const;
-		std::vector<std::string> random_pool(const nlohmann::json& filter, const size_t amount = SIZE_MAX);
+		std::vector<std::string> filter_entity_ids(const nlohmann::json& filter, const size_t amount = SIZE_MAX); // is amount ever used?
 		void add_entities(nlohmann::json& json, const std::string& category, const std::string& subcategory);
 		void init();
 		void read_definitions(const std::filesystem::path& path);

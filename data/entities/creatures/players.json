@@ -4,21 +4,21 @@
 		"fgcolor": [123,456,789],
 		"player": true,
 		"solid": true,
-		"vision": 10,
-		"weight": 100,
-		"inventory": [
-			{
-				"id": "kunai",
-				"amount": 2
-			},
-			{
-				"filter": {"name": "glowing bulb"},
-				"amount": "1-2"
-			}
-		],
+		"weight": 70,
+		"size": 70,
+		"inventory": {
+			"loot_tables": [
+				"lt_rabdin"
+			]
+		},
 		"equipment_slots": true,
 		"faction": "player",
-		"size": 0.5
+		"attributes": {
+			"endurance": 10,
+			"willpower": 10,
+			"vitality": 10,
+			"perception": 10
+		}
 	}
 }
 

@@ -4,6 +4,7 @@
 #include "utils/Parser.hpp"
 #include "domain/Event.hpp"
 #include "domain/Color.hpp"
+#include "domain/LootTable.hpp"
 #include "utils/Log.hpp"
 #include "generation/CaveGenerator.hpp"
 

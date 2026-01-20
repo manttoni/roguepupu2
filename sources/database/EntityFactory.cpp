@@ -5,6 +5,7 @@
 #include <nlohmann/json.hpp>                              // for basic_json
 #include <regex>                                          // for regex_match
 #include <string>                                         // for string, ope...
+#include "systems/items/LootSystem.hpp"
 #include "systems/state/StateSystem.hpp"
 #include "components/Components.hpp"                                 // for Resources
 #include "database/AbilityDatabase.hpp"
@@ -63,40 +64,14 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 		}
 	},
 	{ "inventory", [](auto& reg, auto e, const nlohmann::json& data)
-		{	// Can store entities inside it, and might do so initially
+		{
 			std::vector<entt::entity> inventory;
-			if (data.is_boolean())
+			if (data.contains("loot_tables"))
 			{
-				if (data.get<bool>() == true)
-					reg.template emplace<Inventory>(e, inventory);
-				return;
-			}
-			if (!data.is_array())
-				Log::error("Inventory format error: " + data.dump(4));
-
-			for (const auto& entry : data)
-			{
-				size_t amount = 1;
-				if (entry.contains("amount"))
+				for (const auto& table_id : data["loot_tables"])
 				{
-					const auto [min, max] = Parser::parse_range<size_t>(entry["amount"]);
-					amount = Random::randsize_t(min, max);
-				}
-				std::vector<std::string> name_pool;
-				if (entry.contains("id"))
-					name_pool.push_back(entry["id"].get<std::string>());
-				else if (entry.contains("filter"))
-					name_pool = EntityFactory::instance()
-						.random_pool(entry["filter"], amount);
-				if (name_pool.empty())
-					Log::error("Missing id or invalid filter: " + data.dump(4));
-				for (size_t i = 0; i < amount; ++i)
-				{
-					const size_t random_index = Random::randsize_t(0, name_pool.size() - 1);
-					assert(random_index < name_pool.size());
-					const entt::entity e = EntityFactory::instance()
-						.create_entity(reg, name_pool[random_index]);
-					inventory.push_back(e);
+					const auto loot = LootSystem::get_loot(reg, table_id);
+					inventory.insert(inventory.end(), loot.begin(), loot.end());
 				}
 			}
 			reg.template emplace<Inventory>(e, inventory);
@@ -233,16 +208,17 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 	},
 	{ "gatherable", [](auto& reg, auto e, const nlohmann::json& data)
 		{
-			const auto tool = data.contains("tool") ?
-				Tool::from_string(data["tool"].get<std::string>()) :
-				Tool::Type::None;
-			const auto& entity = data.contains("entity_id") ?
-				data["entity_id"].get<std::string>() :
-				"";
-			const auto amount = data.contains("amount") ?
-				data["amount"].get<size_t>() :
-				1;
-			reg.template emplace<Gatherable>(e, tool, entity, amount);
+			Gatherable comp;
+			if (data.contains("tool"))
+				comp.tool_type = Tool::from_string(data["tool"].get<std::string>());
+			if (data.contains("destroy"))
+				comp.destroy = data["destroy"].get<bool>();
+			if (data.contains("lose_glow"))
+				comp.lose_glow = data["lose_glow"].get<bool>();
+			if (data.contains("loot_tables"))
+				comp.loot_table_ids = data["loot_tables"].get<std::vector<std::string>>();
+
+			reg.template emplace<Gatherable>(e, comp);
 		}
 	},
 	{ "tool", [](auto& reg, auto e, const nlohmann::json& data)
@@ -286,6 +262,39 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			else Log::error("Unhandled size type: " + data.dump(4));
 			reg.template emplace<Size>(e, size);
 		}
+	},
+	{ "attributes", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			if (!data.is_object())
+				Log::error("Incorrect format: " + data.dump(4));
+			if (data.contains("endurance"))
+			{
+				reg.template emplace<Endurance>(e, data["endurance"].get<int>());
+				reg.template emplace<Stamina>(e, StateSystem::get_max_stamina(reg, e));
+			}
+			if (data.contains("willpower"))
+			{
+				reg.template emplace<Willpower>(e, data["willpower"].get<int>());
+				reg.template emplace<Mana>(e, StateSystem::get_max_mana(reg, e));
+			}
+			if (data.contains("vitality"))
+			{
+				reg.template emplace<Vitality>(e, data["vitality"].get<int>());
+				reg.template emplace<Health>(e, StateSystem::get_max_health(reg, e));
+			}
+			if (data.contains("perception"))
+				reg.template emplace<Perception>(e, data["perception"].get<int>());
+		}
+	},
+	{ "health", [](auto& reg, auto e, const nlohmann::json& data)
+		{	// Entities can have health, even without vitality. They just cannot heal/be repaired
+			reg.template emplace<Health>(e, data.get<int>());
+		}
+	},
+	{ "liquid_container", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			reg.template emplace<LiquidContainer>(e, data["capacity"].get<double>());
+		}
 	}
 };
 
@@ -318,7 +327,11 @@ entt::entity EntityFactory::create_entity(entt::registry& registry, const std::s
 		if (it == field_parsers.end())
 			Log::error("Unknown field name: " + field_name);
 		Log::log("Field name: " + field_name);
-		it->second(registry, entity, field_data);
+		try {
+			it->second(registry, entity, field_data);
+		} catch (const nlohmann::json::parse_error& e) {
+			Log::error(e.what());
+		}
 	}
 
 	if (!registry.all_of<Category, Subcategory, Name>(entity))
@@ -362,7 +375,7 @@ bool EntityFactory::exclude(const nlohmann::json& data, const nlohmann::json& fi
 	return false;
 }
 
-std::vector<std::string> EntityFactory::random_pool(const nlohmann::json& filter, const size_t amount)
+std::vector<std::string> EntityFactory::filter_entity_ids(const nlohmann::json& filter, const size_t amount)
 {
 	std::vector<std::string> pool;
 	for (const auto& [name, data] : LUT)

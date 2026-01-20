@@ -1,0 +1,34 @@
+{
+	"lt_rabdin": {
+		"item_ids": [
+			"kunai", "glass bottle"
+		]
+	},
+	"lt_glowing_mushroom": {
+		"item_ids": [
+			"glowing bulb"
+		]
+	},
+	"lt_woody_mushroom": {
+		"item_ids": [
+			"woody chunk"
+		]
+	},
+	"lt_any_item": {
+		"filter": {
+			"category": "items"
+		},
+		"amount": 1
+	},
+	"lt_all_items": {
+		"filter": {
+			"category": "items"
+		}
+	},
+	"lt_any_weapon": {
+		"filter": {
+			"subcategory": "weapons"
+		},
+		"amount": 1
+	}
+}

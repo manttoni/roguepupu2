@@ -16,7 +16,7 @@ struct Name
 	std::string name;
 
 	bool operator==(const Name& other) const = default;
-}; // id
+};
 struct Category
 {
 	std::string category;
@@ -127,9 +127,16 @@ struct Throwable { double range = 0.0; };
 /* Crafting related */
 struct Gatherable
 {
+	bool destroy = false;
+	bool lose_glow = false;
 	Tool::Type tool_type;
-	std::string entity_id;
-	size_t amount;
+	std::vector<std::string> loot_table_ids;
+};
+
+/* Liquid */
+struct LiquidContainer
+{
+	double capacity = 0.0;
 };
 
 /* Faction, bases, home */

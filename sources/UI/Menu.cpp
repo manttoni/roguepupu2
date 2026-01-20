@@ -21,7 +21,7 @@ Menu::Menu(	std::vector<std::unique_ptr<MenuElt>> elements_,
 		width = std::max(static_cast<int>(elements[i]->get_size()) + 4, width);
 
 	while (width > Screen::width() || height > Screen::height())
-		UI::instance().dialog("Window is too large, please resize terminal");
+		UI::instance().dialog("Resize terminal");
 
 	int y = static_cast<int>(start.y) - static_cast<int>(height) / 2;
 	int x = static_cast<int>(start.x) - static_cast<int>(width) / 2;

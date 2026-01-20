@@ -10,11 +10,11 @@
 class AbilityDatabase
 {
 	private:
-		std::map<std::string, Ability> abilities;
+		std::map<std::string, Ability> database;
 
 	public:
 		AbilityDatabase();
-		Ability get_ability(const std::string& id) const { return abilities.at(id); }
+		Ability get_ability(const std::string& id) const { return database.at(id); }
 		void read_abilities();
 		void read_definitions(const std::filesystem::path& path);
 		void add_abilities(nlohmann::json& definitions, const std::string& category);

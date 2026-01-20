@@ -59,7 +59,7 @@ namespace DevTools
 		const std::vector<std::string> subcategories = EntityFactory::instance().get_subcategory_names(category);
 		const std::string subcategory = UI::instance().dialog("Choose subcategory", subcategories);
 		const nlohmann::json filter = {{"subcategory", subcategory}};
-		std::vector<std::string> entity_names = EntityFactory::instance().random_pool(filter, SIZE_MAX);
+		std::vector<std::string> entity_names = EntityFactory::instance().filter_entity_ids(filter, SIZE_MAX);
 		std::sort(entity_names.begin(), entity_names.end());
 		const std::string entity_name = UI::instance().dialog("Choose entity", entity_names);
 		EntityFactory::instance().create_entity(registry, entity_name, registry.get<Position>(ECS::get_player(registry)));

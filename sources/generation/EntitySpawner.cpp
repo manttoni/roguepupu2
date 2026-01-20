@@ -119,7 +119,7 @@ namespace EntitySpawner
 	{
 		filter["spawn"] = "any";
 		const auto& cave = ECS::get_cave(registry, cave_idx);
-		auto id_pool = EntityFactory::instance().random_pool(filter);
+		auto id_pool = EntityFactory::instance().filter_entity_ids(filter);
 		assert(id_pool.size() > 0);
 		const auto& LUT = EntityFactory::instance().get_LUT();
 		auto floor_cells = cave.get_positions_with_type(Cell::Type::Floor);

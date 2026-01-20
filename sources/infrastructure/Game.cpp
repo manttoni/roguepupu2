@@ -18,6 +18,7 @@
 #include "utils/Log.hpp"
 #include "systems/rendering/RenderData.hpp"
 #include "utils/Parser.hpp"
+#include "database/LootTableDatabase.hpp"
 
 Game::Game()
 {
@@ -29,6 +30,7 @@ Game::Game()
 	registry.ctx().emplace<RenderData>();
 	registry.ctx().emplace<EventQueue>();
 	registry.ctx().emplace<Dev>();
+	registry.ctx().emplace<LootTableDatabase>();
 	Log::log("Emplaced ctx objects");
 
 	registry.ctx().get<GameState>().player = EntityFactory::instance().create_entity(registry, "rabdin");
@@ -53,7 +55,6 @@ Game::Game()
 	Log::log("Cave has sources: " + std::to_string(sources.size()));
 
 	registry.emplace<Position>(ECS::get_player(registry), sources[0]);
-	registry.emplace<Perception>(ECS::get_player(registry), 10);
 
 	Log::log("Emplaced position to rabdin");
 
