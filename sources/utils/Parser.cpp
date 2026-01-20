@@ -25,8 +25,6 @@ namespace Parser
 			const auto& type = data["type"].get<std::string>();
 			if (type == "create_entity")
 				effect.type = Effect::Type::CreateEntity;
-			else if (type == "transition")
-				effect.type = Effect::Type::Transition;
 			else if (type == "destroy_entity")
 				effect.type = Effect::Type::DestroyEntity;
 			else if (type == "self_destruct")

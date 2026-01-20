@@ -30,7 +30,7 @@ namespace RenderingSystem
 			return Unicode::LiquidDeep;
 		if (lm.get_volume() > 10.0)
 			return Unicode::LiquidMedium;
-		if (lm.get_volume() > 1)
+		if (lm.get_volume() > 0)
 			return Unicode::LiquidShallow;
 
 		const auto type = cell.get_type();
@@ -81,7 +81,7 @@ namespace RenderingSystem
 
 		const auto& lm = ECS::get_cell(registry, position).get_liquid_mixture();
 		if (lm.get_volume() >= 1)
-			return lm.get_color() / 10;
+			return lm.get_color() / 5;
 
 		const auto type = cell.get_type();
 

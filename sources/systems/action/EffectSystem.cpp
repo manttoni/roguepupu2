@@ -29,17 +29,6 @@ namespace EffectSystem
 						Log::error("Effect target is invalid");
 				}
 				break;
-			case Effect::Type::Transition:
-				if (actor.entity != entt::null && target.position.is_valid())
-					// Dont use move() here to not trigger infinite loop
-					// "Actor entity transitions to target position"
-					// Transitioning is like moving but can be trans-cave
-					registry.emplace_or_replace<Position>(actor.entity, target.position);
-				break;
-			case Effect::Type::DestroyEntity:
-				// "Target entity is destroyed"
-				registry.destroy(target.entity);
-				break;
 			default:
 				Log::error("Unhandled effect type: " + std::to_string(static_cast<int>(effect.type)));
 		}

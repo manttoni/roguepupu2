@@ -5,52 +5,69 @@
 #include "domain/Event.hpp"
 #include "external/entt/entt.hpp"
 #include "systems/action/EventSystem.hpp"
-#include "systems/action/TriggerSystem.hpp"
 #include "utils/ECS.hpp"
 #include "infrastructure/GameLogger.hpp"
 
 namespace EventSystem
 {
-	/* Copy event because it needs more data
+	/* Transition component will transition to its destination
+	 * DestroyOnContact will destroy when moving on same cell
 	 * */
-	void resolve_move_event(entt::registry& registry, Event event)
+	void resolve_move_event(entt::registry& registry, const Event& event)
 	{
-		const auto entities = ECS::get_entities(registry, event.target.position);
-		for (const auto entity : entities)
+		/* actor.position is optional,
+		 * might be spawning with move(),
+		 * which is good because then that will lead here.
+		 *
+		 * If there is actor.position, can check "leave cell" events
+		 * */
+		assert(event.actor.entity != entt::null);
+		assert(event.target.position.is_valid());
+
+		// Check entered cell
+		const Position& entered = event.target.position;
+		for (const auto entity : ECS::get_entities(registry, entered))
 		{
-			if (!registry.all_of<Triggers>(entity) || entity == event.actor.entity)
-				continue;
-			for (auto trigger : registry.get<Triggers>(entity).triggers)
-			{
-				if (trigger.type != Trigger::Type::EnterCell)
-					continue;
-				// Have to add entity to event.target
-				event.target.entity = entity;
-				assert(event.actor.entity != entt::null);
-				assert(event.actor.position.is_valid());
-				assert(event.target.entity != entt::null);
-				assert(event.target.position.is_valid());
-				TriggerSystem::resolve_trigger(
-						registry,
-						trigger,	// trigger that has been triggered
-						event		// event that led to the triggering
-						);
-			}
+			if (registry.all_of<Transition>(entity))
+				TransitionSystem::transition(registry, event.actor.entity, entity);
+			else if (registry.all_of<DestroyWhenStacked>(entity))
+				ECS::destroy_entity(registry, entity);
 		}
 	}
 
+	/* What are the consequences of gathering?
+	 * */
 	void resolve_gather_event(entt::registry& registry, const Event& event)
 	{
-		if (!registry.all_of<Triggers>(event.target.entity))
-			return;
-		for (auto trigger : registry.get<Triggers>(event.target.entity).triggers)
-			TriggerSystem::resolve_trigger(registry, trigger, event);
+		assert(event.actor.entity != entt::null);
+		assert(event.actor.position.is_valid());
+		assert(event.target.entity != entt::null);
+		assert(event.target.position.is_valid());
+		//const auto& loot_table = registry.get<Gatherable>(event.target.entity).loot_table;
+		//LootSystem::give_loot(registry, event.actor.entity, loot_table);
+		(void) registry;
 	}
 
+	/* Spawning is when entity gains a position.
+	 * It can happen when it is first created into position,
+	 * or when item is dropped from inventory, or otherwise gets Position emplaced
+	 * */
 	void resolve_spawn_event(entt::registry& registry, const Event& event)
 	{
 		if (registry.all_of<Glow, Position, FGColor>(event.target.entity))
 			LightingSystem::reset_lights(registry, registry.get<Position>(event.target.entity).cave_idx);
+	}
+
+	/* Opposite of spawn event. Remove lights and other effects
+	 * Entity is not yet destroyed, but will be after resolving all events
+	 * */
+	void resolve_destroy_event(entt::registry& registry, const Event& event)
+	{
+		if (registry.all_of<Glow, Position>(event.target.entity))
+		{
+			registry.erase<Glow, Position>(event.target.entity);
+			LightingSystem::reset_lights(registry, registry.get<Position>(event.target.entity).cave_idx);
+		}
 	}
 
 	void log_event(entt::registry& registry, const Event& event)
@@ -72,6 +89,9 @@ namespace EventSystem
 			case Effect::Type::Drop:
 				message += "drops ";
 				break;
+			case Effect::Type::ReceiveItem:
+				message += "receives ";
+				break;
 			default:
 				return;
 		}
@@ -82,9 +102,10 @@ namespace EventSystem
 
 	void resolve_events(entt::registry& registry)
 	{
-		std::vector<Event>& event_queue = registry.ctx().get<EventQueue>().queue;
-		for (auto& event : event_queue)
+		auto& queue = registry.ctx().get<EventQueue>().queue;
+		for (size_t i = 0; i < queue.size(); ++i)
 		{
+			const auto& event = queue[i];
 			switch (event.effect.type)
 			{
 				case Effect::Type::Move:
@@ -93,22 +114,26 @@ namespace EventSystem
 				case Effect::Type::Gather:
 					resolve_gather_event(registry, event);
 					break;
+				case Effect::Type::Drop:
 				case Effect::Type::Spawn:
 					resolve_spawn_event(registry, event);
 					break;
 				case Effect::Type::Equip:
 				case Effect::Type::Unequip:
-					// if there will be equipment effects handle them here
 					break;
-				case Effect::Type::Drop:
-					resolve_spawn_event(registry, event);
+				case Effect::Type::DestroyEntity:
+					resolve_destroy_event(registry, event);
 					break;
 				default:
 					Log::error("Unhandled effect type: " + std::to_string(static_cast<int>(event.effect.type)));
 			}
 			log_event(registry, event);
 		}
-		event_queue.clear();
 		RenderingSystem::render(registry);
+		queue.clear();
+
+		// Destroy entities marked for destruction
+		for (const auto entity : registry.view<Destroyed>())
+			registry.destroy(entity);
 	}
 };

@@ -28,7 +28,7 @@ struct Liquid
 			case Type::Water:
 				density = 1.0;
 				viscosity = 0.01;
-				color = Color(0, 100, 200);
+				color = Color(0, 50, 100);
 				break;
 			case Type::Blood:
 				density = 1.0;

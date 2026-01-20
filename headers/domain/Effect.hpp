@@ -17,15 +17,15 @@ struct Effect
 		Drop,
 		Death,
 		Spawn,
-		Gather,			// actor.entity gathers from target... hmm...
-		Move,			// actor.entity moves to target.position
-		Damage,			// target is damaged
-		Heal,			// target is healed
-		CreateEntity,	// entity_id is created
-		DestroyEntity,	// target is destroyed. Unused?
-		Transition,		// target.entity is transported to target.position
-		Ignite,			// target (position and entity) is ignited
-		SelfDestruct,	// target.entity is destroyed
+		Gather,
+		Move,
+		Damage,
+		Heal,
+		CreateEntity,
+		DestroyEntity,
+		Ignite,
+		SelfDestruct,
+		ReceiveItem,
 	};
 	Type type = Type::None;
 

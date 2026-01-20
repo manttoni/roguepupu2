@@ -218,69 +218,17 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 	},
 	{ "ai", [](auto& reg, auto e, const nlohmann::json& data)
 		{
-			if (!data.is_array())
-				Log::error("AI not an array: " + data.dump(4));
-			std::vector<Intent> intentions;
-			for (const auto& entry : data)
-			{
-				Intent intent;
-				if (entry.contains("type"))
-				{
-					const auto& type = entry["type"].get<std::string>();
-					if (type == "hide")
-						intent.type = Intent::Type::Hide;
-					else if (type == "attack")
-						intent.type = Intent::Type::Attack;
-					else if (type == "flee")
-						intent.type = Intent::Type::Flee;
-					else if (type == "use_ability")
-						intent.type = Intent::Type::UseAbility;
-					else if (type == "gather")
-						intent.type = Intent::Type::Gather;
-					else
-						Log::error("Unknown Intent type: " + type);
-				}	else Log::error("No intent type: " + entry.dump(4));
-				if (entry.contains("ability_id"))
-					intent.ability_id = entry["ability_id"].get<std::string>();
-				if (entry.contains("conditions"))
-					intent.conditions = Parser::parse_conditions(entry["conditions"]);
-				intentions.push_back(intent);
-			}
-			reg.template emplace<AI>(e, intentions);
+			if (!data.is_object())
+				Log::error("AI needs to be an object: " + data.dump(4));
+			AI comp;
+			if (data.contains("aggressive")) comp.aggressive = true;
+
+			reg.template emplace<AI>(e, comp);
 		}
 	},
 	{ "spawn", [](auto& reg, auto e, const nlohmann::json& data)
 		{	// unused at this point
 			(void) reg; (void) e; (void) data;
-		}
-	},
-	{ "triggers", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			if (!data.is_array())
-				Log::error("Triggers not an array: " + data.dump(4));
-
-			std::vector<Trigger> triggers;
-			for (const auto& entry : data)
-			{
-				if (!entry.is_object())
-					Log::error("Trigger not object: " + entry.dump(4));
-				Trigger trigger;
-				if (entry.contains("type"))
-				{
-					const auto& type = entry["type"].get<std::string>();
-					if (type == "enter_cell")
-						trigger.type = Trigger::Type::EnterCell;
-					else if (type == "gather")
-						trigger.type = Trigger::Type::Gather;
-					else Log::error("Unkown trigger type: " + type);
-				} else Log::error("Trigger has no type: " + entry.dump(4));
-				if (entry.contains("effect"))
-					trigger.effect = Parser::parse_effect(entry["effect"]);
-				if (entry.contains("conditions"))
-					trigger.conditions = Parser::parse_conditions(entry["conditions"]);
-				triggers.push_back(trigger);
-			}
-			reg.template emplace<Triggers>(e, triggers);
 		}
 	},
 	{ "gatherable", [](auto& reg, auto e, const nlohmann::json& data)

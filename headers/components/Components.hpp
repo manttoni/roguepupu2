@@ -8,7 +8,6 @@
 #include "domain/Color.hpp"
 #include "domain/Intent.hpp"
 #include "domain/Ability.hpp"
-#include "domain/Trigger.hpp"
 #include "external/entt/fwd.hpp"
 
 /* Core components */
@@ -144,26 +143,26 @@ struct BaseLocation // spawnpoint
 /* Light */
 struct Glow { double strength, radius; };
 
-/* Other */
+/* Reactive */
 struct Transition
 {
 	entt::entity destination = entt::null;
 
 	bool operator==(const Transition& other) const = default;
 };
-struct AI // Intent structs in order of priority
+struct DestroyWhenStacked {};
+
+/* Other */
+struct AI
 {
-	std::vector<Intent> intentions;
+	bool aggressive = true;
 };
 struct Abilities
 {
 	std::map<std::string, Ability> abilities;
 };
-struct Triggers
-{
-	std::vector<Trigger> triggers;
-};
-struct Player {};
 
+struct Player {};
+struct Destroyed {};
 
 

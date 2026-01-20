@@ -66,34 +66,11 @@ namespace AISystem
 		return false;
 	}
 
-	Intent get_npc_intent(entt::registry& registry, const entt::entity npc)
+	Intent get_npc_intent(const entt::registry& registry, const entt::entity npc)
 	{
 		if (!registry.all_of<AI, Position>(npc))
 			return {.type = Intent::Type::DoNothing};
-		const auto& ai = registry.get<AI>(npc);
-		for (const auto& intent : ai.intentions)
-		{
-			Intent result = intent;
-			result.actor.entity = npc;
-			result.actor.position = registry.get<Position>(npc);
-			switch (intent.type)
-			{
-				case Intent::Type::UseAbility:
-					if (configure_use_ability(registry, result) == true)
-						return result;
-					continue;
-				case Intent::Type::Hide:
-					if (!registry.all_of<Hidden>(npc))
-						return {.type = Intent::Type::Hide};
-					continue;
-				case Intent::Type::Gather:
-					if (configure_gather(registry, result) == true)
-						return result;
-					continue;
-				default:
-					break;
-			}
-		}
+
 		return {.type = Intent::Type::DoNothing};
 	}
 };

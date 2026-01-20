@@ -14,7 +14,7 @@ namespace Parser
 	Effect parse_effect(const nlohmann::json& data);
 	Conditions parse_conditions(const nlohmann::json& data);
 	nlohmann::json read_file(const std::filesystem::path& path);
-	void parse_cave_generation_conf(const std::string& conf, CaveGenerator::Data& data);
+	void parse_cave_generation_conf(const std::string& conf_id, CaveGenerator::Data& data);
 
 	template<typename T>
 		std::pair<T, T> parse_range(const nlohmann::json& data)

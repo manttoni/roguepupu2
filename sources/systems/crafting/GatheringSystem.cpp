@@ -37,16 +37,16 @@ namespace GatheringSystem
 		if (!can_gather(registry, gatherer, gatherable))
 			return;
 
-		const Gatherable& component = registry.get<Gatherable>(gatherable);
-		for (size_t i = 0; i < component.amount; ++i)
-		{	// remake this. Gathering can give rare loot by chance, multiple things etc..
-			ECS::queue_event(registry, Event(
-						{.entity = gatherer},
-						{.type = Effect::Type::Gather, .entity_id = component.entity_id},
-						{.entity = gatherable}
-						));
-		}
+		// If gatherable has some effect that happens upon gathering apply it here
+		// f.e. remove glow or change glyph or color etc...
+		// Don't destroy here, eventsystem needs it to give loot
+		// ...
 
-		registry.erase<Gatherable>(gatherable);
+		// This event will give the loot
+		ECS::queue_event(registry, Event(
+					{.entity = gatherer, .position = registry.get<Position>(gatherer)},
+					{.type = Effect::Type::Gather},
+					{.entity = gatherable, .position = registry.get<Position>(gatherable)}
+					));
 	}
 };

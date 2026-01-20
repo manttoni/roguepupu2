@@ -1,6 +1,7 @@
 #pragma once
 
 #include <optional>
+#include "utils/Parser.hpp"
 #include "systems/position/TransitionSystem.hpp"
 #include "components/Components.hpp"
 #include "domain/Cave.hpp"
@@ -12,6 +13,7 @@
 #include "infrastructure/GameState.hpp"
 #include "utils/Random.hpp"
 #include "utils/Utils.hpp"
+#include "generation/CaveGenerator.hpp"
 
 namespace ECS
 {
@@ -76,7 +78,6 @@ namespace ECS
 
 	inline std::vector<std::string> get_colored_names(const entt::registry& registry, const std::vector<entt::entity> entities)
 	{
-
 		std::vector<std::string> colored_names;
 		for (const auto entity : entities)
 			colored_names.push_back(get_colored_name(registry, entity));
@@ -158,28 +159,18 @@ namespace ECS
 		return registry.ctx().get<GameState>().turn_number;
 	}
 
-	/* Make this entity disappear without making it invalid.
-	 * It will be completely destroyed by DestroyEntity event later,
-	 * if correctly queued. The queue handler needs this entity
-	 * to be valid for logging etc...
-	 * Just strip it of some components
-	 * */
 	inline void destroy_entity(entt::registry& registry, const entt::entity entity)
 	{
-		if (registry.all_of<Position>(entity))
-			registry.erase<Position>(entity);
-		if (registry.all_of<Glow>(entity))
-			registry.erase<Glow>(entity);
 		if (registry.all_of<Transition>(entity))
 		{
 			const auto destination = registry.get<Transition>(entity).destination;
 			if (destination != entt::null)
 				TransitionSystem::unlink_portals(registry, entity, destination);
 		}
-		if (registry.all_of<Triggers>(entity))
-			registry.erase<Triggers>(entity);
 		if (registry.all_of<AI>(entity))
 			registry.erase<AI>(entity);
+
+		registry.emplace<Destroyed>(entity);
 
 		queue_event(registry, Event(
 					{},
@@ -218,4 +209,12 @@ namespace ECS
 		return liquid_level;
 	}
 
+	inline size_t generate_cave(entt::registry& registry, const std::string& conf_id = "default")
+	{
+		const size_t cave_idx = get_world(registry).new_cave();
+		CaveGenerator::Data data(registry, get_cave(registry, cave_idx));
+		Parser::parse_cave_generation_conf(conf_id, data);
+		CaveGenerator::generate_cave(data);
+		return cave_idx;
+	}
 };
