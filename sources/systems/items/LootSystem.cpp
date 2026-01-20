@@ -1,6 +1,7 @@
 #include <vector>
 #include <string>
 #include <random>
+#include "systems/state/InventorySystem.hpp"
 #include "systems/items/LootSystem.hpp"
 #include "external/entt/entt.hpp"
 #include "utils/Random.hpp"
@@ -47,5 +48,25 @@ namespace LootSystem
 			}
 		}
 		return loot;
+	}
+	std::vector<entt::entity> get_loot(entt::registry& registry, const std::vector<std::string>& table_ids)
+	{
+		std::vector<entt::entity> loot;
+		for (const auto& id : table_ids)
+		{
+			const auto l = get_loot(registry, id);
+			loot.insert(loot.end(), l.begin(), l.end());
+		}
+		return loot;
+	}
+	void give_loot(entt::registry& registry, const entt::entity entity, const std::string& table_id)
+	{
+		for (const auto item : get_loot(registry, table_id))
+			InventorySystem::add_item(registry, entity, item);
+	}
+	void give_loot(entt::registry& registry, const entt::entity entity, const std::vector<std::string>& table_ids)
+	{
+		for (const auto& id : table_ids)
+			give_loot(registry, entity, id);
 	}
 };

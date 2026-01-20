@@ -70,7 +70,7 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			{
 				for (const auto& table_id : data["loot_tables"])
 				{
-					const auto loot = LootSystem::get_loot(reg, table_id);
+					const auto loot = LootSystem::get_loot(reg, table_id.get<std::string>());
 					inventory.insert(inventory.end(), loot.begin(), loot.end());
 				}
 			}
@@ -297,6 +297,12 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			alignment.chaos_law = data["chaos_law"].get<double>();
 			alignment.evil_good = data["evil_good"].get<double>();
 			reg.template emplace<Alignment>(e, alignment);
+		}
+	},
+	{ "destroy_when_stacked", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			(void) data;
+			reg.template emplace<DestroyWhenStacked>(e);
 		}
 	}
 };

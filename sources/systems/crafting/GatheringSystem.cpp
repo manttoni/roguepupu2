@@ -37,12 +37,6 @@ namespace GatheringSystem
 		if (!can_gather(registry, gatherer, gatherable))
 			return;
 
-		// If gatherable has some effect that happens upon gathering apply it here
-		// f.e. remove glow or change glyph or color etc...
-		// Don't destroy here, eventsystem needs it to give loot
-		// ...
-
-		// This event will give the loot
 		ECS::queue_event(registry, Event(
 					{.entity = gatherer, .position = registry.get<Position>(gatherer)},
 					{.type = Effect::Type::Gather},

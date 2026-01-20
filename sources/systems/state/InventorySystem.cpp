@@ -34,7 +34,11 @@ namespace InventorySystem
 	{
 		auto& inventory = registry.get<Inventory>(entity).inventory;
 		inventory.push_back(item);
-		Log::log(registry.get<Name>(entity).name + " got item: " + registry.get<Name>(item).name);
+		ECS::queue_event(registry, Event(
+					{.entity = entity},
+					{.type = Effect::Type::ReceiveItem},
+					{.entity = item}
+					));
 	}
 
 	void take_item(entt::registry& registry, const entt::entity taker, const entt::entity owner, const entt::entity item)

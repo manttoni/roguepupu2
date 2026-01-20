@@ -7,6 +7,7 @@
 			"space": { "radius": 1.5, "solid": 2, "empty": 2 },
 			"perlin": { "frequency": 0.5, "treshold": 0.8 },
 			"liquid": { "type": "none", "radius": 1.5, "amount": "0-0.1" }
-		}
+		},
+		"destroy_when_stacked": {}
 	}
 }

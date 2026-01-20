@@ -1,4 +1,5 @@
 #include "components/Components.hpp"
+#include "systems/items/LootSystem.hpp"
 #include "systems/rendering/RenderingSystem.hpp"
 #include "systems/rendering/LightingSystem.hpp"
 #include "domain/Cell.hpp"
@@ -43,9 +44,13 @@ namespace EventSystem
 		assert(event.actor.position.is_valid());
 		assert(event.target.entity != entt::null);
 		assert(event.target.position.is_valid());
-		//const auto& loot_table = registry.get<Gatherable>(event.target.entity).loot_table;
-		//LootSystem::give_loot(registry, event.actor.entity, loot_table);
-		(void) registry;
+		const auto& comp = registry.get<Gatherable>(event.target.entity);
+		LootSystem::give_loot(registry, event.actor.entity, comp.loot_table_ids);
+		if (comp.destroy == true)
+			ECS::destroy_entity(registry, event.target.entity);
+		else if (comp.lose_glow == true && registry.all_of<Glow>(event.target.entity))
+			registry.erase<Glow>(event.target.entity);
+		registry.erase<Gatherable>(event.target.entity);
 	}
 
 	/* Spawning is when entity gains a position.
@@ -120,6 +125,8 @@ namespace EventSystem
 					break;
 				case Effect::Type::Equip:
 				case Effect::Type::Unequip:
+					break;
+				case Effect::Type::ReceiveItem:
 					break;
 				case Effect::Type::DestroyEntity:
 					resolve_destroy_event(registry, event);
