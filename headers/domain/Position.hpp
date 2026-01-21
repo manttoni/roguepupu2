@@ -13,6 +13,13 @@ struct Position
 			const size_t cave_idx = invalid_idx) :
 		cell_idx(cell_idx), cave_idx(cave_idx) {}
 
+	static Position invalid_position()
+	{
+		Position position{};
+		assert(!position.is_valid());
+		return position;
+	}
+
 	bool operator==(const Position& other) const = default;
 	bool operator!=(const Position& other) const = default;
 	bool operator<(const Position& other) const

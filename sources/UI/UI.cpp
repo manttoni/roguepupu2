@@ -284,8 +284,12 @@ Position UI::get_clicked_position(const entt::registry& registry)
 	const Vec2 offset = mouse_relative - window_center;
 	const Vec2 player_coords(player_position.cell_idx, cave.get_size());
 	const Vec2 click_coords = player_coords + offset;
+	if (click_coords.y < 0 ||
+		click_coords.x < 0 ||
+		click_coords.y >= static_cast<int>(cave.get_size()) ||
+		click_coords.y >= static_cast<int>(cave.get_size()))
+		return Position::invalid_position();
 	const size_t click_idx = click_coords.to_idx(cave.get_size());
-
 	return Position(click_idx, cave.get_idx());
 }
 

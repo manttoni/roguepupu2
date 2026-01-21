@@ -86,12 +86,12 @@ namespace ActionSystem
 		if (MovementSystem::can_move(registry, actor.position, destination_pos))
 			intent.type = Intent::Type::Move;
 
-		/* Check attack and other interactions */
 		for (const auto entity : ECS::get_entities(registry, destination_pos))
 		{
 			if (intent.type != Intent::Type::None) break;
-			if (AlignmentSystem::is_hostile(registry, actor.entity, entity))
-			{	// actor.entity wants to attack entity
+			if (registry.all_of<Alignment, Health>(entity) &&
+				AlignmentSystem::is_hostile(registry, actor.entity, entity))
+			{
 				intent.type = Intent::Type::Attack;
 				intent.target.entity = entity;
 			}
@@ -126,12 +126,16 @@ namespace ActionSystem
 					{
 					Intent intent = {.type = Intent::Type::Attack};
 					intent.target.position = UI::instance().get_clicked_position(registry);
+					if (!intent.target.position.is_valid())
+						continue;
 					return intent;
 					}
 				case KEY_LEFT_CLICK:
 					{
 					Intent intent = {.type = Intent::Type::ExamineCell};
 					intent.target.position = UI::instance().get_clicked_position(registry);
+					if (!intent.target.position.is_valid())
+						continue;
 					return intent;
 					}
 				case 'i':
