@@ -1,6 +1,7 @@
 #pragma once
 
 #include <optional>
+#include "systems/rendering/RenderData.hpp"
 #include "utils/Parser.hpp"
 #include "systems/position/TransitionSystem.hpp"
 #include "components/Components.hpp"
@@ -14,6 +15,10 @@
 #include "utils/Random.hpp"
 #include "utils/Utils.hpp"
 #include "generation/CaveGenerator.hpp"
+#include "infrastructure/GameLogger.hpp"
+#include "database/AbilityDatabase.hpp"
+#include "database/LootTableDatabase.hpp"
+#include "testing/DevTools.hpp"
 
 namespace ECS
 {
@@ -216,5 +221,18 @@ namespace ECS
 		Parser::parse_cave_generation_conf(conf_id, data);
 		CaveGenerator::generate_cave(data);
 		return cave_idx;
+	}
+
+	inline void init_registry(entt::registry& registry)
+	{
+		registry.ctx().emplace<GameState>();
+		registry.ctx().emplace<GameLogger>();
+		registry.ctx().emplace<AbilityDatabase>();
+		registry.ctx().emplace<World>();
+		registry.ctx().emplace<RenderData>();
+		registry.ctx().emplace<EventQueue>();
+		registry.ctx().emplace<Dev>();
+		registry.ctx().emplace<LootTableDatabase>();
+
 	}
 };

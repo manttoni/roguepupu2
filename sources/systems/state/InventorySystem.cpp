@@ -56,8 +56,10 @@ namespace InventorySystem
 		// This will log message, and apply f.e. Glow effects.
 		Event drop_event;
 		drop_event.actor.entity = owner;
+		drop_event.actor.position = pos;
 		drop_event.effect.type = Effect::Type::Drop;
 		drop_event.target.entity = item;
+		drop_event.target.position = pos;
 		ECS::queue_event(registry, drop_event);
 	}
 

@@ -17,8 +17,9 @@ namespace LightingSystem
 			const auto& [glow, position, color] = registry.get<Glow, Position, FGColor>(entity);
 			if (position.cave_idx != cave_idx)
 				continue;
-			Color glow_color = color.color * glow.strength;
+			Color glow_color = color.color * glow.intensity;
 
+			cave.get_cell(position).add_light(glow_color);
 			for (const auto affected_pos : cave.get_nearby_positions(position, glow.radius))
 			{
 				if (!VisionSystem::has_line_of_sight(registry, affected_pos, position))
@@ -39,14 +40,11 @@ namespace LightingSystem
 	double get_illumination(const Cell& cell)
 	{
 		const auto& lights = cell.get_lights();
-		size_t illumination = 0;
+		double illumination = 0;
 		for (const auto& [color, stacks] : lights)
 		{
-			const size_t intensity = color.get_r() + color.get_g() + color.get_b();
-			illumination += intensity * stacks;
+			illumination += color.get_illumination() * static_cast<double>(stacks);
 		}
-		// All channels at maximum is 3000
-		const double normalized = static_cast<double>(illumination) / 3000.0;
-		return normalized;
+		return illumination;
 	}
 };

@@ -4,12 +4,11 @@
 
 namespace Tester
 {
-	struct Results
-	{
-		size_t failed_tests = 0;
-		bool log_success = false;
-	};
-	extern Results test_results;
+	void test();
 
-	bool test();
+	/*template<typename T>
+		bool test_assert_eq(const T expected, const T actual, const std::string& message)
+		{
+
+		}*/
 };

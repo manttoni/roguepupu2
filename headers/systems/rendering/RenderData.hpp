@@ -6,4 +6,5 @@
 struct RenderData
 {
 	size_t render_frame = 0;
+	bool print_log = true;
 };

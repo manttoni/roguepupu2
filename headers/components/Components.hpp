@@ -169,7 +169,11 @@ struct BaseLocation // spawnpoint
 };
 
 /* Light */
-struct Glow { double strength, radius; };
+struct Glow
+{
+	double intensity;
+	double radius;
+};
 
 /* Reactive */
 struct Transition

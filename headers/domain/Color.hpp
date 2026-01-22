@@ -29,6 +29,7 @@ class Color
 		short init() const;
 		std::string to_string() const;
 		std::string markup() const;
+		double get_illumination() const;
 
 		static inline Color black() { return Color(0, 0, 0); }
 		static inline Color grey() { return Color(100, 100, 100); }

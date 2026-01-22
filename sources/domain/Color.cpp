@@ -84,3 +84,9 @@ std::string Color::markup() const
 {
 	return "{" + std::to_string(r) + "," + std::to_string(g) + "," + std::to_string(b) + "}";
 }
+
+double Color::get_illumination() const
+{
+	const size_t channels_sum = r + g + b;
+	return static_cast<double>(channels_sum) / 3000.0;
+}

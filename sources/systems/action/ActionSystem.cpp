@@ -153,6 +153,9 @@ namespace ActionSystem
 					return {.type = Intent::Type::DoNothing};
 				case ' ':
 					return {.type = Intent::Type::DoNothing};
+				case 'l':
+					registry.ctx().get<RenderData>().print_log ^= true;
+					continue;
 				default:
 					break;
 			}

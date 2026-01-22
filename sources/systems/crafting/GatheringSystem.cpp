@@ -27,7 +27,7 @@ namespace GatheringSystem
 			return false;
 		if (!has_tool(registry, gatherer, gatherable))
 			return false;
-		if (ECS::distance(registry, gatherer, gatherable) > GATHERING_RANGE)
+		if (ECS::distance(registry, gatherer, gatherable) > 1.5)
 			return false;
 		return true;
 	}

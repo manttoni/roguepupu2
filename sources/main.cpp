@@ -50,8 +50,9 @@ void run()
 					"Back:      esc",
 					"Inventory: i",
 					"Character: c",
-					"Hide:      h",
-					"DevTools:  `"
+					"Stealth:   h",
+					"DevTools:  `",
+					"Hide log:  l"
 					});
 
 		if (game != nullptr && game->is_over())
@@ -68,7 +69,11 @@ int main(int argc, char **argv)
 	Log::log("--- Run started ---");
 	EntityFactory::instance().init();
 	if (argc == 2 && std::string(argv[1]) == "test")
-		return Tester::test();
+	{
+		Tester::test();
+		return 0;
+	}
+
 	UI::instance().init();
 	run();
 	UI::instance().end();

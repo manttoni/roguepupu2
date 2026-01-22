@@ -49,7 +49,10 @@ namespace EventSystem
 		if (comp.destroy == true)
 			ECS::destroy_entity(registry, event.target.entity);
 		else if (comp.lose_glow == true && registry.all_of<Glow>(event.target.entity))
+		{
 			registry.erase<Glow>(event.target.entity);
+			LightingSystem::reset_lights(registry, event.target.position.cave_idx);
+		}
 		registry.erase<Gatherable>(event.target.entity);
 	}
 
@@ -59,6 +62,7 @@ namespace EventSystem
 	 * */
 	void resolve_spawn_event(entt::registry& registry, const Event& event)
 	{
+		assert(event.target.entity != entt::null && event.target.position.is_valid());
 		if (registry.all_of<Glow, Position, FGColor>(event.target.entity))
 			LightingSystem::reset_lights(registry, registry.get<Position>(event.target.entity).cave_idx);
 	}

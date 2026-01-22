@@ -22,17 +22,7 @@
 
 Game::Game()
 {
-	Log::log("Constructing game object");
-	registry.ctx().emplace<GameState>();
-	registry.ctx().emplace<GameLogger>();
-	registry.ctx().emplace<AbilityDatabase>();
-	registry.ctx().emplace<World>();
-	registry.ctx().emplace<RenderData>();
-	registry.ctx().emplace<EventQueue>();
-	registry.ctx().emplace<Dev>();
-	registry.ctx().emplace<LootTableDatabase>();
-	Log::log("Emplaced ctx objects");
-
+	ECS::init_registry(registry);
 	registry.ctx().get<GameState>().player = EntityFactory::instance().create_entity(registry, "rabdin");
 
 	Log::log("Created and added player to GameState");

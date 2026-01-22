@@ -160,6 +160,8 @@ namespace RenderingSystem
 
 	void print_log(const entt::registry& registry)
 	{
+		if (registry.ctx().get<RenderData>().print_log == false)
+			return;
 		const auto logger = registry.ctx().get<GameLogger>();
 		const auto& messages = logger.last(20);
 		ColorPair log_pair = ColorPair(Color(500, 500, 500), Color{});
