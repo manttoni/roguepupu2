@@ -1,5 +1,5 @@
 #include <bits/chrono.h>  // for duration, duration_cast, operator-, steady_...
-#include <curses.h>       // for wprintw, ERR, COLOR_PAIR, curs_set, endwin
+#include <ncurses.h>       // for wprintw, ERR, COLOR_PAIR, curs_set, endwin
 #include <locale.h>       // for setlocale, LC_ALL
 #include <panel.h>        // for panel_window, PANEL, new_panel
 #include <stdio.h>        // for fflush, printf, stdout
