@@ -1,5 +1,8 @@
 #pragma once
 
+#include "external/entt/entt.hpp"
+#include "utils/ECS.hpp"
+
 class RegistryTest : public ::testing::Test
 {
 	protected:
@@ -7,6 +10,6 @@ class RegistryTest : public ::testing::Test
 
 		void SetUp() override
 		{
-			init_registry(registry);
+			ECS::init_registry(registry);
 		}
 };

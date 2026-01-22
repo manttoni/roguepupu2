@@ -4,7 +4,6 @@
 #include "UI/Menu.hpp"           // for Menu
 #include "UI/UI.hpp"             // for UI
 #include "utils/Log.hpp"          // for log
-#include "testing/Tester.hpp"
 
 /* Capture this from ncurses so it will print */
 extern "C" void __assert_fail(
@@ -64,15 +63,9 @@ void run()
 	delete game;
 }
 
-int main(int argc, char **argv)
+int main()
 {
 	Log::log("--- Run started ---");
-	EntityFactory::instance().init();
-	if (argc == 2 && std::string(argv[1]) == "test")
-	{
-		Tester::test();
-		return 0;
-	}
 
 	UI::instance().init();
 	run();

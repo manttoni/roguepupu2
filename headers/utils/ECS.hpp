@@ -18,7 +18,7 @@
 #include "infrastructure/GameLogger.hpp"
 #include "database/AbilityDatabase.hpp"
 #include "database/LootTableDatabase.hpp"
-#include "testing/DevTools.hpp"
+#include "infrastructure/DevTools.hpp"
 
 namespace ECS
 {

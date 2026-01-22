@@ -17,7 +17,7 @@
 #include "systems/rendering/RenderingSystem.hpp"
 #include "systems/state/ContextSystem.hpp"
 #include "systems/state/InventorySystem.hpp"
-#include "testing/DevTools.hpp"
+#include "infrastructure/DevTools.hpp"
 #include "systems/state/AlignmentSystem.hpp"
 #include "utils/ECS.hpp"
 

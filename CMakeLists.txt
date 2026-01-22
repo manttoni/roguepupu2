@@ -1,61 +1,72 @@
-cmake_minimum_required(VERSION 3.16)
-
+cmake_minimum_required(VERSION 3.25)
 project(roguepupu2 LANGUAGES CXX)
 
-enable_testing()  # fixed typo
-
+# ========================
+# C++ Standard
+# ========================
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Compiler flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror -g -O3")
-
-# Include headers
-include_directories(${CMAKE_SOURCE_DIR}/headers)
-
-# Recursive source files
-file(GLOB_RECURSE SRCS ${CMAKE_SOURCE_DIR}/sources/*.cpp)
-
-# Add main executable
-add_executable(${PROJECT_NAME} ${SRCS})
-
-# Find ncurses (wide)
-find_package(Curses REQUIRED)
-if(CURSES_FOUND)
-    target_include_directories(${PROJECT_NAME} PRIVATE ${CURSES_INCLUDE_DIR})
-    target_link_libraries(${PROJECT_NAME} PRIVATE panelw ncursesw m)
+# ========================
+# Compiler warnings and optimization
+# ========================
+if(MSVC)
+    add_compile_options(/W4 /WX)
+else()
+    add_compile_options(-Wall -Wextra -Werror -g -O3)
 endif()
+
+# ========================
+# Include directories
+# ========================
+include_directories(headers)
+
+# ========================
+# Source files
+# ========================
+file(GLOB_RECURSE SRCS "sources/*.cpp")
+
+# Separate main.cpp from the rest
+list(FILTER SRCS EXCLUDE REGEX ".*/main\\.cpp$")  # Exclude main.cpp from library
+
+# ========================
+# Core game library
+# ========================
+add_library(roguepupu2_lib STATIC ${SRCS})
+target_include_directories(roguepupu2_lib PUBLIC headers)
+target_compile_features(roguepupu2_lib PUBLIC cxx_std_20)
+
+# ========================
+# Game executable
+# ========================
+add_executable(${PROJECT_NAME} sources/main.cpp)  # Only main.cpp goes here
+target_link_libraries(${PROJECT_NAME} PRIVATE roguepupu2_lib ncursesw panelw m)
 
 # Ensure logs directory exists after build
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/logs
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/logs
 )
 
+# ========================
 # Google Test
+# ========================
 find_package(GTest REQUIRED)
-include_directories(${GTEST_INCLUDE_DIRS})
+enable_testing()
 
-# Add test executable
-#add_executable(sanity_test tests/sanity_test.cpp)
-#target_link_libraries(sanity_test PRIVATE gtest gtest_main pthread)
+file(GLOB_RECURSE TEST_SRCS "tests/*.cpp")
+add_executable(${PROJECT_NAME}_tests ${TEST_SRCS})
 
-# Register test
-#add_test(NAME SanityTest COMMAND sanity_test)
+# Add include directories for tests
+target_include_directories(${PROJECT_NAME}_tests PRIVATE headers tests tests/helpers)
 
-# Find all test source files
-file(GLOB TEST_SRCS ${CMAKE_SOURCE_DIR}/tests/*_test.cpp)
+target_link_libraries(${PROJECT_NAME}_tests
+    PRIVATE roguepupu2_lib
+    PRIVATE GTest::gtest
+    PRIVATE GTest::gtest_main
+    PRIVATE ncursesw panelw m       # <-- add these
+)
 
-foreach(test_src ${TEST_SRCS})
-    # Get filename without directory and extension
-    get_filename_component(test_name ${test_src} NAME_WE)
 
-    # Add executable
-    add_executable(${test_name} ${test_src})
+include(GoogleTest)
+gtest_discover_tests(${PROJECT_NAME}_tests)
 
-    # Link with GTest and pthread
-    target_link_libraries(${test_name} PRIVATE gtest gtest_main pthread)
-
-    # Register test with CTest
-    add_test(NAME ${test_name} COMMAND ${test_name})
-endforeach()

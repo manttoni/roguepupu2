@@ -23,6 +23,7 @@ class EntityFactory
 			static EntityFactory ef;
 			return ef;
 		}
+		EntityFactory() { init(); }
 		const std::unordered_map<std::string, nlohmann::json>& get_LUT() const { return LUT; }
 		entt::entity create_entity(entt::registry& registry, const std::string& name, const std::optional<Position>& position = std::nullopt);
 		std::vector<std::string> get_category_names() const;

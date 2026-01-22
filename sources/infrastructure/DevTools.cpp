@@ -1,7 +1,7 @@
 #include <vector>
 #include <string>
 #include "database/EntityFactory.hpp"
-#include "testing/DevTools.hpp"
+#include "infrastructure/DevTools.hpp"
 #include "UI/UI.hpp"
 #include "external/entt/entt.hpp"
 #include "utils/ECS.hpp"

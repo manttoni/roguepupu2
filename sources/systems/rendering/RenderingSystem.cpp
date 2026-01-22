@@ -16,7 +16,7 @@
 #include "utils/Unicode.hpp"
 #include "infrastructure/GameLogger.hpp"
 #include "utils/Math.hpp"
-#include "testing/DevTools.hpp"
+#include "infrastructure/DevTools.hpp"
 #include "systems/environment/LiquidSystem.hpp"
 
 namespace RenderingSystem
