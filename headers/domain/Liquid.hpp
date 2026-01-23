@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 #include "domain/Color.hpp"
-#include "utils/Log.hpp"
+#include "utils/Error.hpp"
 
 struct Liquid
 {
@@ -62,7 +62,7 @@ struct Liquid
 			if (str == name)
 				return type;
 
-		Log::error("Unknown liquid type: " + str);
+		Error::fatal("Unknown liquid type: " + str);
 		return Type::None;
 	}
 

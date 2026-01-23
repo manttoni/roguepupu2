@@ -2,6 +2,7 @@
 #include <unordered_set>
 #include <vector>
 #include <unordered_map>
+#include <ncurses.h>
 #include "UI/UI.hpp"
 #include "components/Components.hpp"
 #include "domain/Cell.hpp"
@@ -113,6 +114,8 @@ namespace RenderingSystem
 			visual.glyph = ECS::get_glyph(registry, visible_entity);
 			visual.fg = ECS::get_fgcolor(registry, visible_entity);
 			visual.bg = get_bgcolor(registry, position);
+			if (registry.all_of<NcursesAttr>(visible_entity))
+				visual.attr = registry.get<NcursesAttr>(visible_entity).attr;
 		}
 		else
 		{
@@ -127,7 +130,6 @@ namespace RenderingSystem
 			visual.bg += light_color * static_cast<int>(light_stacks);
 		}
 		visual.color_pair = ColorPair(visual.fg, visual.bg);
-
 		return visual;
 	}
 
@@ -142,7 +144,11 @@ namespace RenderingSystem
 		const size_t x = middle.x + cell.x - player.x;
 
 		UI::instance().enable_color_pair(visual.color_pair);
+		if (visual.attr != A_NORMAL)
+			UI::instance().enable_attr(visual.attr);
 		UI::instance().print_wide(y, x, visual.glyph);
+		if (visual.attr != A_NORMAL)
+			UI::instance().disable_attr(visual.attr);
 		UI::instance().disable_color_pair(visual.color_pair);
 	}
 
@@ -192,31 +198,32 @@ namespace RenderingSystem
 		UI::instance().set_current_panel(status_panel, true);
 		UI::instance().enable_color_pair(ColorPair(color, Color{}));
 		UI::instance().print_wstr(y, 1, bar);
+
 		UI::instance().disable_color_pair(ColorPair(color, Color{}));
 	}
 
 	/*void show_player_status(const entt::registry& registry)
-	{
-		const size_t bar_len = 25;
-		PANEL* status_panel = UI::instance().get_panel(UI::Panel::Status);
-		WINDOW* status_window = panel_window(status_panel);
-		werase(status_window);
-		box(status_window, 0, 0);
-		mvwhline(status_window, 2, 1, ACS_HLINE, bar_len);
-		mvwhline(status_window, 4, 1, ACS_HLINE, bar_len);
+	  {
+	  const size_t bar_len = 25;
+	  PANEL* status_panel = UI::instance().get_panel(UI::Panel::Status);
+	  WINDOW* status_window = panel_window(status_panel);
+	  werase(status_window);
+	  box(status_window, 0, 0);
+	  mvwhline(status_window, 2, 1, ACS_HLINE, bar_len);
+	  mvwhline(status_window, 4, 1, ACS_HLINE, bar_len);
 
-		const auto player = ECS::get_player(registry);
-		const auto& resources = registry.get<Resources>(player);
+	  const auto player = ECS::get_player(registry);
+	  const auto& resources = registry.get<Resources>(player);
 
-		const double hp_per = static_cast<double>(resources.health) / static_cast<double>(ECS::get_health_max(registry, player));
-		draw_bar(Color(400,0,0), std::max(0.0, hp_per), 1, bar_len);
+	  const double hp_per = static_cast<double>(resources.health) / static_cast<double>(ECS::get_health_max(registry, player));
+	  draw_bar(Color(400,0,0), std::max(0.0, hp_per), 1, bar_len);
 
-		const double ft_per = static_cast<double>(resources.fatigue) / static_cast<double>(ECS::get_fatigue_max(registry, player));
-		draw_bar(Color(0,400,0), std::max(0.0, ft_per), 3, bar_len);
+	  const double ft_per = static_cast<double>(resources.fatigue) / static_cast<double>(ECS::get_fatigue_max(registry, player));
+	  draw_bar(Color(0,400,0), std::max(0.0, ft_per), 3, bar_len);
 
-		const double mp_per = static_cast<double>(resources.mana) / static_cast<double>(ECS::get_mana_max(registry, player));
-		draw_bar(Color(0,0,600), std::max(0.0, mp_per), 5, bar_len);
-	}*/
+	  const double mp_per = static_cast<double>(resources.mana) / static_cast<double>(ECS::get_mana_max(registry, player));
+	  draw_bar(Color(0,0,600), std::max(0.0, mp_per), 5, bar_len);
+	  }*/
 
 	void show_debug(const entt::registry& registry)
 	{
@@ -253,7 +260,11 @@ namespace RenderingSystem
 			const Visual visual = get_visual(registry, pos);
 			const Vec2 coords(pos.cell_idx, cave.get_size());
 			UI::instance().enable_color_pair(visual.color_pair);
+			if (visual.attr != A_NORMAL)
+				UI::instance().enable_attr(visual.attr);
 			UI::instance().print_wide(coords.y, coords.x, visual.glyph);
+			if (visual.attr != A_NORMAL)
+				UI::instance().disable_attr(visual.attr);
 			UI::instance().disable_color_pair(visual.color_pair);
 		}
 		UI::instance().update();

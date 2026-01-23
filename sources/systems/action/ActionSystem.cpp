@@ -20,6 +20,7 @@
 #include "infrastructure/DevTools.hpp"
 #include "systems/state/AlignmentSystem.hpp"
 #include "utils/ECS.hpp"
+#include "utils/Error.hpp"
 
 namespace ActionSystem
 {
@@ -77,7 +78,7 @@ namespace ActionSystem
 		const Vec2 destination = current + direction;
 
 		if (destination.out_of_bounds(0, cave_size - 1))
-			Log::error("Destination position out of bounds");
+			Error::fatal("Destination position out of bounds");
 
 		const Position destination_pos(destination.to_idx(cave_size), cave.get_idx());
 		Intent intent;

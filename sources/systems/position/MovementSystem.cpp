@@ -7,6 +7,7 @@
 #include "domain/Cave.hpp"
 #include "utils/ECS.hpp"
 #include "utils/Vec2.hpp"
+#include "utils/Error.hpp"
 
 namespace MovementSystem
 {
@@ -66,7 +67,7 @@ namespace MovementSystem
 		assert(start.cave_idx == end.cave_idx);
 		const auto& cave = ECS::get_cave(registry, start);
 		if (start.cell_idx >= cave.get_area() || end.cell_idx >= cave.get_area())
-			Log::error("Find path idx out of bounds");
+			Error::fatal("Find path idx out of bounds");
 		if (allow_blocked_end == false && blocks_movement(registry, end))
 			return {};
 		std::vector<Position> open_set = { start };

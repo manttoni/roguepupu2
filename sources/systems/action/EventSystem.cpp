@@ -1,3 +1,4 @@
+#include <ncurses.h>
 #include "components/Components.hpp"
 #include "systems/items/LootSystem.hpp"
 #include "systems/rendering/RenderingSystem.hpp"
@@ -8,6 +9,7 @@
 #include "systems/action/EventSystem.hpp"
 #include "utils/ECS.hpp"
 #include "infrastructure/GameLogger.hpp"
+#include "utils/Error.hpp"
 
 namespace EventSystem
 {
@@ -46,12 +48,21 @@ namespace EventSystem
 		assert(event.target.position.is_valid());
 		const auto& comp = registry.get<Gatherable>(event.target.entity);
 		LootSystem::give_loot(registry, event.actor.entity, comp.loot_table_ids);
-		if (comp.destroy == true)
-			ECS::destroy_entity(registry, event.target.entity);
-		else if (comp.lose_glow == true && registry.all_of<Glow>(event.target.entity))
+		switch (comp.effect)
 		{
-			registry.erase<Glow>(event.target.entity);
-			LightingSystem::reset_lights(registry, event.target.position.cave_idx);
+			case Gatherable::Effect::None:
+				break;
+			case Gatherable::Effect::Dim:
+				registry.emplace_or_replace<NcursesAttr>(event.target.entity, A_DIM);
+				if (registry.all_of<Glow>(event.target.entity))
+				{
+					registry.erase<Glow>(event.target.entity);
+					LightingSystem::reset_lights(registry, event.target.position.cave_idx);
+				}
+				break;
+			case Gatherable::Effect::Destroy:
+				ECS::destroy_entity(registry, event.target.entity);
+				break;
 		}
 		registry.erase<Gatherable>(event.target.entity);
 	}
@@ -136,7 +147,7 @@ namespace EventSystem
 					resolve_destroy_event(registry, event);
 					break;
 				default:
-					Log::error("Unhandled effect type: " + std::to_string(static_cast<int>(event.effect.type)));
+					Error::fatal("Unhandled effect type: " + std::to_string(static_cast<int>(event.effect.type)));
 			}
 			log_event(registry, event);
 		}

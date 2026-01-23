@@ -1,7 +1,7 @@
 {
 	"lt_rabdin": {
 		"item_ids": [
-			"kunai", "glass bottle"
+			"knife", "hatchet", "pickaxe", "glass bottle"
 		]
 	},
 	"lt_glowing_mushroom": {

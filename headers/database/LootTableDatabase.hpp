@@ -2,6 +2,7 @@
 
 #include <map>
 #include <string>
+#include "utils/Error.hpp"
 #include "domain/LootTable.hpp"
 #include "utils/Log.hpp"
 
@@ -16,7 +17,7 @@ class LootTableDatabase
 		const LootTable& get_loot_table(const std::string& table_id) const
 		{
 			if (!database.contains(table_id))
-				Log::error("LootTableDatabase does not contain: " + table_id);
+				Error::fatal("LootTableDatabase does not contain: " + table_id);
 			return database.at(table_id);
 		}
 };

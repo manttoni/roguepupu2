@@ -1,6 +1,6 @@
 #include <cassert>
 #include "domain/Cell.hpp"        // for Cell
-#include "utils/Log.hpp"
+#include "utils/Error.hpp"
 #include "domain/LiquidMixture.hpp"
 #include "domain/Color.hpp"
 #include "utils/Unicode.hpp"
@@ -18,7 +18,7 @@ Cell::Cell(const size_t idx, const Cell::Type type) :
 			density = 0;
 			break;
 		default:
-			Log::error("Don't use other types here");
+			Error::fatal("Don't use other types here");
 	}
 }
 

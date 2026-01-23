@@ -5,7 +5,7 @@
 #include "domain/Event.hpp"
 #include "domain/Color.hpp"
 #include "domain/LootTable.hpp"
-#include "utils/Log.hpp"
+#include "utils/Error.hpp"
 #include "generation/CaveGenerator.hpp"
 
 namespace Parser
@@ -13,7 +13,7 @@ namespace Parser
 	Color parse_color(const nlohmann::json& data)
 	{
 		if (!data.is_array() || data.size() != 3)
-			Log::error("Data not right sized array: " + data.dump(4));
+			Error::fatal("Data not right sized array: " + data.dump(4));
 		Color color = Color(data[0].get<int>(), data[1].get<int>(), data[2].get<int>());
 		return color;
 	}
@@ -30,7 +30,7 @@ namespace Parser
 				effect.type = Effect::Type::DestroyEntity;
 			else if (type == "self_destruct")
 				effect.type = Effect::Type::SelfDestruct;
-			else Log::error("Unknown effect type: " + type);
+			else Error::fatal("Unknown effect type: " + type);
 		}
 		if (data.contains("entity_id"))
 			effect.entity_id = data["entity_id"].get<std::string>();
@@ -56,12 +56,12 @@ namespace Parser
 		Log::log("Reading " + path.string());
 		std::ifstream file(path);
 		if (!file.is_open())
-			Log::error("Could not open file: " + path.string());
+			Error::fatal("Could not open file: " + path.string());
 		nlohmann::json defs;
 		try {
 			file >> defs;
 		} catch (const nlohmann::json::parse_error& e) {
-			Log::error(e.what());
+			Error::fatal(e.what());
 		}
 		file.close();
 		return defs;

@@ -8,6 +8,7 @@
 #include "systems/position/MovementSystem.hpp"
 #include "systems/state/InventorySystem.hpp"
 #include "utils/ECS.hpp"
+#include "utils/Error.hpp"
 
 namespace EffectSystem
 {
@@ -26,11 +27,11 @@ namespace EffectSystem
 						// "Effect entity is created and added to target entity inventory"
 						InventorySystem::add_item(registry, target.entity, entity);
 					else
-						Log::error("Effect target is invalid");
+						Error::fatal("Effect target is invalid");
 				}
 				break;
 			default:
-				Log::error("Unhandled effect type: " + std::to_string(static_cast<int>(effect.type)));
+				Error::fatal("Unhandled effect type: " + std::to_string(static_cast<int>(effect.type)));
 		}
 
 		ECS::queue_event(registry, Event(

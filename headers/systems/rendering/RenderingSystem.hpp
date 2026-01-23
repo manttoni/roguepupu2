@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ncurses.h>
 #include "domain/ColorPair.hpp"
 #include "external/entt/fwd.hpp"
 #include "domain/Position.hpp"
@@ -16,6 +17,7 @@ namespace RenderingSystem
 		Color fg;
 		Color bg;
 		ColorPair color_pair{};
+		chtype attr = A_NORMAL;
 	};
 	void render_cell(const entt::registry& registry, const Position& position);
 	void render(entt::registry& registry);

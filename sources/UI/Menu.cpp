@@ -9,6 +9,7 @@
 #include "UI/MenuTxt.hpp"  // for MenuTxt
 #include "UI/UI.hpp"       // for UI, KEY_ESCAPE, KEY_LEFT_CLICK
 #include "utils/Math.hpp"
+#include "utils/Error.hpp"
 
 Menu::Menu(	std::vector<std::unique_ptr<MenuElt>> elements_,
 			const Vec2& start,
@@ -76,7 +77,7 @@ std::any Menu::get_value(const std::string& str) const
 			&& elements[i]->MenuElt::get_text() == str)
 			return elements[i]->get_value();
 	}
-	Log::error("Not found");
+	Error::fatal("Not found");
 	return {};
 }
 
@@ -91,7 +92,7 @@ void Menu::set_value(const std::string& str, std::any value)
 			return;
 		}
 	}
-	Log::error("MenuNum name not found: " + str);
+	Error::fatal("MenuNum name not found: " + str);
 }
 
 int Menu::get_mouse_selection() const

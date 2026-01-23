@@ -4,7 +4,6 @@
 #include <string>
 #include <chrono>
 #include <sstream>
-#include <stdexcept>
 
 namespace Log
 {
@@ -27,12 +26,6 @@ namespace Log
 
 		os << timestamp() << " " << message << std::endl;
 		os.close();
-	}
-
-	[[noreturn]] static inline void error(const std::string& message)
-	{
-		log(message);
-		throw std::runtime_error("Error: " + message);
 	}
 }
 

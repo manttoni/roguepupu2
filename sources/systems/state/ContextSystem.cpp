@@ -1,4 +1,5 @@
 #include <format>
+#include "systems/state/AlignmentSystem.hpp"
 #include "UI/MenuTxt.hpp"
 #include "systems/state/StateSystem.hpp"
 #include "systems/action/EventSystem.hpp"
@@ -60,6 +61,19 @@ namespace ContextSystem
 		if (!registry.all_of<Alignment>(entity))
 			return {};
 		std::vector<std::string> details;
+
+		if (entity != ECS::get_player(registry))
+		{
+			details.push_back(registry.get<Alignment>(entity).to_string());
+			if (AlignmentSystem::is_hostile(registry, entity, ECS::get_player(registry)))
+				details.push_back(Color::red().markup() + "Hostile{reset}");
+			else if (AlignmentSystem::is_friendly(registry, entity, ECS::get_player(registry)))
+				details.push_back(Color::green().markup() + "Friendly{reset}");
+			else
+				details.push_back("Neutral");
+			return details;
+		}
+
 		const auto& alignment = registry.get<Alignment>(entity);
 		if (alignment.chaos_law <= -0.5)
 			details.push_back("Chaotic : " + std::format("{:.2f}", alignment.chaos_law));

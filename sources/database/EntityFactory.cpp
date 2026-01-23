@@ -16,6 +16,7 @@
 #include "external/entt/entt.hpp"
 #include "utils/ECS.hpp"
 #include "domain/Event.hpp"
+#include "utils/Error.hpp"
 
 void EntityFactory::init()
 {
@@ -51,7 +52,7 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 	{ "solid", [](auto& reg, auto e, const nlohmann::json& data)
 		{	// Can't move through solid entities
 			if (!data.is_boolean())
-				Log::error("Solid should be boolean: " + data.dump(4));
+				Error::fatal("Solid should be boolean: " + data.dump(4));
 			if (data.get<bool>() == true)
 				reg.template emplace<Solid>(e);
 		}
@@ -59,7 +60,7 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 	{ "opaque", [](auto& reg, auto e, const nlohmann::json& data)
 		{
 			if (!data.is_number() || data.get<double>() < 0 || data.get<double>() > 1)
-				Log::error("Opaqueness should be number [0,1]");
+				Error::fatal("Opaqueness should be number [0,1]");
 			reg.template emplace<Opaque>(e, data.get<double>());
 		}
 	},
@@ -80,7 +81,7 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 	{ "vision", [](auto& reg, auto e, const nlohmann::json& data)
 		{	// Can see and has a vision range. This might get replaced by some perception stat, probably will
 			if (!data.is_number() || data.get<double>() < 0)
-				Log::error("Vision range should be positive number");
+				Error::fatal("Vision range should be positive number");
 			reg.template emplace<Vision>(e, data.get<double>());
 		}
 	},
@@ -88,14 +89,14 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 		{	// Emits light around it
 			if (!data.contains("intensity") || !data["intensity"].is_number() ||
 				!data.contains("radius") || !data["radius"].is_number())
-				Log::error("Glow requires intensity and radius numbers: " + data.dump(4));
+				Error::fatal("Glow requires intensity and radius numbers: " + data.dump(4));
 			reg.template emplace<Glow>(e, data["intensity"].get<double>(), data["radius"].get<double>());
 		}
 	},
 	{ "player", [](auto& reg, auto e, const nlohmann::json& data)
 		{	// Is a playable character
 			if (!data.is_boolean())
-				Log::error("Player should be boolean: " + data.dump(4));
+				Error::fatal("Player should be boolean: " + data.dump(4));
 			if (data.get<bool>() == true)
 				reg.template emplace<Player>(e);
 		}
@@ -103,21 +104,21 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 	{ "weight", [](auto& reg, auto e, const nlohmann::json& data)
 		{
 			if (!data.is_number() || data.get<double>() < 0)
-				Log::error("Weight should be positive number: " + data.dump(4));
+				Error::fatal("Weight should be positive number: " + data.dump(4));
 			reg.template emplace<Weight>(e, data.get<double>());
 		}
 	},
 	{ "equipment", [](auto& reg, auto e, const nlohmann::json& data)
 		{	// This entity is a piece of equipment that can be equipped in slots
 			if (!data.is_string())
-				Log::error("Equipment (slot) should be string");
+				Error::fatal("Equipment (slot) should be string");
 			reg.template emplace<Equipment>(e, Equipment::from_string(data.get<std::string>()));
 		}
 	},
 	{ "equipment_slots", [](auto& reg, auto e, const nlohmann::json& data)
 		{
 			if (!data.is_boolean())
-				Log::error("EquipmentSlots should be boolean");
+				Error::fatal("EquipmentSlots should be boolean");
 			if (data.get<bool>() == true)
 				reg.template emplace<EquipmentSlots>(e);
 		}
@@ -135,7 +136,7 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 	{ "glyph", [](auto& reg, auto e, const nlohmann::json& data)
 		{
 			if (!data.is_string())
-				Log::error("Glyph should be string: " + data.dump(4));
+				Error::fatal("Glyph should be string: " + data.dump(4));
 			const std::string glyph_str = data.get<std::string>();
 			std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
 			std::wstring wstr = conv.from_bytes(glyph_str);
@@ -146,7 +147,7 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 	{ "fgcolor", [](auto& reg, auto e, const nlohmann::json& data)
 		{
 			if (!data.is_array() || data.size() != 3)
-				Log::error("Invalid color values: " + data.dump(4));
+				Error::fatal("Invalid color values: " + data.dump(4));
 			Color color = Color(data[0].get<int>(), data[1].get<int>(), data[2].get<int>());
 			reg.template emplace<FGColor>(e, color);
 		}
@@ -154,7 +155,7 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 	{ "bgcolor", [](auto& reg, auto e, const nlohmann::json& data)
 		{
 			if (!data.is_array() || data.size() != 3)
-				Log::error("Invalid color values: " + data.dump(4));
+				Error::fatal("Invalid color values: " + data.dump(4));
 			const auto& c = data["color"];
 			Color color = Color(c[0].get<int>(), c[1].get<int>(), c[2].get<int>());
 			reg.template emplace<BGColor>(e, color);
@@ -163,7 +164,7 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 	{ "level", [](auto& reg, auto e, const nlohmann::json& data)
 		{
 			if (!data.is_number() || data.get<int>() < 0)
-				Log::error("Level should be positive integer: " + data.dump(4));
+				Error::fatal("Level should be positive integer: " + data.dump(4));
 
 			const size_t xp = StateSystem::level_to_xp(data.get<size_t>());
 			reg.template emplace<Experience>(e, xp);
@@ -172,7 +173,7 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 	{ "abilities", [](auto& reg, auto e, const nlohmann::json& data)
 		{
 			if (!data.is_array())
-				Log::error("Abilities not an array: " + data.dump(4));
+				Error::fatal("Abilities not an array: " + data.dump(4));
 			std::map<std::string, Ability> abilities;
 			for (const auto& ability : data)
 			{
@@ -186,7 +187,7 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 	{ "ai", [](auto& reg, auto e, const nlohmann::json& data)
 		{
 			if (!data.is_object())
-				Log::error("AI needs to be an object: " + data.dump(4));
+				Error::fatal("AI needs to be an object: " + data.dump(4));
 			AI comp;
 			if (data.contains("aggressive")) comp.aggressive = true;
 
@@ -203,10 +204,8 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			Gatherable comp;
 			if (data.contains("tool"))
 				comp.tool_type = Tool::from_string(data["tool"].get<std::string>());
-			if (data.contains("destroy"))
-				comp.destroy = data["destroy"].get<bool>();
-			if (data.contains("lose_glow"))
-				comp.lose_glow = data["lose_glow"].get<bool>();
+			if (data.contains("gather_effect"))
+				comp.effect = Gatherable::from_string(data["gather_effect"].get<std::string>());
 			if (data.contains("loot_tables"))
 				comp.loot_table_ids = data["loot_tables"].get<std::vector<std::string>>();
 
@@ -227,19 +226,17 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 	{ "edge", [](auto& reg, auto e, const nlohmann::json& data)
 		{
 			if (!data.is_number_float())
-				Log::error("Edge is not a float");
+				Error::fatal("Edge is not a float");
 			const double edge = data.get<double>();
 			if (edge < 0 || edge > 1)
-				Log::error("Invalid Edge value");
+				Error::fatal("Invalid Edge value");
 			reg.template emplace<Edge>(e, edge);
 		}
 	},
 	{ "throwable", [](auto& reg, auto e, const nlohmann::json& data)
 		{
-			if (!data.is_boolean())
-				Log::error("Throwable value type error");
-			if (data.get<bool>() == true)
-				reg.template emplace<Throwable>(e);
+			(void) data;
+			reg.template emplace<Throwable>(e);
 		}
 	},
 	{ "size", [](auto& reg, auto e, const nlohmann::json& data)
@@ -251,14 +248,14 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 				size = std::numeric_limits<double>::infinity();
 			else if (data.is_number())
 				size = data.get<double>();
-			else Log::error("Unhandled size type: " + data.dump(4));
+			else Error::fatal("Unhandled size type: " + data.dump(4));
 			reg.template emplace<Size>(e, size);
 		}
 	},
 	{ "attributes", [](auto& reg, auto e, const nlohmann::json& data)
 		{
 			if (!data.is_object())
-				Log::error("Incorrect format: " + data.dump(4));
+				Error::fatal("Incorrect format: " + data.dump(4));
 			if (data.contains("endurance"))
 			{
 				reg.template emplace<Endurance>(e, data["endurance"].get<int>());
@@ -326,7 +323,7 @@ entt::entity EntityFactory::create_entity(entt::registry& registry, const std::s
 {
 	Log::log("Creating entity: " + name);
 	if (LUT.find(name) == LUT.end())
-		Log::error("Entity not found: " + name);
+		Error::fatal("Entity not found: " + name);
 
 	auto entity = registry.create();
 	const auto& data = LUT[name];
@@ -334,17 +331,17 @@ entt::entity EntityFactory::create_entity(entt::registry& registry, const std::s
 	{
 		auto it = field_parsers.find(field_name);
 		if (it == field_parsers.end())
-			Log::error("Unknown field name: " + field_name);
+			Error::fatal("Unknown field name: " + field_name);
 		Log::log("Field name: " + field_name);
 		try {
 			it->second(registry, entity, field_data);
 		} catch (const nlohmann::json::parse_error& e) {
-			Log::error(e.what());
+			Error::fatal(e.what());
 		}
 	}
 
 	if (!registry.all_of<Category, Subcategory, Name>(entity))
-		Log::error("Entity doesn't have core components");
+		Error::fatal("Entity doesn't have core components");
 
 	if (position.has_value())
 	{
@@ -404,7 +401,7 @@ std::vector<std::string> EntityFactory::get_category_names() const
 	for (const auto& [name, data] : LUT)
 	{
 		if (!data.contains("category"))
-			Log::error("Uncategorized entity: " + name);
+			Error::fatal("Uncategorized entity: " + name);
 		const auto category = data["category"].get<std::string>();
 		auto it = std::find(category_names.begin(), category_names.end(), category);
 		if (it == category_names.end())
@@ -419,7 +416,7 @@ std::vector<std::string> EntityFactory::get_subcategory_names(const std::string&
 	for (const auto& [name, data] : LUT)
 	{
 		if (!data.contains("category") || !data.contains("subcategory"))
-			Log::error("Uncategorized entity: " + name);
+			Error::fatal("Uncategorized entity: " + name);
 		if (data["category"].get<std::string>() != category)
 			continue;
 		const auto subcategory = data["subcategory"].get<std::string>();

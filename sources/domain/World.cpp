@@ -2,18 +2,19 @@
 #include "domain/World.hpp"
 #include "domain/Cave.hpp"
 #include "utils/Parser.hpp"
+#include "utils/Error.hpp"
 
 Cave& World::get_cave(const size_t idx)
 {
 	if (idx >= caves.size())
-		Log::error("Cave does not exist");
+		Error::fatal("Cave does not exist");
 	return caves[idx];
 }
 
 const Cave& World::get_cave(const size_t idx) const
 {
 	if (idx >= caves.size())
-		Log::error("Cave does not exist");
+		Error::fatal("Cave does not exist");
 	return caves[idx];
 }
 

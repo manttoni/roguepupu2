@@ -10,11 +10,11 @@
 		"spawn": {
 			"space": { "radius": 1, "solid": 1, "empty": 3 },
 			"perlin": { "frequency": 0.01, "treshold": 0.4 },
-			"liquid": { "type": "water", "radius": 15, "amount": "4-40" }
+			"liquid": { "type": "water", "radius": 10, "amount": "4-40" }
 		},
 		"weight": 5,
 		"gatherable": {
-			"lose_glow": true, "tool": "cutting",
+			"gather_effect": "dim", "tool": "cutting",
 			"loot_tables": ["lt_glowing_mushroom"]
 		},
 		"size": 5
@@ -27,11 +27,11 @@
 		"spawn": {
 			"space": { "radius": 3, "solid": "0-2" },
 			"perlin": { "frequency": 0.2, "octaves": 16, "treshold": 0.5 },
-			"liquid": { "type": "water", "radius": 10, "amount": "0.5-10" }
+			"liquid": { "type": "water", "radius": 10, "amount": "0.5-20" }
 		},
 		"weight": 40,
 		"gatherable": {
-			"destroy": true, "tool": "felling",
+			"gather_effect": "destroy", "tool": "felling",
 			"loot_tables": ["lt_woody_mushroom"]
 		},
 		"size": 40

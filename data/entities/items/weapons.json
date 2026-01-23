@@ -1,9 +1,19 @@
 {
-	"kunai": {
-		"throwable": true,
+	"knife": {
+		"throwable": {},
 		"weight": 0.3,
-		"edge": 1.0,
 		"tool": "cutting",
 		"equipment": "one_handed"
+	},
+	"hatchet": {
+		"throwable": {},
+		"weight": 1.4,
+		"tool": "felling",
+		"equipment": "one_handed"
+	},
+	"pickaxe": {
+		"weight": 2.5,
+		"tool": "mining",
+		"equipment": "two_handed"
 	}
 }

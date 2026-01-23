@@ -11,6 +11,7 @@
 #include "utils/Random.hpp"
 #include "utils/ECS.hpp"
 #include "UI/UI.hpp"
+#include "utils/Error.hpp"
 
 namespace EntitySpawner
 {
@@ -19,7 +20,7 @@ namespace EntitySpawner
 	bool evaluate_perlin(const entt::registry& registry, const Position& spawn_pos, const nlohmann::json& perlin)
 	{
 		if (!perlin.contains("frequency") || !perlin.contains("treshold"))
-			Log::error("Perlin is missing data: " + perlin.dump(4));
+			Error::fatal("Perlin is missing data: " + perlin.dump(4));
 		const auto& cave = ECS::get_cave(registry, spawn_pos.cave_idx);
 		const auto frequency = perlin["frequency"].get<double>();
 		const auto treshold = perlin["treshold"].get<double>();
@@ -39,7 +40,7 @@ namespace EntitySpawner
 	bool evaluate_space(const entt::registry& registry, const Position& spawn_pos, const nlohmann::json& space)
 	{
 		if (!space.contains("radius"))
-			Log::error("Space missing data: " + space.dump(4));
+			Error::fatal("Space missing data: " + space.dump(4));
 		const auto radius = space["radius"].get<double>();
 		const auto& cave = ECS::get_cave(registry, spawn_pos.cave_idx);
 		if (space.contains("empty"))
@@ -68,7 +69,7 @@ namespace EntitySpawner
 				return false;
 		}
 		else
-			Log::error("Space needs more data: " + space.dump(4));
+			Error::fatal("Space needs more data: " + space.dump(4));
 		return true;
 	}
 
@@ -77,7 +78,7 @@ namespace EntitySpawner
 	bool evaluate_liquid(const entt::registry& registry, const Position& spawn_pos, const nlohmann::json& liquid)
 	{
 		if (!liquid.contains("radius") || !liquid.contains("type") || !liquid.contains("amount"))
-			Log::error("Liquid needs more data: " + liquid.dump(4));
+			Error::fatal("Liquid needs more data: " + liquid.dump(4));
 		const auto& cave = ECS::get_cave(registry, spawn_pos.cave_idx);
 		const auto radius = liquid["radius"].get<double>();
 		const Liquid::Type type = Liquid::from_string(liquid["type"].get<std::string>());
@@ -101,7 +102,7 @@ namespace EntitySpawner
 	bool evaluate_light(const entt::registry& registry, const Position& spawn_pos, const nlohmann::json& light)
 	{
 		if (!light.contains("radius") || !light.contains("amount"))
-			Log::error("Light needs more data: " + light.dump(4));
+			Error::fatal("Light needs more data: " + light.dump(4));
 		const auto& cave = ECS::get_cave(registry, spawn_pos.cave_idx);
 		const auto radius = light["radius"].get<double>();
 		const auto& [min, max] = Parser::parse_range<double>(light["amount"]);

@@ -6,7 +6,7 @@
 #include "nlohmann/json.hpp"
 #include "domain/Effect.hpp"
 #include "domain/Conditions.hpp"
-#include "utils/Log.hpp"
+#include "utils/Error.hpp"
 #include "domain/LootTable.hpp"
 
 namespace CaveGenerator { struct Data; };
@@ -31,18 +31,18 @@ namespace Parser
 				const auto str = data.get<std::string>();
 				const auto pos = str.find('-');
 				if (pos == std::string::npos)
-					Log::error("Invalid range: " + str);
+					Error::fatal("Invalid range: " + str);
 
 				T min{}, max{};
 				auto [p1, ec1] = std::from_chars(str.data(), str.data() + pos, min);
 				auto [p2, ec2] = std::from_chars(str.data() + pos + 1, str.data() + str.size(), max);
 
 				if (ec1 != std::errc{} || ec2 != std::errc{} || min > max)
-					Log::error("Invalid range: " + str);
+					Error::fatal("Invalid range: " + str);
 
 				return { min, max };
 			}
-			Log::error("Unsupported range format: " + data.dump(4));
+			Error::fatal("Unsupported range format: " + data.dump(4));
 		}
 };
 
