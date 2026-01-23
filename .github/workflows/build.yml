@@ -29,4 +29,6 @@ jobs:
           cd build
           cmake ..
           make
+          cd ..
+          ./build/roguepupu2_test
 

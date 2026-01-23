@@ -24,7 +24,7 @@
 TEST_F(RegistryTest, LOSSymmetricalEmpty)
 {
 	const size_t CAVE_SIZE = 5;
-	const auto cave_idx = get_test_cave_idx(registry, CAVE_SIZE);
+	const auto cave_idx = get_test_cave_idx(registry, CAVE_SIZE, TestCaveType::Floor);
 	const auto& cave = ECS::get_cave(registry, cave_idx);
 	const auto positions = cave.get_positions();
 	for (size_t i = 0; i < positions.size(); ++i)
