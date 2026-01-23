@@ -30,5 +30,5 @@ jobs:
           cmake ..
           make
           cd ..
-          ./build/roguepupu2_test
+          ./build/roguepupu2_tests
 
