@@ -14,17 +14,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install build tools and dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential cmake \
-            libncurses5-dev libncursesw5-dev \
-            nlohmann-json3-dev
+    - name: Install build tools and dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake \
+        libncurses5-dev libncursesw5-dev \
+        nlohmann-json3-dev \
+        libgtest-dev
 
-      - name: Build project
-        run: |
-          mkdir build
-          cd build
-          cmake ..
-          make
+
+    - name: Build project
+      run: |
+        mkdir build
+        cd build
+        cmake ..
+        make
 
