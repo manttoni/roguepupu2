@@ -22,11 +22,9 @@ jobs:
         # Install nlohmann/json via package manager
         sudo apt-get install -y nlohmann-json3-dev
 
-        # Install EnTT (header-only, clone into include path)
-        git clone --depth 1 https://github.com/skypjack/entt.git entt
-        cp entt/single_include/entt/entt.hpp headers/
-        rm -rf entt
-
     - name: Build project
-      run: make
+      run: mkdir build
+           cd build
+           cmake ..
+           make
 
