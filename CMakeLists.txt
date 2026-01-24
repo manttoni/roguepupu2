@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.25)
 project(roguepupu2 LANGUAGES CXX)
+file(MAKE_DIRECTORY logs)
 
 # ========================
 # C++ Standard
