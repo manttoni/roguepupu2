@@ -136,14 +136,14 @@ namespace VisionSystem
 		if (!registry.all_of<Perception, Position>(entity))
 			return {};
 
-		const auto& pos = registry.get<Position>(entity);
-		std::vector<Position> visible_positions = {pos};
-		const auto& cave = ECS::get_cave(registry, pos);
-		const auto vision_range = StateSystem::get_vision_range(registry, entity);
-		for (const auto nearby_pos : cave.get_nearby_positions(pos, vision_range))
+		const auto& entity_pos = registry.get<Position>(entity);
+		assert(entity_pos.is_valid());
+		std::vector<Position> visible_positions;
+		const auto& cave = ECS::get_cave(registry, entity_pos);
+		for (const auto pos : cave.get_positions())
 		{
-			if (has_line_of_sight(registry, pos, nearby_pos))
-				visible_positions.push_back(nearby_pos);
+			if (has_vision(registry, entity, pos))
+				visible_positions.push_back(pos);
 		}
 		return visible_positions;
 	}

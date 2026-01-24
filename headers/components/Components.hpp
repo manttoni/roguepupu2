@@ -88,9 +88,9 @@ struct Alignment
 		else if (chaos_law < 0.5) ret = "Neutral ";
 		else ret = "Lawful ";
 
-		if (evil_good <= -0.5) ret = "Evil";
-		else if (evil_good < 0.5) ret = "Neutral";
-		else ret = "Good";
+		if (evil_good <= -0.5) ret += "Evil";
+		else if (evil_good < 0.5) ret += "Neutral";
+		else ret += "Good";
 
 		if (ret == "Neutral Neutral") return "True Neutral";
 		return ret;

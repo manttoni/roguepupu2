@@ -91,7 +91,7 @@ namespace ActionSystem
 		{
 			if (intent.type != Intent::Type::None) break;
 			if (registry.all_of<Alignment, Health>(entity) &&
-				AlignmentSystem::is_hostile(registry, actor.entity, entity))
+					AlignmentSystem::is_hostile(registry, actor.entity, entity))
 			{
 				intent.type = Intent::Type::Attack;
 				intent.target.entity = entity;
@@ -125,25 +125,34 @@ namespace ActionSystem
 			{
 				case KEY_RIGHT_CLICK: // make this work when combat system is implemented
 					{
-					Intent intent = {.type = Intent::Type::Attack};
-					intent.target.position = UI::instance().get_clicked_position(registry);
-					if (!intent.target.position.is_valid())
-						continue;
-					return intent;
+						Intent intent = {.type = Intent::Type::Attack};
+						intent.target.position = UI::instance().get_clicked_position(registry);
+						if (!intent.target.position.is_valid())
+							continue;
+						return intent;
 					}
 				case KEY_LEFT_CLICK:
 					{
-					Intent intent = {.type = Intent::Type::ExamineCell};
-					intent.target.position = UI::instance().get_clicked_position(registry);
-					if (!intent.target.position.is_valid())
-						continue;
-					return intent;
+						Intent intent = {.type = Intent::Type::ExamineCell};
+						intent.target.position = UI::instance().get_clicked_position(registry);
+						if (!intent.target.position.is_valid())
+							continue;
+						return intent;
+					}
+				case '\n':
+				case KEY_ENTER:
+					{
+						Intent intent = {.type = Intent::Type::ExamineCell};
+						intent.target.position = UI::instance().get_selected_position(registry);
+						if (!intent.target.position.is_valid())
+							continue;
+						return intent;
 					}
 				case 'i':
 					{
-					Intent intent = {.type = Intent::Type::OpenInventory};
-					intent.target.entity = player;
-					return intent;
+						Intent intent = {.type = Intent::Type::OpenInventory};
+						intent.target.entity = player;
+						return intent;
 					}
 				case 'c':
 					return {.type = Intent::Type::ShowPlayer};

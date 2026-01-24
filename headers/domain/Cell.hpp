@@ -2,6 +2,7 @@
 
 #define CELL_DENSITY_MAX 9
 
+#include <ncurses.h>
 #include <limits>
 #include <cassert>
 #include "LiquidMixture.hpp"
@@ -104,6 +105,12 @@ class Cell
 		void clear_liquids() { liquid_mixture = LiquidMixture{}; }
 		LiquidMixture& get_liquid_mixture() { return liquid_mixture; }
 		const LiquidMixture& get_liquid_mixture() const { return liquid_mixture; }
+
+	private:
+		chtype attr = A_NORMAL; // ncurses attr
+	public:
+		chtype get_attr() const { return attr; }
+		void set_attr(const chtype attr) { this->attr = attr; }
 
 	public:
 		Cell(const size_t idx, const Cell::Type type = Cell::Type::Rock);

@@ -15,6 +15,7 @@
 #include "systems/rendering/RenderingSystem.hpp"
 #include "utils/ECS.hpp"
 #include "utils/Unicode.hpp"
+#include "utils/Screen.hpp"
 #include "infrastructure/GameLogger.hpp"
 #include "utils/Math.hpp"
 #include "infrastructure/DevTools.hpp"
@@ -65,7 +66,7 @@ namespace RenderingSystem
 			case Cell::Type::Rock:
 				// Previous version had shades of grey based on density
 				// Which was ok, but uses color ids
-				return Color(10, 20, 10) * static_cast<int>(std::round(0.5 + cell.get_density()));
+				return Color(10, 20, 10) * static_cast<int>(std::round(0.5 + std::min(static_cast<double>(CELL_DENSITY_MAX), cell.get_density())));
 			case Cell::Type::Floor:
 				return Color(5, 10, 5);
 			case Cell::Type::Source:
@@ -109,13 +110,14 @@ namespace RenderingSystem
 			entt::null;
 
 		Visual visual;
+		visual.attr = ECS::get_cell(registry, position).get_attr();
 		if (visible_entity != entt::null)
 		{
 			visual.glyph = ECS::get_glyph(registry, visible_entity);
 			visual.fg = ECS::get_fgcolor(registry, visible_entity);
 			visual.bg = get_bgcolor(registry, position);
 			if (registry.all_of<NcursesAttr>(visible_entity))
-				visual.attr = registry.get<NcursesAttr>(visible_entity).attr;
+				visual.attr |= registry.get<NcursesAttr>(visible_entity).attr;
 		}
 		else
 		{
@@ -135,20 +137,22 @@ namespace RenderingSystem
 
 	void render_cell(const entt::registry& registry, const Position& position)
 	{
+		UI::instance().set_current_panel(UI::Panel::Game, true);
 		const auto& cave = ECS::get_cave(registry, position);
 		const Visual visual = get_visual(registry, position);
 		const Vec2 middle = Screen::middle();
 		const Vec2 cell(position.cell_idx, cave.get_size());
 		const Vec2 player(registry.get<Position>(ECS::get_player(registry)).cell_idx, cave.get_size());
-		const size_t y = middle.y + cell.y - player.y;
-		const size_t x = middle.x + cell.x - player.x;
+		const int y = middle.y + cell.y - player.y;
+		const int x = middle.x + cell.x - player.x;
+		if (y > Screen::height() || x > Screen::width() ||
+			y < 0 || x < 0)
+			return;
 
 		UI::instance().enable_color_pair(visual.color_pair);
-		if (visual.attr != A_NORMAL)
-			UI::instance().enable_attr(visual.attr);
+		UI::instance().enable_attr(visual.attr);
 		UI::instance().print_wide(y, x, visual.glyph);
-		if (visual.attr != A_NORMAL)
-			UI::instance().disable_attr(visual.attr);
+		UI::instance().disable_attr(visual.attr);
 		UI::instance().disable_color_pair(visual.color_pair);
 	}
 

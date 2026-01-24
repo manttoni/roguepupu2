@@ -16,10 +16,6 @@ namespace StateSystem
 		return xp / 1000;
 	}
 
-	double get_vision_range(const entt::registry& registry, const entt::entity entity)
-	{
-		return get_attribute<Perception>(registry, entity);
-	}
 	int get_max_health(const entt::registry& registry, const entt::entity entity)
 	{
 		return get_attribute<Vitality>(registry, entity);

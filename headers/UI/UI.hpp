@@ -114,6 +114,7 @@ class UI
 		int input(int delay = -1); // wrapper for getch
 		Vec2 get_direction(const int key);
 		Position get_clicked_position(const entt::registry& registry);
+		Position get_selected_position(entt::registry& registry);
 		size_t get_curs_y() const;
 		size_t get_curs_x() const;
 		void enable_attr(const chtype attr) { wattron(panel_window(current_panel), attr); }

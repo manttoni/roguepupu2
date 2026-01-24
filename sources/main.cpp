@@ -44,7 +44,7 @@ void run()
 			UI::instance().dialog("Controls", {
 					"Movement:  numpad (lock off)",
 					"Zoom:      ctrl[+/-] (terminal)",
-					"Interact:  left click",
+					"Interact:  left click/enter",
 					"Select:    enter",
 					"Back:      esc",
 					"Inventory: i",

@@ -13,7 +13,6 @@ namespace StateSystem
 {
 	size_t level_to_xp(const size_t level);
 	size_t xp_to_level(const size_t xp);
-	double get_vision_range(const entt::registry& registry, const entt::entity entity);
 	int get_max_health(const entt::registry& registry, const entt::entity entity);
 	int get_max_stamina(const entt::registry& registry, const entt::entity entity);
 	int get_max_mana(const entt::registry& registry, const entt::entity entity);

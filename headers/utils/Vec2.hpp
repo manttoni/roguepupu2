@@ -35,6 +35,18 @@ struct Vec2
 	{
 		return { y * s, x * s };
 	}
+	Vec2& operator+=(const Vec2& other)
+	{
+		y += other.y;
+		x += other.x;
+		return *this;
+	}
+	Vec2& operator-=(const Vec2& other)
+	{
+		y -= other.y;
+		x -=other.x;
+		return *this;
+	}
 
 	bool out_of_bounds(const int min, const int max) const
 	{

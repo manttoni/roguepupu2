@@ -6,7 +6,7 @@
 			"intensity": 0.02,
 			"radius": 4
 		},
-		"opaque": 0.2,
+		"opaque": 0.25,
 		"spawn": {
 			"space": { "radius": 1, "solid": 1, "empty": 3 },
 			"perlin": { "frequency": 0.01, "treshold": 0.4 },

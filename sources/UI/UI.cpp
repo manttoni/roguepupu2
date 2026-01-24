@@ -8,6 +8,8 @@
 #include <cstdlib>        // for atoi, exit
 #include <cstring>        // for strchr, strncmp
 #include <string>         // for basic_string, string
+#include "systems/rendering/RenderingSystem.hpp"
+#include "systems/perception/VisionSystem.hpp"
 #include "utils/ECS.hpp"
 #include "domain/Color.hpp"      // for Color
 #include "domain/ColorPair.hpp"  // for ColorPair
@@ -291,6 +293,60 @@ Position UI::get_clicked_position(const entt::registry& registry)
 		return Position::invalid_position();
 	const size_t click_idx = click_coords.to_idx(cave.get_size());
 	return Position(click_idx, cave.get_idx());
+}
+
+/* Using Enter key will give quick interaction with same cell,
+ * while using movement keys after can change target cell,
+ * pressing Enter again confirms. Use A_REVERSE or A_BLINK to highlight.
+ * */
+Position UI::get_selected_position(entt::registry& registry)
+{
+	const auto player = ECS::get_player(registry);
+	const auto player_pos = registry.get<Position>(player);
+	const auto& cave = ECS::get_cave(registry, player_pos);
+	Position selected = player_pos;
+	init_pair(1, COLOR_RED, COLOR_BLACK); // highlight color
+
+	int key = 0;
+	while (key != KEY_ENTER && key != '\n' && key != '\r')
+	{
+		// Highlight selected position
+		ECS::get_cell(registry, selected).set_attr(COLOR_PAIR(1));
+		RenderingSystem::render(registry);
+
+		// ESC resets attr and quits
+		key = input(500);
+		if (key == KEY_ESCAPE)
+		{
+			ECS::get_cell(registry, selected).set_attr(A_NORMAL);
+			return Position::invalid_position();
+		}
+
+		// Check if key was direction key
+		auto direction = get_direction(key);
+		if (direction == Vec2{0,0})
+			continue;
+
+		// If was, then remove highlight
+		ECS::get_cell(registry, selected).set_attr(A_NORMAL);
+
+		// Get the new position and check bounds
+		Vec2 selected_coords(selected.cell_idx, cave.get_size());
+		selected_coords += direction;
+		if (selected_coords.out_of_bounds(0, cave.get_size() - 1))
+		{
+			ECS::get_cell(registry, selected).set_attr(A_NORMAL);
+			return Position::invalid_position();
+		}
+
+		// Check if that cell is in vision
+		const auto selected_idx = selected_coords.to_idx(cave.get_size());
+		Position pos = Position(selected_idx, cave.get_idx());
+		if (VisionSystem::has_vision(registry, player, pos))
+			selected = pos;
+	}
+	ECS::get_cell(registry, selected).set_attr(A_NORMAL);
+	return selected;
 }
 
 void UI::init_panel(const Panel id)
