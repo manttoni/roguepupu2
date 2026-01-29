@@ -1,15 +1,13 @@
-#include <curses.h>     // for WINDOW, A_REVERSE, KEY_LEFT, KEY_RIGHT, box
-#include <panel.h>      // for panel_window, del_panel, new_panel
-#include <any>          // for any
-#include <cassert>      // for assert
-#include <memory>       // for unique_ptr, allocator
-#include <string>       // for basic_string, operator+, operator==, char_traits
-#include "UI/Menu.hpp"     // for Menu
-#include "UI/MenuElt.hpp"  // for MenuElt
-#include "UI/MenuTxt.hpp"  // for MenuTxt
-#include "UI/UI.hpp"       // for UI, KEY_ESCAPE, KEY_LEFT_CLICK
-#include "utils/Math.hpp"
-#include "utils/Error.hpp"
+#include <ncurses.h>
+#include <panel.h>
+#include <string>
+#include <cassert>
+#include <optional>
+#include <algorithm>
+#include "utils/Screen.hpp"
+#include "UI/Menu.hpp"
+#include "UI/UI.hpp"
+#include "utils/Vec2.hpp"
 
 Menu::Menu(const Vec2& position) : position(position), panel(nullptr), height(0), width(0) {}
 Menu::~Menu()
@@ -23,15 +21,26 @@ Menu::~Menu()
 	}
 }
 
+/* Need to know this because ncurses WINDOW needs a size,
+ * so calculate biggest possible size this can take
+ * */
 size_t Menu::Element::get_size() const
 {
 	size_t size = 0;
 
 	for (size_t i = 0; i < label.size(); ++i)
-	{	// this will be replaced by helper at some point
-		if (label[i] == '{') i = label.find('}', i);
-		else if (label[i] == '[') i = label.find(']', i);
-		else size++;
+	{
+		if (label[i] == '{' && Utils::is_color_markup(label, i))
+		{
+			i = label.find('}', i);
+			continue;
+		}
+		if (label[i] == '[' && Utils::is_attr_markup(label, i))
+		{
+			i = label.find(']', i);
+			continue;
+		}
+		size++;
 	}
 	if (type == Type::TextField)
 	{
@@ -44,8 +53,8 @@ size_t Menu::Element::get_size() const
 		assert(min_value && max_value);
 		const std::string ascii = ": <  >";
 		const size_t number_size = std::max(
-				std::to_string(min_value).size(),
-				std::to_string(max_value).size()
+				std::to_string(*min_value).size(),
+				std::to_string(*max_value).size()
 				);
 		size += ascii.size() + number_size;
 	}
@@ -57,6 +66,8 @@ size_t Menu::Element::get_size() const
 	return size;
 }
 
+/* This returns a string that will be printed in the menu on the screen
+ * */
 std::string Menu::Element::get_text() const
 {
 	switch (type)
@@ -67,17 +78,19 @@ std::string Menu::Element::get_text() const
 		case Type::TextField:
 			return label + ": " + *input + "_";
 		case Type::ValueSelector:
-			std::string text = label;
-			if (*value == *min_value)
-				text += ":   ";
-			else
-				text += ": < ";
-			text += std::to_string(*value);
-			if (*value == *max_value)
-				text += " >";
-			else
-				text += "  ";
-			return text;
+			{
+				std::string text = label;
+				if (*value == *min_value)
+					text += ":   ";
+				else
+					text += ": < ";
+				text += std::to_string(*value);
+				if (*value == *max_value)
+					text += " >";
+				else
+					text += "  ";
+				return text;
+			}
 		case Type::Checkbox:
 			return label + ": [" + (*check ? "X]" : " ]");
 		default:
@@ -85,7 +98,11 @@ std::string Menu::Element::get_text() const
 	}
 }
 
-bool Menu::add_element(Element& element)
+/* Adds an element to elements if it is valid.
+ * Initialize some values if they are missing.
+ * Return success.
+ * */
+bool Menu::add_element(Element element)
 {
 	if (element.type == Element::Type::None || element.label.empty())
 		return false;
@@ -120,6 +137,11 @@ bool Menu::add_element(Element& element)
 	return true;
 }
 
+/* Create/modify WINDOW that is inside PANEL.
+ * Add some extra size because box() will need it (2, 1 for each border).
+ * Also add extra size for some formatting
+ * Menu knows where it should be located, so center it to that but clamp with screen size.
+ * */
 void Menu::set_panel()
 {
 	height = 2 + elements.size();
@@ -129,9 +151,10 @@ void Menu::set_panel()
 			return a.get_size() < b.get_size();
 			});
 	assert(it != elements.end());
-	width = 2 + it->get_size();
+	width = 4 + it->get_size();
 
-	while (height > Screen::height() || width > Screen::width())
+	while (static_cast<int>(height) > Screen::height()
+			|| static_cast<int>(width) > Screen::width())
 	{	// Use ctrl + [+/-] (in my terminal). This loop ends when terminal size is big enough.
 		// A better solution would be scrolling menus, maybe later
 		mvaddstr(0, 0, "Resize terminal to fit menu");
@@ -140,7 +163,11 @@ void Menu::set_panel()
 	}
 
 	const Vec2 size(static_cast<int>(height), static_cast<int>(width));
-	const Vec2 start = position - size / 2;
+	Vec2 start = position - size / 2;
+	start = Vec2(
+			std::min(Screen::height(), std::max(0, start.y)),
+			std::min(Screen::width(), std::max(0, start.x))
+			);
 	if (!panel)
 	{
 		WINDOW* win = newwin(height, width, start.y, start.x);
@@ -159,6 +186,27 @@ void Menu::set_panel()
 	UI::instance().set_current_panel(panel, true);
 }
 
+/* By knowing how many unselectable elements there are,
+ * can keep selected index always at a selectable element
+ * */
+size_t Menu::get_unselectable_count() const
+{
+	// unselectables are only Text
+	size_t unselectable = 0;
+	for (const auto& element : elements)
+	{
+		if (element.type == Element::Type::Text)
+			unselectable++;
+		assert(element.type != Element::Type::None);
+	}
+	return unselectable;
+}
+
+/* Mouse position is saved in UI::instance().
+ * This function checks only vertical, because Menu doesn's have
+ * horizontally aligned elements.
+ * Use -1 to mean "mouse is not hovering on any of the selectable elements"
+ * */
 int Menu::get_mouse_selection() const
 {
 	WINDOW* window = panel_window(panel);
@@ -174,11 +222,15 @@ int Menu::get_mouse_selection() const
 		return -1;
 
 	int selection = mouse.y - start.y - 1; // -1 for border
-	if (selection < get_unselectable_count())
+	if (static_cast<size_t>(selection) < get_unselectable_count())
 		return -1;
-	return selection;
+	assert(selection >= 0);
+	return static_cast<size_t>(selection);
 }
 
+/* Print menu elements, and highlight the selected with ncurses A_REVERSE,
+ * it will invert bg and fg colors.
+ * */
 void Menu::show_elements(const size_t selected) const
 {
 	wmove(panel_window(panel), 1, 0); // because of box() start at y = 1
@@ -188,17 +240,19 @@ void Menu::show_elements(const size_t selected) const
 		if (highlight == true) UI::instance().enable_attr(A_REVERSE);
 		if (elements[i].label == "--")
 		{
-			std::wstring line(width, L'─');
-			UI::instance().print_wstr(line);
+			std::wstring line(width - 1, L'─');
+			UI::instance().print_wstr(line + L'\n');
 			continue;
 		}
 		UI::instance().print("  " + elements[i].get_text() + "\n");
 		if (highlight == true) UI::instance().disable_attr(A_REVERSE);
 	}
-	box(window, 0, 0);
+	box(panel_window(panel), 0, 0);
 	UI::instance().update();
 }
 
+/* If user pressed up or down or hovers with mouse, return the index they want
+ * */
 size_t Menu::select_element(const size_t selected, const int key) const
 {
 	int mouse_selection = get_mouse_selection();
@@ -233,13 +287,13 @@ void Menu::change_value(Element& e, const int key)
 
 void Menu::input_text(Element& e, const int key)
 {
-	if (key == KEY_BACKSPACE && !*e.input.empty())
+	if (key == KEY_BACKSPACE && !e.input->empty())
 		e.input->pop_back();
-	else if (std::isalpha(static_cast<unsigned char>(ch)) && *e.input.size() < *e.max_input)
+	else if (std::isalpha(static_cast<unsigned char>(key)) && e.input->size() < *e.max_input)
 		*e.input += key;
 }
 
-bool Menu::selection_confirmed(const Element& e, const int key)
+bool Menu::selection_confirmed(const Element& e, const int key) const
 {
 	if (e.type != Element::Type::Button)
 		return false;
@@ -247,8 +301,9 @@ bool Menu::selection_confirmed(const Element& e, const int key)
 }
 
 /* Needs either one or more Buttons or only unselectables. Will solve it if becomes problem.
+ * Name is not good because can be used to simply display a message if has only unselectables.
  * */
-Element Menu::get_selection(const size_t default_selected)
+Menu::Element Menu::get_selection(const size_t default_selected)
 {
 	int key = 0;
 	size_t selected = default_selected + get_unselectable_count(); // selected will always be one of the selectable elements
@@ -264,8 +319,11 @@ Element Menu::get_selection(const size_t default_selected)
 			change_value(elements[selected], key);
 		if (elements[selected].type == Element::Type::TextField)
 			input_text(elements[selected], key);
-		if (selection_confirmed(selected, key)) // enter or left click on a Button
+		if (selection_confirmed(elements[selected], key)) // enter or left click on a Button
+		{
+			elements[selected].index = selected;
 			return elements[selected];
+		}
 	}
 	return Element{};
 }

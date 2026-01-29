@@ -1,6 +1,5 @@
 #include <format>
 #include "systems/state/AlignmentSystem.hpp"
-#include "UI/MenuTxt.hpp"
 #include "systems/state/StateSystem.hpp"
 #include "systems/action/EventSystem.hpp"
 #include "external/entt/entity/handle.hpp"
@@ -11,6 +10,7 @@
 #include "utils/ECS.hpp"
 #include "UI/UI.hpp"
 #include "components/Components.hpp"
+#include "UI/Dialog.hpp"
 
 namespace ContextSystem
 {
@@ -99,21 +99,21 @@ namespace ContextSystem
 		const auto& resources = get_resource_details(registry, entity);
 		if (!resources.empty())
 		{
-			details.push_back(MenuTxt::HorizontalLine);
+			details.push_back("--");
 			details.insert(details.end(), resources.begin(), resources.end());
 		}
 
 		const auto& attributes = get_attribute_details(registry, entity);
 		if (!attributes.empty())
 		{
-			details.push_back(MenuTxt::HorizontalLine);
+			details.push_back("--");
 			details.insert(details.end(), attributes.begin(), attributes.end());
 		}
 
 		const auto& alignment = get_alignment_details(registry, entity);
 		if (!alignment.empty())
 		{
-			details.push_back(MenuTxt::HorizontalLine);
+			details.push_back("--");
 			details.insert(details.end(), alignment.begin(), alignment.end());
 		}
 
@@ -181,7 +181,7 @@ namespace ContextSystem
 		{
 			const auto& details = get_details(registry, entity);
 			const auto& options = get_options(registry, entity, owner);
-			const std::string selection = UI::instance().dialog(details, options, Screen::topleft());
+			const std::string selection = Dialog::get_selection(details, options, Screen::topleft()).label;
 			handle_selection(registry, entity, owner, selection);
 			if (selection != "Inventory") break;
 		}
@@ -209,13 +209,14 @@ namespace ContextSystem
 		selection_idx = std::min(selection_idx, entities.size() - 1);
 		const auto owner_name = owner == entt::null ? "Cell" : ECS::get_colored_name(registry, owner);
 		const auto& colored_names = get_entities_details(registry, entities, owner);
-		const std::string selection =
-			UI::instance().dialog(
+		const auto selection =
+			Dialog::get_selection(
 				Utils::capitalize(owner_name),
 				colored_names,
 				Screen::topleft(),
-				selection_idx // dialog will set this value
+				selection_idx
 				);
+		selection_idx = selection.index;
 		show_entity_details(registry, entities[selection_idx], owner);
 		return false;
 	}
@@ -241,7 +242,7 @@ namespace ContextSystem
 				break;
 		}
 		if (registry.get<Inventory>(owner).inventory.empty())
-			UI::instance().dialog("No items", {"Back"}, Screen::topleft());
+			Dialog::get_selection("No items", {"Back"}, Screen::topleft());
 	}
 	void show_entities_list(entt::registry& registry, const Position& position)
 	{

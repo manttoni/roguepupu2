@@ -14,9 +14,6 @@
 #include "domain/Color.hpp"      // for Color
 #include "domain/ColorPair.hpp"  // for ColorPair
 #include "UI/Menu.hpp"       // for Menu
-#include "UI/MenuBtn.hpp"    // for MenuBtn
-#include "UI/MenuElt.hpp"    // for MenuElt
-#include "UI/MenuTxt.hpp"    // for MenuTxt
 #include "UI/UI.hpp"         // for UI, KEY_LEFT_CLICK, KEY_RIGHT_CLICK, quit
 #include "utils/Vec2.hpp"
 #include "infrastructure/GameState.hpp"
@@ -139,48 +136,7 @@ void UI::reset_colors()
 	initialized_color_pairs.clear();
 }
 
-std::string UI::dialog(
-		const std::vector<std::string>& text,
-		const std::vector<std::string>& options,
-		const Vec2& position,
-		std::optional<std::reference_wrapper<size_t>> selected)
-{
-	// Initialize elements for dialog box
-	std::vector<std::unique_ptr<MenuElt>> elements;
-	for (auto& t : text)
-		elements.push_back(std::make_unique<MenuTxt>(t));
-	if (!text.empty() && !options.empty())
-		elements.push_back(std::make_unique<MenuTxt>(MenuTxt::HorizontalLine));
-	for (auto& option : options)
-		elements.push_back(std::make_unique<MenuBtn>(option));
 
-	auto menu = Menu(std::move(elements), position);
-
-	// If there are no options, it will just be printed as a message
-	if (options.empty())
-		menu.set_read_only(true);
-
-	if (selected)
-		menu.set_selected(selected->get());
-
-	size_t idx = menu.loop();
-	if (idx == SIZE_MAX) // ESC pressed or nothing was selected
-		return "";
-
-	// if user provided an index, save idx there
-	if (selected)
-		selected->get() = idx;
-
-	return options[idx];
-}
-std::string UI::dialog(
-		const std::string& text,
-		const std::vector<std::string>& options,
-		const Vec2& position,
-		std::optional<std::reference_wrapper<size_t>> selected)
-{
-	return dialog(std::vector<std::string>{text}, options, position, selected);
-}
 
 void UI::resize_terminal()
 {	// Some screen elements naturally resize, some don't

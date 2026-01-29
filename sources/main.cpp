@@ -4,6 +4,7 @@
 #include "UI/Menu.hpp"           // for Menu
 #include "UI/UI.hpp"             // for UI
 #include "utils/Log.hpp"          // for log
+#include "UI/Dialog.hpp"
 
 /* Capture this from ncurses so it will print */
 extern "C" void __assert_fail(
@@ -33,7 +34,7 @@ void run()
 		options.push_back("New Game");
 		options.push_back("Controls");
 		options.push_back("Quit");
-		selection = UI::instance().dialog("*** Roguepupu 2 ***", options);
+		selection = Dialog::get_selection("*** Roguepupu 2 ***", options).label;
 		Log::log("Selection: " + selection);
 		if (selection == "Continue" && game != nullptr)
 			game->loop();
@@ -44,7 +45,7 @@ void run()
 			game->loop();
 		}
 		else if (selection == "Controls")
-			UI::instance().dialog("Controls", {
+			Dialog::get_selection("Controls", {
 					"Movement:  numpad (lock off)",
 					"Zoom:      ctrl[+/-] (terminal)",
 					"Interact:  left click/enter",

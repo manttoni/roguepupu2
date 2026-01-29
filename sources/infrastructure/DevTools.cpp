@@ -1,5 +1,6 @@
 #include <vector>
 #include <string>
+#include "UI/Dialog.hpp"
 #include "database/EntityFactory.hpp"
 #include "infrastructure/DevTools.hpp"
 #include "UI/UI.hpp"
@@ -37,7 +38,7 @@ namespace DevTools
 		std::vector<std::string> data;
 		for (const auto& [category, amount] : groups)
 			data.push_back(std::to_string(amount) + " " + category);
-		UI::instance().dialog(data, {"Back"});
+		Dialog::get_selection(data, {"Back"});
 	}
 
 	void change_liquid(entt::registry& registry)
@@ -49,21 +50,21 @@ namespace DevTools
 			choices.push_back(Liquid::to_string(static_cast<Liquid::Type>(i)));
 		}
 		registry.ctx().get<Dev>().liquid_type = Liquid::from_string(
-				UI::instance().dialog("Choose liquid", choices));
+				Dialog::get_selection("Choose liquid", choices).label);
 	}
 
 	void spawn_entity(entt::registry& registry)
 	{
 		const std::vector<std::string> categories = EntityFactory::instance().get_category_names();
-		const std::string category = UI::instance().dialog("Choose category", categories);
+		const std::string category = Dialog::get_selection("Choose category", categories).label;
 		if (category.empty()) return;
 		const std::vector<std::string> subcategories = EntityFactory::instance().get_subcategory_names(category);
-		const std::string subcategory = UI::instance().dialog("Choose subcategory", subcategories);
+		const std::string subcategory = Dialog::get_selection("Choose subcategory", subcategories).label;
 		if (subcategory.empty()) return;
 		const nlohmann::json filter = {{"subcategory", subcategory}};
 		std::vector<std::string> entity_names = EntityFactory::instance().filter_entity_ids(filter, SIZE_MAX);
 		std::sort(entity_names.begin(), entity_names.end());
-		const std::string entity_name = UI::instance().dialog("Choose entity", entity_names);
+		const std::string entity_name = Dialog::get_selection("Choose entity", entity_names).label;
 		if (entity_name.empty()) return;
 		EntityFactory::instance().create_entity(registry, entity_name, registry.get<Position>(ECS::get_player(registry)));
 	}
@@ -79,7 +80,7 @@ namespace DevTools
 			"Spawn liquid",
 			"Spawn entity"
 		};
-		const auto& choice = UI::instance().dialog("DevTools", choices);
+		const auto& choice = Dialog::get_selection("DevTools", choices).label;
 		if (choice == "God mode")
 		{
 			registry.ctx().get<Dev>().god_mode ^= true;

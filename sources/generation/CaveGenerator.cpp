@@ -15,13 +15,14 @@
 #include "utils/Random.hpp"
 #include "generation/EntitySpawner.hpp"
 #include "systems/rendering/LightingSystem.hpp"
+#include "UI/Dialog.hpp"
 
 namespace CaveGenerator
 {
 	void echo(const std::string& message)
 	{
 		Log::log(message);
-		UI::instance().dialog(message);
+		Dialog::show_message(message);
 	}
 	bool is_on_edge(const Data& data, const Vec2& coords)
 	{
@@ -275,19 +276,6 @@ namespace CaveGenerator
 	void generate_cave(Data& data)
 	{
 		generate(data);
-		std::string choice = "";
-		while (choice != "OK")
-		{
-			choice = UI::instance().dialog("Cave ready", {"Simulate", "OK"});
-			if (choice == "Simulate")
-			{
-				for (size_t i = 0; i < 10; ++i)
-				{
-					simulate_environment(data);
-				}
-				set_entities(data);
-				render(data);
-			}
-		}
+		Dialog::get_selection("Cave ready", {"OK"});
 	}
 }
