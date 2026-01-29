@@ -1,0 +1,19 @@
+{
+	"lotus": {
+		"fgcolor": [350, 300, 400],
+		"glyph": "¤",
+		"gatherable": {
+			"gather_effect": "destroy", "tool": "cutting",
+			"loot_tables": ["lt_lotus"]
+		},
+		"spawn": {
+			"perlin": {"frequency": 0.5, "treshold": 0.5},
+			"space": {"radius": 2, "empty": 12},
+			"liquid": {"type": "water", "radius": 5, "amount": "500-1000"}
+		},
+		"glow": {
+			"intensity": 0.2,
+			"radius": 0
+		}
+	}
+}

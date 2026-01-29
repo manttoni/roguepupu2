@@ -109,8 +109,7 @@ class UI
 		void println(const std::string& str = "");
 
 
-		std::string dialog(const std::vector<std::string>& text, const std::vector<std::string>& options = {}, const Vec2& position = Screen::middle(), const size_t initial_selection = 0);
-		std::string dialog(const std::string& text, const std::vector<std::string>& options = {}, const Vec2& position = Screen::middle(), const size_t initial_selection = 0);
+
 		int input(int delay = -1); // wrapper for getch
 		Vec2 get_direction(const int key);
 		Position get_clicked_position(const entt::registry& registry);

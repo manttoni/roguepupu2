@@ -35,5 +35,10 @@
 		"filter": {
 			"subcategory": "gemstones"
 		}
+	},
+	"lt_lotus": {
+		"item_ids": [
+			"lotus flower"
+		]
 	}
 }

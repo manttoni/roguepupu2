@@ -166,15 +166,6 @@ namespace ECS
 
 	inline void destroy_entity(entt::registry& registry, const entt::entity entity)
 	{
-		if (registry.all_of<Transition>(entity))
-		{
-			const auto destination = registry.get<Transition>(entity).destination;
-			if (destination != entt::null)
-				TransitionSystem::unlink_portals(registry, entity, destination);
-		}
-		if (registry.all_of<AI>(entity))
-			registry.erase<AI>(entity);
-
 		registry.emplace<Destroyed>(entity);
 
 		queue_event(registry, Event(

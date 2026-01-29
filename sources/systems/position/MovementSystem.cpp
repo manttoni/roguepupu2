@@ -138,7 +138,6 @@ namespace MovementSystem
 	void move(entt::registry& registry, const entt::entity entity, const Position& position)
 	{
 		registry.emplace_or_replace<Position>(entity, position);
-		Log::log(ECS::get_name(registry, entity) + " moves");
 		ECS::queue_event(registry, Event(
 					{.entity = entity},
 					{.type = Effect::Type::Move},

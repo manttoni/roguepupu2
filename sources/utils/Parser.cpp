@@ -14,8 +14,14 @@ namespace Parser
 	{
 		if (!data.is_array() || data.size() != 3)
 			Error::fatal("Data not right sized array: " + data.dump(4));
-		Color color = Color(data[0].get<int>(), data[1].get<int>(), data[2].get<int>());
-		return color;
+		if (!data[0].is_number() || !data[1].is_number() || !data[2].is_number())
+			Error::fatal("Color needs three numeric values");
+		const int r = data[0].get<int>();
+		const int g = data[1].get<int>();
+		const int b = data[2].get<int>();
+		if (r < 0 || r > 1000 || g < 0 || g > 1000 || b < 0 || b > 1000)
+			Error::fatal("Color value out of bounds [0,1000]");
+		return Color(r, g, b);
 	}
 
 	Effect parse_effect(const nlohmann::json& data)

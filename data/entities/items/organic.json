@@ -10,5 +10,9 @@
 	"woody chunk": {
 		"fgcolor": [666, 333, 0],
 		"weight": 2
+	},
+	"lotus flower": {
+		"fgcolor": [500, 300, 400],
+		"weight": 0.1
 	}
 }

@@ -1,7 +1,11 @@
 {
-	"dummy": {
+	"light": {
 		"effect": {
-			"effect": "self_destruct"
+			"add_glow": {
+				"intensity": 0.1,
+				"radius": 3
+			},
+			"color": [1000, 1000, 1000]
 		}
 	}
 }

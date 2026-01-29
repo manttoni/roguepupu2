@@ -18,6 +18,11 @@
 
 namespace CaveGenerator
 {
+	void echo(const std::string& message)
+	{
+		Log::log(message);
+		UI::instance().dialog(message);
+	}
 	bool is_on_edge(const Data& data, const Vec2& coords)
 	{
 		const auto margin_size = static_cast<int>(data.margin.size);
@@ -34,6 +39,7 @@ namespace CaveGenerator
 	 * */
 	void set_rock_densities(Data& data)
 	{
+		echo("Setting rock densities...");
 		auto& cells = data.cave.get_cells();
 		const size_t seed = Random::randsize_t(0, 99999);
 		for (auto& cell : cells)
@@ -60,6 +66,7 @@ namespace CaveGenerator
 	 * */
 	void set_water_features(Data& data)
 	{
+		echo("Setting water features...");
 		const size_t total_features = data.features.sources + data.features.sinks;
 		std::map<Cell::Type, size_t> spawning_features =
 		{
@@ -117,20 +124,23 @@ namespace CaveGenerator
 		RenderingSystem::render_generation(data.registry, data.cave.get_idx());
 	}
 
+	void set_entities(Data& data)
+	{
+		echo("Setting entities...");
+		EntitySpawner::despawn_entities(data.registry, data.cave.get_idx());
+		EntitySpawner::spawn_entities(data.registry, data.cave.get_idx(), {{"category", "nature"}});
+
+	}
+
 	void simulate_environment(Data& data)
 	{
-		static size_t i = 0;
-		if (i++ % 10 == 0)
-		{
-			EntitySpawner::despawn_entities(data.registry, data.cave.get_idx());
-			EntitySpawner::spawn_entities(data.registry, data.cave.get_idx(), {{"category", "nature"}});
-		}
 		for (size_t i = 0; i < 32; ++i)
 			LiquidSystem::simulate_liquids(data.registry, data.cave.get_idx());
 	}
 
 	void form_tunnels(Data& data)
 	{
+		echo("Forming tunnels...");
 		const auto& sources = data.cave.get_positions_with_type(Cell::Type::Source);
 		const auto& sinks = data.cave.get_positions_with_type(Cell::Type::Sink);
 
@@ -216,6 +226,7 @@ namespace CaveGenerator
 	}
 	void smooth_terrain(Data& data)
 	{
+		echo("Smoothing terrain...");
 		// Set each density to the average within a radius
 		const auto radius = 1;
 		const auto intensity = data.smooth.intensity;
@@ -250,20 +261,14 @@ namespace CaveGenerator
 		}
 	}
 
-	void echo(const std::string& message)
-	{
-		Log::log(message);
-		UI::instance().dialog(message);
-	}
+
 
 	void generate(Data& data)
 	{
-		echo("Setting rock densities");
 		set_rock_densities(data);
-		echo("Setting water features");
 		set_water_features(data);
-		echo("Forming tunnels");
 		form_tunnels(data);
+		set_entities(data);
 		render(data);
 	}
 
@@ -276,11 +281,12 @@ namespace CaveGenerator
 			choice = UI::instance().dialog("Cave ready", {"Simulate", "OK"});
 			if (choice == "Simulate")
 			{
-				for (size_t i = 0; i < 100; ++i)
+				for (size_t i = 0; i < 10; ++i)
 				{
 					simulate_environment(data);
-					render(data);
 				}
+				set_entities(data);
+				render(data);
 			}
 		}
 	}

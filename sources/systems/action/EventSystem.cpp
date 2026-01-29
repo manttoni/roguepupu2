@@ -83,9 +83,11 @@ namespace EventSystem
 	 * */
 	void resolve_destroy_event(entt::registry& registry, const Event& event)
 	{
+		assert(event.target.entity != entt::null);
+		assert(registry.valid(event.target.entity));
 		if (registry.all_of<Glow, Position>(event.target.entity))
 		{
-			registry.erase<Glow, Position>(event.target.entity);
+			registry.erase<Glow>(event.target.entity);
 			LightingSystem::reset_lights(registry, registry.get<Position>(event.target.entity).cave_idx);
 		}
 	}
@@ -150,6 +152,7 @@ namespace EventSystem
 					Error::fatal("Unhandled effect type: " + std::to_string(static_cast<int>(event.effect.type)));
 			}
 			log_event(registry, event);
+
 		}
 		RenderingSystem::render(registry);
 		queue.clear();

@@ -4,6 +4,7 @@
 #include <utility>
 #include <filesystem>
 #include "nlohmann/json.hpp"
+#include "domain/Color.hpp"
 #include "domain/Effect.hpp"
 #include "domain/Conditions.hpp"
 #include "utils/Error.hpp"
@@ -12,6 +13,7 @@
 namespace CaveGenerator { struct Data; };
 namespace Parser
 {
+	Color parse_color(const nlohmann::json& data);
 	Effect parse_effect(const nlohmann::json& data);
 	Conditions parse_conditions(const nlohmann::json& data);
 	nlohmann::json read_file(const std::filesystem::path& path);
@@ -21,7 +23,7 @@ namespace Parser
 	template<typename T>
 		std::pair<T, T> parse_range(const nlohmann::json& data)
 		{
-			if (data.is_number() && data.get<double>() > 0)
+			if (data.is_number())
 			{
 				const T n = data.get<T>();
 				return {n, n};

@@ -139,7 +139,11 @@ void UI::reset_colors()
 	initialized_color_pairs.clear();
 }
 
-std::string UI::dialog(const std::vector<std::string>& text, const std::vector<std::string>& options, const Vec2& position, const size_t initial_selection)
+std::string UI::dialog(
+		const std::vector<std::string>& text,
+		const std::vector<std::string>& options,
+		const Vec2& position,
+		std::optional<std::reference_wrapper<size_t>> selected)
 {
 	// Initialize elements for dialog box
 	std::vector<std::unique_ptr<MenuElt>> elements;
@@ -150,21 +154,32 @@ std::string UI::dialog(const std::vector<std::string>& text, const std::vector<s
 	for (auto& option : options)
 		elements.push_back(std::make_unique<MenuBtn>(option));
 
-	// Create menu in the middle of screen
 	auto menu = Menu(std::move(elements), position);
 
 	// If there are no options, it will just be printed as a message
 	if (options.empty())
 		menu.set_read_only(true);
 
-	menu.set_selected(initial_selection);
+	if (selected)
+		menu.set_selected(selected->get());
 
-	// Will return an option as a string it was constructed with
-	return menu.loop();
+	size_t idx = menu.loop();
+	if (idx == SIZE_MAX) // ESC pressed or nothing was selected
+		return "";
+
+	// if user provided an index, save idx there
+	if (selected)
+		selected->get() = idx;
+
+	return options[idx];
 }
-std::string UI::dialog(const std::string& text, const std::vector<std::string>& options, const Vec2& position, const size_t initial_selection)
+std::string UI::dialog(
+		const std::string& text,
+		const std::vector<std::string>& options,
+		const Vec2& position,
+		std::optional<std::reference_wrapper<size_t>> selected)
 {
-	return dialog(std::vector<std::string>{text}, options, position, initial_selection);
+	return dialog(std::vector<std::string>{text}, options, position, selected);
 }
 
 void UI::resize_terminal()
@@ -408,6 +423,8 @@ void UI::init()
 	mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, nullptr);
 	printf("\033[?1003h");	// mouse movement will trigger KEY_MOUSE events
 	fflush(stdout);				// to know current cursor location
+
+	Log::log("UI inited");
 }
 
 void UI::end()

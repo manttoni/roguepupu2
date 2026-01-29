@@ -16,6 +16,8 @@ extern "C" void __assert_fail(
     fprintf(stderr,
         "Assertion failed: %s\nFile: %s:%u\nFunction: %s\n",
         expr, file, line, func);
+
+	Log::log("Assertion failed: " + std::string(expr) + " in file: " + file + ":" + std::to_string(line) + " in function: " + func);
     abort();
 }
 
@@ -32,6 +34,7 @@ void run()
 		options.push_back("Controls");
 		options.push_back("Quit");
 		selection = UI::instance().dialog("*** Roguepupu 2 ***", options);
+		Log::log("Selection: " + selection);
 		if (selection == "Continue" && game != nullptr)
 			game->loop();
 		else if (selection == "New Game")

@@ -16,6 +16,7 @@ namespace StateSystem
 	int get_max_health(const entt::registry& registry, const entt::entity entity);
 	int get_max_stamina(const entt::registry& registry, const entt::entity entity);
 	int get_max_mana(const entt::registry& registry, const entt::entity entity);
+	int get_vision_range(const entt::registry& registry, const entt::entity entity);
 
 	template<typename T>
 		int get_attribute(const entt::registry& registry, const entt::entity entity)

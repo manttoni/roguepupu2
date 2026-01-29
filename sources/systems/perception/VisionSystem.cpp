@@ -76,57 +76,20 @@ namespace VisionSystem
 
 	/* Return true if entity can see position
 	 * */
-	bool has_vision(const entt::registry& registry, const entt::entity entity, const Position& b)
+	bool has_vision(const entt::registry& registry, const entt::entity entity, const Position& target_pos)
 	{
 		if (!registry.all_of<Position, Perception>(entity))
 			return false;
-		const Position& a = registry.get<Position>(entity);
-		if (a.cave_idx != b.cave_idx)
+		const Position& entity_pos = registry.get<Position>(entity);
+		if (entity_pos.cave_idx != target_pos.cave_idx)
 			return false;
-		const Cave& cave = ECS::get_cave(registry, a);
-		const auto start = a.cell_idx;
-		const auto end = b.cell_idx;
-		const size_t size = cave.get_size();
-		int x0 = static_cast<int>(start % size);
-		int y0 = static_cast<int>(start / size);
-		int x1 = static_cast<int>(end % size);
-		int y1 = static_cast<int>(end / size);
 
-		int dx = abs(x1 - x0);
-		int dy = abs(y1 - y0);
-
-		int sx = x0 < x1 ? 1 : -1;
-		int sy = y0 < y1 ? 1 : -1;
-
-		int err = dx - dy;
-
-		double opaqueness = 0.0;
-		while (true)
-		{
-			size_t idx = y0 * size + x0;
-
-			if (x0 == x1 && y0 == y1)
-				break;
-
-			opaqueness += VisionSystem::get_opaqueness(registry, Position(idx, a.cave_idx));
-			opaqueness += 1.0 / StateSystem::get_attribute<Perception>(registry, entity);
-			if (opaqueness >= 1.0)
-				return false;
-			int e2 = 2 * err;
-			if (e2 > -dy)
-			{
-				err -= dy;
-				x0 += sx;
-			}
-			if (e2 < dx)
-			{
-				err += dx;
-				y0 += sy;
-			}
-		}
-
+		const auto vision_range = StateSystem::get_vision_range(registry, entity);
+		if (vision_range < ECS::distance(registry, entity_pos, target_pos))
+			return false;
+		if (!has_line_of_sight(registry, entity_pos, target_pos))
+			return false;
 		return true;
-
 	}
 
 	/* Get all positions entity can see

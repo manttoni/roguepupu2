@@ -186,31 +186,60 @@ namespace ContextSystem
 			if (selection != "Inventory") break;
 		}
 	}
+
+	std::vector<std::string> get_entities_details(const entt::registry& registry, const std::vector<entt::entity>& entities, const entt::entity owner)
+	{
+		std::vector<std::string> entities_details;
+		for (auto& item : entities)
+		{
+			if (EquipmentSystem::is_equipped(registry, owner, item))
+				entities_details.push_back(" * " + ECS::get_colored_name(registry, item));
+			else
+				entities_details.push_back("   " + ECS::get_colored_name(registry, item));
+		}
+		return entities_details;
+	}
+
+	/* For showing either entities on the floor or in an inventory
+	 * */
 	bool show_entities_list(entt::registry& registry, const std::vector<entt::entity>& entities, const entt::entity owner)
 	{
+		if (entities.empty()) return true; // will remake later
 		static size_t selection_idx = 0; // remember previous selection
 		selection_idx = std::min(selection_idx, entities.size() - 1);
 		const auto owner_name = owner == entt::null ? "Cell" : ECS::get_colored_name(registry, owner);
-		const auto& colored_names = ECS::get_colored_names(registry, entities);
+		const auto& colored_names = get_entities_details(registry, entities, owner);
 		const std::string selection =
 			UI::instance().dialog(
 				Utils::capitalize(owner_name),
 				colored_names,
 				Screen::topleft(),
-				selection_idx
+				selection_idx // dialog will set this value
 				);
-		auto it = std::find(colored_names.begin(), colored_names.end(), selection);
-		if (it == colored_names.end()) return true;
-		selection_idx = std::distance(colored_names.begin(), it);
 		show_entity_details(registry, entities[selection_idx], owner);
 		return false;
 	}
+
 	void show_entities_list(entt::registry& registry, const entt::entity owner)
 	{
 		if (!registry.all_of<Inventory>(owner)) return;
+
 		while (!registry.get<Inventory>(owner).inventory.empty())
-			if (show_entities_list(registry, registry.get<Inventory>(owner).inventory, owner) == true)
+		{
+			auto& inventory = registry.get<Inventory>(owner).inventory;
+
+			// Sort by name but also by equipped status
+			std::sort(inventory.begin(), inventory.end(),
+					[&](const auto a, const auto b)
+					{
+					const bool ae = EquipmentSystem::is_equipped(registry, owner, a);
+					const bool be = EquipmentSystem::is_equipped(registry, owner, b);
+					if ((ae && be) || (!ae && !be)) return registry.get<Name>(a).name < registry.get<Name>(b).name;
+					return ae;
+					});
+			if (show_entities_list(registry, inventory, owner) == true)
 				break;
+		}
 		if (registry.get<Inventory>(owner).inventory.empty())
 			UI::instance().dialog("No items", {"Back"}, Screen::topleft());
 	}

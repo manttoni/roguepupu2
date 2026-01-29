@@ -76,6 +76,8 @@ namespace EquipmentSystem
 
 	bool is_equipped(const entt::registry& registry, const entt::entity entity, const entt::entity item)
 	{
+		if (entity == entt::null)
+			return false;
 		for (const auto equipped : registry.get<EquipmentSlots>(entity).equipped_items)
 		{
 			if (equipped == item)

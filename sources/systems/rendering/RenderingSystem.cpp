@@ -35,20 +35,7 @@ namespace RenderingSystem
 		if (lm.get_volume() > 0)
 			return Unicode::LiquidShallow;
 
-		const auto type = cell.get_type();
-		switch (type)
-		{
-			case Cell::Type::Rock:
-				return Unicode::FullBlock;
-			case Cell::Type::Floor:
-				return L' '; // can make it some random debris
-			case Cell::Type::Source:
-				return Unicode::Triangle;
-			case Cell::Type::Sink:
-				return Unicode::InvertedTriangle;
-			default:
-				return L'?';
-		}
+		return cell.get_glyph();
 	}
 
 	Color get_fgcolor(const entt::registry& registry, const Position& position)
@@ -64,16 +51,18 @@ namespace RenderingSystem
 		switch (type)
 		{
 			case Cell::Type::Rock:
-				// Previous version had shades of grey based on density
-				// Which was ok, but uses color ids
-				return Color(10, 20, 10) * static_cast<int>(std::round(0.5 + std::min(static_cast<double>(CELL_DENSITY_MAX), cell.get_density())));
+				// Set color gradient by density in some range
+				return Color(25, 30, 20) * static_cast<int>(std::round(std::min(
+								static_cast<double>(CELL_DENSITY_MAX),
+								cell.get_density() / 2.0 + 2.0
+								)));
 			case Cell::Type::Floor:
-				return Color(5, 10, 5);
+				return Color(25, 30, 20) * 2;
 			case Cell::Type::Source:
 			case Cell::Type::Sink:
 				return Color(80, 160, 80);
 			default:
-				return Color(0,0,1000);
+				Error::fatal("Cell without type");
 		}
 	}
 
@@ -82,7 +71,7 @@ namespace RenderingSystem
 		const auto& cell = ECS::get_cell(registry, position);
 
 		const auto& lm = ECS::get_cell(registry, position).get_liquid_mixture();
-		if (lm.get_volume() >= 1)
+		if (lm.get_volume() > 1)
 			return lm.get_color() / 5;
 
 		const auto type = cell.get_type();
@@ -93,9 +82,9 @@ namespace RenderingSystem
 			case Cell::Type::Floor:
 			case Cell::Type::Source:
 			case Cell::Type::Sink:
-				return Color(4, 8, 4);
+				return Color(25, 30, 20);
 			default:
-				return Color(0,0,1000);
+				Error::fatal("Cell without type");
 		}
 	}
 

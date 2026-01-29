@@ -31,6 +31,12 @@ namespace Random
 		std::uniform_int_distribution<size_t> dist(min, max);
 		return dist(rng_obj);
 	}
+	inline size_t randsize_t(const size_t min, const size_t max, const size_t seed)
+	{
+		std::mt19937 gen(seed);
+		std::uniform_int_distribution<size_t> dist(min, max);
+		return dist(gen);
+	}
 
 	// DOUBLE
 	inline double randreal(const double min, const double max)
