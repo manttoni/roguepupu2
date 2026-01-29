@@ -77,9 +77,9 @@ struct Stamina { int current; };
 struct Mana { int current; };
 struct Alignment
 {
-	double tolerance = 0.0;
 	double chaos_law = 0.0;
 	double evil_good = 0.0;
+	double tolerance = 0.0;
 
 	std::string to_string() const
 	{

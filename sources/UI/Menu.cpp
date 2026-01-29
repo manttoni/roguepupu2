@@ -86,9 +86,9 @@ std::string Menu::Element::get_text() const
 					text += ": < ";
 				text += std::to_string(*value);
 				if (*value == *max_value)
-					text += " >";
-				else
 					text += "  ";
+				else
+					text += " >";
 				return text;
 			}
 		case Type::Checkbox:
@@ -114,7 +114,9 @@ bool Menu::add_element(Element element)
 			break;
 		case Element::Type::TextField:
 			if (!element.max_input)
-				return false;
+				element.max_input = 10;
+			if (!element.min_input)
+				element.min_input = 0;
 			if (!element.input)
 				element.input.emplace("");
 			elements.push_back(element);
@@ -293,6 +295,12 @@ void Menu::input_text(Element& e, const int key)
 		*e.input += key;
 }
 
+void Menu::set_bool(Element& e, const int key)
+{
+	if (key == '\n' || key == KEY_ENTER || key == KEY_LEFT_CLICK)
+		*e.check ^= true;
+}
+
 bool Menu::selection_confirmed(const Element& e, const int key) const
 {
 	if (e.type != Element::Type::Button)
@@ -319,12 +327,51 @@ Menu::Element Menu::get_selection(const size_t default_selected)
 			change_value(elements[selected], key);
 		if (elements[selected].type == Element::Type::TextField)
 			input_text(elements[selected], key);
+		if (elements[selected].type == Element::Type::Checkbox)
+			set_bool(elements[selected], key);
 		if (selection_confirmed(elements[selected], key)) // enter or left click on a Button
 		{
-			elements[selected].index = selected;
+			elements[selected].index = selected - get_unselectable_count();
 			return elements[selected];
 		}
 	}
 	return Element{};
+}
+
+int Menu::get_value(const std::string& label) const
+{
+	for (const auto& elt : elements)
+	{
+		if (elt.label == label)
+		{
+			assert(elt.value);
+			return *elt.value;
+		}
+	}
+	std::abort();
+}
+std::string Menu::get_input(const std::string& label) const
+{
+	for (const auto& elt : elements)
+	{
+		if (elt.label == label)
+		{
+			assert(elt.input);
+			return *elt.input;
+		}
+	}
+	std::abort();
+}
+bool Menu::get_check(const std::string& label) const
+{
+	for (const auto& elt : elements)
+	{
+		if (elt.label == label)
+		{
+			assert(elt.check);
+			return *elt.check;
+		}
+	}
+	std::abort();
 }
 

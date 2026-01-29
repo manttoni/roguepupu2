@@ -1,5 +1,6 @@
 #include <string>                      // for basic_string, operator+, opera...
 #include <vector>
+#include "infrastructure/CharacterCreation.hpp"
 #include "components/Components.hpp"
 #include "database/EntityFactory.hpp"           // for EntityFactory
 #include "domain/Cave.hpp"
@@ -11,11 +12,20 @@
 #include "utils/ECS.hpp"
 #include "utils/Log.hpp"
 #include "utils/Parser.hpp"
+#include "UI/Dialog.hpp"
 
 Game::Game()
 {
 	ECS::init_registry(registry);
-	registry.ctx().get<GameState>().player = EntityFactory::instance().create_entity(registry, "rabdin");
+
+	const auto choice = Dialog::get_selection("Create custom character?", {"No", "Yes"}).label;
+	if (choice == "No")
+		registry.ctx().get<GameState>().player = EntityFactory::instance().create_entity(registry, "rabdin");
+	else if (choice == "Yes")
+		registry.ctx().get<GameState>().player = CharacterCreation::create_character(registry);
+	else
+		game_over = true;
+
 	const size_t cave_idx = registry.ctx().get<World>().new_cave();
 	CaveGenerator::Data data(registry, ECS::get_cave(registry, cave_idx));
 	Parser::parse_cave_generation_conf("default", data);
@@ -28,7 +38,7 @@ void Game::loop()
 {
 	Log::log("Game loop started");
 	registry.ctx().get<GameState>().running = true;
-	while (registry.ctx().get<GameState>().running)
+	while (registry.ctx().get<GameState>().running && game_over == false)
 	{
 		Log::log("Round " + std::to_string(registry.ctx().get<GameState>().turn_number));
 		ActionSystem::act_round(registry);
