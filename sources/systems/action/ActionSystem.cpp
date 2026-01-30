@@ -33,7 +33,7 @@ namespace ActionSystem
 				ContextSystem::examine_cell(registry, intent.target.position);
 				break;
 			case Intent::Type::OpenInventory:
-				ContextSystem::show_entities_list(registry, intent.target.entity);
+				ContextSystem::open_inventory(registry, intent.target.entity);
 				break;
 			case Intent::Type::ShowPlayer:
 				ContextSystem::show_entity_details(registry, ECS::get_player(registry));

@@ -33,7 +33,7 @@ namespace CharacterCreation
 		cc.add_element(Element(Type::ValueSelector, "Endurance", 10, 20));
 		cc.add_element(Element(Type::ValueSelector, "Willpower", 10, 20));
 		cc.add_element(Element(Type::ValueSelector, "Vitality", 10, 20));
-		cc.add_element(Element(Type::ValueSelector, "Perception", 10, 20));
+		cc.add_element(Element(Type::ValueSelector, "Perception", 10, 2000));
 		cc.add_element(Element(Type::ValueSelector, "Charisma", 10, 20));
 
 		cc.add_element(Element(Type::ValueSelector, "Chaos - Law", -1, 1));
@@ -54,6 +54,7 @@ namespace CharacterCreation
 		registry.emplace<Weight>(character, 70.0);
 		registry.emplace<Size>(character, 70.0);
 		registry.emplace<EquipmentSlots>(character);
+		registry.emplace<Inventory>(character);
 		registry.emplace<Category>(character, "creatures");
 		registry.emplace<Subcategory>(character, "players");
 		registry.emplace<Name>(character, cc.get_input("Name"));

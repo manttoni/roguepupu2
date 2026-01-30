@@ -62,3 +62,25 @@ double Cell::get_liquid_level() const
 	return density + liquid_mixture.get_volume();
 }
 
+std::string Cell::to_string() const
+{
+	std::string string = "";
+	switch (get_type())
+	{
+		case Type::Rock:
+			string += "Rock | Density: " + std::format("{:.2f}", density);
+			break;
+		case Type::Floor:
+			string += "Floor | Elevation: " + std::format("{:.2f}", density);
+			break;
+		case Type::Source:
+			string += "Source";
+			break;
+		case Type::Sink:
+			string += "Sink";
+			break;
+		default:
+			break;
+	}
+	return string;
+}

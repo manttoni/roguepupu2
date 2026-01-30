@@ -85,3 +85,18 @@ Color LiquidMixture::get_color() const
 	return Liquid(largest_volume).color;
 }
 
+std::string LiquidMixture::to_string() const
+{
+	std::string string = "";
+	for (auto it = mixture.begin(); it != mixture.end(); ++it)
+	{
+		const auto type = it->first;
+		if (it != mixture.begin())
+			string += " | ";
+		string += Liquid(type).color.markup();
+		string += Liquid::to_string(type);
+		string += "(" + std::format("{:.1f}", 100.0 * it->second / get_volume()) + ")";
+		string += "{reset}";
+	}
+	return string;
+}

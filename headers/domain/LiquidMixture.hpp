@@ -27,4 +27,5 @@ class LiquidMixture
 		double get_volume(const Liquid::Type type = Liquid::Type::None) const;
 		double get_viscosity() const;
 		Color get_color() const;
+		std::string to_string() const;
 };

@@ -16,7 +16,7 @@ class Menu
 			// Core
 			Type type = Type::None;
 			std::string label = "";
-			size_t index = SIZE_MAX; // index in elements vector. Needed by f.e. ContextSystem
+			size_t index = 0;
 
 			// TextField
 			std::optional<size_t> min_input, max_input;

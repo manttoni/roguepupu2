@@ -159,7 +159,7 @@ void Menu::set_panel()
 			|| static_cast<int>(width) > Screen::width())
 	{	// Use ctrl + [+/-] (in my terminal). This loop ends when terminal size is big enough.
 		// A better solution would be scrolling menus, maybe later
-		mvaddstr(0, 0, "Resize terminal to fit menu");
+		mvaddstr(0, 0, "Resize terminal to fit menu. Default ctrl[+/-]");
 		refresh();
 		getch();
 	}

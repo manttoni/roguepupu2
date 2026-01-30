@@ -11,6 +11,7 @@
 #include "UI/UI.hpp"
 #include "components/Components.hpp"
 #include "UI/Dialog.hpp"
+#include "UI/Menu.hpp"
 
 namespace ContextSystem
 {
@@ -119,147 +120,148 @@ namespace ContextSystem
 
 		return details;
 	}
+
 	std::vector<std::string> get_options(const entt::registry& registry, const entt::entity entity, const entt::entity owner)
 	{
+		assert(registry.all_of<Position>(entity) || InventorySystem::has_item(registry, owner, entity));
+		const double distance = !registry.all_of<Position>(entity) ?
+			ECS::distance(registry, ECS::get_player(registry), owner) :
+			ECS::distance(registry, ECS::get_player(registry), entity);
+		const bool is_player = entity == ECS::get_player(registry);
+		const bool is_player_owned = owner == ECS::get_player(registry);
 		std::vector<std::string> options;
-		const auto player = ECS::get_player(registry);
-		if (player == owner && owner != entt::null)
+		if (distance < 1.5)
 		{
+			if (!is_player_owned && registry.get<Category>(entity).category == "items")
+				options.push_back("Take");
+			if (!is_player && registry.all_of<Inventory, Position>(entity))
+				options.push_back("Loot");
+			if (GatheringSystem::can_gather(registry, ECS::get_player(registry), entity))
+				options.push_back("Gather");
+		}
+		if (is_player_owned)
+		{
+			options.push_back("Drop");
 			if (registry.all_of<Equipment>(entity))
 			{
-				if (EquipmentSystem::is_equipped(registry, player, entity))
+				if (EquipmentSystem::is_equipped(registry, ECS::get_player(registry), entity))
 					options.push_back("Unequip");
 				else
 					options.push_back("Equip");
 			}
-			options.push_back("Drop");
 		}
-
-		double distance;
-		if (registry.all_of<Position>(entity))
-			distance = ECS::distance(registry, player, entity);
-		else
-			distance = ECS::distance(registry, player, owner);
-		if (distance < 1.5 && registry.all_of<Inventory>(entity))
-		{
-			if (player == entity)
-				options.push_back("Inventory");
-			else if (registry.all_of<Dead>(entity))
-				options.push_back("Loot");
-			else if (registry.get<Subcategory>(entity).subcategory == "furniture")
-				options.push_back("Open");
-		}
-		if (distance < 1.5 && player != owner)
-		{
-			if (registry.get<Category>(entity).category == "items")
-				options.push_back("Take");
-		}
-		if (distance < 1.5 && GatheringSystem::can_gather(registry, player, entity))
-			options.push_back("Gather");
-		options.push_back("Back");
+		if (is_player)
+			options.push_back("Inventory");
 		return options;
 	}
-	void handle_selection(entt::registry& registry, const entt::entity entity, const entt::entity owner, const std::string& selection)
-	{
-		const auto player = ECS::get_player(registry);
-		if (selection == "Unequip" || selection == "Equip")
-			EquipmentSystem::equip_or_unequip(registry, player, entity);
-		if (selection == "Inventory" || selection == "Open" || selection == "Loot")
-			show_entities_list(registry, entity);
-		if (selection == "Drop")
-			InventorySystem::drop_item(registry, player, entity);
-		if (selection == "Take")
-			InventorySystem::take_item(registry, player, owner, entity);
-		if (selection == "Gather")
-			GatheringSystem::gather(registry, player, entity);
 
-		EventSystem::resolve_events(registry);
+	/* Take - take item to players inventory from ground or other inventory
+	 * Drop - drop item from own inventory to ground
+	 * Loot - open inventory of dead creature or container
+	 * Inventory - open own inventory (optional, i hotkey)
+	 * Equip - equip item with logic from EquipmentSystem if it is in players inventory
+	 * Unequip - same but different
+	 * Take liquid - take liquid to bottle
+	 * Gather - gather resources (cutting, felling, mining...)
+	 * Rest - start resting (optional, r hotkey)
+	 * Hide - go in stealth mode (optional, h hotkey)
+	 *
+	 * */
+	void handle_selection(entt::registry& registry, const entt::entity entity, const std::string& label, const entt::entity owner)
+	{
+		if (label == "Take")
+			InventorySystem::take_item(registry, ECS::get_player(registry), owner, entity);
+		else if (label == "Drop")
+			InventorySystem::drop_item(registry, ECS::get_player(registry), entity);
+		else if (label == "Loot" || label == "Inventory")
+			open_inventory(registry, entity);
+		else if (label == "Equip" || label == "Unequip")
+			EquipmentSystem::equip_or_unequip(registry, ECS::get_player(registry), entity);
+		//else if (label == "Take liquid")
+		//	This needs some kind of UI thing, use same as the Enter examine UI
+		else if (label == "Gather")
+			GatheringSystem::gather(registry, ECS::get_player(registry), entity);
+		EventSystem::resolve_events(registry); // Do this so that log messages will show while menu is open
 	}
+
 	void show_entity_details(entt::registry& registry, const entt::entity entity, const entt::entity owner)
 	{
+		auto text = get_details(registry, entity);
+		auto buttons = get_options(registry, entity, owner);
+		buttons.push_back("Back");
+		const auto selection = Dialog::get_selection(text, buttons, Screen::topleft());
+		handle_selection(registry, entity, selection.label, owner);
+	}
+
+	std::vector<std::string> get_inventory_format(const entt::registry& registry, const std::vector<entt::entity>& inventory, const entt::entity entity)
+	{
+		std::vector<std::string> formatted;
+		for (const auto item : inventory)
+		{
+			std::string str = "";
+			if (EquipmentSystem::is_equipped(registry, entity, item))
+				str += " * ";
+			else
+				str += "   ";
+			str += ECS::get_colored_name(registry, item);
+			formatted.push_back(str);
+		}
+		return formatted;
+	}
+
+	void open_inventory(entt::registry& registry, const entt::entity entity)
+	{
+		if (!registry.all_of<Inventory>(entity))
+			return;
+		auto& inventory_component = registry.get<Inventory>(entity);
+		auto& inventory = inventory_component.inventory;
+
+		Menu::Element selection;
 		while (true)
 		{
-			const auto& details = get_details(registry, entity);
-			const auto& options = get_options(registry, entity, owner);
-			const std::string selection = Dialog::get_selection(details, options, Screen::topleft()).label;
-			handle_selection(registry, entity, owner, selection);
-			if (selection != "Inventory") break;
-		}
-	}
-
-	std::vector<std::string> get_entities_details(const entt::registry& registry, const std::vector<entt::entity>& entities, const entt::entity owner)
-	{
-		std::vector<std::string> entities_details;
-		for (auto& item : entities)
-		{
-			if (EquipmentSystem::is_equipped(registry, owner, item))
-				entities_details.push_back(" * " + ECS::get_colored_name(registry, item));
-			else
-				entities_details.push_back("   " + ECS::get_colored_name(registry, item));
-		}
-		return entities_details;
-	}
-
-	/* For showing either entities on the floor or in an inventory
-	 * */
-	bool show_entities_list(entt::registry& registry, const std::vector<entt::entity>& entities, const entt::entity owner)
-	{
-		if (entities.empty()) return true; // will remake later
-		static size_t selection_idx = 0; // remember previous selection
-		selection_idx = std::min(selection_idx, entities.size() - 1);
-		const auto owner_name = owner == entt::null ? "Cell" : ECS::get_colored_name(registry, owner);
-		const auto& colored_names = get_entities_details(registry, entities, owner);
-		const auto selection =
-			Dialog::get_selection(
-				Utils::capitalize(owner_name),
-				colored_names,
-				Screen::topleft(),
-				selection_idx
-				);
-		selection_idx = selection.index;
-		show_entity_details(registry, entities[selection_idx], owner);
-		return false;
-	}
-
-	void show_entities_list(entt::registry& registry, const entt::entity owner)
-	{
-		if (!registry.all_of<Inventory>(owner)) return;
-
-		while (!registry.get<Inventory>(owner).inventory.empty())
-		{
-			auto& inventory = registry.get<Inventory>(owner).inventory;
-
-			// Sort by name but also by equipped status
-			std::sort(inventory.begin(), inventory.end(),
-					[&](const auto a, const auto b)
-					{
-					const bool ae = EquipmentSystem::is_equipped(registry, owner, a);
-					const bool be = EquipmentSystem::is_equipped(registry, owner, b);
+			std::sort(inventory.begin(), inventory.end(), [&](const auto a, const auto b) {
+					const bool ae = EquipmentSystem::is_equipped(registry, entity, a);
+					const bool be = EquipmentSystem::is_equipped(registry, entity, b);
 					if ((ae && be) || (!ae && !be)) return registry.get<Name>(a).name < registry.get<Name>(b).name;
 					return ae;
 					});
-			if (show_entities_list(registry, inventory, owner) == true)
+			if (inventory.empty())
+			{
+				Dialog::get_selection("Inventory empty", {"OK"}, Screen::topleft());
 				break;
-		}
-		if (registry.get<Inventory>(owner).inventory.empty())
-			Dialog::get_selection("No items", {"Back"}, Screen::topleft());
-	}
-	void show_entities_list(entt::registry& registry, const Position& position)
-	{
-		while (!ECS::get_entities(registry, position).empty())
-		{
-			if (show_entities_list(registry, ECS::get_entities(registry, position), entt::null) == true)
+			}
+			std::vector<std::string> text;
+			text.push_back(ECS::get_colored_name(registry, entity) + "s Inventory");
+			std::vector<std::string> buttons = get_inventory_format(registry, inventory, entity);
+			buttons.push_back("Back");
+			selection = Dialog::get_selection(text, buttons, Screen::topleft(), selection.index);
+			if (selection.label == "Back" || selection.label.empty())
 				break;
+			show_entity_details(registry, inventory[selection.index], entity);
 		}
 	}
 
 	void examine_cell(entt::registry& registry, const Position& position)
 	{
-		const auto& entities = ECS::get_entities(registry, position);
-		if (entities.empty()) return;
-		if (entities.size() == 1)
-			show_entity_details(registry, entities[0]);
-		else
-			show_entities_list(registry, position);
+		const auto& cell = ECS::get_cell(registry, position);
+		const auto& mixture = cell.get_liquid_mixture();
+
+		Menu::Element selection;
+		while (true)
+		{
+			std::vector<std::string> text;
+			text.push_back(cell.to_string());
+			text.push_back(mixture.to_string());
+			auto entities = ECS::get_entities(registry, position);
+			std::sort(entities.begin(), entities.end(), [&](const auto a, const auto b) {
+					return ECS::get_name(registry, a) < ECS::get_name(registry, b);
+					});
+			std::vector<std::string> buttons = ECS::get_colored_names(registry, entities);
+			buttons.push_back("Back");
+			selection = Dialog::get_selection(text, buttons, Screen::topleft(), selection.index);
+			if (selection.label == "Back" || selection.label.empty())
+				break;
+			show_entity_details(registry, entities[selection.index]);
+		}
 	}
 };

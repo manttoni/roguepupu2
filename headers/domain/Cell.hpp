@@ -115,6 +115,8 @@ class Cell
 	public:
 		Cell(const size_t idx, const Cell::Type type = Cell::Type::Rock);
 
+		std::string to_string() const;
+
 		bool operator==(const Cell &other) const = default;
 		bool operator!=(const Cell &other) const = default;
 		Cell& operator=(const Cell& other) = default;
