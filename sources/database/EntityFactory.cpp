@@ -116,11 +116,9 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 		}
 	},
 	{ "equipment_slots", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			if (!data.is_boolean())
-				Error::fatal("EquipmentSlots should be boolean");
-			if (data.get<bool>() == true)
-				reg.template emplace<EquipmentSlots>(e);
+		{	// can equip items, valueless
+			(void) data;
+			reg.template emplace<EquipmentSlots>(e);
 		}
 	},
 	{ "category", [](auto& reg, auto e, const nlohmann::json& data)

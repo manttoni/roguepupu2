@@ -1,0 +1,8 @@
+{
+	"test_creature": {
+		"glyph": "T",
+		"solid": true,
+		"inventory": {},
+		"equipment_slots": {}
+	}
+}
