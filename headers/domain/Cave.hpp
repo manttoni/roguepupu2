@@ -46,6 +46,8 @@ class Cave
 		std::vector<Position> get_nearby_positions(const Position& middle, const double r = 1.5, const Cell::Type type = Cell::Type::None) const;
 		std::vector<Position> get_positions_with_type(const Cell::Type type) const;
 
+		Position middle_position() const { return Position(size * size / 2 + size / 2, idx); }
+
 	public:
 		Cave(const size_t size, const Cell::Type fill = Cell::Type::Rock);
 

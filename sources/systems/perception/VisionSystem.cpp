@@ -22,56 +22,55 @@ namespace VisionSystem
 		return opaqueness;
 	}
 
-	/* Return true if nothing blocks vision between
+	/* Return true if opaqueness reaches 1.0
+	 * Some obstacles can be transparent
 	 * This is used also for light rays
-	 * Perception or vision range don't affect
+	 * Digital Differential Analyzer
 	 * */
 	bool has_line_of_sight(const entt::registry& registry, const Position& a, const Position& b)
 	{
 		if (a.cave_idx != b.cave_idx)
 			return false;
-		const Cave& cave = ECS::get_cave(registry, a);
-		const auto start = a.cell_idx;
-		const auto end = b.cell_idx;
-		const size_t size = cave.get_size();
-		int x0 = static_cast<int>(start % size);
-		int y0 = static_cast<int>(start / size);
-		int x1 = static_cast<int>(end % size);
-		int y1 = static_cast<int>(end / size);
 
-		int dx = abs(x1 - x0);
-		int dy = abs(y1 - y0);
+		const Cave& cave = ECS::get_cave(registry, a.cave_idx);
 
-		int sx = x0 < x1 ? 1 : -1;
-		int sy = y0 < y1 ? 1 : -1;
+		size_t size = cave.get_size();
+		double x0 = static_cast<double>(a.cell_idx % size) + 0.5;
+		double y0 = static_cast<double>(a.cell_idx / size) + 0.5;
+		double x1 = static_cast<double>(b.cell_idx % size) + 0.5;
+		double y1 = static_cast<double>(b.cell_idx / size) + 0.5;
 
-		int err = dx - dy;
+		double dx = x1 - x0;
+		double dy = y1 - y0;
+
+		int steps = static_cast<int>(std::max(std::abs(dx), std::abs(dy)));
+
+		if (steps == 0)
+			return true;
+
+		double x_inc = dx / steps;
+		double y_inc = dy / steps;
+
+		double x = x0;
+		double y = y0;
 
 		double opaqueness = 0.0;
-		while (true)
+
+		for (int i = 0; i <= steps; ++i)
 		{
-			size_t idx = y0 * size + x0;
+			int ix = static_cast<int>(x);
+			int iy = static_cast<int>(y);
+			size_t idx = iy * size + ix;
 
-			if (x0 == x1 && y0 == y1)
-				break;
+			// If endpoint is rock, it should be visible. Same with start, to be symmetrical
+			if (idx != a.cell_idx && idx != b.cell_idx)
+				opaqueness += VisionSystem::get_opaqueness(registry, Position(idx, a.cave_idx));
 
-			opaqueness += VisionSystem::get_opaqueness(registry, Position(idx, a.cave_idx));
-			if (opaqueness >= 1.0)
-				return false;
-			int e2 = 2 * err;
-			if (e2 > -dy)
-			{
-				err -= dy;
-				x0 += sx;
-			}
-			if (e2 < dx)
-			{
-				err += dx;
-				y0 += sy;
-			}
+			x += x_inc;
+			y += y_inc;
 		}
 
-		return true;
+		return opaqueness < 1.0;
 	}
 
 	/* Return true if entity can see position

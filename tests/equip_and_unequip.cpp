@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "registry_fixture.hpp"
+#include "helpers.hpp"
 #include "database/EntityFactory.hpp"
 #include "systems/state/EquipmentSystem.hpp"
 

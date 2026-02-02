@@ -3,6 +3,8 @@
 #include <cctype>           // for toupper
 #include <string>           // for basic_string, string, operator+, operator<<
 #include <regex>
+#include <codecvt>
+#include <locale>
 
 namespace Utils
 {
@@ -41,8 +43,8 @@ namespace Utils
 		const int b = std::stoi(match[3].str());
 
 		if (r < 0 || r > 1000 ||
-			g < 0 || g > 1000 ||
-			b < 0 || b > 1000)
+				g < 0 || g > 1000 ||
+				b < 0 || b > 1000)
 			return false;
 		return true;
 	}
@@ -67,6 +69,13 @@ namespace Utils
 		auto it = std::find(handled_attrs.begin(), handled_attrs.end(), match[1]);
 		return it != handled_attrs.end();
 
+	}
+
+	inline std::string to_utf8(const wchar_t w)
+	{
+		std::wstring ws(1, w);
+		std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
+		return conv.to_bytes(ws);
 	}
 }
 

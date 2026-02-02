@@ -19,6 +19,7 @@ namespace RenderingSystem
 		ColorPair color_pair{};
 		chtype attr = A_NORMAL;
 	};
+	Visual get_visual(const entt::registry& registry, const Position& position);
 	void render_cell(const entt::registry& registry, const Position& position);
 	void render(entt::registry& registry);
 	void render_generation(const entt::registry& registry, const size_t cave_idx);

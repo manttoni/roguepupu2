@@ -6,6 +6,7 @@
 #include "domain/Color.hpp"
 #include "domain/Cave.hpp"
 #include "domain/Cell.hpp"
+#include "domain/Position.hpp"
 
 namespace LightingSystem
 {
@@ -30,10 +31,15 @@ namespace LightingSystem
 		}
 	}
 
+	void clear_lights(entt::registry& registry, const size_t cave_idx)
+	{
+		for (const auto pos : ECS::get_cave(registry, cave_idx).get_positions())
+			ECS::get_cell(registry, pos).clear_lights();
+	}
+
 	void reset_lights(entt::registry& registry, const size_t cave_idx)
 	{
-		auto& cave = ECS::get_cave(registry, cave_idx);
-		cave.clear_lights();
+		clear_lights(registry, cave_idx);
 		apply_lights(registry, cave_idx);
 	}
 
