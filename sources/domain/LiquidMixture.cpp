@@ -90,12 +90,14 @@ std::string LiquidMixture::to_string() const
 	std::string string = "";
 	for (auto it = mixture.begin(); it != mixture.end(); ++it)
 	{
+		if (get_volume() == 0.0)
+			break;
 		const auto type = it->first;
 		if (it != mixture.begin())
 			string += " | ";
 		string += Liquid(type).color.markup();
 		string += Liquid::to_string(type);
-		string += "(" + std::format("{:.1f}", 100.0 * it->second / get_volume()) + ")";
+		string += "(" + std::format("{:.1f}", 100.0 * it->second / get_volume()) + "%)";
 		string += "{reset}";
 	}
 	return string;
