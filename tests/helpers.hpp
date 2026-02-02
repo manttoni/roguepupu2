@@ -27,13 +27,19 @@ class RegistryTest : public ::testing::Test
 
 enum class TestCaveType
 {
+	Rock,	// Solid rock everywhere
 	Floor,	// Every cell type Floor
 	Room,	// Rock on edges, floor elsewhere
 };
 
 inline size_t get_test_cave_idx(entt::registry& registry, const size_t size, const TestCaveType type)
 {
-	if (type == TestCaveType::Room)
+	if (type == TestCaveType::Rock)
+	{
+		const auto cave_idx = ECS::get_world(registry).new_cave(size, Cell::Type::Rock);
+		return cave_idx;
+	}
+	else if (type == TestCaveType::Room)
 	{
 		const auto cave_idx = ECS::get_world(registry).new_cave(size, Cell::Type::Rock);
 
