@@ -44,39 +44,47 @@ void UI::print(const char ch)
 {
 	wprintw(panel_window(current_panel), "%c", ch);
 }
-void UI::print_colors(const char* ptr)
-{
-	Color c;
-	while (*ptr != '\0')
-	{
-		if (*ptr == '{') // color markup
-		{
-			if (strncmp(ptr, "{reset}", 7) == 0) // end
-			{
-				disable_color_pair(ColorPair(c, Color{}));
-				ptr = strchr(ptr, '}') + 1;
-				continue;
-			} // start
-			const short r = static_cast<short>(atoi(ptr + 1));
-			ptr = strchr(ptr, ',') + 1;
-			const short g = static_cast<short>(atoi(ptr));
-			ptr = strchr(ptr, ',') + 1;
-			const short b = static_cast<short>(atoi(ptr));
-			ptr = strchr(ptr, '}') + 1;
-			c = Color(r, g, b);
-			enable_color_pair(ColorPair(c, Color{}));
-			continue;
-		}
-		print(*ptr);
-		ptr++;
-	}
-}
 void UI::print(const std::string& str)
 {
-	if (str.find('{') != std::string::npos)
-		print_colors(str.c_str()); // Probably wants to print with colors
-	else if (current_panel != nullptr)
+	if (str.find_first_of("{[") == std::string::npos)
+	{
 		wprintw(panel_window(current_panel), "%s", str.c_str());
+		return;
+	}
+	std::optional<Color> color;
+	std::optional<chtype> attr;
+	for (size_t i = 0; i < str.size(); ++i)
+	{
+		if (str.compare(i, 7, "{reset}") == 0 && color.has_value())
+		{
+			disable_color_pair(ColorPair(*color, Color{}));
+			color = std::nullopt;
+			i = str.find('}', i);
+			continue;
+		}
+		if (str.compare(i, 7, "[reset]") == 0 && attr.has_value())
+		{
+			disable_attr(*attr);
+			attr = std::nullopt;
+			i = str.find(']', i);
+			continue;
+		}
+		if (Color::is_markup(str, i) && !color.has_value())
+		{
+			color = Color::from_markup(str, i);
+			enable_color_pair(ColorPair(*color, Color{}));
+			i = str.find('}', i);
+			continue;
+		}
+		if (NcursesAttr::is_markup(str, i) && !attr.has_value())
+		{
+			attr = NcursesAttr::from_markup(str, i);
+			enable_attr(*attr);
+			i = str.find(']', i);
+			continue;
+		}
+		print(str[i]);
+	}
 }
 void UI::print(const size_t y, const size_t x, const std::string& str)
 {

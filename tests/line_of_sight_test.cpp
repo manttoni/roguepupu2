@@ -17,7 +17,7 @@
 #include "utils/ECS.hpp"
 #include "systems/perception/VisionSystem.hpp"
 
-TEST_F(RegistryTest, LOSSymmetricalEmpty)
+TEST_F(RegistryTest, LOSSymmetricalNoWalls)
 {
 	const size_t CAVE_SIZE = 5;
 	const auto cave_idx = get_test_cave_idx(registry, CAVE_SIZE, TestCaveType::Floor);
@@ -36,7 +36,7 @@ TEST_F(RegistryTest, LOSSymmetricalEmpty)
 	}
 }
 
-TEST_F(RegistryTest, LOSSymmetricalRoom)
+TEST_F(RegistryTest, LOSSymmetricalWalls)
 {
 	const size_t CAVE_SIZE = 5;
 	const auto cave_idx = get_test_cave_idx(registry, CAVE_SIZE, TestCaveType::Room);

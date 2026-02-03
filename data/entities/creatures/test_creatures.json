@@ -4,5 +4,11 @@
 		"solid": true,
 		"inventory": {},
 		"equipment_slots": {}
+	},
+
+	"test_dummy": {
+		"glyph": "D",
+		"solid": true,
+		"health": 1
 	}
 }

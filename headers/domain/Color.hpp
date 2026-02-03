@@ -31,6 +31,9 @@ class Color
 		std::string markup() const;
 		double get_illumination() const;
 
+		static bool is_markup(const std::string& str, const size_t i);
+		static Color from_markup(const std::string& str, const size_t i);
+
 		static inline Color black() { return Color(0, 0, 0); }
 		static inline Color grey() { return Color(100, 100, 100); }
 		static inline Color dark_grey() { return Color(50,50,50); }

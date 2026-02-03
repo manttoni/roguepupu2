@@ -1,5 +1,6 @@
 #pragma once
 
+#include <regex>
 #include <ncurses.h>
 #include <cmath>
 #include <string>
@@ -48,7 +49,59 @@ struct Weight { double kilograms; };
 struct Glyph { wchar_t glyph; };
 struct FGColor { Color color; };
 struct BGColor { Color color; };
-struct NcursesAttr { chtype attr; };
+struct NcursesAttr
+{
+	chtype attr;
+
+	std::string markup() const
+	{
+		switch (attr)
+		{
+			case A_DIM:
+				return "[A_DIM]";
+			case A_BOLD:
+				return "[A_BOLD]";
+			case A_REVERSE:
+				return "[A_REVERSE]";
+			default:
+				return "[A_NORMAL]";
+		}
+	}
+
+	inline static bool is_markup(const std::string& str, const size_t idx)
+	{
+		if (idx >= str.size() || str[idx] != '[')
+			return false;
+
+		const auto close = str.find(']', idx);
+		if (close == std::string::npos)
+			return false;
+
+		const auto markup = str.substr(idx, close - idx + 1);
+		if (markup == "[reset]")
+			return true;
+		std::regex regex(R"(\[(A_[A-Z_]*)\])");
+		std::smatch match;
+		if (!std::regex_match(markup, match, regex))
+			return false;
+
+		const std::vector<std::string> handled_attrs = {"A_BOLD", "A_DIM", "A_REVERSE", "A_NORMAL"};
+		auto it = std::find(handled_attrs.begin(), handled_attrs.end(), match[1]);
+		return it != handled_attrs.end();
+	}
+
+	inline static chtype from_markup(const std::string& str, const size_t idx)
+	{
+		assert(is_markup(str, idx));
+		const auto close = str.find(']', idx);
+		const auto markup = str.substr(idx + 1, close - idx - 1);
+		if (markup == "A_DIM") return A_DIM;
+		if (markup == "A_BOLD") return A_BOLD;
+		if (markup == "A_REVERSE") return A_REVERSE;
+		return A_NORMAL;
+	}
+
+};
 
 /* State */
 struct Vision { double range; };
@@ -77,9 +130,40 @@ struct Stamina { int current; };
 struct Mana { int current; };
 struct Alignment
 {
+	enum class Type
+	{
+		LawfulGood,
+		LawfulNeutral,
+		LawfulEvil,
+		NeutralGood,
+		TrueNeutral,
+		NeutralEvil,
+		ChaoticGood,
+		ChaoticNeutral,
+		ChaoticEvil
+	};
 	double chaos_law = 0.0;
 	double evil_good = 0.0;
 	double tolerance = 0.0;
+
+	Alignment() = default;
+	Alignment(const double chaos_law, const double evil_good, const double tolerance = 0.0)
+		: chaos_law(chaos_law), evil_good(evil_good), tolerance(tolerance) {}
+	Alignment(const Type type, const double tolerance = 0.0) : tolerance(tolerance)
+	{
+		switch (type)
+		{
+			case Type::LawfulGood: chaos_law = 1; evil_good = 1; break;
+			case Type::LawfulNeutral: chaos_law = 1; evil_good = 0; break;
+			case Type::LawfulEvil: chaos_law = 1; evil_good = -1; break;
+			case Type::NeutralGood: chaos_law = 0; evil_good = 1; break;
+			case Type::TrueNeutral: chaos_law = 0; evil_good = 0; break;
+			case Type::NeutralEvil: chaos_law = 0; evil_good = -1; break;
+			case Type::ChaoticGood: chaos_law = -1; evil_good = 1; break;
+			case Type::ChaoticNeutral: chaos_law = -1; evil_good = 0; break;
+			case Type::ChaoticEvil: chaos_law = -1; evil_good = -1; break;
+		}
+	}
 
 	std::string to_string() const
 	{

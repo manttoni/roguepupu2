@@ -13,14 +13,14 @@ Color::Color(const short r, const short g, const short b) :
 bool Color::operator==(const Color& other) const
 {
 	return	r == other.r &&
-			g == other.g &&
-			b == other.b;
+		g == other.g &&
+		b == other.b;
 }
 bool Color::operator!=(const Color& other) const
 {
 	return	r != other.r ||
-			g != other.g ||
-			b != other.b;
+		g != other.g ||
+		b != other.b;
 }
 bool Color::operator<(const Color& other) const
 {
@@ -40,9 +40,9 @@ Color& Color::operator+=(const Color& other)
 Color Color::operator*(const int scalar) const
 {
 	return Color(
-		static_cast<short>(std::min(r * scalar, 1000)),
-		static_cast<short>(std::min(g * scalar, 1000)),
-		static_cast<short>(std::min(b * scalar, 1000)));
+			static_cast<short>(std::min(r * scalar, 1000)),
+			static_cast<short>(std::min(g * scalar, 1000)),
+			static_cast<short>(std::min(b * scalar, 1000)));
 }
 Color Color::operator*(const double scalar) const
 {
@@ -54,9 +54,9 @@ Color Color::operator*(const double scalar) const
 Color Color::operator/(const int scalar) const
 {
 	return Color(
-		static_cast<short>(std::min(r / scalar, 1000)),
-		static_cast<short>(std::min(g / scalar, 1000)),
-		static_cast<short>(std::min(b / scalar, 1000)));
+			static_cast<short>(std::min(r / scalar, 1000)),
+			static_cast<short>(std::min(g / scalar, 1000)),
+			static_cast<short>(std::min(b / scalar, 1000)));
 }
 Color Color::operator/(const double scalar) const
 {
@@ -89,4 +89,51 @@ double Color::get_illumination() const
 {
 	const size_t channels_sum = r + g + b;
 	return static_cast<double>(channels_sum) / 3000.0;
+}
+
+bool Color::is_markup(const std::string& str, const size_t idx)
+{
+	if (str[idx] != '{')
+		return false;
+
+	const auto close = str.find('}', idx);
+	if (close == std::string::npos)
+		return false;
+
+	const auto markup = str.substr(idx, close - idx + 1);
+	if (markup == "{reset}")
+		return true;
+	std::regex regex(R"(\{(\d+),(\d+),(\d+)\})");
+	std::smatch match;
+	if (!std::regex_match(markup, match, regex))
+		return false;
+
+
+	const int r = std::stoi(match[1].str());
+	const int g = std::stoi(match[2].str());
+	const int b = std::stoi(match[3].str());
+
+	if (r < 0 || r > 1000 ||
+			g < 0 || g > 1000 ||
+			b < 0 || b > 1000)
+		return false;
+	return true;
+
+}
+
+Color Color::from_markup(const std::string& str, const size_t idx)
+{
+	const auto close = str.find('}', idx);
+
+	const auto markup = str.substr(idx, close - idx + 1);
+	std::regex regex(R"(\{(\d+),(\d+),(\d+)\})");
+	std::smatch match;
+	if (!std::regex_match(markup, match, regex))
+		throw std::runtime_error("Invalid color markup: " + markup);
+
+	const int r = std::stoi(match[1].str());
+	const int g = std::stoi(match[2].str());
+	const int b = std::stoi(match[3].str());
+
+	return Color(r, g, b);
 }

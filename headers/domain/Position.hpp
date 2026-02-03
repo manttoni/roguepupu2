@@ -3,6 +3,7 @@
 #include <cassert>
 #include <climits>
 #include <cstdint>
+#include <ostream>
 
 struct Position
 {
@@ -33,5 +34,11 @@ struct Position
 	bool is_valid() const
 	{
 		return cell_idx != invalid_idx && cave_idx != invalid_idx;
+	}
+
+	friend std::ostream& operator<<(std::ostream& os, const Position& pos)
+	{
+		os << "(Cell: " << std::to_string(pos.cell_idx) << ", Cave: " << std::to_string(pos.cave_idx) << ")";
+		return os;
 	}
 };

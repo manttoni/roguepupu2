@@ -75,10 +75,18 @@ namespace ECS
 		return name;
 	}
 
+	inline NcursesAttr get_ncurses_attr(const entt::registry& registry, const entt::entity entity)
+	{
+		if (registry.all_of<NcursesAttr>(entity))
+			return registry.get<NcursesAttr>(entity);
+		return NcursesAttr(A_NORMAL);
+	}
+
 	inline std::string get_colored_name(const entt::registry& registry, const entt::entity entity)
 	{
 		const Color& fgcolor = get_fgcolor(registry, entity);
-		return fgcolor.markup() + get_name(registry, entity) + "{reset}";
+		const NcursesAttr& attr = get_ncurses_attr(registry, entity);
+		return fgcolor.markup() + attr.markup() + get_name(registry, entity) + "[reset]" + "{reset}";
 	}
 
 	inline std::vector<std::string> get_colored_names(const entt::registry& registry, const std::vector<entt::entity> entities)
