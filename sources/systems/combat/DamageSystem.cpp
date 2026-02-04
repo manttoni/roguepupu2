@@ -14,18 +14,10 @@ namespace DamageSystem
 			return;
 		auto& hp = registry.get<Health>(entity).current;
 		hp -= damage.amount;
-		Event damage_event;
-		damage_event.effect.type = Effect::Type::Damage;
-		damage_event.effect.damage = damage;
-		damage_event.target.entity = entity;
-		ECS::queue_event(registry, damage_event);
-		VisualEffectSystem::damage_flash(registry, entity);
-		if (hp <= 0)
-		{
-			Event death_event;
-			death_event.effect.type = Effect::Type::Death;
-			death_event.target.entity = entity;
-			ECS::queue_event(registry, death_event);
-		}
+		ECS::queue_event(registry, Event(
+					Actor{.entity = entity},
+					Effect{.type = Effect::Type::TakeDamage, .damage = damage},
+					Target{}
+					));
 	}
 };

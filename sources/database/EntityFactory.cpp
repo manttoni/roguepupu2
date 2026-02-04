@@ -319,7 +319,6 @@ void EntityFactory::add_entities(nlohmann::json& json, const std::string& catego
 
 entt::entity EntityFactory::create_entity(entt::registry& registry, const std::string& name, const std::optional<Position>& position)
 {
-	Log::log("Creating entity: " + name);
 	if (LUT.find(name) == LUT.end())
 		Error::fatal("Entity not found: " + name);
 
@@ -330,7 +329,6 @@ entt::entity EntityFactory::create_entity(entt::registry& registry, const std::s
 		auto it = field_parsers.find(field_name);
 		if (it == field_parsers.end())
 			Error::fatal("Unknown field name: " + field_name);
-		Log::log("Field name: " + field_name);
 		try {
 			it->second(registry, entity, field_data);
 		} catch (const nlohmann::json::parse_error& e) {
@@ -351,7 +349,6 @@ entt::entity EntityFactory::create_entity(entt::registry& registry, const std::s
 		ECS::queue_event(registry, spawn_event);
 	}
 
-	Log::log("Entity created");
 	return entity;
 }
 

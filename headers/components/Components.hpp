@@ -101,6 +101,10 @@ struct NcursesAttr
 		return A_NORMAL;
 	}
 
+	bool operator==(const NcursesAttr& other) const = default;
+	bool operator==(const chtype attr) const { return attr == this->attr; }
+	bool operator!=(const NcursesAttr& other) const = default;
+	bool operator!=(const chtype attr) const { return attr != this->attr; }
 };
 
 /* State */
@@ -125,7 +129,13 @@ template<typename T> struct BuffContainer
 	std::vector<Buff<T>> buffs;
 };
 
-struct Health { int current; };
+struct Health
+{
+	int current;
+
+	bool operator!=(const Health& other) const = default;
+	bool operator==(const Health& other) const = default;
+};
 struct Stamina { int current; };
 struct Mana { int current; };
 struct Alignment

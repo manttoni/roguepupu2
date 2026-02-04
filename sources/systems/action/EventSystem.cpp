@@ -92,6 +92,14 @@ namespace EventSystem
 		}
 	}
 
+	/* Health has already been lost.
+	 * Damaged entity is the actor of event. There is no target.
+	 * */
+	void resolve_take_damage_event(entt::registry& registry, const Event& event)
+	{
+		(void) registry; (void) event;
+	}
+
 	void log_event(entt::registry& registry, const Event& event)
 	{
 		std::string message;
@@ -99,6 +107,9 @@ namespace EventSystem
 			message += ECS::get_colored_name(registry, event.actor.entity) + " ";
 		switch (event.effect.type)
 		{
+			case Effect::Type::TakeDamage:
+				message += "takes " + event.effect.damage->to_string() + " damage";
+				break;
 			case Effect::Type::Gather:
 				message += "gathers from ";
 				break;
@@ -120,16 +131,22 @@ namespace EventSystem
 		if (event.target.entity != entt::null)
 			message += ECS::get_colored_name(registry, event.target.entity);
 		registry.ctx().get<GameLogger>().log(message);
+		Log::log("Game Log: " + message);
 	}
 
 	void resolve_events(entt::registry& registry)
 	{
 		auto& queue = registry.ctx().get<EventQueue>().queue;
+		Log::log("Resolving events (" + std::to_string(queue.size()) + ")");
 		for (size_t i = 0; i < queue.size(); ++i)
 		{
 			const auto& event = queue[i];
+			log_event(registry, event);
 			switch (event.effect.type)
 			{
+				case Effect::Type::TakeDamage:
+					resolve_take_damage_event(registry, event);
+					break;
 				case Effect::Type::Move:
 					resolve_move_event(registry, event);
 					break;
@@ -151,14 +168,13 @@ namespace EventSystem
 				default:
 					Error::fatal("Unhandled effect type: " + std::to_string(static_cast<int>(event.effect.type)));
 			}
-			log_event(registry, event);
 
 		}
-		RenderingSystem::render(registry);
 		queue.clear();
 
 		// Destroy entities marked for destruction
 		for (const auto entity : registry.view<Destroyed>())
 			registry.destroy(entity);
+		RenderingSystem::render(registry);
 	}
 };

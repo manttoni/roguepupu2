@@ -88,7 +88,8 @@ namespace ContextSystem
 			details.push_back("Good : " + std::format("{:.2f}", alignment.evil_good));
 		else
 			details.push_back("Neutral : " + std::format("{:.2f}", alignment.evil_good));
-		details.push_back("Tolerance : " + std::format("{:.2f}", alignment.tolerance));
+		if (entity != ECS::get_player(registry))
+			details.push_back("Tolerance : " + std::format("{:.2f}", alignment.tolerance));
 		return details;
 	}
 

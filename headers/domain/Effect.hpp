@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include "domain/Damage.hpp"
 
 /* Effect is a data structure describing what happens
@@ -19,7 +20,7 @@ struct Effect
 		Spawn,
 		Gather,
 		Move,
-		Damage,
+		TakeDamage,
 		Heal,
 		CreateEntity,
 		DestroyEntity,
@@ -39,7 +40,7 @@ struct Effect
 	double magnitude = 0.0;
 
 	// When dealing direct damage
-	Damage damage{};
+	std::optional<Damage> damage = std::nullopt;
 
 
 
