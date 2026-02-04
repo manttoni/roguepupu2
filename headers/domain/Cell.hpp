@@ -117,8 +117,9 @@ class Cell
 
 		std::string to_string() const;
 
-		bool operator==(const Cell &other) const = default;
-		bool operator!=(const Cell &other) const = default;
+		//
+		bool operator==(const Cell &other) const { return this == &other; }
+		bool operator!=(const Cell &other) const { return this != &other; }
 		Cell& operator=(const Cell& other) = default;
 
 };
