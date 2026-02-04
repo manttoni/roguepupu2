@@ -121,5 +121,6 @@ class Cell
 		bool operator==(const Cell &other) const { return this == &other; }
 		bool operator!=(const Cell &other) const { return this != &other; }
 		Cell& operator=(const Cell& other) = default;
+		Cell(const Cell& other) = default;
 
 };

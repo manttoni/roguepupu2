@@ -20,7 +20,6 @@ class LiquidMixture
 
 		LiquidMixture(const Liquid::Type type, const double volume);
 		LiquidMixture& operator+=(const LiquidMixture& other);
-
 		LiquidMixture flow(const double volume);
 		double remove_liquid(const Liquid::Type type, const double volume);
 		void add_liquid(const Liquid::Type type, const double volume);
