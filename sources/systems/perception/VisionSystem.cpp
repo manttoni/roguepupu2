@@ -1,8 +1,17 @@
+#include <assert.h>
+#include <bits/std_abs.h>
+#include <stddef.h>
+#include <algorithm>
+#include <vector>
+
 #include "external/entt/entt.hpp"
 #include "utils/ECS.hpp"
 #include "systems/state/StateSystem.hpp"
 #include "components/Components.hpp"
 #include "domain/Cell.hpp"
+#include "domain/Cave.hpp"
+#include "domain/Position.hpp"
+#include "external/entt/entity/fwd.hpp"
 
 namespace VisionSystem
 {

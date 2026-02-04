@@ -1,7 +1,15 @@
 #include <gtest/gtest.h>
+#include <nlohmann/detail/json_ref.hpp>
+#include <nlohmann/json.hpp>
+#include <nlohmann/json_fwd.hpp>
+#include <map>
+#include <string>
+#include <vector>
+
 #include "helpers.hpp"
 #include "database/EntityFactory.hpp"
 #include "systems/state/EquipmentSystem.hpp"
+#include "gtest/gtest.h"
 
 TEST_F(RegistryTest, EquipAndUnequip)
 {

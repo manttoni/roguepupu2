@@ -1,7 +1,15 @@
-#include <filesystem>
 #include <nlohmann/json.hpp>
+#include <stddef.h>
+#include <nlohmann/detail/iterators/iter_impl.hpp>
+#include <nlohmann/detail/iterators/iteration_proxy.hpp>
+#include <nlohmann/json_fwd.hpp>
+#include <filesystem>
 #include <vector>
 #include <string>
+#include <algorithm>
+#include <map>
+#include <utility>
+
 #include "database/EntityFactory.hpp"
 #include "utils/Parser.hpp"
 #include "domain/LootTable.hpp"

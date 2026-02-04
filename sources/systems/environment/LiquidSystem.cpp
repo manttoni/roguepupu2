@@ -2,10 +2,10 @@
 
 #include <algorithm>
 #include <vector>
+
 #include "domain/Cave.hpp"
 #include "domain/Cell.hpp"
 #include "domain/LiquidMixture.hpp"
-#include "domain/Liquid.hpp"
 #include "utils/Random.hpp"
 #include "utils/ECS.hpp"
 

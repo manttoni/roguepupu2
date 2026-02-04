@@ -1,11 +1,13 @@
+#include <assert.h>
+#include <stddef.h>
+#include <string>
+
 #include "components/Components.hpp"
 #include "domain/Position.hpp"
-#include "domain/Cave.hpp"
-#include "domain/World.hpp"
 #include "external/entt/entt.hpp"
-#include "generation/CaveGenerator.hpp"
 #include "utils/ECS.hpp"
-#include "utils/Log.hpp"
+#include "external/entt/entity/fwd.hpp"
+#include "systems/position/TransitionSystem.hpp"
 
 namespace TransitionSystem
 {

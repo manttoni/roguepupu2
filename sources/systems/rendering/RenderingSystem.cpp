@@ -1,8 +1,13 @@
+#include <curses.h>
+#include <panel.h>
+#include <stddef.h>
 #include <string>
-#include <unordered_set>
 #include <vector>
-#include <unordered_map>
-#include <ncurses.h>
+#include <algorithm>
+#include <cmath>
+#include <map>
+#include <utility>
+
 #include "UI/UI.hpp"
 #include "components/Components.hpp"
 #include "domain/Cell.hpp"
@@ -20,6 +25,12 @@
 #include "utils/Math.hpp"
 #include "infrastructure/DevTools.hpp"
 #include "systems/environment/LiquidSystem.hpp"
+#include "domain/Cave.hpp"
+#include "domain/Position.hpp"
+#include "external/entt/entity/fwd.hpp"
+#include "infrastructure/GameState.hpp"
+#include "utils/Error.hpp"
+#include "utils/Vec2.hpp"
 
 namespace RenderingSystem
 {

@@ -10,12 +10,15 @@
  * */
 
 #include <gtest/gtest.h>
-#include "external/entt/entt.hpp"
+#include <stddef.h>
+#include <vector>
+
 #include "domain/Position.hpp"
 #include "helpers.hpp"
 #include "domain/Cave.hpp"
 #include "utils/ECS.hpp"
 #include "systems/perception/VisionSystem.hpp"
+#include "gtest/gtest.h"
 
 TEST_F(RegistryTest, LOSSymmetricalNoWalls)
 {

@@ -1,13 +1,23 @@
+#include <stdlib.h>
 #include <vector>
 #include <cassert>
+#include <algorithm>
+#include <limits>
+#include <map>
+
 #include "utils/ECS.hpp"
 #include "external/entt/entt.hpp"
 #include "systems/position/MovementSystem.hpp"
 #include "domain/Cell.hpp"
 #include "domain/Cave.hpp"
-#include "utils/ECS.hpp"
 #include "utils/Vec2.hpp"
 #include "utils/Error.hpp"
+#include "domain/Effect.hpp"
+#include "domain/Event.hpp"
+#include "domain/Position.hpp"
+#include "external/entt/entity/fwd.hpp"
+
+struct Solid;
 
 namespace MovementSystem
 {

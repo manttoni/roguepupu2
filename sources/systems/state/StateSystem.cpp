@@ -1,7 +1,10 @@
+#include <stddef.h>
 #include <cmath>
-#include "external/entt/entt.hpp"
+#include <vector>
+
 #include "systems/state/StateSystem.hpp"
 #include "components/Components.hpp"
+#include "external/entt/entity/fwd.hpp"
 
 namespace StateSystem
 {

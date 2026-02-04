@@ -1,10 +1,17 @@
-#include <string>                       // for basic_string, char_traits
+#include <algorithm>
+#include <vector>
+
 #include "components/Components.hpp"               // for Position, Inventory, Name
 #include "utils/ECS.hpp"                      // for get_cell, get_colored_name
 #include "external/entt/entt.hpp"                     // for vector, allocator, basic_sigh...
-#include "utils/Log.hpp"
 #include "systems/state/EquipmentSystem.hpp"  // for is_equipped, equip_or_unequip
 #include "systems/state/InventorySystem.hpp"  // for add_item, has_item, inventory...
+#include "domain/Actor.hpp"
+#include "domain/Effect.hpp"
+#include "domain/Event.hpp"
+#include "domain/Position.hpp"
+#include "domain/Target.hpp"
+#include "external/entt/entity/fwd.hpp"
 
 namespace InventorySystem
 {

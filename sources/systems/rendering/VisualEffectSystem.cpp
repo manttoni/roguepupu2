@@ -1,9 +1,15 @@
-#include <chrono>
+#include <bits/chrono.h>
+#include <stddef.h>
 #include <thread>
+
 #include "systems/rendering/VisualEffectSystem.hpp"
 #include "systems/rendering/RenderingSystem.hpp"
 #include "components/Components.hpp"
 #include "utils/ECS.hpp"
+#include "domain/Color.hpp"
+#include "domain/Position.hpp"
+#include "external/entt/entity/fwd.hpp"
+#include "external/entt/entity/registry.hpp"
 
 namespace VisualEffectSystem
 {

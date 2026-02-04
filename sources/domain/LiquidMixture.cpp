@@ -1,7 +1,13 @@
 #include <cassert>
-#include "utils/Unicode.hpp"
+#include <algorithm>
+#include <format>
+#include <map>
+#include <string>
+#include <utility>
+
 #include "domain/LiquidMixture.hpp"
 #include "domain/Color.hpp"
+#include "domain/Liquid.hpp"
 
 LiquidMixture::LiquidMixture(const Liquid::Type type, const double volume)
 {

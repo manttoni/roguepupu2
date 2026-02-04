@@ -1,12 +1,12 @@
 #include <gtest/gtest.h>
+#include <memory>
+
 #include "helpers.hpp"
-#include "domain/Cave.hpp"
 #include "external/entt/entt.hpp"
-#include "utils/ECS.hpp"
-#include "domain/Position.hpp"
 #include "database/EntityFactory.hpp"
 #include "components/Components.hpp"
 #include "systems/state/AlignmentSystem.hpp"
+#include "gtest/gtest.h"
 
 TEST_F(RegistryTest, CreatureBecomesHostile)
 {

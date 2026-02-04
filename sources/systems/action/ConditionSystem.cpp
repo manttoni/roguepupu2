@@ -1,8 +1,10 @@
+#include <optional>
+#include <string>
+
 #include "external/entt/entt.hpp"
 #include "components/Components.hpp"
-#include "utils/Log.hpp"
 #include "domain/Conditions.hpp"
-#include "utils/ECS.hpp"
+#include "external/entt/entity/fwd.hpp"
 
 
 namespace ConditionSystem

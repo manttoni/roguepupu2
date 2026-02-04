@@ -1,13 +1,18 @@
-#include <ncurses.h>
 #include <panel.h>
+#include <curses.h>
 #include <string>
 #include <cassert>
 #include <optional>
 #include <algorithm>
+#include <cctype>
+#include <cstdlib>
+#include <vector>
+
 #include "utils/Screen.hpp"
 #include "UI/Menu.hpp"
 #include "UI/UI.hpp"
 #include "utils/Vec2.hpp"
+#include "utils/Utils.hpp"
 
 Menu::Menu(const Vec2& position) : position(position), panel(nullptr), height(0), width(0) {}
 Menu::~Menu()

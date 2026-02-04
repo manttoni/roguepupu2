@@ -1,22 +1,32 @@
 #include <bits/chrono.h>  // for duration, duration_cast, operator-, steady_...
-#include <ncurses.h>       // for wprintw, ERR, COLOR_PAIR, curs_set, endwin
 #include <locale.h>       // for setlocale, LC_ALL
 #include <panel.h>        // for panel_window, PANEL, new_panel
 #include <stdio.h>        // for fflush, printf, stdout
-#include <any>            // for any
+#include <assert.h>
+#include <curses.h>
 #include <csignal>        // for signal, SIGABRT, SIGFPE, SIGINT, SIGSEGV
 #include <cstdlib>        // for atoi, exit
-#include <cstring>        // for strchr, strncmp
 #include <string>         // for basic_string, string
+#include <map>
+#include <optional>
+#include <utility>
+
 #include "systems/rendering/RenderingSystem.hpp"
 #include "systems/perception/VisionSystem.hpp"
 #include "utils/ECS.hpp"
 #include "domain/Color.hpp"      // for Color
 #include "domain/ColorPair.hpp"  // for ColorPair
-#include "UI/Menu.hpp"       // for Menu
 #include "UI/UI.hpp"         // for UI, KEY_LEFT_CLICK, KEY_RIGHT_CLICK, quit
 #include "utils/Vec2.hpp"
 #include "infrastructure/GameState.hpp"
+#include "components/Components.hpp"
+#include "domain/Cave.hpp"
+#include "domain/Cell.hpp"
+#include "domain/Position.hpp"
+#include "external/entt/entity/fwd.hpp"
+#include "external/entt/entity/registry.hpp"
+#include "utils/Log.hpp"
+#include "utils/Screen.hpp"
 
 void UI::print_wstr(const size_t y, const size_t x, const std::wstring& wstr)
 {

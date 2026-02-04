@@ -1,8 +1,17 @@
+#include <stddef.h>
 #include <string>                       // for operator==, basic_string, ope...
+#include <algorithm>
+#include <vector>
+
 #include "external/entt/entt.hpp"
 #include "components/Components.hpp"               // for Equipment, Weapon, Armor (ptr...
 #include "systems/state/EquipmentSystem.hpp"  // for Slot, equip, equip_armor, equ...
 #include "utils/ECS.hpp"
+#include "domain/Actor.hpp"
+#include "domain/Effect.hpp"
+#include "domain/Event.hpp"
+#include "domain/Target.hpp"
+#include "external/entt/entity/fwd.hpp"
 
 namespace EquipmentSystem
 {

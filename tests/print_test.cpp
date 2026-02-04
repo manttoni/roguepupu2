@@ -1,6 +1,10 @@
 #include <gtest/gtest.h>
-#include "helpers.hpp"
+#include <curses.h>
+#include <string>
+
 #include "domain/Color.hpp"
+#include "components/Components.hpp"
+#include "gtest/gtest.h"
 
 TEST(PrintTest, ColorMarkup)
 {

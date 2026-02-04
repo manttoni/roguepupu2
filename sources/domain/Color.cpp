@@ -1,6 +1,10 @@
-#include <ncurses.h>   // for init_color
+#include <curses.h>
+#include <stddef.h>
 #include <algorithm>  // for min, max
 #include <string>     // for operator+, allocator, char_traits, to_string
+#include <regex>
+#include <stdexcept>
+
 #include "domain/Color.hpp"  // for Color
 #include "UI/UI.hpp"     // for UI
 

@@ -1,5 +1,8 @@
+#include <stddef.h>
 #include <string>          // for basic_string, string
 #include <vector>          // for vector
+#include <algorithm>
+
 #include "infrastructure/GameLogger.hpp"  // for GameLogger
 
 std::vector<std::string> GameLogger::last(size_t n) const

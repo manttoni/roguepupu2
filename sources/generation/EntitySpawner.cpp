@@ -1,7 +1,13 @@
+#include <stddef.h>
+#include <nlohmann/json_fwd.hpp>
 #include <algorithm>
 #include <vector>
 #include <map>
 #include <cassert>
+#include <optional>
+#include <string>
+#include <unordered_map>
+
 #include "utils/Parser.hpp"
 #include "systems/rendering/LightingSystem.hpp"
 #include "components/Components.hpp"
@@ -10,8 +16,13 @@
 #include "database/EntityFactory.hpp"
 #include "utils/Random.hpp"
 #include "utils/ECS.hpp"
-#include "UI/UI.hpp"
 #include "utils/Error.hpp"
+#include "domain/Cell.hpp"
+#include "domain/Liquid.hpp"
+#include "domain/LiquidMixture.hpp"
+#include "domain/Position.hpp"
+#include "external/entt/entity/fwd.hpp"
+#include "external/entt/entt.hpp"
 
 namespace EntitySpawner
 {

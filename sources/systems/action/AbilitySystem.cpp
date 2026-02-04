@@ -1,13 +1,20 @@
+#include <stddef.h>
 #include <cassert>
 #include <string>
+#include <map>
+
 #include "systems/action/EffectSystem.hpp"
 #include "external/entt/entt.hpp"
 #include "domain/Ability.hpp"
 #include "domain/Actor.hpp"
-#include "domain/Effect.hpp"
 #include "domain/Event.hpp"
-#include "infrastructure/GameState.hpp"
 #include "utils/ECS.hpp"
+#include "components/Components.hpp"
+#include "domain/Position.hpp"
+#include "domain/Target.hpp"
+#include "external/entt/entity/fwd.hpp"
+
+struct Effect;
 
 namespace AbilitySystem
 {

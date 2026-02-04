@@ -1,12 +1,20 @@
 #include <nlohmann/json.hpp>
+#include <assert.h>
+#include <stddef.h>
+#include <nlohmann/json_fwd.hpp>
 #include <filesystem>
 #include <fstream>
+#include <map>
+#include <optional>
+#include <string>
+
 #include "utils/Parser.hpp"
-#include "domain/Event.hpp"
 #include "domain/Color.hpp"
-#include "domain/LootTable.hpp"
 #include "utils/Error.hpp"
 #include "generation/CaveGenerator.hpp"
+#include "domain/Conditions.hpp"
+#include "domain/Effect.hpp"
+#include "utils/Log.hpp"
 
 namespace Parser
 {

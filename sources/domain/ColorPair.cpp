@@ -1,4 +1,5 @@
-#include <ncurses.h>      // for init_pair
+#include <curses.h>
+
 #include "domain/Color.hpp"      // for Color
 #include "domain/ColorPair.hpp"  // for ColorPair
 #include "UI/UI.hpp"         // for UI

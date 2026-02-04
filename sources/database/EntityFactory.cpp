@@ -1,14 +1,24 @@
+#include <nlohmann/json.hpp>                              // for basic_json
+#include <stddef.h>
+#include <nlohmann/detail/iterators/iter_impl.hpp>
+#include <nlohmann/detail/iterators/iteration_proxy.hpp>
+#include <nlohmann/json_fwd.hpp>
 #include <codecvt>
 #include <locale>
 #include <filesystem>                                     // for path
-#include <fstream>                                        // for basic_ifstream
-#include <nlohmann/json.hpp>                              // for basic_json
-#include <regex>                                          // for regex_match
 #include <string>                                         // for string, ope...
+#include <algorithm>
+#include <functional>
+#include <limits>
+#include <map>
+#include <optional>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
 #include "systems/items/LootSystem.hpp"
 #include "systems/state/StateSystem.hpp"
 #include "components/Components.hpp"                                 // for Resources
-#include "database/AbilityDatabase.hpp"
 #include "database/EntityFactory.hpp"                              // for EntityFactory
 #include "domain/Color.hpp"                                      // for Color
 #include "utils/Parser.hpp"
@@ -17,6 +27,14 @@
 #include "utils/ECS.hpp"
 #include "domain/Event.hpp"
 #include "utils/Error.hpp"
+#include "domain/Ability.hpp"
+#include "domain/Effect.hpp"
+#include "domain/Position.hpp"
+#include "domain/Target.hpp"
+#include "external/entt/entity/fwd.hpp"
+#include "utils/Log.hpp"
+
+class AbilityDatabase;
 
 void EntityFactory::init()
 {

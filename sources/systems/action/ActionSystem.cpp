@@ -1,9 +1,10 @@
+#include <assert.h>
+#include <ncurses.h>
+#include <vector>
+
 #include "UI/UI.hpp"
 #include "components/Components.hpp"
 #include "domain/Cave.hpp"
-#include "domain/Cell.hpp"
-#include "domain/Event.hpp"
-#include "domain/World.hpp"
 #include "external/entt/entt.hpp"
 #include "infrastructure/GameState.hpp"
 #include "systems/action/AISystem.hpp"
@@ -13,14 +14,19 @@
 #include "systems/combat/CombatSystem.hpp"
 #include "systems/crafting/GatheringSystem.hpp"
 #include "systems/position/MovementSystem.hpp"
-#include "systems/position/TransitionSystem.hpp"
 #include "systems/rendering/RenderingSystem.hpp"
 #include "systems/state/ContextSystem.hpp"
-#include "systems/state/InventorySystem.hpp"
 #include "infrastructure/DevTools.hpp"
 #include "systems/state/AlignmentSystem.hpp"
 #include "utils/ECS.hpp"
 #include "utils/Error.hpp"
+#include "domain/Actor.hpp"
+#include "domain/Intent.hpp"
+#include "domain/Position.hpp"
+#include "domain/Target.hpp"
+#include "external/entt/entity/fwd.hpp"
+#include "systems/rendering/RenderData.hpp"
+#include "utils/Vec2.hpp"
 
 namespace ActionSystem
 {

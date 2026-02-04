@@ -1,8 +1,16 @@
+#include <math.h>
+#include <stddef.h>
+#include <nlohmann/detail/json_ref.hpp>
+#include <nlohmann/json.hpp>
 #include <algorithm>
 #include <cassert>
 #include <vector>
 #include <limits>
-#include "UI/UI.hpp"
+#include <iterator>
+#include <map>
+#include <string>
+#include <utility>
+
 #include "domain/Cave.hpp"
 #include "domain/Cell.hpp"
 #include "domain/LiquidMixture.hpp"
@@ -16,6 +24,9 @@
 #include "generation/EntitySpawner.hpp"
 #include "systems/rendering/LightingSystem.hpp"
 #include "UI/Dialog.hpp"
+#include "domain/Liquid.hpp"
+#include "utils/Log.hpp"
+#include "utils/Vec2.hpp"
 
 namespace CaveGenerator
 {

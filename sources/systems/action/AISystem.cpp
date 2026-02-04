@@ -1,15 +1,11 @@
-#include <cassert>
 #include "external/entt/entt.hpp"
-#include "systems/position/MovementSystem.hpp"
-#include "systems/crafting/GatheringSystem.hpp"
-#include "systems/perception/VisionSystem.hpp"
 #include "systems/action/AISystem.hpp"
+#include "domain/Intent.hpp"
+#include "external/entt/entity/fwd.hpp"
 #include "components/Components.hpp"
-#include "systems/action/AbilitySystem.hpp"
-#include "domain/Cave.hpp"
-#include "domain/Cell.hpp"
-#include "utils/Log.hpp"
-#include "utils/ECS.hpp"
+
+//struct AI;
+struct Position;
 
 namespace AISystem
 {

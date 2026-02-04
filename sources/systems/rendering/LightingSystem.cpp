@@ -1,3 +1,8 @@
+#include <stddef.h>
+#include <map>
+#include <utility>
+#include <vector>
+
 #include "external/entt/entt.hpp"
 #include "utils/ECS.hpp"
 #include "systems/perception/VisionSystem.hpp"
@@ -7,6 +12,7 @@
 #include "domain/Cave.hpp"
 #include "domain/Cell.hpp"
 #include "domain/Position.hpp"
+#include "external/entt/entity/fwd.hpp"
 
 namespace LightingSystem
 {

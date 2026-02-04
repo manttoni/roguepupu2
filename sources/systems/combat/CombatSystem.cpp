@@ -1,4 +1,5 @@
-#include "external/entt/entt.hpp"
+
+#include "external/entt/entity/fwd.hpp"
 
 namespace CombatSystem
 {

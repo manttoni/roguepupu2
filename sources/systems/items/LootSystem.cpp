@@ -1,6 +1,10 @@
+#include <stddef.h>
+#include <stdint.h>
 #include <vector>
 #include <string>
 #include <random>
+#include <utility>
+
 #include "systems/state/InventorySystem.hpp"
 #include "systems/items/LootSystem.hpp"
 #include "external/entt/entt.hpp"
@@ -8,6 +12,7 @@
 #include "domain/LootTable.hpp"
 #include "database/LootTableDatabase.hpp"
 #include "database/EntityFactory.hpp"
+#include "external/entt/entity/fwd.hpp"
 
 namespace LootSystem
 {

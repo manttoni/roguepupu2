@@ -1,10 +1,15 @@
 #include "systems/combat/DamageSystem.hpp"
-#include "systems/rendering/VisualEffectSystem.hpp"
-#include "infrastructure/GameLogger.hpp"
-#include "infrastructure/GameState.hpp"
+
+#include <optional>
+
 #include "external/entt/entt.hpp"
 #include "components/Components.hpp"
 #include "utils/ECS.hpp"
+#include "domain/Actor.hpp"
+#include "domain/Damage.hpp"
+#include "domain/Effect.hpp"
+#include "domain/Event.hpp"
+#include "domain/Target.hpp"
 
 namespace DamageSystem
 {

@@ -1,10 +1,12 @@
-#include <string>          // for basic_string, string
+#include <stddef.h>
 #include <vector>
 #include <cmath>
 #include <cassert>
+
 #include "utils/Vec2.hpp"
 #include "domain/Cave.hpp"        // for Cave
 #include "domain/Cell.hpp"        // for Cell
+#include "domain/Position.hpp"
 
 Cave::Cave(const size_t size, const Cell::Type fill) : size(size)
 {

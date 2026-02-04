@@ -1,8 +1,16 @@
+#include <stddef.h>
+#include <nlohmann/detail/iterators/iter_impl.hpp>
+#include <nlohmann/detail/iterators/iteration_proxy.hpp>
+#include <nlohmann/json.hpp>
+#include <nlohmann/json_fwd.hpp>
 #include <string>
 #include <filesystem>
+#include <map>
+
 #include "utils/Parser.hpp"
-#include "utils/Log.hpp"
 #include "database/AbilityDatabase.hpp"
+#include "domain/Ability.hpp"
+#include "domain/Effect.hpp"
 
 AbilityDatabase::AbilityDatabase()
 {

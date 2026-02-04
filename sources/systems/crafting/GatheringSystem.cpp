@@ -1,6 +1,12 @@
+#include <vector>
+
 #include "external/entt/entt.hpp"
 #include "components/Components.hpp"
 #include "utils/ECS.hpp"
+#include "domain/Effect.hpp"
+#include "domain/Event.hpp"
+#include "domain/Position.hpp"
+#include "external/entt/entity/fwd.hpp"
 
 #define GATHERING_RANGE 1
 

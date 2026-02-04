@@ -1,7 +1,8 @@
+#include <stddef.h>
 #include <string>                      // for basic_string, operator+, opera...
 #include <vector>
+
 #include "infrastructure/CharacterCreation.hpp"
-#include "components/Components.hpp"
 #include "database/EntityFactory.hpp"           // for EntityFactory
 #include "domain/Cave.hpp"
 #include "external/entt/entt.hpp"
@@ -13,6 +14,12 @@
 #include "utils/Log.hpp"
 #include "utils/Parser.hpp"
 #include "UI/Dialog.hpp"
+#include "domain/Cell.hpp"
+#include "domain/Position.hpp"
+#include "domain/World.hpp"
+#include "infrastructure/GameState.hpp"
+
+struct Dead;
 
 Game::Game()
 {

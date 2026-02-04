@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stddef.h>
+
 #include "external/entt/fwd.hpp"
 #include "domain/Position.hpp"
 

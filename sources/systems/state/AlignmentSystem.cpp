@@ -1,7 +1,11 @@
+#include <assert.h>
+#include <vector>
+
 #include "external/entt/entt.hpp"
 #include "systems/state/AlignmentSystem.hpp"
 #include "systems/state/StateSystem.hpp"
 #include "components/Components.hpp"
+#include "external/entt/entity/fwd.hpp"
 
 namespace AlignmentSystem
 {

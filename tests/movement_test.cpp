@@ -1,9 +1,17 @@
 #include <gtest/gtest.h>
+#include <stddef.h>
+#include <optional>
+#include <vector>
+
 #include "helpers.hpp"
 #include "database/EntityFactory.hpp"
 #include "systems/position/MovementSystem.hpp"
 #include "utils/ECS.hpp"
 #include "external/entt/entt.hpp"
+#include "domain/Cave.hpp"
+#include "domain/Cell.hpp"
+#include "domain/Position.hpp"
+#include "gtest/gtest.h"
 
 /* Test all directions diagonal included
  * */

@@ -1,17 +1,29 @@
+#include <assert.h>
 #include <format>
+#include <algorithm>
+#include <compare>
+#include <string>
+#include <vector>
+
 #include "systems/state/AlignmentSystem.hpp"
 #include "systems/state/StateSystem.hpp"
 #include "systems/action/EventSystem.hpp"
-#include "external/entt/entity/handle.hpp"
 #include "systems/crafting/GatheringSystem.hpp"
 #include "systems/state/ContextSystem.hpp"
 #include "systems/state/InventorySystem.hpp"
 #include "systems/state/EquipmentSystem.hpp"
 #include "utils/ECS.hpp"
-#include "UI/UI.hpp"
 #include "components/Components.hpp"
 #include "UI/Dialog.hpp"
 #include "UI/Menu.hpp"
+#include "domain/Cell.hpp"
+#include "domain/Color.hpp"
+#include "domain/LiquidMixture.hpp"
+#include "external/entt/entity/fwd.hpp"
+#include "external/entt/entt.hpp"
+#include "utils/Screen.hpp"
+
+struct Position;
 
 namespace ContextSystem
 {

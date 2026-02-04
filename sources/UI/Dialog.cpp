@@ -1,9 +1,12 @@
+#include <stddef.h>
 #include <vector>
 #include <string>
-#include "utils/Vec2.hpp"
+
 #include "UI/Dialog.hpp"
 #include "UI/Menu.hpp"
 #include "utils/Screen.hpp"
+
+struct Vec2;
 
 namespace Dialog
 {

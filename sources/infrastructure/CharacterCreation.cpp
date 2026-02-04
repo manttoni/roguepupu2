@@ -1,11 +1,14 @@
-#include <vector>
 #include <string>
+#include <optional>
+
 #include "infrastructure/CharacterCreation.hpp"
 #include "external/entt/entt.hpp"
 #include "UI/Menu.hpp"
 #include "components/Components.hpp"
 #include "utils/Screen.hpp"
 #include "systems/state/StateSystem.hpp"
+#include "domain/Color.hpp"
+#include "external/entt/entity/fwd.hpp"
 
 namespace CharacterCreation
 {

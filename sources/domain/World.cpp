@@ -1,8 +1,17 @@
+#include <stddef.h>
+#include <stdint.h>
+#include <nlohmann/json.hpp>
 #include <utility>
+#include <algorithm>
+#include <filesystem>
+#include <map>
+#include <vector>
+
 #include "domain/World.hpp"
 #include "domain/Cave.hpp"
 #include "utils/Parser.hpp"
 #include "utils/Error.hpp"
+#include "domain/Cell.hpp"
 
 Cave& World::get_cave(const size_t idx)
 {

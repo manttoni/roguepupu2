@@ -1,15 +1,29 @@
-#include <ncurses.h>
+#include <assert.h>
+#include <curses.h>
+#include <stddef.h>
+#include <optional>
+#include <string>
+#include <vector>
+
 #include "components/Components.hpp"
 #include "systems/items/LootSystem.hpp"
 #include "systems/rendering/RenderingSystem.hpp"
 #include "systems/rendering/LightingSystem.hpp"
-#include "domain/Cell.hpp"
 #include "domain/Event.hpp"
 #include "external/entt/entt.hpp"
 #include "systems/action/EventSystem.hpp"
 #include "utils/ECS.hpp"
 #include "infrastructure/GameLogger.hpp"
 #include "utils/Error.hpp"
+#include "domain/Actor.hpp"
+#include "domain/Damage.hpp"
+#include "domain/Effect.hpp"
+#include "domain/EventQueue.hpp"
+#include "domain/Position.hpp"
+#include "domain/Target.hpp"
+#include "external/entt/entity/fwd.hpp"
+#include "systems/position/TransitionSystem.hpp"
+#include "utils/Log.hpp"
 
 namespace EventSystem
 {

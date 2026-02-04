@@ -1,7 +1,11 @@
+#include <assert.h>
+#include <ncurses.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string>             // for allocator, basic_string
+#include <vector>
+
 #include "infrastructure/Game.hpp"
-#include "database/EntityFactory.hpp"  // for EntityFactory
-#include "UI/Menu.hpp"           // for Menu
 #include "UI/UI.hpp"             // for UI
 #include "utils/Log.hpp"          // for log
 #include "UI/Dialog.hpp"

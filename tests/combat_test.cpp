@@ -1,4 +1,7 @@
 #include <gtest/gtest.h>
+#include <string>
+#include <vector>
+
 #include "helpers.hpp"
 #include "database/EntityFactory.hpp"
 #include "systems/combat/DamageSystem.hpp"
@@ -6,6 +9,9 @@
 #include "external/entt/entt.hpp"
 #include "infrastructure/GameLogger.hpp"
 #include "systems/action/EventSystem.hpp"
+#include "components/Components.hpp"
+#include "gtest/gtest.h"
+#include "utils/ECS.hpp"
 
 TEST_F(RegistryTest, EntityTakesDamage)
 {
