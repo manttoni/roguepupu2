@@ -25,6 +25,11 @@
 			"category": "items"
 		}
 	},
+	"lt_all_weapons": {
+		"filter": {
+			"subcategory": "weapons"
+		}
+	},
 	"lt_any_weapon": {
 		"filter": {
 			"subcategory": "weapons"

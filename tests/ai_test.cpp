@@ -3,6 +3,7 @@
 #include "domain/Intent.hpp"
 #include "systems/action/ActionSystem.hpp"
 #include "systems/action/AISystem.hpp"
+#include "systems/items/LootSystem.hpp"
 #include "external/entt/entt.hpp"
 #include "database/EntityFactory.hpp"
 #include "components/Components.hpp"
@@ -21,7 +22,7 @@ TEST_F(RegistryTest, NPCCanHaveIntent)
  * npc should just move randomly, if they have
  * idle_wander = true
  * */
-TEST_F(RegistryTest, NPCIdleWander)
+TEST_F(RegistryTest, IdleWander)
 {
 	const auto cave_idx = TestHelpers::get_cave_idx(registry, 10, TestHelpers::CaveType::Room);
 	const auto& cave = ECS::get_cave(registry, cave_idx);
@@ -35,3 +36,5 @@ TEST_F(RegistryTest, NPCIdleWander)
 	ActionSystem::resolve_intent(registry, intent);
 	EXPECT_NE(mid_pos, registry.get<Position>(creature));
 }
+
+

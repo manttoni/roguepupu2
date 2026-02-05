@@ -12,6 +12,7 @@
 #include "domain/Event.hpp"
 #include "external/entt/entt.hpp"
 #include "systems/action/EventSystem.hpp"
+#include "systems/state/EquipmentSystem.hpp"
 #include "utils/ECS.hpp"
 #include "infrastructure/GameLogger.hpp"
 #include "utils/Error.hpp"
@@ -114,6 +115,23 @@ namespace EventSystem
 		(void) registry; (void) event;
 	}
 
+	/* If entity is npc, make them equip items when they receive them
+	 * */
+	void resolve_receive_item_event(entt::registry& registry, const Event& event)
+	{
+		const auto entity = event.actor.entity;
+		const auto item = event.target.entity;
+		assert(entity != entt::null && item != entt::null);
+
+		if (entity != ECS::get_player(registry))
+		{
+			if (!registry.all_of<EquipmentSlots>(entity) || !registry.all_of<Equipment>(item))
+				return;
+			Log::log("Equipping item");
+			EquipmentSystem::equip_in_free_slots(registry, entity, item);
+		}
+	}
+
 	void log_event(entt::registry& registry, const Event& event)
 	{
 		std::string message;
@@ -175,6 +193,8 @@ namespace EventSystem
 				case Effect::Type::Unequip:
 					break;
 				case Effect::Type::ReceiveItem:
+					Log::log("Event receive");
+					resolve_receive_item_event(registry, event);
 					break;
 				case Effect::Type::DestroyEntity:
 					resolve_destroy_event(registry, event);

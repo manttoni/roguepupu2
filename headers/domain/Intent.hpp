@@ -30,6 +30,9 @@ struct Intent
 		Hide,
 		Flee,
 		Gather,
+		SwapLoadout,
+		Equip,
+		Unequip,
 	};
 
 	Type type = Type::None;

@@ -221,7 +221,19 @@ struct Equipment
 };
 struct EquipmentSlots
 {
-	std::map<Equipment::Slot, entt::entity> equipped_items;
+	using Slot = Equipment::Slot;
+
+	struct Loadout
+	{
+		entt::entity main_hand = entt::null;
+		entt::entity off_hand = entt::null;
+	};
+	std::array<Loadout, 2> loadouts;
+	size_t active_loadout = 0;
+	std::map<Slot, entt::entity> equipped_items{
+		{ Slot::MainHand, entt::null},
+		{ Slot::OffHand, entt::null},
+	};
 };
 struct Inventory
 {

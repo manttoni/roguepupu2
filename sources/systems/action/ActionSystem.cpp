@@ -16,6 +16,7 @@
 #include "systems/position/MovementSystem.hpp"
 #include "systems/rendering/RenderingSystem.hpp"
 #include "systems/state/ContextSystem.hpp"
+#include "systems/state/EquipmentSystem.hpp"
 #include "infrastructure/DevTools.hpp"
 #include "systems/state/AlignmentSystem.hpp"
 #include "utils/ECS.hpp"
@@ -55,6 +56,9 @@ namespace ActionSystem
 				break;
 			case Intent::Type::Gather:
 				GatheringSystem::gather(registry, intent.actor.entity, intent.target.entity);
+				break;
+			case Intent::Type::Equip:
+				EquipmentSystem::equip(registry, intent.actor.entity, intent.target.entity);
 				break;
 			case Intent::Type::Hide:
 				if (registry.all_of<Hidden>(intent.actor.entity))

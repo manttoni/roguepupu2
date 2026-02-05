@@ -30,7 +30,8 @@ namespace EquipmentSystem
 				is_equipped(registry, entity, item))
 			return;
 		const auto& equipment = registry.get<Equipment>(item);
-		auto& equipped_items = registry.get<EquipmentSlots>(entity).equipped_items;
+		auto& equipment_slots = registry.get<EquipmentSlots>(entity);
+		auto& equipped_items = equipment_slots.equipped_items;
 		assert(equipment.use_one.has_value() != equipment.use_all.has_value());
 		if (equipment.use_one.has_value())
 		{
@@ -60,6 +61,12 @@ namespace EquipmentSystem
 			}
 		}
 		assert(is_equipped(registry, entity, item));
+
+		// update current loadout
+		auto& active_loadout = equipment_slots.loadouts[equipment_slots.active_loadout];
+		active_loadout.main_hand = equipped_items[Equipment::Slot::MainHand];
+		active_loadout.off_hand = equipped_items[Equipment::Slot::OffHand];
+
 		ECS::queue_event(registry, Event(
 					Actor{.entity = entity},
 					Effect{.type = Effect::Type::Equip},
@@ -84,6 +91,21 @@ namespace EquipmentSystem
 					Effect{.type = Effect::Type::Unequip},
 					Target{.entity = item}
 					));
+	}
+
+	void swap_loadout(entt::registry& registry, const entt::entity entity)
+	{
+		if (!registry.all_of<EquipmentSlots>(entity))
+			return;
+		auto& equipment_slots = registry.get<EquipmentSlots>(entity);
+		auto& active_loadout = equipment_slots.loadouts[equipment_slots.active_loadout];
+		unequip(registry, entity, active_loadout.main_hand);
+		unequip(registry, entity, active_loadout.off_hand);
+
+		equipment_slots.active_loadout ^= 1;
+		auto& other_loadout = equipment_slots.loadouts[equipment_slots.active_loadout];
+		equip(registry, entity, other_loadout.main_hand);
+		equip(registry, entity, other_loadout.off_hand);
 	}
 
 	bool is_equipped(const entt::registry& registry, const entt::entity entity, const entt::entity item)
@@ -116,5 +138,47 @@ namespace EquipmentSystem
 			return false;
 		return equipped_items.at(Equipment::Slot::MainHand) != equipped_items.at(Equipment::Slot::OffHand) &&
 			!shield_equipped(registry, entity);
+	}
+
+	/* Return true if entity can equip equipment without unequipping something first
+	 * */
+	bool has_free_slots(const entt::registry& registry, const entt::entity entity, const Equipment& equipment)
+	{
+		const auto& equipped_items = registry.get<EquipmentSlots>(entity).equipped_items;
+		if (equipment.use_all.has_value())
+		{
+			for (const auto& slot : *equipment.use_all)
+			{
+				if (equipped_items.at(slot) != entt::null)
+					return false;
+			}
+		}
+		else if (equipment.use_one.has_value())
+		{
+			for (const auto& slot : *equipment.use_one)
+			{
+				if (equipped_items.at(slot) == entt::null)
+					return true;
+			}
+			return false;
+		}
+		return true; // This equipment doesnt need any slot
+	}
+
+	/* Like equip() but does not touch equipped items.
+	 * return true if did equip it
+	 * */
+	bool equip_in_free_slots(entt::registry& registry, const entt::entity entity, const entt::entity item)
+	{
+		for (size_t i = 0; i < 2; ++i)
+		{
+			if (has_free_slots(registry, entity, registry.get<Equipment>(item)))
+			{
+				equip(registry, entity, item);
+				return true;
+			}
+			swap_loadout(registry, entity);
+		}
+		return false;
 	}
 };
