@@ -18,6 +18,7 @@ struct Damage
 {
 	enum class Type
 	{
+		None,
 		Piercing,
 		Slashing,
 		Bludgeoning,
@@ -26,10 +27,10 @@ struct Damage
 		Poison,
 	};
 
-	Type type;
-	size_t amount;
+	Type type = Type::None;
+	size_t amount = 0;
 
-	Damage() = delete;
+	Damage() : type(Type::None), amount(0) {}
 	Damage(const Type type, const size_t amount) : type(type), amount(amount) {}
 	Damage(const std::string& str, const size_t amount) : amount(amount)
 	{

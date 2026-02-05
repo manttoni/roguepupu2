@@ -1,7 +1,7 @@
 {
 	"lt_rabdin": {
 		"item_ids": [
-			"knife", "hatchet", "pickaxe", "glass bottle"
+			"dagger", "hatchet", "pickaxe", "glass bottle"
 		]
 	},
 	"lt_glowing_mushroom": {

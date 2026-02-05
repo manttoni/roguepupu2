@@ -241,31 +241,4 @@ namespace ECS
 		registry.ctx().emplace<LootTableDatabase>();
 	}
 
-	inline entt::entity get_main_weapon(const entt::registry& registry, const entt::entity entity)
-	{
-		auto& equipped_items = registry.get<EquipmentSlots>(entity).equipped_items;
-		if (equipped_items.contains(Equipment::Slot::MainHand))
-			return equipped_items.at(Equipment::Slot::MainHand);
-		return entt::null;
-	}
-
-	/* If no weapon is equipped, return unarmed damage, which is creatures own Damage component.
-	 * This returns just a base Damage component. Use get_main_attack_damage for damage after calculations.
-	 * If dual wielding, main weapon is in the right hand.
-	 * */
-	inline Damage get_main_weapon_damage(const entt::registry& registry, const entt::entity entity)
-	{
-		const auto main_weapon = get_main_weapon(registry, entity);
-		if (main_weapon == entt::null)
-			return registry.get<Damage>(entity);
-		return registry.get<Damage>(main_weapon);
-	}
-
-	inline Damage get_main_attack_damage(const entt::registry& registry, const entt::entity entity)
-	{
-		const auto strength = registry.all_of<Strength>(entity) ?
-			StateSystem::get_attribute<Strength>(registry, entity) :
-			0;
-		return get_main_weapon_damage(registry, entity) + strength;
-	}
 };

@@ -37,4 +37,43 @@ namespace StateSystem
 	{
 		return get_attribute<Willpower>(registry, entity);
 	}
+
+	int get_attributes_sum(const entt::registry& registry, const entt::entity entity, const std::vector<Attribute> attributes)
+	{
+		int sum = 0;
+		for (const auto attribute : attributes)
+		{
+			switch (attribute)
+			{
+				case Attribute::Perception:
+					sum += get_attribute<Perception>(registry, entity);
+					break;
+				case Attribute::Charisma:
+					sum += get_attribute<Charisma>(registry, entity);
+					break;
+				case Attribute::Endurance:
+					sum += get_attribute<Endurance>(registry, entity);
+					break;
+				case Attribute::Willpower:
+					sum += get_attribute<Willpower>(registry, entity);
+					break;
+				case Attribute::Vitality:
+					sum += get_attribute<Vitality>(registry, entity);
+					break;
+				case Attribute::Strength:
+					sum += get_attribute<Strength>(registry, entity);
+					break;
+				case Attribute::Dexterity:
+					sum += get_attribute<Dexterity>(registry, entity);
+					break;
+				case Attribute::Agility:
+					sum += get_attribute<Agility>(registry, entity);
+					break;
+				default:
+					Error::fatal("Unhandled attribute in get_attributes_sum" +
+							std::to_string(static_cast<size_t>(attribute)));
+			}
+		}
+		return sum;
+	}
 };

@@ -8,6 +8,7 @@
 #include <vector>
 #include <optional>
 #include "utils/Error.hpp"
+#include "domain/Attack.hpp"
 #include "domain/Color.hpp"
 #include "domain/Intent.hpp"
 #include "domain/Ability.hpp"
@@ -117,28 +118,10 @@ struct Dead { size_t turn_number; };
 struct Vitality { int value; };		// health
 struct Endurance { int value; };	// stamina
 struct Willpower { int value; };	// mana
-
 struct Charisma { int value; };		// opinion
-
-/* Vision range
- * Ranged accuracy
- * Spotting hidden entities
- * */
 struct Perception { int value; };
-
-/* Use less stamina when attacking
- * Deal more damage
- * */
 struct Strength { int value; };
-
-/* Use less stamina when moving
- * Dodging
- * */
 struct Agility { int value; };
-
-/* Handle tools and weapons
- * Precision
- * */
 struct Dexterity { int value; };
 
 template<typename T> struct Buff
@@ -247,6 +230,10 @@ struct Inventory
 
 /* Weapons etc... */
 
+struct Attacks
+{
+	std::vector<Attack> attacks;
+};
 struct Projectile
 {
 	enum class Type

@@ -355,6 +355,19 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			const auto amount = data["amount"].get<size_t>();
 			reg.template emplace<Damage>(e, type, amount);
 		}
+	},
+	{ "attacks", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			if (!data.is_array())
+				Error::fatal("Attacks should be an array: " + data.dump(4));
+			std::vector<Attack> attacks;
+			for (const auto& entry : data)
+			{
+				Attack a = Parser::parse_attack(entry);
+				attacks.push_back(a);
+			}
+			reg.template emplace<Attacks>(e, attacks);
+		}
 	}
 };
 

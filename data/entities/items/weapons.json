@@ -1,31 +1,85 @@
 {
-	"knife": {
-		"throwable": {},
-		"weight": 0.3,
+	"dagger": {
+		"weight": 0.1,
 		"tool": "cutting",
 		"equipment": "one_handed",
-		"damage": {
-			"type": "piercing",
-			"amount": 1
-		}
+		"attacks": [
+			{
+				"id": "stab",
+				"base_damage": {
+					"type": "piercing",
+					"amount": 1
+				},
+				"damage_attributes": ["dexterity"],
+				"hit_chance_attributes": ["agility"],
+				"range": 1.5
+			}
+		]
+	},
+	"longbow": {
+		"weight": 1.0,
+		"equipment": "two_handed",
+		"attacks": [
+			{
+				"id": "shoot",
+				"base_damage": {
+					"type": "piercing",
+					"amount": 10
+				},
+				"damage_attributes": null,
+				"hit_chance_attributes": ["perception", "dexterity"],
+				"range": 20
+			}
+		]
+	},
+	"spear": {
+		"weight": 3.0,
+		"equipment": "two_handed",
+		"attacks": [
+			{
+				"id": "thrust",
+				"base_damage": {
+					"type": "piercing",
+					"amount": 3
+				},
+				"damage_attributes": ["strength"],
+				"hit_chance_attributes": ["agility"],
+				"range": 2.9
+			}
+		]
 	},
 	"hatchet": {
-		"throwable": {},
 		"weight": 1.4,
 		"tool": "felling",
 		"equipment": "one_handed",
-		"damage": {
-			"type": "slashing",
-			"amount": 2
-		}
+		"attacks": [
+			{
+				"id": "slash",
+				"base_damage": {
+					"type": "slashing",
+					"amount": 2
+				},
+				"damage_attributes": ["strength"],
+				"hit_chance_attributes": ["agility"],
+				"range": 1.5
+			}
+		]
 	},
 	"pickaxe": {
 		"weight": 2.5,
 		"tool": "mining",
 		"equipment": "two_handed",
-		"damage": {
-			"type": "piercing",
-			"amount": 4
-		}
+		"attacks": [
+			{
+				"id": "swing",
+				"base_damage": {
+					"type": "piercing",
+					"amount": 4
+				},
+				"damage_attributes": ["strength"],
+				"hit_chance_attributes": ["agility"],
+				"range": 1.5
+			}
+		]
 	}
 }

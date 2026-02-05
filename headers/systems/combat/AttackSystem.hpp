@@ -1,0 +1,11 @@
+#pragma once
+
+#include "external/entt/fwd.hpp"
+#include "domain/Damage.hpp"
+
+struct Attack;
+namespace AttackSystem
+{
+	Damage get_attack_damage(const entt::registry& registry, const entt::entity entity, const Attack& attack);
+	double get_attack_hit_chance(const entt::registry& registry, const entt::entity entity, const Attack& attack);
+};

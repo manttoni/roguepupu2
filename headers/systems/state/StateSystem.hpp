@@ -8,6 +8,7 @@
 
 #include "external/entt/entt.hpp"
 #include "components/Components.hpp"
+#include "domain/Attribute.hpp"
 
 namespace StateSystem
 {
@@ -17,6 +18,7 @@ namespace StateSystem
 	int get_max_stamina(const entt::registry& registry, const entt::entity entity);
 	int get_max_mana(const entt::registry& registry, const entt::entity entity);
 	int get_vision_range(const entt::registry& registry, const entt::entity entity);
+	int get_attributes_sum(const entt::registry& registry, const entt::entity entity, const std::vector<Attribute> attributes);
 
 	template<typename T>
 		int get_attribute(const entt::registry& registry, const entt::entity entity)
@@ -27,7 +29,9 @@ namespace StateSystem
 					std::is_same_v<T, Endurance> ||
 					std::is_same_v<T, Willpower> ||
 					std::is_same_v<T, Vitality> ||
-					std::is_same_v<T, Strength>,
+					std::is_same_v<T, Strength> ||
+					std::is_same_v<T, Dexterity> ||
+					std::is_same_v<T, Agility>,
 					"T must be an allowed attribute component"
 					);
 			assert(registry.all_of<T>(entity));

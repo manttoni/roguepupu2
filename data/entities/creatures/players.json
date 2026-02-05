@@ -24,7 +24,18 @@
 			"tolerance": 0,
 			"chaos_law": 1,
 			"evil_good": -1
-		}
+		},
+		"attacks": [
+			{
+				"id": "punch",
+				"base_damage": {
+					"type": "bludgeoning",
+					"amount": 10
+				},
+				"damage_attributes": ["strength"],
+				"hit_chance_attributes": ["agility"]
+			}
+		]
 	}
 }
 

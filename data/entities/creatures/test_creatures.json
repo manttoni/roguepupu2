@@ -11,7 +11,17 @@
 			"perception": 1,
 			"charisma": 1,
 			"strength": 1
-		}
+		},
+		"attacks": [
+			{
+				"id": "punch",
+				"base_damage": {
+					"type": "bludgeoning",
+					"amount": 10
+				},
+				"damage_attributes": ["strength"],
+				"hit_chance_attribuges": ["agility"]
+			}
+		]
 	}
-
 }

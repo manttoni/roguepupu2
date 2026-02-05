@@ -103,4 +103,34 @@ namespace Parser
 		cgdata.features = f;
 		cgdata.margin = m;
 	}
+
+	Damage parse_damage(const nlohmann::json& data)
+	{
+		const auto type = data["type"].get<std::string>();
+		const auto amount = data["amount"].get<size_t>();
+		return Damage(type, amount);
+	}
+
+	Attack parse_attack(const nlohmann::json& data)
+	{
+		if (!data.contains("id"))
+			Error::fatal("Attack has no id: " + data.dump(4));
+		Attack attack;
+		attack.id = data["id"].get<std::string>();
+		if (data.contains("base_damage"))
+			attack.base_damage = parse_damage(data["base_damage"]);
+		if (data.contains("range"))
+			attack.range = data["range"].get<double>();
+		if (data.contains("damage_attributes") && !data["damage_attributes"].is_null())
+		{
+			for (const auto& attribute : data["damage_attributes"])
+				attack.damage_attributes.push_back(AttributeHelpers::from_string(attribute.get<std::string>()));
+		}
+		if (data.contains("hit_chance_attributes") && !data["hit_chance_attributes"].is_null())
+		{
+			for (const auto& attribute : data["hit_chance_attributes"])
+				attack.hit_chance_attributes.push_back(AttributeHelpers::from_string(attribute.get<std::string>()));
+		}
+		return attack;
+	}
 };
