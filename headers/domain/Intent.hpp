@@ -36,4 +36,7 @@ struct Intent
 	Actor actor{};
 	Target target{};
 	std::string ability_id = "";
+
+	bool operator==(const Intent& other) const = default;
+	bool operator!=(const Intent& other) const = default;
 };

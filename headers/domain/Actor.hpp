@@ -18,4 +18,7 @@ struct Actor
 {
 	entt::entity entity = entt::null;
 	Position position{};
+
+	bool operator==(const Actor& other) const = default;
+	bool operator!=(const Actor& other) const = default;
 };

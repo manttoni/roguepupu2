@@ -64,5 +64,13 @@ namespace Random
 		const siv::PerlinNoise perlin{perlin_seed};
 		return perlin.octave2D_01(y * frequency, x * frequency, octaves);
 	}
+
+	template<typename T> const T& get_random_element(const std::vector<T>& vec)
+	{
+		assert(!vec.empty());
+		const auto size = vec.size();
+		const auto index = randsize_t(0, size - 1);
+		return vec[index];
+	}
 }
 

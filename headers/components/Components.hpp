@@ -362,8 +362,8 @@ struct DestroyWhenStacked {}; // Maybe just a relic, but spider webs have to be 
 /* Other */
 struct AI
 {
-	bool aggressive = true; // attack on sight if has bad opinion of target
-							// is it gonna be just a bunch of booleans? Gatherable was going to be but didnt end up like that
+	bool idle_wander = false;
+	bool aggressive = false;
 };
 struct Abilities
 {

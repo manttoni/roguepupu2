@@ -17,4 +17,7 @@ struct Target
 {
 	entt::entity entity = entt::null;
 	Position position{};
+
+	bool operator==(const Target& other) const = default;
+	bool operator!=(const Target& other) const = default;
 };

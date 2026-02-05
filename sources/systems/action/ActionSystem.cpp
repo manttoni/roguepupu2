@@ -31,7 +31,7 @@
 namespace ActionSystem
 {
 	// At this point the intent has been accepted and will be acted/executed
-	void resolve_intent(entt::registry& registry, Intent intent)
+	void resolve_intent(entt::registry& registry, const Intent& intent)
 	{
 		switch (intent.type)
 		{
