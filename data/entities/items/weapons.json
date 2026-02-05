@@ -3,17 +3,29 @@
 		"throwable": {},
 		"weight": 0.3,
 		"tool": "cutting",
-		"equipment": "one_handed"
+		"equipment": "one_handed",
+		"damage": {
+			"type": "piercing",
+			"amount": 1
+		}
 	},
 	"hatchet": {
 		"throwable": {},
 		"weight": 1.4,
 		"tool": "felling",
-		"equipment": "one_handed"
+		"equipment": "one_handed",
+		"damage": {
+			"type": "slashing",
+			"amount": 2
+		}
 	},
 	"pickaxe": {
 		"weight": 2.5,
 		"tool": "mining",
-		"equipment": "two_handed"
+		"equipment": "two_handed",
+		"damage": {
+			"type": "piercing",
+			"amount": 4
+		}
 	}
 }

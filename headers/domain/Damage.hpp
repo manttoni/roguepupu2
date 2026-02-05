@@ -31,7 +31,55 @@ struct Damage
 
 	Damage() = delete;
 	Damage(const Type type, const size_t amount) : type(type), amount(amount) {}
+	Damage(const std::string& str, const size_t amount) : amount(amount)
+	{
+		if (str == "piercing") type = Type::Piercing;
+		else if (str == "slashing") type = Type::Slashing;
+		else if (str == "bludgeoning") type = Type::Bludgeoning;
+		else if (str == "burning") type = Type::Burning;
+		else if (str == "bleeding") type = Type::Bleeding;
+		else if (str == "poison") type = Type::Poison;
+		else Error::fatal("Unknown damage type: " + str);
+	}
+	bool operator==(const Damage& other) const = default;
+	bool operator!=(const Damage& other) const = default;
+	bool operator<(const Damage& other) const
+	{
+		return amount < other.amount;
+	}
+	bool operator>(const Damage& other) const
+	{
+		return amount > other.amount;
+	}
+	Damage& operator+=(int add)
+	{
+		if (add < 0 && -add > static_cast<int>(amount))
+			add = -static_cast<int>(amount);
+		amount += static_cast<size_t>(add);
+		return *this;
+	}
+	Damage& operator-=(int sub)
+	{
+		return operator+=(-sub);
+	}
+	friend Damage operator+(Damage lhs, int rhs) {
+		lhs += rhs;
+		return lhs;
+	}
 
+	friend Damage operator+(int lhs, Damage rhs) {
+		rhs += lhs;
+		return rhs;
+	}
+	friend Damage operator-(Damage lhs, int rhs) {
+		lhs -= rhs;
+		return lhs;
+	}
+
+	friend Damage operator-(int lhs, Damage rhs) {
+		rhs -= lhs;
+		return rhs;
+	}
 	std::string type_string() const
 	{
 		switch (type)

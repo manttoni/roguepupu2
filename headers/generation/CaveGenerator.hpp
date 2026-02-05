@@ -51,6 +51,7 @@ namespace CaveGenerator
 		Features features;			// Change this to create more tunnels and more?
 		Margin margin;				// Make edges denser
 
+		bool test_run = false;
 		Data(entt::registry& registry, Cave& cave) : registry(registry), cave(cave) {}
 	};
 

@@ -10,14 +10,14 @@
 
 TEST_F(RegistryTest, CreatureBecomesHostile)
 {
-	const auto dummy = EntityFactory::instance().create_entity(registry, "test_dummy");
-	const auto creature = EntityFactory::instance().create_entity(registry, "test_creature");
+	const auto creature1 = EntityFactory::instance().create_entity(registry, "test_creature");
+	const auto creature2 = EntityFactory::instance().create_entity(registry, "test_creature");
 
 	// With 0.0 tolerance these should get hostile
-	registry.emplace<Alignment>(dummy, Alignment(-1, -1));
-	registry.emplace<Alignment>(creature, Alignment(1, 1));
+	registry.emplace<Alignment>(creature1, Alignment(-1, -1));
+	registry.emplace<Alignment>(creature2, Alignment(1, 1));
 
-	EXPECT_TRUE(AlignmentSystem::is_hostile(registry, creature, dummy));
+	EXPECT_TRUE(AlignmentSystem::is_hostile(registry, creature1, creature2));
 }
 
 /* With 0 tolerance all other base alignments are enemies.

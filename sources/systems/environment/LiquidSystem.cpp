@@ -16,6 +16,7 @@ namespace LiquidSystem
 		auto& cave = ECS::get_cave(registry, cave_idx);
 		auto positions = cave.get_positions();
 		std::shuffle(positions.begin(), positions.end(), Random::rng());
+		std::vector<bool> flowed(cave.get_area(), false);
 		for (const auto middle_pos : positions)
 		{
 			auto& middle_cell = cave.get_cell(middle_pos);
@@ -39,8 +40,13 @@ namespace LiquidSystem
 				if (diff <= 0 || middle_mix.get_volume() == 0)
 					break;
 
+				if (flowed[neighbor_pos.cell_idx])
+					continue;
+
 				LiquidMixture flow = middle_mix.flow(diff / 2);
 				neighbor_mix += flow;
+
+				//flowed[neighbor_pos.cell_idx] = true; // will this make it look more "flowy"?
 			}
 		}
 		for (const auto sink_pos : cave.get_positions_with_type(Cell::Type::Sink))

@@ -128,13 +128,42 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 	},
 	{ "equipment", [](auto& reg, auto e, const nlohmann::json& data)
 		{	// This entity is a piece of equipment that can be equipped in slots
-			if (!data.is_string())
-				Error::fatal("Equipment (slot) should be string");
-			reg.template emplace<Equipment>(e, Equipment::from_string(data.get<std::string>()));
+			Equipment equipment;
+			if (data.is_string())
+			{
+				const auto str = data.get<std::string>();
+				if (str == "one_handed")
+					equipment.use_one.emplace(std::vector<Equipment::Slot>{Equipment::Slot::MainHand, Equipment::Slot::OffHand});
+				else if (str == "two_handed")
+					equipment.use_all.emplace(std::vector<Equipment::Slot>{Equipment::Slot::MainHand, Equipment::Slot::OffHand});
+				else
+					equipment.use_all.emplace(std::vector<Equipment::Slot>{Equipment::slot_from_string(str)});
+			}
+			else if (data.is_object() && data.size() == 1)
+			{
+				auto it = data.items().begin();
+				if (it == data.items().end())
+					Error::fatal("Equipment slots parse error");
+				const auto& key = it.key();
+				const auto& value = it.value();
+				std::vector<std::string> slot_strings = value.get<std::vector<std::string>>();
+				std::vector<Equipment::Slot> slots;
+				for (const auto& str : slot_strings)
+					slots.push_back(Equipment::slot_from_string(str));
+				if (key == "use_all")
+					equipment.use_all.emplace(slots);
+				else if (key == "use_one")
+					equipment.use_one.emplace(slots);
+				else
+					Error::fatal("Invalid equipment component: " + data.dump(4));
+			}
+			else
+				Error::fatal("Invalid equipment component: " + data.dump(4));
+			reg.template emplace<Equipment>(e, equipment);
 		}
 	},
 	{ "equipment_slots", [](auto& reg, auto e, const nlohmann::json& data)
-		{	// can equip items, valueless
+		{	// can equip items
 			(void) data;
 			reg.template emplace<EquipmentSlots>(e);
 		}
@@ -317,6 +346,15 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			(void) data;
 			reg.template emplace<DestroyWhenStacked>(e);
 		}
+	},
+	{ "damage", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			if (!data.contains("type") || !data.contains("amount"))
+				Error::fatal("Invalid damage: " + data.dump(4));
+			const auto type = data["type"].get<std::string>();
+			const auto amount = data["amount"].get<size_t>();
+			reg.template emplace<Damage>(e, type, amount);
+		}
 	}
 };
 
@@ -335,13 +373,23 @@ void EntityFactory::add_entities(nlohmann::json& json, const std::string& catego
 	}
 }
 
-entt::entity EntityFactory::create_entity(entt::registry& registry, const std::string& name, const std::optional<Position>& position)
+void EntityFactory::emplace_default_components(entt::registry& registry, const entt::entity entity) const
+{
+	// If not explicitly defined in JSON, some components will still be added with a default value
+	if (registry.get<Category>(entity).category == "creatures")
+	{
+		// Creatures have unarmed damage, no need to manually add this to each
+		registry.emplace<Damage>(entity, Damage::Type::Bludgeoning, 0);
+	}
+}
+
+entt::entity EntityFactory::create_entity(entt::registry& registry, const std::string& name, const std::optional<Position>& position) const
 {
 	if (LUT.find(name) == LUT.end())
 		Error::fatal("Entity not found: " + name);
 
 	auto entity = registry.create();
-	const auto& data = LUT[name];
+	const auto& data = LUT.at(name);
 	for (const auto& [field_name, field_data] : data.items())
 	{
 		auto it = field_parsers.find(field_name);
@@ -367,10 +415,30 @@ entt::entity EntityFactory::create_entity(entt::registry& registry, const std::s
 		ECS::queue_event(registry, spawn_event);
 	}
 
+	emplace_default_components(registry, entity);
+
 	return entity;
 }
 
-bool EntityFactory::exclude(const nlohmann::json& data, const nlohmann::json& filter)
+std::vector<entt::entity> EntityFactory::create_entities(entt::registry& registry, const nlohmann::json& filter) const
+{
+	const auto entity_ids = filter_entity_ids(filter);
+	return create_entities(registry, entity_ids);
+}
+
+std::vector<entt::entity> EntityFactory::create_entities(entt::registry& registry, const std::vector<std::string>& entity_ids) const
+{
+	std::vector<entt::entity> entities;
+	entities.reserve(entity_ids.size());
+	for (const auto& id : entity_ids)
+	{
+		const auto entity = create_entity(registry, id);
+		entities.push_back(entity);
+	}
+	return entities;
+}
+
+bool EntityFactory::exclude(const nlohmann::json& data, const nlohmann::json& filter) const
 {
 	for (const auto& [filter_field, filter_data] : filter.items())
 	{
@@ -394,7 +462,7 @@ bool EntityFactory::exclude(const nlohmann::json& data, const nlohmann::json& fi
 	return false;
 }
 
-std::vector<std::string> EntityFactory::filter_entity_ids(const nlohmann::json& filter, const size_t amount)
+std::vector<std::string> EntityFactory::filter_entity_ids(const nlohmann::json& filter) const
 {
 	std::vector<std::string> pool;
 	for (const auto& [name, data] : LUT)
@@ -403,8 +471,6 @@ std::vector<std::string> EntityFactory::filter_entity_ids(const nlohmann::json& 
 			pool.push_back(name);
 	}
 	std::shuffle(pool.begin(), pool.end(), Random::rng());
-	if (amount < pool.size())
-		pool.resize(amount);
 	return pool;
 }
 

@@ -51,7 +51,8 @@ namespace CaveGenerator
 	 * */
 	void set_rock_densities(Data& data)
 	{
-		echo("Setting rock densities...");
+		if (!data.test_run)
+			echo("Setting rock densities...");
 		auto& cells = data.cave.get_cells();
 		const size_t seed = Random::randsize_t(0, 99999);
 		for (auto& cell : cells)
@@ -78,7 +79,8 @@ namespace CaveGenerator
 	 * */
 	void set_water_features(Data& data)
 	{
-		echo("Setting water features...");
+		if (!data.test_run)
+			echo("Setting water features...");
 		const size_t total_features = data.features.sources + data.features.sinks;
 		std::map<Cell::Type, size_t> spawning_features =
 		{
@@ -132,16 +134,18 @@ namespace CaveGenerator
 
 	void render(Data& data)
 	{
+		if (data.test_run)
+			return;
 		LightingSystem::reset_lights(data.registry, data.cave.get_idx());
 		RenderingSystem::render_generation(data.registry, data.cave.get_idx());
 	}
 
 	void set_entities(Data& data)
 	{
-		echo("Setting entities...");
+		if (!data.test_run)
+			echo("Setting entities...");
 		EntitySpawner::despawn_entities(data.registry, data.cave.get_idx());
 		EntitySpawner::spawn_entities(data.registry, data.cave.get_idx(), {{"category", "nature"}});
-
 	}
 
 	void simulate_environment(Data& data)
@@ -152,7 +156,8 @@ namespace CaveGenerator
 
 	void form_tunnels(Data& data)
 	{
-		echo("Forming tunnels...");
+		if (!data.test_run)
+			echo("Forming tunnels...");
 		const auto& sources = data.cave.get_positions_with_type(Cell::Type::Source);
 		const auto& sinks = data.cave.get_positions_with_type(Cell::Type::Sink);
 
@@ -174,7 +179,8 @@ namespace CaveGenerator
 					}
 				}
 			}
-			render(data);
+			if (!data.test_run)
+				render(data);
 		}
 	}
 
@@ -238,7 +244,8 @@ namespace CaveGenerator
 	}
 	void smooth_terrain(Data& data)
 	{
-		echo("Smoothing terrain...");
+		if (!data.test_run)
+			echo("Smoothing terrain...");
 		// Set each density to the average within a radius
 		const auto radius = 1;
 		const auto intensity = data.smooth.intensity;
@@ -281,12 +288,26 @@ namespace CaveGenerator
 		set_water_features(data);
 		form_tunnels(data);
 		set_entities(data);
-		render(data);
+		if (!data.test_run)
+			render(data);
 	}
 
 	void generate_cave(Data& data)
 	{
 		generate(data);
-		Dialog::get_selection("Cave ready", {"OK"});
+		if (data.test_run)
+			return;
+		std::string choice = "";
+		while ((choice = Dialog::get_selection("Cave ready", {"OK", "Simulate liquids"}).label) != "OK")
+		{
+			if (choice == "Simulate liquids")
+			{
+				for (size_t i = 0; i < 100; ++i)
+				{
+					LiquidSystem::simulate_liquids(data.registry, data.cave.get_idx());
+					RenderingSystem::render_generation(data.registry, data.cave.get_idx());
+				}
+			}
+		}
 	}
 }

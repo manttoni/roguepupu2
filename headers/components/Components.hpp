@@ -111,14 +111,36 @@ struct NcursesAttr
 struct Vision { double range; };
 struct Hidden {};
 struct Invisible {};
-struct Experience { size_t amount; };	// Derived: level, if there will be a level
-struct Dead { size_t turn_number; };	// turn_number might be unused
+struct Experience { size_t amount; };
+struct Dead { size_t turn_number; };
 
-struct Vitality { int value; };			// Derived: max_health
-struct Endurance { int value; };		// Derived: max_stamina
-struct Willpower { int value; };		// Derived: max_mana
-struct Perception { int value; };		// Derived: cell opaqueness. Higher perception -> better vision
-struct Charisma { int value; };			// Affects opinion
+struct Vitality { int value; };		// health
+struct Endurance { int value; };	// stamina
+struct Willpower { int value; };	// mana
+
+struct Charisma { int value; };		// opinion
+
+/* Vision range
+ * Ranged accuracy
+ * Spotting hidden entities
+ * */
+struct Perception { int value; };
+
+/* Use less stamina when attacking
+ * Deal more damage
+ * */
+struct Strength { int value; };
+
+/* Use less stamina when moving
+ * Dodging
+ * */
+struct Agility { int value; };
+
+/* Handle tools and weapons
+ * Precision
+ * */
+struct Dexterity { int value; };
+
 template<typename T> struct Buff
 {
 	int value;
@@ -196,38 +218,61 @@ struct Alignment
 	}
 };
 /* Inventory, gear, equipment... */
-struct EquipmentSlots
-{
-	std::vector<entt::entity> equipped_items;
-};
-struct Inventory
-{
-	std::vector<entt::entity> inventory;
-};
-
-/* Equipment, weapons etc... */
 struct Equipment
 {
 	enum class Slot
 	{
-		OneHanded,
-		TwoHanded,
+		MainHand, // weapon or shield
+		OffHand, // weapon or shield
+				 // rest are armor or things like that
 	};
+	std::optional<std::vector<Slot>> use_all; // this equipment uses all of these slots (f.e. two handed weapons)
+	std::optional<std::vector<Slot>> use_one; // this equipment uses one of these slots (f.e. one handed weapons)
 
-	Slot slot;
-	static Slot from_string(const std::string& str)
+	static Slot slot_from_string(const std::string& str)
 	{
-		if (str == "one_handed") return Slot::OneHanded;
-		if (str == "two_handed") return Slot::TwoHanded;
-		Error::fatal("Invalid Equipment::Slot string");
+		if (str == "MainHand") return Slot::MainHand;
+		if (str == "OffHand") return Slot::OffHand;
+		Error::fatal("Unknown equipment slot: " + str);
+	}
+};
+struct EquipmentSlots
+{
+	std::map<Equipment::Slot, entt::entity> equipped_items;
+};
+struct Inventory
+{
+	std::vector<entt::entity> items;
+};
+
+/* Weapons etc... */
+
+struct Projectile
+{
+	enum class Type
+	{
+		Arrow,
+		Bolt,
+		Bullet,
+	};
+	Type type;
+	Projectile(const std::string& str)
+	{
+		if (str == "arrow") type = Type::Arrow;
+		else if (str == "bolt") type = Type::Bolt;
+		else if (str == "bullet") type = Type::Bullet;
+		else Error::fatal("Unknown projectile type: " + str);
 	}
 	std::string to_string() const
 	{
-		switch (slot)
+		switch (type)
 		{
-			case Slot::OneHanded: return "one handed";
-			case Slot::TwoHanded: return "two handed";
-			default: Error::fatal("Equipment::Slot to_string error");
+			case Type::Arrow: return "arrow";
+			case Type::Bolt: return "bolt";
+			case Type::Bullet: return "bullet";
+			default:
+				Error::fatal("unhandled projectile type: " +
+						std::to_string(static_cast<size_t>(type)));
 		}
 	}
 };

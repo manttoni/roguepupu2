@@ -17,7 +17,7 @@ namespace GatheringSystem
 		if (!registry.all_of<Inventory>(gatherer))
 			return false;
 		const auto tool_type = registry.get<Gatherable>(gatherable).tool_type;
-		for (const auto item : registry.get<Inventory>(gatherer).inventory)
+		for (const auto item : registry.get<Inventory>(gatherer).items)
 		{
 			if (registry.all_of<Tool>(item) && registry.get<Tool>(item).type == tool_type)
 				return true;

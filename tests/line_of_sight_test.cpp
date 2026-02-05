@@ -23,7 +23,7 @@
 TEST_F(RegistryTest, LOSSymmetricalNoWalls)
 {
 	const size_t CAVE_SIZE = 5;
-	const auto cave_idx = get_test_cave_idx(registry, CAVE_SIZE, TestCaveType::Floor);
+	const auto cave_idx = TestHelpers::get_cave_idx(registry, CAVE_SIZE, TestHelpers::CaveType::Floor);
 	const auto& cave = ECS::get_cave(registry, cave_idx);
 	const auto positions = cave.get_positions();
 	for (size_t i = 0; i < positions.size(); ++i)
@@ -34,7 +34,7 @@ TEST_F(RegistryTest, LOSSymmetricalNoWalls)
 				VisionSystem::has_line_of_sight(registry, positions[i], positions[j]);
 			const auto los_ji =
 				VisionSystem::has_line_of_sight(registry, positions[j], positions[i]);
-			EXPECT_EQ(los_ij, los_ji) << dump_cave(registry, cave_idx, {positions[i], positions[j]});
+			EXPECT_EQ(los_ij, los_ji) << TestHelpers::dump_cave(registry, cave_idx, {positions[i], positions[j]});
 		}
 	}
 }
@@ -42,7 +42,7 @@ TEST_F(RegistryTest, LOSSymmetricalNoWalls)
 TEST_F(RegistryTest, LOSSymmetricalWalls)
 {
 	const size_t CAVE_SIZE = 5;
-	const auto cave_idx = get_test_cave_idx(registry, CAVE_SIZE, TestCaveType::Room);
+	const auto cave_idx = TestHelpers::get_cave_idx(registry, CAVE_SIZE, TestHelpers::CaveType::Room);
 	const auto& cave = ECS::get_cave(registry, cave_idx);
 	const auto positions = cave.get_positions();
 	for (size_t i = 0; i < positions.size(); ++i)
@@ -53,7 +53,7 @@ TEST_F(RegistryTest, LOSSymmetricalWalls)
 				VisionSystem::has_line_of_sight(registry, positions[i], positions[j]);
 			const auto los_ji =
 				VisionSystem::has_line_of_sight(registry, positions[j], positions[i]);
-			EXPECT_EQ(los_ij, los_ji) << dump_cave(registry, cave_idx, {positions[i], positions[j]});
+			EXPECT_EQ(los_ij, los_ji) << TestHelpers::dump_cave(registry, cave_idx, {positions[i], positions[j]});
 		}
 	}
 }

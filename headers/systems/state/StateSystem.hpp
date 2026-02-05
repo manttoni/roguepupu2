@@ -26,7 +26,8 @@ namespace StateSystem
 					std::is_same_v<T, Charisma> ||
 					std::is_same_v<T, Endurance> ||
 					std::is_same_v<T, Willpower> ||
-					std::is_same_v<T, Vitality>,
+					std::is_same_v<T, Vitality> ||
+					std::is_same_v<T, Strength>,
 					"T must be an allowed attribute component"
 					);
 			assert(registry.all_of<T>(entity));

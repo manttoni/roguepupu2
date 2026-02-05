@@ -17,7 +17,7 @@ namespace InventorySystem
 {
 	bool has_item(const entt::registry& registry, const entt::entity holder, const entt::entity item)
 	{
-		const auto& inventory = registry.get<Inventory>(holder).inventory;
+		const auto& inventory = registry.get<Inventory>(holder).items;
 		auto it = std::find(inventory.begin(), inventory.end(), item);
 		return it != inventory.end();
 	}
@@ -32,14 +32,14 @@ namespace InventorySystem
 
 		if (EquipmentSystem::is_equipped(registry, owner, item))
 			EquipmentSystem::unequip(registry, owner, item);
-		auto& inventory = registry.get<Inventory>(owner).inventory;
+		auto& inventory = registry.get<Inventory>(owner).items;
 		auto it = std::find(inventory.begin(), inventory.end(), item);
 		inventory.erase(it);
 	}
 
 	void add_item(entt::registry& registry, const entt::entity entity, const entt::entity item)
 	{
-		auto& inventory = registry.get<Inventory>(entity).inventory;
+		auto& inventory = registry.get<Inventory>(entity).items;
 		inventory.push_back(item);
 		ECS::queue_event(registry, Event(
 					{.entity = entity},

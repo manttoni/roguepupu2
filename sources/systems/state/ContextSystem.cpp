@@ -227,7 +227,7 @@ namespace ContextSystem
 		if (!registry.all_of<Inventory>(entity))
 			return;
 		auto& inventory_component = registry.get<Inventory>(entity);
-		auto& inventory = inventory_component.inventory;
+		auto& inventory = inventory_component.items;
 
 		Menu::Element selection;
 		while (true)

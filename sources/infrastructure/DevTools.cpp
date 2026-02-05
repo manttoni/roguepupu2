@@ -71,7 +71,7 @@ namespace DevTools
 		const std::string subcategory = Dialog::get_selection("Choose subcategory", subcategories).label;
 		if (subcategory.empty()) return;
 		const nlohmann::json filter = {{"subcategory", subcategory}};
-		std::vector<std::string> entity_names = EntityFactory::instance().filter_entity_ids(filter, SIZE_MAX);
+		std::vector<std::string> entity_names = EntityFactory::instance().filter_entity_ids(filter);
 		std::sort(entity_names.begin(), entity_names.end());
 		const std::string entity_name = Dialog::get_selection("Choose entity", entity_names).label;
 		if (entity_name.empty()) return;
