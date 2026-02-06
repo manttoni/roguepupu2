@@ -127,7 +127,7 @@ namespace EventSystem
 		{
 			if (!registry.all_of<EquipmentSlots>(entity) || !registry.all_of<Equipment>(item))
 				return;
-			Log::log("Equipping item");
+			Log::log("Equipping item: " + registry.get<Name>(item).name);
 			EquipmentSystem::equip_in_free_slots(registry, entity, item);
 		}
 	}

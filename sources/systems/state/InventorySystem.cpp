@@ -48,6 +48,12 @@ namespace InventorySystem
 					));
 	}
 
+	void add_items(entt::registry& registry, const entt::entity entity, const std::vector<entt::entity> items)
+	{
+		for (const auto item : items)
+			add_item(registry, entity, item);
+	}
+
 	void take_item(entt::registry& registry, const entt::entity taker, const entt::entity owner, const entt::entity item)
 	{
 		remove_item(registry, owner, item);

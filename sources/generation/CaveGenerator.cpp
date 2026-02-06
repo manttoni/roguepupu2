@@ -32,6 +32,7 @@ namespace CaveGenerator
 {
 	void echo(const std::string& message)
 	{
+		return;
 		Log::log(message);
 		Dialog::show_message(message);
 	}

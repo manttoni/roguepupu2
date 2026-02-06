@@ -451,6 +451,17 @@ std::vector<entt::entity> EntityFactory::create_entities(entt::registry& registr
 	return entities;
 }
 
+std::vector<entt::entity> EntityFactory::create_entities(entt::registry& registry, const std::string& id, const size_t amount) const
+{
+	std::vector<entt::entity> entities;
+	for (size_t i = 0; i < amount; ++i)
+	{
+		const auto e = create_entity(registry, id);
+		entities.push_back(e);
+	}
+	return entities;
+}
+
 bool EntityFactory::exclude(const nlohmann::json& data, const nlohmann::json& filter) const
 {
 	for (const auto& [filter_field, filter_data] : filter.items())
@@ -483,7 +494,7 @@ std::vector<std::string> EntityFactory::filter_entity_ids(const nlohmann::json& 
 		if (!exclude(data, filter))
 			pool.push_back(name);
 	}
-	std::shuffle(pool.begin(), pool.end(), Random::rng());
+	std::sort(pool.begin(), pool.end());
 	return pool;
 }
 

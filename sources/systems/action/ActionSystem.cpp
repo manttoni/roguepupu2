@@ -60,6 +60,9 @@ namespace ActionSystem
 			case Intent::Type::Equip:
 				EquipmentSystem::equip(registry, intent.actor.entity, intent.target.entity);
 				break;
+			case Intent::Type::SwapLoadout:
+				EquipmentSystem::swap_loadout(registry, intent.actor.entity);
+				break;
 			case Intent::Type::Hide:
 				if (registry.all_of<Hidden>(intent.actor.entity))
 					registry.erase<Hidden>(intent.actor.entity);
@@ -176,6 +179,9 @@ namespace ActionSystem
 				case 'l':
 					registry.ctx().get<RenderData>().print_log ^= true;
 					continue;
+				case 'w':
+					return {.type = Intent::Type::SwapLoadout};
+
 				default:
 					break;
 			}

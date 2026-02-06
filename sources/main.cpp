@@ -50,16 +50,18 @@ void run()
 		}
 		else if (selection == "Controls")
 			Dialog::get_selection("Controls", {
-					"Movement:  numpad (lock off)",
-					"Zoom:      ctrl[+/-] (terminal)",
-					"Interact:  left click/enter",
-					"Select:    enter",
-					"Back:      esc",
-					"Inventory: i",
-					"Character: c",
-					"Stealth:   h",
-					"DevTools:  `",
-					"Hide log:  l"
+					"Movement:     numpad (lock off)",
+					"Zoom:         ctrl[+/-] (terminal)",
+					"Interact:     left click/enter",
+					"Select:       enter",
+					"Back:         esc",
+					"Inventory:    i",
+					"Character:    c",
+					"Stealth:      h",
+					"DevTools:     `",
+					"Hide log:     l",
+					"Swap loadout: w",
+					"View attacks: a"
 					});
 
 		if (game != nullptr && game->is_over())

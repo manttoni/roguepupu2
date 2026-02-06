@@ -6,6 +6,7 @@
 #include "external/entt/entt.hpp"
 #include "components/Components.hpp"               // for Equipment, Weapon, Armor (ptr...
 #include "systems/state/EquipmentSystem.hpp"  // for Slot, equip, equip_armor, equ...
+#include "systems/state/InventorySystem.hpp"
 #include "utils/ECS.hpp"
 #include "domain/Actor.hpp"
 #include "domain/Effect.hpp"
@@ -27,7 +28,8 @@ namespace EquipmentSystem
 	{
 		if (!registry.all_of<Equipment>(item) ||
 				!registry.all_of<EquipmentSlots>(entity) ||
-				is_equipped(registry, entity, item))
+				is_equipped(registry, entity, item) ||
+				!InventorySystem::has_item(registry, entity, item))
 			return;
 		const auto& equipment = registry.get<Equipment>(item);
 		auto& equipment_slots = registry.get<EquipmentSlots>(entity);
@@ -62,11 +64,6 @@ namespace EquipmentSystem
 		}
 		assert(is_equipped(registry, entity, item));
 
-		// update current loadout
-		auto& active_loadout = equipment_slots.loadouts[equipment_slots.active_loadout];
-		active_loadout.main_hand = equipped_items[Equipment::Slot::MainHand];
-		active_loadout.off_hand = equipped_items[Equipment::Slot::OffHand];
-
 		ECS::queue_event(registry, Event(
 					Actor{.entity = entity},
 					Effect{.type = Effect::Type::Equip},
@@ -98,7 +95,13 @@ namespace EquipmentSystem
 		if (!registry.all_of<EquipmentSlots>(entity))
 			return;
 		auto& equipment_slots = registry.get<EquipmentSlots>(entity);
+		auto& equipped_items = equipment_slots.equipped_items;
 		auto& active_loadout = equipment_slots.loadouts[equipment_slots.active_loadout];
+
+		// update current loadout
+		active_loadout.main_hand = equipped_items[Equipment::Slot::MainHand];
+		active_loadout.off_hand = equipped_items[Equipment::Slot::OffHand];
+
 		unequip(registry, entity, active_loadout.main_hand);
 		unequip(registry, entity, active_loadout.off_hand);
 
@@ -113,11 +116,13 @@ namespace EquipmentSystem
 		if (!registry.all_of<Equipment>(item) ||
 				!registry.all_of<EquipmentSlots>(entity))
 			return false;
-		for (const auto& [slot, equipped_item] : registry.get<EquipmentSlots>(entity).equipped_items)
+		const auto& equipment_slots = registry.get<EquipmentSlots>(entity);
+		for (const auto& [slot, equipped_item] : equipment_slots.equipped_items)
 		{
 			if (item == equipped_item)
 				return true;
 		}
+
 		return false;
 	}
 
@@ -145,6 +150,7 @@ namespace EquipmentSystem
 	bool has_free_slots(const entt::registry& registry, const entt::entity entity, const Equipment& equipment)
 	{
 		const auto& equipped_items = registry.get<EquipmentSlots>(entity).equipped_items;
+		assert(equipment.use_all.has_value() != equipment.use_one.has_value());
 		if (equipment.use_all.has_value())
 		{
 			for (const auto& slot : *equipment.use_all)
@@ -152,6 +158,7 @@ namespace EquipmentSystem
 				if (equipped_items.at(slot) != entt::null)
 					return false;
 			}
+			return true;
 		}
 		else if (equipment.use_one.has_value())
 		{
@@ -162,7 +169,8 @@ namespace EquipmentSystem
 			}
 			return false;
 		}
-		return true; // This equipment doesnt need any slot
+		Error::fatal("No such item should exist");
+		//return true; // This equipment doesnt need any slot
 	}
 
 	/* Like equip() but does not touch equipped items.

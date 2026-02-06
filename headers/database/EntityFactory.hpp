@@ -29,6 +29,7 @@ class EntityFactory
 		entt::entity create_entity(entt::registry& registry, const std::string& name, const std::optional<Position>& position = std::nullopt) const;
 		std::vector<entt::entity> create_entities(entt::registry& registry, const nlohmann::json& filter) const;
 		std::vector<entt::entity> create_entities(entt::registry& registry, const std::vector<std::string>& entity_ids) const;
+		std::vector<entt::entity> create_entities(entt::registry& registry, const std::string& id, const size_t amount) const;
 		std::vector<std::string> get_category_names() const;
 		std::vector<std::string> get_subcategory_names(const std::string& category) const;
 		std::vector<std::string> filter_entity_ids(const nlohmann::json& filter) const;

@@ -67,7 +67,6 @@ namespace Parser
 
 	nlohmann::json read_file(const std::filesystem::path& path)
 	{
-		Log::log("Reading " + path.string());
 		std::ifstream file(path);
 		if (!file.is_open())
 			Error::fatal("Could not open file: " + path.string());
