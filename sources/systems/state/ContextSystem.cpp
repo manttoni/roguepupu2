@@ -38,6 +38,12 @@ namespace ContextSystem
 			details.push_back("Willpower : " + std::to_string(StateSystem::get_attribute<Willpower>(registry, entity)));
 		if (registry.all_of<Perception>(entity))
 			details.push_back("Perception : " + std::to_string(StateSystem::get_attribute<Perception>(registry, entity)));
+		if (registry.all_of<Strength>(entity))
+			details.push_back("Strength : " + std::to_string(StateSystem::get_attribute<Strength>(registry, entity)));
+		if (registry.all_of<Dexterity>(entity))
+			details.push_back("Dexterity : " + std::to_string(StateSystem::get_attribute<Dexterity>(registry, entity)));
+		if (registry.all_of<Agility>(entity))
+			details.push_back("Agility : " + std::to_string(StateSystem::get_attribute<Agility>(registry, entity)));
 		if (registry.all_of<Charisma>(entity))
 			details.push_back("Charisma : " + std::to_string(StateSystem::get_attribute<Charisma>(registry, entity)));
 		return details;
