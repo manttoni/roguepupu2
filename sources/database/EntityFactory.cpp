@@ -320,6 +320,12 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 				reg.template emplace<Perception>(e, data["perception"].get<int>());
 			if (data.contains("charisma"))
 				reg.template emplace<Charisma>(e, data["charisma"].get<int>());
+			if (data.contains("strength"))
+				reg.template emplace<Strength>(e, data["strength"].get<int>());
+			if (data.contains("dexterity"))
+				reg.template emplace<Dexterity>(e, data["dexterity"].get<int>());
+			if (data.contains("agility"))
+				reg.template emplace<Agility>(e, data["agility"].get<int>());
 		}
 	},
 	{ "health", [](auto& reg, auto e, const nlohmann::json& data)

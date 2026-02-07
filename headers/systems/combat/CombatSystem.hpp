@@ -4,5 +4,5 @@
 
 namespace CombatSystem
 {
-	void attack(entt::registry& registry, const entt::entity attacker, const entt::entity defender);
+	void attack(entt::registry& registry, const entt::entity attacker, const entt::entity defender, const Attack* attack, const entt::entity weapon);
 };

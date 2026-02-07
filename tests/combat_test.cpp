@@ -2,6 +2,7 @@
 #include "helpers.hpp"
 #include "external/entt/entt.hpp"
 #include "database/EntityFactory.hpp"
+#include "systems/action/ActionSystem.hpp"
 #include "systems/action/AISystem.hpp"
 
 struct TestFightArena
@@ -47,4 +48,14 @@ TEST_F(RegistryTest, EntityHasAggressiveIntent)
 	EXPECT_TRUE(ia.attack != nullptr);
 	EXPECT_TRUE(ib.type == Intent::Type::Attack) << static_cast<size_t>(ib.type);
 	EXPECT_TRUE(ib.attack != nullptr);
+}
+
+TEST_F(RegistryTest, CreaturesFistFight)
+{
+	auto arena = get_duel_arena(registry);
+	for (size_t i = 0; i < 10; ++i)
+	{
+		ActionSystem::act_round(registry, arena.cave_idx);
+	}
+	EXPECT_TRUE(registry.all_of<Dead>(arena.creatures[0]) || registry.all_of<Dead>(arena.creatures[1]));
 }

@@ -49,7 +49,7 @@ namespace ActionSystem
 				MovementSystem::move(registry, intent.actor.entity, intent.target.position);
 				break;
 			case Intent::Type::Attack:
-				CombatSystem::attack(registry, intent.actor.entity, intent.target.entity);
+				CombatSystem::attack(registry, intent.actor.entity, intent.target.entity, intent.attack, intent.weapon);
 				break;
 			case Intent::Type::UseAbility:
 				AbilitySystem::use_ability(registry, intent.actor, intent.ability_id, intent.target);
@@ -189,18 +189,14 @@ namespace ActionSystem
 		return {.type = Intent::Type::None};
 	}
 
-	void act_round(entt::registry& registry)
+	void act_round(entt::registry& registry, const size_t cave_idx)
 	{
-		const auto player = ECS::get_player(registry);
-		const auto& player_pos = registry.get<Position>(player);
-		const auto cave_idx = player_pos.cave_idx;
-
 		std::vector<entt::entity> entities = ECS::get_entities_in_cave(
 				registry,
 				cave_idx,
 				Category("creatures")
 				);
-
+		const auto player = ECS::get_player(registry); // if no player, this is entt::null
 		for (const auto entity : entities)
 		{
 			// entity might have been somehow disabled by some Event
@@ -225,7 +221,8 @@ namespace ActionSystem
 			EventSystem::resolve_events(registry);
 
 			// If player leaves cave, end round
-			if (cave_idx != registry.get<Position>(player).cave_idx)
+			if (player != entt::null &&
+					cave_idx != registry.get<Position>(player).cave_idx)
 				return;
 		}
 	}
