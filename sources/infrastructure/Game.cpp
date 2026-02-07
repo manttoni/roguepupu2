@@ -44,9 +44,9 @@ Game::Game()
 void Game::loop()
 {
 	Log::log("Game loop started");
-	registry.ctx().get<GameState>().running = true;
+	registry.ctx().get<GameState>().game_running = true;
 	const auto player = ECS::get_player(registry);
-	while (registry.ctx().get<GameState>().running && game_over == false)
+	while (registry.ctx().get<GameState>().game_running && game_over == false)
 	{
 		Log::log("Round " + std::to_string(registry.ctx().get<GameState>().turn_number));
 		ActionSystem::act_round(registry, ECS::get_cave(registry, registry.get<Position>(player)).get_idx());
@@ -55,5 +55,7 @@ void Game::loop()
 	}
 	if (registry.all_of<Dead>(player))
 		game_over = true;
+	if (game_over)
+		Dialog::get_selection("Game over", {"OK"});
 }
 

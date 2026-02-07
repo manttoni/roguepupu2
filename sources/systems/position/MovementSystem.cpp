@@ -1,23 +1,13 @@
-#include <stdlib.h>
 #include <vector>
 #include <cassert>
-#include <algorithm>
-#include <limits>
-#include <map>
-
 #include "utils/ECS.hpp"
 #include "external/entt/entt.hpp"
 #include "systems/position/MovementSystem.hpp"
 #include "domain/Cell.hpp"
 #include "domain/Cave.hpp"
+#include "utils/ECS.hpp"
 #include "utils/Vec2.hpp"
 #include "utils/Error.hpp"
-#include "domain/Effect.hpp"
-#include "domain/Event.hpp"
-#include "domain/Position.hpp"
-#include "external/entt/entity/fwd.hpp"
-
-struct Solid;
 
 namespace MovementSystem
 {
@@ -148,11 +138,11 @@ namespace MovementSystem
 	void move(entt::registry& registry, const entt::entity entity, const Position& position)
 	{
 		registry.emplace_or_replace<Position>(entity, position);
-		ECS::queue_event(registry, Event(
-					{.entity = entity},
-					{.type = Effect::Type::Move},
-					{.position = position}
-					));
+
+		Event event = {.type = Event::Type::Move};
+		event.actor.entity = entity;
+		event.target.position = position;
+		ECS::queue_event(registry, event);
 	}
 
 };

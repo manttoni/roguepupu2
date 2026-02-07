@@ -6,6 +6,6 @@
 struct GameState
 {
 	entt::entity player = entt::null;
-	bool running;
+	bool game_running;
 	size_t turn_number = 1;
 };

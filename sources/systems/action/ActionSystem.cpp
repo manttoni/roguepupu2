@@ -172,7 +172,7 @@ namespace ActionSystem
 				case 'h':
 					return {.type = Intent::Type::Hide};
 				case KEY_ESCAPE:
-					registry.ctx().get<GameState>().running = false;
+					registry.ctx().get<GameState>().game_running = false;
 					return {.type = Intent::Type::DoNothing};
 				case ' ':
 					return {.type = Intent::Type::DoNothing};
@@ -220,10 +220,11 @@ namespace ActionSystem
 			// which will be resolved by EventSystem
 			EventSystem::resolve_events(registry);
 
-			// If player leaves cave, end round
 			if (player != entt::null &&
 					cave_idx != registry.get<Position>(player).cave_idx)
 				return;
+			if (!registry.ctx().get<GameState>().game_running == false)
+				break;
 		}
 	}
 

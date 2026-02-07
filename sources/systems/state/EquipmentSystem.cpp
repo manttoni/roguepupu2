@@ -64,11 +64,10 @@ namespace EquipmentSystem
 		}
 		assert(is_equipped(registry, entity, item));
 
-		ECS::queue_event(registry, Event(
-					Actor{.entity = entity},
-					Effect{.type = Effect::Type::Equip},
-					Target{.entity = item}
-					));
+		Event event = {.type = Event::Type::Equip};
+		event.actor.entity = entity;
+		event.target.entity = item;
+		ECS::queue_event(registry, event);
 	}
 
 	void unequip(entt::registry& registry, const entt::entity entity, const entt::entity item)
@@ -83,11 +82,11 @@ namespace EquipmentSystem
 			if (item == equipped_item)
 				equipped_items[slot] = entt::null;
 		}
-		ECS::queue_event(registry, Event(
-					Actor{.entity = entity},
-					Effect{.type = Effect::Type::Unequip},
-					Target{.entity = item}
-					));
+
+		Event event = {.type = Event::Type::Unequip};
+		event.actor.entity = entity;
+		event.target.entity = item;
+		ECS::queue_event(registry, event);
 	}
 
 	void swap_loadout(entt::registry& registry, const entt::entity entity)

@@ -269,7 +269,7 @@ size_t Menu::select_element(const size_t selected, const int key) const
 	switch (key)
 	{
 		case KEY_DOWN:
-			return std::min(elements.size(), selected + 1);
+			return std::min(elements.size() - 1, selected + 1);
 		case KEY_UP:
 			if (selected == 0) return 0;
 			return std::max(get_unselectable_count(), selected - 1);

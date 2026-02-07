@@ -3,9 +3,7 @@
 #include <optional>
 #include "domain/Damage.hpp"
 
-/* Effect is a data structure describing what happens
- * It does not know to who it happens or by who
- * Some effects will trigger Triggers
+/* The future of this is uncertain, maybe it will be for abilities or spells or something
  * */
 
 struct Effect
@@ -27,6 +25,7 @@ struct Effect
 		Ignite,
 		SelfDestruct,
 		ReceiveItem,
+		Attack,
 	};
 	Type type = Type::None;
 
@@ -41,7 +40,4 @@ struct Effect
 
 	// When dealing direct damage
 	std::optional<Damage> damage = std::nullopt;
-
-
-
 };

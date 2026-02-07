@@ -16,32 +16,5 @@ struct Actor;
 
 namespace EffectSystem
 {
-	// Actor causes some Effect to Target
-	void resolve_effect(entt::registry& registry, const Actor& actor, const Effect& effect, const Target& target)
-	{
-		switch (effect.type)
-		{
-			case Effect::Type::CreateEntity:
-				{
-					const auto entity = EntityFactory::instance().create_entity(registry, effect.entity_id);
-					if (target.position.is_valid())
-						// "Effect entity is created in target position"
-						MovementSystem::move(registry, entity, target.position);
-					else if (target.entity != entt::null)
-						// "Effect entity is created and added to target entity inventory"
-						InventorySystem::add_item(registry, target.entity, entity);
-					else
-						Error::fatal("Effect target is invalid");
-				}
-				break;
-			default:
-				Error::fatal("Unhandled effect type: " + std::to_string(static_cast<int>(effect.type)));
-		}
 
-		ECS::queue_event(registry, Event(
-					actor,
-					effect,
-					target
-					));
-	}
 };

@@ -41,7 +41,7 @@ TEST_F(RegistryTest, TakingDamagePrintsLog)
 	EventSystem::resolve_events(registry);
 
 	const auto logger = registry.ctx().get<GameLogger>();
-	const auto last_message = logger.last(1).front();
+	const auto last_message = logger.last(2).front();
 
 	ASSERT_FALSE(last_message.empty());
 

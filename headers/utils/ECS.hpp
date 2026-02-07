@@ -183,11 +183,9 @@ namespace ECS
 	{
 		registry.emplace<Destroyed>(entity);
 
-		queue_event(registry, Event(
-					{},
-					{.type = Effect::Type::DestroyEntity},
-					{.entity = entity}
-					));
+		Event destroy_event = {.type = Event::Type::Destroy};
+		destroy_event.target.entity = entity;
+		queue_event(registry, destroy_event);
 	}
 
 	inline double distance(const entt::registry& registry, const Position& a, const Position& b)

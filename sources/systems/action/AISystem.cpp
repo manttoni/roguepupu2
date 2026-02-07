@@ -78,13 +78,21 @@ namespace AISystem
 			return false;
 
 		const auto& cave = ECS::get_cave(registry, intent.actor.position);
-		const auto nearby_positions = cave.get_nearby_positions(intent.actor.position, 1.5);
+		auto nearby_positions = cave.get_nearby_positions(intent.actor.position, 1.5);
 		if (nearby_positions.empty())
 			return false;
 
-		intent.target.position = Random::get_random_element(nearby_positions);
-		intent.type = Intent::Type::Move;
-		return true;
+		std::shuffle(nearby_positions.begin(), nearby_positions.end(), Random::rng());
+		for (const auto position : nearby_positions)
+		{
+			if (MovementSystem::can_move(registry, intent.actor.position, position))
+			{
+				intent.target.position = position;
+				intent.type = Intent::Type::Move;
+				return true;
+			}
+		}
+		return false;
 	}
 
 	Intent get_npc_intent(const entt::registry& registry, const entt::entity npc)

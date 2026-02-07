@@ -16,7 +16,10 @@
 			"willpower": 10,
 			"vitality": 10,
 			"perception": 10,
-			"charisma": 10
+			"charisma": 10,
+			"strength": 10,
+			"agility": 10,
+			"dexterity": 10
 		},
 		"alignment": {
 			"tolerance": 0,
@@ -33,6 +36,10 @@
 				"damage_attributes": ["strength"],
 				"hit_chance_attributes": ["agility"]
 			}
-		]
+		],
+		"ai": {
+			"idle_wander": true,
+			"aggressive": true
+		}
 	}
 }

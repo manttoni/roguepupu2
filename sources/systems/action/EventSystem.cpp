@@ -134,34 +134,43 @@ namespace EventSystem
 
 	void log_event(entt::registry& registry, const Event& event)
 	{
+		Log::log("event.type: " + std::to_string(static_cast<size_t>(event.type)));
 		std::string message;
 		if (event.actor.entity != entt::null)
 			message += ECS::get_colored_name(registry, event.actor.entity) + " ";
-		switch (event.effect.type)
+		switch (event.type)
 		{
-			case Effect::Type::TakeDamage:
-				message += "takes " + event.effect.damage->to_string() + " damage";
+			case Event::Type::Attack:
+				message += event.attack_id + "es ";
 				break;
-			case Effect::Type::Gather:
+			case Event::Type::TakeDamage:
+				message += "takes " + event.damage.to_string() + " damage";
+				break;
+			case Event::Type::Gather:
 				message += "gathers from ";
 				break;
-			case Effect::Type::Equip:
+			case Event::Type::Equip:
 				message += "equips ";
 				break;
-			case Effect::Type::Unequip:
+			case Event::Type::Unequip:
 				message += "unequips ";
 				break;
-			case Effect::Type::Drop:
+			case Event::Type::Drop:
 				message += "drops ";
 				break;
-			case Effect::Type::ReceiveItem:
+			case Event::Type::ReceiveItem:
 				message += "receives ";
+				break;
+			case Event::Type::Death:
+				message += "dies";
 				break;
 			default:
 				return;
 		}
 		if (event.target.entity != entt::null)
 			message += ECS::get_colored_name(registry, event.target.entity);
+		if (event.weapon != entt::null)
+			message += " with a " + ECS::get_colored_name(registry, event.weapon);
 		registry.ctx().get<GameLogger>().log(message);
 		Log::log("Game Log: " + message);
 	}
@@ -174,33 +183,38 @@ namespace EventSystem
 		{
 			const auto& event = queue[i];
 			log_event(registry, event);
-			switch (event.effect.type)
+			switch (event.type)
 			{
-				case Effect::Type::TakeDamage:
+				case Event::Type::TakeDamage:
 					resolve_take_damage_event(registry, event);
 					break;
-				case Effect::Type::Move:
+				case Event::Type::Move:
 					resolve_move_event(registry, event);
 					break;
-				case Effect::Type::Gather:
+				case Event::Type::Gather:
 					resolve_gather_event(registry, event);
 					break;
-				case Effect::Type::Drop:
-				case Effect::Type::Spawn:
+				case Event::Type::Drop:
+				case Event::Type::Spawn:
 					resolve_spawn_event(registry, event);
 					break;
-				case Effect::Type::Equip:
-				case Effect::Type::Unequip:
+				case Event::Type::Equip:
+				case Event::Type::Unequip:
 					break;
-				case Effect::Type::ReceiveItem:
+				case Event::Type::ReceiveItem:
 					Log::log("Event receive");
 					resolve_receive_item_event(registry, event);
 					break;
-				case Effect::Type::DestroyEntity:
+				case Event::Type::Destroy:
 					resolve_destroy_event(registry, event);
 					break;
+				case Event::Type::Death:
+					//resolve_death_event(registry, event);
+					break;
+				case Event::Type::Attack:
+					break;
 				default:
-					Error::fatal("Unhandled effect type: " + std::to_string(static_cast<int>(event.effect.type)));
+					Error::fatal("Unhandled event type: " + std::to_string(static_cast<int>(event.type)));
 			}
 
 		}

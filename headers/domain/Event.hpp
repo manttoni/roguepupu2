@@ -1,23 +1,48 @@
 #pragma once
 
+#include <string>
 #include "domain/Actor.hpp"
-#include "domain/Effect.hpp"
 #include "domain/Target.hpp"
+#include "external/entt/fwd.hpp"
+
+struct Attack;
 
 /* Describes something that has happaned
- * "actor causes effect on target"
+ * "actor does something to target (with something)"
  * Can be logged as a message
  * "Rabdin crafts something"
  * "Rabdin ignites goblin"
  * "Rabdin moves"
  *
  * Actor and Target are the same thing with different type,
- * to force type
+ * to force type/role
+ *
+ * This will be put in a queue when the event has happened.
+ * EventSystem will review the event, log it in game log,
+ * and call possible after effects, like OnEnterCell
  * */
 
 struct Event
 {
-	Actor actor{};		// who/what does from where
-	Effect effect{};	// what they do
-	Target target{};	// to who/what/where
+	enum class Type
+	{
+		None,
+		Unequip,
+		Equip,
+		Drop,
+		ReceiveItem,
+		Death,
+		Spawn,
+		Destroy,
+		Gather,
+		Move,
+		TakeDamage,
+		Attack,
+	};
+	Actor actor{};		// who does?
+	Type type = Type::None;	// what?
+	Target target{};	// to who?
+	std::string attack_id = ""; // specify Type::Attack
+	entt::entity weapon = entt::null; // with what?
+	Damage damage{};
 };

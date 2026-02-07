@@ -80,7 +80,7 @@ TEST_F(RegistryTest, ReceivingItemQueuesEvent)
 	InventorySystem::add_item(registry, creature, item);
 	const auto queue = registry.ctx().get<EventQueue>().queue;
 	ASSERT_FALSE(queue.empty());
-	EXPECT_EQ(queue.front().effect.type, Effect::Type::ReceiveItem);
+	EXPECT_EQ(queue.front().type, Event::Type::ReceiveItem);
 }
 
 TEST_F(RegistryTest, HasFreeSlotsWorksDualWield)

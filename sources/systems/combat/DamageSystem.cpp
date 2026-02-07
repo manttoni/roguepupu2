@@ -17,7 +17,12 @@ namespace DamageSystem
 	{
 		if (!registry.all_of<Dead>(entity))
 			registry.emplace<Dead>(entity);
+		if (entity == ECS::get_player(registry))
+			registry.ctx().get<GameState>().game_running = false;
 
+		Event event = {.type = Event::Type::Death};
+		event.actor.entity = entity;
+		ECS::queue_event(registry, event);
 	}
 
 	void take_damage(entt::registry& registry, const entt::entity entity, const Damage& damage)
@@ -26,11 +31,12 @@ namespace DamageSystem
 			return;
 		auto& hp = registry.get<Health>(entity).current;
 		hp -= damage.amount;
-		ECS::queue_event(registry, Event(
-					Actor{.entity = entity},
-					Effect{.type = Effect::Type::TakeDamage, .damage = damage},
-					Target{}
-					));
+
+		Event event = {.type = Event::Type::TakeDamage};
+		event.actor.entity = entity;
+		event.damage = damage;
+		ECS::queue_event(registry, event);
+
 		if (hp <= 0)
 			perish(registry, entity);
 	}

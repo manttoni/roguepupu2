@@ -235,6 +235,7 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 				Error::fatal("AI needs to be an object: " + data.dump(4));
 			AI comp;
 			if (data.contains("aggressive")) comp.aggressive = true;
+			if (data.contains("idle_wander")) comp.idle_wander = true;
 
 			reg.template emplace<AI>(e, comp);
 		}
@@ -428,7 +429,7 @@ entt::entity EntityFactory::create_entity(entt::registry& registry, const std::s
 	{
 		registry.emplace<Position>(entity, *position);
 		Event spawn_event;
-		spawn_event.effect.type = Effect::Type::Spawn;
+		spawn_event.type = Event::Type::Spawn;
 		spawn_event.target.entity = entity;
 		spawn_event.target.position = *position;
 		ECS::queue_event(registry, spawn_event);

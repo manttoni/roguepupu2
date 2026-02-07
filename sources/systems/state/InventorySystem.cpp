@@ -41,11 +41,10 @@ namespace InventorySystem
 	{
 		auto& inventory = registry.get<Inventory>(entity).items;
 		inventory.push_back(item);
-		ECS::queue_event(registry, Event(
-					{.entity = entity},
-					{.type = Effect::Type::ReceiveItem},
-					{.entity = item}
-					));
+		Event event = {.type = Event::Type::ReceiveItem};
+		event.actor.entity = entity;
+		event.target.entity = item;
+		ECS::queue_event(registry, event);
 	}
 
 	void add_items(entt::registry& registry, const entt::entity entity, const std::vector<entt::entity> items)
@@ -66,14 +65,12 @@ namespace InventorySystem
 		remove_item(registry, owner, item);
 		registry.emplace_or_replace<Position>(item, pos);
 
-		// This will log message, and apply f.e. Glow effects.
-		Event drop_event;
-		drop_event.actor.entity = owner;
-		drop_event.actor.position = pos;
-		drop_event.effect.type = Effect::Type::Drop;
-		drop_event.target.entity = item;
-		drop_event.target.position = pos;
-		ECS::queue_event(registry, drop_event);
+		Event event = {.type = Event::Type::Drop};
+		event.actor.entity = owner;
+		event.actor.position = pos;
+		event.target.entity = item;
+		event.target.position = pos;
+		ECS::queue_event(registry, event);
 	}
 
 	bool has_inventory(const entt::registry& registry, const entt::entity entity)
