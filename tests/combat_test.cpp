@@ -4,30 +4,44 @@
 #include "database/EntityFactory.hpp"
 #include "systems/action/AISystem.hpp"
 
-TEST_F(RegistryTest, EntityHasAggressiveIntent)
+struct TestFightArena
 {
-	const auto creatures = EntityFactory::instance().create_entities(registry, "test_creature", 2);
-	const auto cave_idx = TestHelpers::get_cave_idx(registry, 10, TestHelpers::CaveType::Room);
-	const auto& cave = ECS::get_cave(registry, cave_idx);
+	std::vector<entt::entity> creatures;
+	size_t cave_idx;
+};
+
+TestFightArena get_duel_arena(entt::registry& registry)
+{
+	TestFightArena arena;
+	arena.creatures = EntityFactory::instance().create_entities(registry, "test_creature", 2);
+	arena.cave_idx = TestHelpers::get_cave_idx(registry, 10, TestHelpers::CaveType::Room);
+	const auto& cave = ECS::get_cave(registry, arena.cave_idx);
 
 	// Give them positions and opposing alignments and aggressive AI
 	const auto mid_pos = cave.middle_position();
-	registry.emplace<Position>(creatures[0], mid_pos);
+	registry.emplace<Position>(arena.creatures[0], mid_pos);
 	const Alignment a(Alignment::Type::LawfulGood);
-	registry.emplace_or_replace<Alignment>(creatures[0], a);
-	registry.emplace_or_replace<AI>(creatures[0]);
-	registry.get<AI>(creatures[0]).aggressive = true;
+	registry.emplace_or_replace<Alignment>(arena.creatures[0], a);
+	registry.emplace_or_replace<AI>(arena.creatures[0]);
+	registry.get<AI>(arena.creatures[0]).aggressive = true;
 
-	const auto left = Position(mid_pos.cell_idx - 1, cave_idx);
-	registry.emplace<Position>(creatures[1], left);
+	const auto left = Position(mid_pos.cell_idx - 1, arena.cave_idx);
+	registry.emplace<Position>(arena.creatures[1], left);
 	const Alignment b(Alignment::Type::ChaoticEvil);
-	registry.emplace_or_replace<Alignment>(creatures[1], b);
-	registry.emplace_or_replace<AI>(creatures[1]);
-	registry.get<AI>(creatures[1]).aggressive = true;
+	registry.emplace_or_replace<Alignment>(arena.creatures[1], b);
+	registry.emplace_or_replace<AI>(arena.creatures[1]);
+	registry.get<AI>(arena.creatures[1]).aggressive = true;
+
+	return arena;
+}
+
+TEST_F(RegistryTest, EntityHasAggressiveIntent)
+{
+	auto arena = get_duel_arena(registry);
 
 	// They should have intent type attack
-	const Intent ia = AISystem::get_npc_intent(registry, creatures[0]);
-	const Intent ib = AISystem::get_npc_intent(registry, creatures[1]);
+	const Intent ia = AISystem::get_npc_intent(registry, arena.creatures[0]);
+	const Intent ib = AISystem::get_npc_intent(registry, arena.creatures[1]);
 
 	EXPECT_TRUE(ia.type == Intent::Type::Attack) << static_cast<size_t>(ia.type);
 	EXPECT_TRUE(ia.attack != nullptr);
