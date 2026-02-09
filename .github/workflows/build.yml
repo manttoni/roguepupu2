@@ -1,4 +1,4 @@
-name: Build with Make
+name: Build with CMake and Test
 
 on:
   push:
