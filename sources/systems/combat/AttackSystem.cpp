@@ -1,4 +1,5 @@
 #include "external/entt/entt.hpp"
+#include "systems/state/EquipmentSystem.hpp"
 #include "systems/combat/AttackSystem.hpp"
 #include "systems/state/StateSystem.hpp"
 #include "domain/Attack.hpp"
@@ -55,13 +56,61 @@ namespace AttackSystem
 			for (const auto& attack : registry.get<Attacks>(entity).attacks)
 				attacks.push_back(std::make_pair(entt::null, &attack)); // unarmed attacks
 		}
-		for (const auto& [slot, equipment] : registry.get<EquipmentSlots>(entity).equipped_items)
+//		for (const auto& [slot, equipment] : registry.get<EquipmentSlots>(entity).equipped_items)
+		for (const auto& equipment : registry.get<Inventory>(entity).items)
 		{
-			if (!registry.all_of<Attacks>(equipment))
+			if (!registry.all_of<Attacks>(equipment) || !EquipmentSystem::is_equipped(registry, entity, equipment))
 				continue;
 			for (const auto& attack : registry.get<Attacks>(equipment).attacks)
-				attacks.push_back(std::make_pair(equipment, &attack));
+			{
+				const auto pair = std::make_pair(equipment, &attack);
+				attacks.push_back(pair);
+			}
 		}
 		return attacks;
+	}
+
+	/* Entity has to be a creature with unarmed attacks or an equipped weapon
+	 * */
+	std::pair<entt::entity, const Attack*> get_strongest_melee_attack(const entt::registry& registry, const entt::entity entity)
+	{
+		auto attacks = get_attacks(registry, entity);
+		std::sort(attacks.begin(), attacks.end(),
+				[&](const auto& a, const auto& b)
+				{
+				const auto& [a_weapon, a_attack] = a;
+				const auto& [b_weapon, b_attack] = b;
+				const auto& a_damage = get_attack_damage(registry, entity, *a_attack);
+				const auto& b_damage = get_attack_damage(registry, entity, *b_attack);
+				return a_damage > b_damage;
+				});
+		for (const auto& a : attacks)
+		{
+			const auto& [weapon, attack] = a;
+			if (attack->is_melee)
+				return a;
+		}
+		return {entt::null, nullptr};
+	}
+
+	std::pair<entt::entity, const Attack*> get_strongest_ranged_attack(const entt::registry& registry, const entt::entity entity)
+	{
+		auto attacks = get_attacks(registry, entity);
+		std::sort(attacks.begin(), attacks.end(),
+				[&](const auto& a, const auto& b)
+				{
+				const auto& [a_weapon, a_attack] = a;
+				const auto& [b_weapon, b_attack] = b;
+				const auto& a_damage = get_attack_damage(registry, entity, *a_attack);
+				const auto& b_damage = get_attack_damage(registry, entity, *b_attack);
+				return a_damage > b_damage;
+				});
+		for (const auto& a : attacks)
+		{
+			const auto& [weapon, attack] = a;
+			if (!attack->is_melee)
+				return a;
+		}
+		return {entt::null, nullptr};
 	}
 };

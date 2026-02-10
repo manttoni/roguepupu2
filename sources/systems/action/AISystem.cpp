@@ -27,6 +27,8 @@ namespace AISystem
 				});
 		for (const auto entity : visible_entities)
 		{
+			if (!registry.any_of<Alignment>(entity))
+				continue;
 			if (AlignmentSystem::is_hostile(registry, intent.actor.entity, entity))
 			{
 				const auto distance = ECS::distance(registry, intent.actor.entity, entity);
@@ -40,8 +42,9 @@ namespace AISystem
 						const auto b_damage = AttackSystem::get_attack_damage(registry, intent.actor.entity, *b_attack);
 						return a_damage > b_damage;
 						});
-				for (const auto& [weapon, attack] : attacks)
+				for (const auto& weapon_attack : attacks)
 				{
+					const auto& [weapon, attack] = weapon_attack;
 					if (attack->range < distance)
 						continue;
 					// check fatigue also when implemented
@@ -56,8 +59,7 @@ namespace AISystem
 					intent.target.entity = entity;
 					intent.target.position = registry.get<Position>(entity);
 					intent.type = Intent::Type::Attack;
-					intent.attack = attack;
-					intent.weapon = weapon; // this might actually be entt::null if its unarmed
+					intent.weapon_attack = weapon_attack;
 					return true;
 				}
 				// no attack was suitable, then approach

@@ -1,7 +1,10 @@
 #include <stddef.h>
 #include <string>                      // for basic_string, operator+, opera...
 #include <vector>
+#include <ncurses.h>
+#include <panel.h>
 
+#include "UI/UI.hpp"
 #include "infrastructure/CharacterCreation.hpp"
 #include "database/EntityFactory.hpp"           // for EntityFactory
 #include "domain/Cave.hpp"
@@ -52,6 +55,7 @@ void Game::loop()
 		ActionSystem::act_round(registry, ECS::get_cave(registry, registry.get<Position>(player)).get_idx());
 		LiquidSystem::simulate_liquids(registry);
 		registry.ctx().get<GameState>().turn_number++;
+		registry.ctx().get<GameLogger>().log("Turn " + std::to_string(registry.ctx().get<GameState>().turn_number));
 	}
 	if (registry.all_of<Dead>(player))
 		game_over = true;

@@ -18,4 +18,6 @@ namespace ContextSystem
 	 * Can also show liquid type and level, maybe density?
 	 * */
 	void examine_cell(entt::registry& registry, const Position& position);
+
+	void show_player_attacks(entt::registry& registry);
 };

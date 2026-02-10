@@ -10,6 +10,7 @@ enum class Attribute
 	Endurance,
 	Willpower,
 	Charisma,
+	Count
 };
 
 namespace AttributeHelpers

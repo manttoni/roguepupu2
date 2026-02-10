@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "components/Components.hpp"
+#include "systems/combat/AttackSystem.hpp"
 #include "systems/items/LootSystem.hpp"
 #include "systems/rendering/RenderingSystem.hpp"
 #include "systems/rendering/LightingSystem.hpp"
@@ -93,6 +94,19 @@ namespace EventSystem
 			LightingSystem::reset_lights(registry, registry.get<Position>(event.target.entity).cave_idx);
 	}
 
+	/* Automatically select strongest attacks. Probably going to get rewrite at some point.
+	 * */
+	void resolve_equip_event(entt::registry& registry, const Event& event)
+	{
+		const auto player = ECS::get_player(registry);
+		if (event.actor.entity == player)
+		{
+			auto &player_comp = registry.get<Player>(player);
+			player_comp.default_melee_attack = AttackSystem::get_strongest_melee_attack(registry, player);
+			player_comp.default_ranged_attack = AttackSystem::get_strongest_ranged_attack(registry, player);
+		}
+	}
+
 	/* Opposite of spawn event. Remove lights and other effects
 	 * Entity is not yet destroyed, but will be after resolving all events
 	 * */
@@ -141,7 +155,7 @@ namespace EventSystem
 		switch (event.type)
 		{
 			case Event::Type::Attack:
-				message += event.attack_id + "es ";
+				message += Utils::conjugate_third(event.attack_id) + " ";
 				break;
 			case Event::Type::TakeDamage:
 				message += "takes " + event.damage.to_string() + " damage";
@@ -199,6 +213,8 @@ namespace EventSystem
 					resolve_spawn_event(registry, event);
 					break;
 				case Event::Type::Equip:
+					resolve_equip_event(registry, event);
+					break;
 				case Event::Type::Unequip:
 					break;
 				case Event::Type::ReceiveItem:

@@ -120,6 +120,8 @@ namespace Parser
 			attack.base_damage = parse_damage(data["base_damage"]);
 		if (data.contains("range"))
 			attack.range = data["range"].get<double>();
+		if (data.contains("is_melee"))
+			attack.is_melee = data["is_melee"].get<bool>();
 		if (data.contains("damage_attributes") && !data["damage_attributes"].is_null())
 		{
 			for (const auto& attribute : data["damage_attributes"])

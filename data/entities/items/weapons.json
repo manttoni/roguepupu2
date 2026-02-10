@@ -28,7 +28,8 @@
 				},
 				"damage_attributes": null,
 				"hit_chance_attributes": ["perception", "dexterity"],
-				"range": 20
+				"range": 20,
+				"is_melee": false
 			}
 		]
 	},

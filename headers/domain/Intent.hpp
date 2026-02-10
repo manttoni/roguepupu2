@@ -39,8 +39,7 @@ struct Intent
 	Actor actor{};
 	Target target{};
 	std::string ability_id = "";
-	const Attack* attack = nullptr;
-	entt::entity weapon = entt::null;
+	std::pair<entt::entity, const Attack*> weapon_attack{entt::null, nullptr};
 
 	bool operator==(const Intent& other) const = default;
 	bool operator!=(const Intent& other) const = default;

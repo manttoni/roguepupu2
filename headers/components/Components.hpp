@@ -382,7 +382,17 @@ struct Abilities
 	std::map<std::string, Ability> abilities;
 };
 
-struct Player {};
+/* Mark entity with this if they are the player.
+ * Store data that only player has.
+ * */
+struct Player
+{
+	// Player will use these attacks when moving agains enemy entity,
+	// or when right clicking. Set from the 'a' menu.
+	std::pair<entt::entity, const Attack*>
+		default_melee_attack{entt::null, nullptr},
+		default_ranged_attack{entt::null, nullptr};
+};
 struct Destroyed {};
 
 

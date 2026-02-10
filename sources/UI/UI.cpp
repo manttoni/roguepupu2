@@ -61,6 +61,7 @@ void UI::print(const std::string& str)
 		wprintw(panel_window(current_panel), "%s", str.c_str());
 		return;
 	}
+	Log::log(str);
 	std::optional<Color> color;
 	std::optional<chtype> attr;
 	for (size_t i = 0; i < str.size(); ++i)
@@ -398,6 +399,7 @@ void UI::init()
 	printf("\033[?1003h");	// mouse movement will trigger KEY_MOUSE events
 	fflush(stdout);				// to know current cursor location
 
+	set_current_panel(Panel::Game);
 	Log::log("UI inited");
 }
 

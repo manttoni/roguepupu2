@@ -253,6 +253,7 @@ namespace RenderingSystem
 		show_debug(registry);
 		UI::instance().update();
 		registry.ctx().get<RenderData>().render_frame++;
+		UI::instance().enable_attr(A_NORMAL);
 	}
 
 	void render_generation(const entt::registry& registry, const size_t cave_idx)

@@ -7,8 +7,9 @@
 
 namespace CombatSystem
 {
-	void attack(entt::registry& registry, const entt::entity attacker, const entt::entity defender, const Attack* attack, const entt::entity weapon)
+	void attack(entt::registry& registry, const entt::entity attacker, const entt::entity defender, const std::pair<entt::entity, const Attack*> weapon_attack)
 	{
+		const auto& [weapon, attack] = weapon_attack;
 		Damage damage = AttackSystem::get_attack_damage(registry, attacker, *attack);
 		(void) weapon;
 		Event event = {.type = Event::Type::Attack};

@@ -35,12 +35,12 @@ size_t Menu::Element::get_size() const
 
 	for (size_t i = 0; i < label.size(); ++i)
 	{
-		if (label[i] == '{' && Utils::is_color_markup(label, i))
+		if (label[i] == '{' && Color::is_markup(label, i))
 		{
 			i = label.find('}', i);
 			continue;
 		}
-		if (label[i] == '[' && Utils::is_attr_markup(label, i))
+		if (label[i] == '[' && Color::is_markup(label, i))
 		{
 			i = label.find(']', i);
 			continue;

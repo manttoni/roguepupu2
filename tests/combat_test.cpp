@@ -45,9 +45,9 @@ TEST_F(RegistryTest, EntityHasAggressiveIntent)
 	const Intent ib = AISystem::get_npc_intent(registry, arena.creatures[1]);
 
 	EXPECT_TRUE(ia.type == Intent::Type::Attack) << static_cast<size_t>(ia.type);
-	EXPECT_TRUE(ia.attack != nullptr);
+	EXPECT_TRUE(ia.weapon_attack.second != nullptr);
 	EXPECT_TRUE(ib.type == Intent::Type::Attack) << static_cast<size_t>(ib.type);
-	EXPECT_TRUE(ib.attack != nullptr);
+	EXPECT_TRUE(ib.weapon_attack.second != nullptr);
 }
 
 TEST_F(RegistryTest, CreaturesFistFight)

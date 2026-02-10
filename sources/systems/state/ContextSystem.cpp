@@ -8,6 +8,7 @@
 #include "systems/state/AlignmentSystem.hpp"
 #include "systems/state/StateSystem.hpp"
 #include "systems/action/EventSystem.hpp"
+#include "systems/combat/AttackSystem.hpp"
 #include "systems/crafting/GatheringSystem.hpp"
 #include "systems/state/ContextSystem.hpp"
 #include "systems/state/InventorySystem.hpp"
@@ -153,7 +154,7 @@ namespace ContextSystem
 		{
 			if (!is_player_owned && registry.get<Category>(entity).category == "items")
 				options.push_back("Take");
-			if (!is_player && registry.all_of<Inventory, Position>(entity))
+			if (!is_player && registry.all_of<Inventory, Position, Dead>(entity))
 				options.push_back("Loot");
 			if (GatheringSystem::can_gather(registry, ECS::get_player(registry), entity))
 				options.push_back("Gather");
@@ -281,6 +282,46 @@ namespace ContextSystem
 			if (selection.label == "Back" || selection.label.empty())
 				break;
 			show_entity_details(registry, entities[selection.index]);
+		}
+	}
+
+	void show_player_attacks(entt::registry& registry)
+	{
+		const auto player = ECS::get_player(registry);
+		const auto attacks = AttackSystem::get_attacks(registry, player);
+		Menu::Element selection;
+		while (true)
+		{
+			std::vector<std::string> buttons;
+			for (const auto& attack_entry : attacks)
+			{
+				const auto& [weapon, attack] = attack_entry;
+				std::string button = "";
+				if (attack_entry == registry.get<Player>(player).default_melee_attack ||
+					attack_entry == registry.get<Player>(player).default_ranged_attack)
+				{
+					button += " * ";
+				}
+				else
+					button += "   ";
+				button += weapon == entt::null ?
+					"Unarmed" :
+					ECS::get_colored_name(registry, weapon);
+				button += " : ";
+				button += attack->id;
+
+				buttons.push_back(button);
+			}
+			buttons.push_back("Back");
+
+			selection = Dialog::get_selection("Available attacks", buttons, Screen::topleft(), selection.index);
+			if (selection.label == "Back" || selection.label.empty())
+				break;
+			const auto& selected_attack = attacks[selection.index];
+			if (selected_attack.second->is_melee)
+				registry.get<Player>(player).default_melee_attack = selected_attack;
+			else
+				registry.get<Player>(player).default_ranged_attack = selected_attack;
 		}
 	}
 };

@@ -36,7 +36,7 @@ namespace CharacterCreation
 		cc.add_element(Element(Type::ValueSelector, "Endurance", 10, 20));
 		cc.add_element(Element(Type::ValueSelector, "Willpower", 10, 20));
 		cc.add_element(Element(Type::ValueSelector, "Vitality", 10, 20));
-		cc.add_element(Element(Type::ValueSelector, "Perception", 10, 2000));
+		cc.add_element(Element(Type::ValueSelector, "Perception", 10, 20));
 		cc.add_element(Element(Type::ValueSelector, "Charisma", 10, 20));
 
 		cc.add_element(Element(Type::ValueSelector, "Chaos - Law", -1, 1));

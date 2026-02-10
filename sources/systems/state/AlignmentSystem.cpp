@@ -15,7 +15,8 @@ namespace AlignmentSystem
 	 * */
 	double get_opinion(const entt::registry& registry, const entt::entity a, const entt::entity b)
 	{
-		assert(registry.all_of<Alignment>(a) && registry.all_of<Alignment>(b));
+		assert(registry.all_of<Alignment>(a));
+		assert(registry.all_of<Alignment>(b));
 		const auto& aA = registry.get<Alignment>(a);
 		const auto& bA = registry.get<Alignment>(b);
 		double opinion = aA.tolerance - aA.distance(bA);
