@@ -12,7 +12,6 @@
 #include "systems/action/AbilitySystem.hpp"
 #include "systems/action/ActionSystem.hpp"
 #include "systems/action/EventSystem.hpp"
-#include "systems/combat/AttackSystem.hpp"
 #include "systems/combat/CombatSystem.hpp"
 #include "systems/crafting/GatheringSystem.hpp"
 #include "systems/position/MovementSystem.hpp"
@@ -51,7 +50,7 @@ namespace ActionSystem
 				MovementSystem::move(registry, intent.actor.entity, intent.target.position);
 				break;
 			case Intent::Type::Attack:
-				CombatSystem::attack(registry, intent.actor.entity, intent.target.entity, intent.weapon_attack);
+				CombatSystem::attack(registry, intent.actor.entity, intent.target.entity);
 				break;
 			case Intent::Type::UseAbility:
 				AbilitySystem::use_ability(registry, intent.actor, intent.ability_id, intent.target);
@@ -108,15 +107,11 @@ namespace ActionSystem
 		{
 			if (intent.type != Intent::Type::None) break;
 			if (registry.all_of<Alignment, Health>(entity) &&
-					AlignmentSystem::is_hostile(registry, player, entity))
+				!registry.all_of<Dead>(entity) &&
+				AlignmentSystem::is_hostile(registry, player, entity))
 			{
 				intent.type = Intent::Type::Attack;
 				intent.target.entity = entity;
-				const auto& weapon_attack = registry.get<Player>(player).default_melee_attack;
-				if (weapon_attack.second == nullptr)
-					intent.weapon_attack = AttackSystem::get_strongest_melee_attack(registry, player);
-				else
-					intent.weapon_attack = weapon_attack;
 				break;
 			}
 		}
@@ -187,9 +182,6 @@ namespace ActionSystem
 					continue;
 				case 'w':
 					return {.type = Intent::Type::SwapLoadout};
-				case 'a':
-					ContextSystem::show_player_attacks(registry);
-					break;
 				default:
 					break;
 			}
@@ -207,7 +199,7 @@ namespace ActionSystem
 		const auto player = ECS::get_player(registry); // if no player, this is entt::null
 		for (const auto entity : entities)
 		{
-			if (!registry.valid(entity))
+			if (!registry.valid(entity) || registry.any_of<Dead>(entity))
 				continue;
 
 			// Get entity intent. Intent is what they want to do.

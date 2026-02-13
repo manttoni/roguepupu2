@@ -60,8 +60,7 @@ void run()
 					"Stealth:      h",
 					"DevTools:     `",
 					"Hide log:     l",
-					"Swap loadout: w",
-					"View attacks: a"
+					"Swap loadout: w"
 					});
 
 		if (game != nullptr && game->is_over())

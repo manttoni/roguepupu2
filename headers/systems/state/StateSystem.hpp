@@ -18,10 +18,9 @@ namespace StateSystem
 	int get_max_stamina(const entt::registry& registry, const entt::entity entity);
 	int get_max_mana(const entt::registry& registry, const entt::entity entity);
 	int get_vision_range(const entt::registry& registry, const entt::entity entity);
-	int get_attributes_sum(const entt::registry& registry, const entt::entity entity, const std::vector<Attribute> attributes);
 
 	template<typename T>
-		int get_attribute(const entt::registry& registry, const entt::entity entity)
+		void assert_attribute_type()
 		{
 			static_assert(
 					std::is_same_v<T, Perception> ||
@@ -34,7 +33,12 @@ namespace StateSystem
 					std::is_same_v<T, Agility>,
 					"T must be an allowed attribute component"
 					);
-			assert(registry.all_of<T>(entity));
+		}
+
+	template<typename T>
+		int get_attribute(const entt::registry& registry, const entt::entity entity)
+		{
+			assert_attribute_type<T>();
 			int attribute = registry.get<T>(entity).value;
 			if (registry.all_of<BuffContainer<T>>(entity))
 			{
@@ -42,5 +46,25 @@ namespace StateSystem
 					attribute += buff.value;
 			}
 			return attribute;
+		}
+
+	template<typename T>
+		void add_buff(entt::registry& registry, const entt::entity entity, const Buff<T>& buff)
+		{
+			assert_attribute_type<T>();
+			if (!registry.all_of<BuffContainer<T>>(entity))
+				registry.emplace<BuffContainer<T>>(entity);
+			registry.get<BuffContainer<T>>(entity).buffs.push_back(buff);
+		}
+
+	template<typename T>
+		void remove_buff(entt::registry& registry, const entt::entity entity, const Buff<T>& buff)
+		{
+			assert_attribute_type<T>();
+			assert(registry.all_of<BuffContainer<T>>(entity));
+			auto& buffs = registry.get<BuffContainer<T>>(entity).buffs;
+			auto it = std::find(buffs.begin(), buffs.end(), buff);
+			assert(it != buffs.end());
+			buffs.erase(it);
 		}
 };

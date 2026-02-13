@@ -13,17 +13,6 @@
 			"strength": 1,
 			"dexterity": 1,
 			"agility": 1
-		},
-		"attacks": [
-			{
-				"id": "punch",
-				"base_damage": {
-					"type": "bludgeoning",
-					"amount": 1
-				},
-				"damage_attributes": ["strength"],
-				"hit_chance_attribuges": ["agility"]
-			}
-		]
+		}
 	}
 }

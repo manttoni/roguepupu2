@@ -1,5 +1,5 @@
 #pragma once
-#include <curses.h>       // for chtype, doupdate, endwin, WINDOW, wattroff
+#include <ncurses.h>       // for chtype, doupdate, endwin, WINDOW, wattroff
 #include <panel.h>        // for PANEL, panel_window, top_panel, update_panels
 #include <cstdlib>        // for size_t, exit
 #include <map>            // for map
@@ -7,8 +7,6 @@
 #include <vector>         // for vector
 #include "domain/Color.hpp"      // for Color
 #include "domain/ColorPair.hpp"  // for ColorPair
-#include "UI/Menu.hpp"       // for Menu
-#include "utils/Utils.hpp"      // for middle, Coord
 #include "external/entt/entt.hpp"
 #include "utils/Screen.hpp"
 #include "utils/Log.hpp"

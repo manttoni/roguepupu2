@@ -1,25 +1,26 @@
 #pragma once
 
 #include <optional>
-#include "systems/rendering/RenderData.hpp"
-#include "utils/Parser.hpp"
-#include "systems/position/TransitionSystem.hpp"
-#include "systems/state/StateSystem.hpp"
 #include "components/Components.hpp"
+#include "database/AbilityDatabase.hpp"
+#include "database/LootTableDatabase.hpp"
+#include "domain/Attribute.hpp"
 #include "domain/Cave.hpp"
 #include "domain/Color.hpp"
 #include "domain/Event.hpp"
 #include "domain/EventQueue.hpp"
 #include "domain/World.hpp"
 #include "external/entt/entt.hpp"
+#include "generation/CaveGenerator.hpp"
+#include "infrastructure/DevTools.hpp"
+#include "infrastructure/GameLogger.hpp"
 #include "infrastructure/GameState.hpp"
+#include "systems/position/TransitionSystem.hpp"
+#include "systems/rendering/RenderData.hpp"
+#include "systems/state/StateSystem.hpp"
+#include "utils/Parser.hpp"
 #include "utils/Random.hpp"
 #include "utils/Utils.hpp"
-#include "generation/CaveGenerator.hpp"
-#include "infrastructure/GameLogger.hpp"
-#include "database/AbilityDatabase.hpp"
-#include "database/LootTableDatabase.hpp"
-#include "infrastructure/DevTools.hpp"
 
 namespace ECS
 {
@@ -171,7 +172,7 @@ namespace ECS
 	{
 		const auto unlinked_passages = get_entities_in_cave(registry, cave_idx, Transition{.destination = entt::null});
 		assert(!unlinked_passages.empty());
-		return unlinked_passages[Random::randsize_t(0, unlinked_passages.size() - 1)];
+		return unlinked_passages[Random::rand<size_t>(0, unlinked_passages.size() - 1)];
 	}
 
 	inline size_t get_turn_number(const entt::registry& registry)
@@ -239,4 +240,61 @@ namespace ECS
 		registry.ctx().emplace<LootTableDatabase>();
 	}
 
+	/* Get attack range of creature or weapon.
+	 * If creature, not all it's attacks/weapons have to be in that range,
+	 * but create range from shortest and longest possible ranges from any weapon/attack,
+	 * even unarmed attacks. Combat system will then decide what attacks will be used.
+	 *
+	 * This is for checking whether an entity can attack something based on just distance.
+	 * */
+	inline Range<double> get_attack_range(const entt::registry& registry, const entt::entity entity)
+	{
+		// Could happen if trying to get range of "unarmed weapon slot", but then give creature instead
+		assert(entity != entt::null);
+
+		const bool is_creature = registry.get<Category>(entity).category == "creatures";
+		const bool is_weapon = registry.get<Subcategory>(entity).subcategory == "weapons";
+		// const bool is_shield... this will be here, but no shields yet
+
+		if (is_weapon)
+			return registry.get<AttackRange>(entity).range;
+		else if (is_creature)
+		{
+			Range<double> range = registry.get<AttackRange>(entity).range; // This is unarmed
+			if (registry.all_of<EquipmentSlots>(entity))
+			{
+				const auto& loadout = registry.get<EquipmentSlots>(entity).get_active_loadout();
+				if (loadout.main_hand != entt::null)
+				{
+					const auto& main_hand_range = get_attack_range(registry, loadout.main_hand);
+					range.min = std::min(range.min, main_hand_range.min);
+					range.max = std::max(range.max, main_hand_range.max);
+				}
+				if (loadout.off_hand != entt::null && loadout.off_hand != loadout.main_hand)
+				{
+					const auto& off_hand_range = get_attack_range(registry, loadout.off_hand);
+					range.min = std::min(range.min, off_hand_range.min);
+					range.max = std::max(range.max, off_hand_range.max);
+				}
+			}
+			return range;
+		}
+		std::abort(); // this function is still unfinished, needs shield bash ranges etc
+	}
+
+	inline Attributes get_attributes(const entt::registry& registry, const entt::entity entity)
+	{
+		using namespace StateSystem;
+		Attributes attributes = {
+			.strength = get_attribute<Strength>(registry, entity),
+			.dexterity = get_attribute<Dexterity>(registry, entity),
+			.agility = get_attribute<Agility>(registry, entity),
+			.perception = get_attribute<Perception>(registry, entity),
+			.vitality = get_attribute<Vitality>(registry, entity),
+			.endurance = get_attribute<Endurance>(registry, entity),
+			.willpower = get_attribute<Willpower>(registry, entity),
+			.charisma = get_attribute<Charisma>(registry, entity)
+		};
+		return attributes;
+	}
 };

@@ -1,5 +1,6 @@
 #pragma once
 
+/*
 enum class Attribute
 {
 	Strength,
@@ -28,3 +29,27 @@ namespace AttributeHelpers
 		Error::fatal("Unknown attribute string: " + string);
 	}
 };
+*/
+
+struct Attributes
+{
+	int strength;
+	int dexterity;
+	int agility;
+	int perception;
+	int vitality;
+	int endurance;
+	int willpower;
+	int charisma;
+};
+
+using AttributeTypes = std::tuple<
+	Strength,
+	Dexterity,
+	Agility,
+	Perception,
+	Vitality,
+	Endurance,
+	Willpower,
+	Charisma
+>;

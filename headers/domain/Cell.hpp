@@ -53,6 +53,7 @@ class Cell
 				default:
 					break;
 			}
+			set_glyph();
 		}
 
 	private:
@@ -66,11 +67,12 @@ class Cell
 	public:
 		wchar_t get_glyph() const;
 		void set_glyph(const wchar_t glyph) { this->glyph = glyph; }
+		void set_glyph(); // update type based glyph
 
 	private:
 		double density;
 	public:
-		void set_density(const double d) { this->density = d; }
+		void set_density(const double d) { this->density = d; set_glyph(); }
 		double get_density() const { return density; }
 		void reduce_density(const double amount);
 

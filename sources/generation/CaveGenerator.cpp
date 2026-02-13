@@ -55,7 +55,7 @@ namespace CaveGenerator
 		if (!data.test_run)
 			echo("Setting rock densities...");
 		auto& cells = data.cave.get_cells();
-		const size_t seed = Random::randsize_t(0, 99999);
+		const size_t seed = Random::rand<size_t>(0, 99999);
 		for (auto& cell : cells)
 		{
 			const Vec2 coords(cell.get_idx(), data.cave.get_size());
@@ -100,8 +100,8 @@ namespace CaveGenerator
 			const double angle_max = 2.0 * M_PI *
 				static_cast<double>(i + 1) /
 				static_cast<double>(total_features);
-			const double angle = Random::randreal(angle_min, angle_max);
-			const double radius = Random::randreal(max_radius / 1.5, max_radius);
+			const double angle = Random::rand<double>(angle_min, angle_max);
+			const double radius = Random::rand<double>(max_radius / 1.5, max_radius);
 
 			const Vec2 coords = Math::polar_to_cartesian(center, radius, angle);
 			const size_t cell_idx = coords.to_idx(data.cave.get_size());
@@ -116,7 +116,7 @@ namespace CaveGenerator
 			// Decide which feature to spawn here
 			const size_t options = spawning_features.size();
 			assert(options > 0);
-			const size_t rand = Random::randsize_t(0, options - 1);
+			const size_t rand = Random::rand<size_t>(0, options - 1);
 			auto it = std::next(spawning_features.begin(), rand);
 			cell.set_type(it->first);
 			it->second--;
@@ -235,7 +235,7 @@ namespace CaveGenerator
 					g_score[neighbor_pos] = tentative_g_score;
 					f_score[neighbor_pos] = tentative_g_score +
 						cave.distance(neighbor_pos, end) *
-						Random::randreal(0.9,1.0);
+						Random::rand<double>(0.9,1.0);
 					auto it = std::find(open_set.begin(), open_set.end(), neighbor_pos);
 					if (it == open_set.end())
 						open_set.push_back(neighbor_pos);

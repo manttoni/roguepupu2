@@ -21,7 +21,7 @@ TEST_F(RegistryTest, EntityTakesDamage)
 	ASSERT_TRUE(creature != entt::null);
 	ASSERT_TRUE(registry.all_of<Health>(creature));
 
-	const Damage damage(Damage::Type::Piercing, 1);
+	const Damage::Roll damage(Damage::Type::Piercing, 1);
 	const auto health_before = registry.get<Health>(creature);
 	DamageSystem::take_damage(registry, creature, damage);
 	const auto health_after = registry.get<Health>(creature);
@@ -32,7 +32,7 @@ TEST_F(RegistryTest, TakingDamagePrintsLog)
 {
 	const auto creature = EntityFactory::instance().create_entity(registry, "test_creature");
 
-	const Damage damage(Damage::Type::Piercing, 1);
+	const Damage::Roll damage(Damage::Type::Piercing, 1);
 
 	// DamageSystem will queue an event after removing hp
 	DamageSystem::take_damage(registry, creature, damage);

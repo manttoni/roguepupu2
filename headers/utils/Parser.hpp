@@ -4,13 +4,13 @@
 #include <utility>
 #include <filesystem>
 #include "nlohmann/json.hpp"
-#include "domain/Attack.hpp"
 #include "domain/Damage.hpp"
 #include "domain/Color.hpp"
 #include "domain/Effect.hpp"
 #include "domain/Conditions.hpp"
 #include "utils/Error.hpp"
 #include "domain/LootTable.hpp"
+#include "utils/Range.hpp"
 
 namespace CaveGenerator { struct Data; };
 namespace Parser
@@ -21,11 +21,10 @@ namespace Parser
 	nlohmann::json read_file(const std::filesystem::path& path);
 	void parse_cave_generation_conf(const std::string& conf_id, CaveGenerator::Data& data);
 	LootTable parse_loot_table(const nlohmann::json& data);
-	Damage parse_damage(const nlohmann::json& data);
-	Attack parse_attack(const nlohmann::json& data);
+	Damage::Spec parse_damage_spec(const nlohmann::json& data);
 
 	template<typename T>
-		std::pair<T, T> parse_range(const nlohmann::json& data)
+		Range<T> parse_range(const nlohmann::json& data)
 		{
 			if (data.is_number())
 			{

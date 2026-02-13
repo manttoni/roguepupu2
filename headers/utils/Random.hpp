@@ -2,6 +2,7 @@
 
 #include <random>
 #include "external/PerlinNoise.hpp"
+#include "utils/Range.hpp"
 
 namespace Random
 {
@@ -12,44 +13,27 @@ namespace Random
 		return gen;
 	}
 
-	// INT
-	inline int randint(const int min, const int max, const size_t seed)
-	{
-		std::mt19937 gen(seed);
-		std::uniform_int_distribution<int> dist(min, max);
-		return dist(gen);
-	}
-	inline int randint(const int min, const int max)
-	{
-		std::uniform_int_distribution<int> dist(min, max);
-		return dist(rng());
-	}
+	template<typename T>
+		inline T rand(const T min, const T max, std::mt19937& engine = rng())
+		{
+			static_assert(std::is_arithmetic_v<T>, "T must be numeric");
+			if constexpr (std::is_integral_v<T>)
+			{
+				std::uniform_int_distribution<T> dist(min, max);
+				return dist(engine);
+			}
+			else
+			{
+				std::uniform_real_distribution<T> dist(min, max);
+				return dist(engine);
+			}
+		}
 
-	// SIZE_T
-	inline size_t randsize_t(const size_t min, const size_t max, std::mt19937& rng_obj = rng())
-	{
-		std::uniform_int_distribution<size_t> dist(min, max);
-		return dist(rng_obj);
-	}
-	inline size_t randsize_t(const size_t min, const size_t max, const size_t seed)
-	{
-		std::mt19937 gen(seed);
-		std::uniform_int_distribution<size_t> dist(min, max);
-		return dist(gen);
-	}
-
-	// DOUBLE
-	inline double randreal(const double min, const double max)
-	{
-		std::uniform_real_distribution<> dist(min, max);
-		return dist(rng());
-	}
-	inline double randreal(const double min, const double max, const size_t seed)
-	{
-		std::mt19937 gen(seed);
-		std::uniform_real_distribution<> dist(min, max);
-		return dist(gen);
-	}
+	template<typename T>
+		inline T rand(const Range<T> range, std::mt19937& engine = rng())
+		{
+			return rand(range.min, range.max, engine);
+		}
 
 	// PERLIN NOISE
 	inline double noise3D(double x, double y, double z, double f, int seed, int octave)
@@ -68,8 +52,7 @@ namespace Random
 	template<typename T> const T& get_random_element(const std::vector<T>& vec)
 	{
 		assert(!vec.empty());
-		const auto size = vec.size();
-		const auto index = randsize_t(0, size - 1);
+		const auto index = rand<size_t>(0, vec.size() - 1);
 		return vec[index];
 	}
 }

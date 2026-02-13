@@ -42,7 +42,7 @@ struct Event
 	Actor actor{};		// who does?
 	Type type = Type::None;	// what?
 	Target target{};	// to who?
-	std::string attack_id = ""; // specify Type::Attack
 	entt::entity weapon = entt::null; // with what?
-	Damage damage{};
+	Damage::Roll damage_roll{};
+	int hit_quality = 0;
 };

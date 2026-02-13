@@ -1,20 +1,13 @@
 #pragma once
 
+#include <limits>
+#include <unordered_map>
 #include "domain/Color.hpp"
+#include "utils/Range.hpp"
 #include "utils/Error.hpp"
+#include "utils/Random.hpp"
 
-/* This is a way to describe type and amount of damage
- *
- * Piercing: stabbing with sharp weapons, sharp projectiles
- * Slashing: slashing with sharp weapons
- * Bludgeoning: blunt weapons and projectiles, most unarmed attacks, striking with hilt/pommel
- *
- * Burning: burning status effect
- * Bleeding: bleeding status effect
- * Poison: poison status effect
- * */
-
-struct Damage
+namespace Damage
 {
 	enum class Type
 	{
@@ -27,61 +20,7 @@ struct Damage
 		Poison,
 	};
 
-	Type type = Type::None;
-	size_t amount = 0;
-
-	Damage() : type(Type::None), amount(0) {}
-	Damage(const Type type, const size_t amount) : type(type), amount(amount) {}
-	Damage(const std::string& str, const size_t amount) : amount(amount)
-	{
-		if (str == "piercing") type = Type::Piercing;
-		else if (str == "slashing") type = Type::Slashing;
-		else if (str == "bludgeoning") type = Type::Bludgeoning;
-		else if (str == "burning") type = Type::Burning;
-		else if (str == "bleeding") type = Type::Bleeding;
-		else if (str == "poison") type = Type::Poison;
-		else Error::fatal("Unknown damage type: " + str);
-	}
-	bool operator==(const Damage& other) const = default;
-	bool operator!=(const Damage& other) const = default;
-	bool operator<(const Damage& other) const
-	{
-		return amount < other.amount;
-	}
-	bool operator>(const Damage& other) const
-	{
-		return amount > other.amount;
-	}
-	Damage& operator+=(int add)
-	{
-		if (add < 0 && -add > static_cast<int>(amount))
-			add = -static_cast<int>(amount);
-		amount += static_cast<size_t>(add);
-		return *this;
-	}
-	Damage& operator-=(int sub)
-	{
-		return operator+=(-sub);
-	}
-	friend Damage operator+(Damage lhs, int rhs) {
-		lhs += rhs;
-		return lhs;
-	}
-
-	friend Damage operator+(int lhs, Damage rhs) {
-		rhs += lhs;
-		return rhs;
-	}
-	friend Damage operator-(Damage lhs, int rhs) {
-		lhs -= rhs;
-		return lhs;
-	}
-
-	friend Damage operator-(int lhs, Damage rhs) {
-		rhs -= lhs;
-		return rhs;
-	}
-	std::string type_string() const
+	inline std::string type_to_string(const Type type)
 	{
 		switch (type)
 		{
@@ -95,7 +34,23 @@ struct Damage
 		}
 	}
 
-	Color get_color() const
+	inline Type string_to_type(const std::string& str)
+	{
+		static const std::unordered_map<std::string, Type> lookup = {
+			{"piercing", Type::Piercing},
+			{"slashing", Type::Slashing},
+			{"bludgeoning", Type::Bludgeoning},
+			{"burning", Type::Burning},
+			{"bleeding", Type::Bleeding},
+			{"poison", Type::Poison}
+		};
+
+		auto it = lookup.find(str);
+		if (it != lookup.end()) return it->second;
+		Error::fatal("Unhandled damage type string: " + str);
+	}
+
+	inline Color get_color(const Type type)
 	{
 		switch (type)
 		{
@@ -113,8 +68,43 @@ struct Damage
 		}
 	}
 
-	std::string to_string() const
+	struct Roll
 	{
-		return get_color().markup() + std::to_string(amount) + " " + type_string() + "{reset}";
-	}
+		Type type = Type::None;
+		double result = std::numeric_limits<double>::quiet_NaN();
+
+		Roll() = default;
+		Roll(const Type type, const size_t result) : type(type), result(static_cast<double>(result)) {}
+
+		std::string to_string() const
+		{
+			return std::to_string(static_cast<size_t>(result)) + " " + type_to_string(type);
+		}
+	};
+
+	struct Spec
+	{
+		Type type = Type::None;
+		Range<size_t> range;
+
+		Spec() = default;
+		Spec(const Type type, const Range<size_t>& range) : type(type), range(range) {}
+
+		Roll roll() const
+		{
+			return Roll(type, Random::rand<size_t>(range));
+		}
+
+		bool operator==(const Spec& other) const = default;
+		bool operator!=(const Spec& other) const = default;
+		bool operator<(const Spec& other) const
+		{
+			return range.average() < other.range.average();
+		}
+		bool operator>(const Spec& other) const
+		{
+			return range.average() > other.range.average();
+		}
+	};
+
 };

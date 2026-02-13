@@ -185,7 +185,7 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			const std::string glyph_str = data.get<std::string>();
 			std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
 			std::wstring wstr = conv.from_bytes(glyph_str);
-			const wchar_t glyph = wstr[Random::randsize_t(0, wstr.size() - 1)];
+			const wchar_t glyph = wstr[Random::rand<size_t>(0, wstr.size() - 1)];
 			reg.template emplace<Glyph>(e, glyph);
 		}
 	},
@@ -269,22 +269,6 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 				reg.template emplace<Transition>(e, entt::null);
 		}
 	},
-	{ "edge", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			if (!data.is_number_float())
-				Error::fatal("Edge is not a float");
-			const double edge = data.get<double>();
-			if (edge < 0 || edge > 1)
-				Error::fatal("Invalid Edge value");
-			reg.template emplace<Edge>(e, edge);
-		}
-	},
-	{ "throwable", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			(void) data;
-			reg.template emplace<Throwable>(e);
-		}
-	},
 	{ "size", [](auto& reg, auto e, const nlohmann::json& data)
 		{
 			double size = 0;
@@ -356,24 +340,53 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 	},
 	{ "damage", [](auto& reg, auto e, const nlohmann::json& data)
 		{
-			if (!data.contains("type") || !data.contains("amount"))
+			if (!data.contains("type") || !data.contains("range"))
 				Error::fatal("Invalid damage: " + data.dump(4));
-			const auto type = data["type"].get<std::string>();
-			const auto amount = data["amount"].get<size_t>();
-			reg.template emplace<Damage>(e, type, amount);
+			const auto type = Damage::string_to_type(data["type"].get<std::string>());
+			const auto range = Parser::parse_range<size_t>(data["range"]);
+			reg.template emplace<Damage::Spec>(e, type, range);
 		}
 	},
-	{ "attacks", [](auto& reg, auto e, const nlohmann::json& data)
+	{ "melee_weapon", [](auto& reg, auto e, const nlohmann::json& data)
 		{
-			if (!data.is_array())
-				Error::fatal("Attacks should be an array: " + data.dump(4));
-			std::vector<Attack> attacks;
-			for (const auto& entry : data)
-			{
-				Attack a = Parser::parse_attack(entry);
-				attacks.push_back(a);
-			}
-			reg.template emplace<Attacks>(e, attacks);
+			(void) data;
+			reg.template emplace<MeleeWeapon>(e);
+		}
+	},
+	{ "ranged_weapon", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			(void) data;
+			reg.template emplace<RangedWeapon>(e);
+		}
+	},
+	{ "throwing_weapon", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			(void) data;
+			reg.template emplace<ThrowingWeapon>(e);
+		}
+	},
+	{ "finesse_weapon", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			(void) data;
+			reg.template emplace<FinesseWeapon>(e);
+		}
+	},
+	{ "versatile_weapon", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			(void) data;
+			reg.template emplace<VersatileWeapon>(e);
+		}
+	},
+	{ "mechanical_weapon", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			(void) data;
+			reg.template emplace<MechanicalWeapon>(e);
+		}
+	},
+	{ "range", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			const auto range = Parser::parse_range<double>(data);
+			reg.template emplace<AttackRange>(e, range);
 		}
 	}
 };
@@ -399,7 +412,30 @@ void EntityFactory::emplace_default_components(entt::registry& registry, const e
 	if (registry.get<Category>(entity).category == "creatures")
 	{
 		// Creatures have unarmed damage, no need to manually add this to each
-		registry.emplace<Damage>(entity, Damage::Type::Bludgeoning, 0);
+		if (!registry.all_of<Damage::Spec>(entity))
+			registry.emplace<Damage::Spec>(entity, Damage::Type::Bludgeoning, Range<size_t>(1,2));
+		if (!registry.all_of<AttackRange>(entity))
+			registry.emplace<AttackRange>(entity, Range<double>(0, 1.5));
+	}
+
+	if (registry.get<Subcategory>(entity).subcategory == "weapons")
+	{
+		if (!registry.all_of<AttackRange>(entity))
+			registry.emplace<AttackRange>(entity, Range<double>(0, 1.5));
+	}
+}
+
+void verify_entity_components(const entt::registry& registry, const entt::entity entity)
+{
+	if (!registry.all_of<Category, Subcategory, Name>(entity))
+		Error::fatal("Entity doesn't have core components");
+
+	if (registry.get<Subcategory>(entity).subcategory == "weapons")
+	{
+		if (!registry.all_of<AttackRange, Damage::Spec>(entity))
+			Error::fatal("Weapon has no range or damage: " + registry.get<Name>(entity).name);
+		if (!registry.any_of<MeleeWeapon, RangedWeapon, ThrowingWeapon, AttackRange>(entity))
+			Error::fatal("Weapon has no type: " + registry.get<Name>(entity).name);
 	}
 }
 
@@ -422,8 +458,8 @@ entt::entity EntityFactory::create_entity(entt::registry& registry, const std::s
 		}
 	}
 
-	if (!registry.all_of<Category, Subcategory, Name>(entity))
-		Error::fatal("Entity doesn't have core components");
+	emplace_default_components(registry, entity);
+	verify_entity_components(registry, entity);
 
 	if (position.has_value())
 	{
@@ -434,8 +470,6 @@ entt::entity EntityFactory::create_entity(entt::registry& registry, const std::s
 		spawn_event.target.position = *position;
 		ECS::queue_event(registry, spawn_event);
 	}
-
-	emplace_default_components(registry, entity);
 
 	return entity;
 }

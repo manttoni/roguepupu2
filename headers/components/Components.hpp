@@ -8,7 +8,7 @@
 #include <vector>
 #include <optional>
 #include "utils/Error.hpp"
-#include "domain/Attack.hpp"
+#include "utils/Range.hpp"
 #include "domain/Color.hpp"
 #include "domain/Intent.hpp"
 #include "domain/Ability.hpp"
@@ -119,7 +119,7 @@ struct Vitality { int value; };		// health
 struct Endurance { int value; };	// stamina
 struct Willpower { int value; };	// mana
 struct Charisma { int value; };		// opinion
-struct Perception { int value; };
+struct Perception { int value; };	// vision range
 struct Strength { int value; };
 struct Agility { int value; };
 struct Dexterity { int value; };
@@ -128,6 +128,8 @@ template<typename T> struct Buff
 {
 	int value;
 	std::optional<size_t> duration;
+
+	bool operator==(const Buff& other) const = default;
 };
 template<typename T> struct BuffContainer
 {
@@ -230,6 +232,16 @@ struct EquipmentSlots
 	};
 	std::array<Loadout, 2> loadouts;
 	size_t active_loadout = 0;
+
+	const Loadout& get_active_loadout() const
+	{
+		return loadouts[active_loadout];
+	}
+	const Loadout& get_other_loadout() const
+	{
+		return loadouts[active_loadout ^ 1];
+	}
+
 	std::map<Slot, entt::entity> equipped_items{
 		{ Slot::MainHand, entt::null},
 		{ Slot::OffHand, entt::null},
@@ -241,10 +253,9 @@ struct Inventory
 };
 
 /* Weapons etc... */
-
-struct Attacks
+struct AttackRange
 {
-	std::vector<Attack> attacks;
+	Range<double> range;
 };
 struct Projectile
 {
@@ -306,12 +317,12 @@ struct Tool
 	}
 
 };
-struct Throwable {};
-struct Range
-{
-	double cells; // 1 is up/down/left/right, 1.5 is also diagonal etc
-};
-struct Edge { double sharpness; };
+struct FinesseWeapon {};
+struct VersatileWeapon {};
+struct MechanicalWeapon {};
+struct MeleeWeapon {};
+struct ThrowingWeapon {};
+struct RangedWeapon {};
 
 /* Crafting related */
 struct Gatherable
@@ -387,11 +398,6 @@ struct Abilities
  * */
 struct Player
 {
-	// Player will use these attacks when moving agains enemy entity,
-	// or when right clicking. Set from the 'a' menu.
-	std::pair<entt::entity, const Attack*>
-		default_melee_attack{entt::null, nullptr},
-		default_ranged_attack{entt::null, nullptr};
 };
 struct Destroyed {};
 

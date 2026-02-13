@@ -1,10 +1,8 @@
 #include "components/Components.hpp"
-#include "domain/Attack.hpp"
 #include "domain/Intent.hpp"
 #include "domain/Position.hpp"
 #include "external/entt/entt.hpp"
 #include "systems/action/AISystem.hpp"
-#include "systems/combat/AttackSystem.hpp"
 #include "systems/perception/VisionSystem.hpp"
 #include "systems/position/MovementSystem.hpp"
 #include "systems/state/AlignmentSystem.hpp"
@@ -31,37 +29,28 @@ namespace AISystem
 				continue;
 			if (AlignmentSystem::is_hostile(registry, intent.actor.entity, entity))
 			{
+				// npc will attack if it has at least one weapon with enough range
 				const auto distance = ECS::distance(registry, intent.actor.entity, entity);
-				auto attacks = AttackSystem::get_attacks_all_loadouts(registry, intent.actor.entity);
-				std::sort(attacks.begin(), attacks.end(),
-						[&](const auto& a, const auto& b)
-						{ // its possible to check weapon modifiers here also, but they dont exist now
-						const auto& [a_weapon, a_attack] = a;
-						const auto& [b_weapon, b_attack] = b;
-						const auto a_damage = AttackSystem::get_attack_damage(registry, intent.actor.entity, *a_attack);
-						const auto b_damage = AttackSystem::get_attack_damage(registry, intent.actor.entity, *b_attack);
-						return a_damage > b_damage;
-						});
-				for (const auto& weapon_attack : attacks)
+				if (ECS::get_attack_range(registry, intent.actor.entity).contains(distance))
 				{
-					const auto& [weapon, attack] = weapon_attack;
-					if (attack->range < distance)
-						continue;
-					// check fatigue also when implemented
-					// they might want to use bow in melee, but currently no neat solution to that
-					// after all checks, this is the attack they will use
-					// check if the weapon is in other loadout
-					if (weapon != entt::null && !EquipmentSystem::is_equipped(registry, intent.actor.entity, weapon))
+					intent.target.entity = entity;
+					intent.type = Intent::Type::Attack;
+					return true;
+				}
+
+				// npc might want to swap loadout, if it has a weapon with more suitable range
+				if (registry.all_of<EquipmentSlots>(intent.actor.entity))
+				{
+					const auto& slots = registry.get<EquipmentSlots>(intent.actor.entity);
+					const auto& other_loadout = slots.get_other_loadout();
+					if ((other_loadout.main_hand != entt::null && ECS::get_attack_range(registry, other_loadout.main_hand).contains(distance)) ||
+						(other_loadout.off_hand != entt::null && ECS::get_attack_range(registry, other_loadout.off_hand).contains(distance)))
 					{
 						intent.type = Intent::Type::SwapLoadout;
 						return true;
 					}
-					intent.target.entity = entity;
-					intent.target.position = registry.get<Position>(entity);
-					intent.type = Intent::Type::Attack;
-					intent.weapon_attack = weapon_attack;
-					return true;
 				}
+
 				// no attack was suitable, then approach
 				intent.target.position = MovementSystem::get_first_step(
 						registry,

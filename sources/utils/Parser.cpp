@@ -8,13 +8,14 @@
 #include <optional>
 #include <string>
 
-#include "utils/Parser.hpp"
 #include "domain/Color.hpp"
-#include "utils/Error.hpp"
-#include "generation/CaveGenerator.hpp"
 #include "domain/Conditions.hpp"
+#include "domain/Damage.hpp"
 #include "domain/Effect.hpp"
+#include "generation/CaveGenerator.hpp"
+#include "utils/Error.hpp"
 #include "utils/Log.hpp"
+#include "utils/Parser.hpp"
 
 namespace Parser
 {
@@ -103,35 +104,11 @@ namespace Parser
 		cgdata.margin = m;
 	}
 
-	Damage parse_damage(const nlohmann::json& data)
+	Damage::Spec parse_damage(const nlohmann::json& data)
 	{
-		const auto type = data["type"].get<std::string>();
-		const auto amount = data["amount"].get<size_t>();
-		return Damage(type, amount);
+		const auto type_str = data["type"].get<std::string>();
+		const auto range = parse_range<size_t>(data["amount"]);
+		return Damage::Spec(Damage::string_to_type(type_str), range);
 	}
 
-	Attack parse_attack(const nlohmann::json& data)
-	{
-		if (!data.contains("id"))
-			Error::fatal("Attack has no id: " + data.dump(4));
-		Attack attack;
-		attack.id = data["id"].get<std::string>();
-		if (data.contains("base_damage"))
-			attack.base_damage = parse_damage(data["base_damage"]);
-		if (data.contains("range"))
-			attack.range = data["range"].get<double>();
-		if (data.contains("is_melee"))
-			attack.is_melee = data["is_melee"].get<bool>();
-		if (data.contains("damage_attributes") && !data["damage_attributes"].is_null())
-		{
-			for (const auto& attribute : data["damage_attributes"])
-				attack.damage_attributes.push_back(AttributeHelpers::from_string(attribute.get<std::string>()));
-		}
-		if (data.contains("hit_chance_attributes") && !data["hit_chance_attributes"].is_null())
-		{
-			for (const auto& attribute : data["hit_chance_attributes"])
-				attack.hit_chance_attributes.push_back(AttributeHelpers::from_string(attribute.get<std::string>()));
-		}
-		return attack;
-	}
 };

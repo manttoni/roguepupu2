@@ -6,25 +6,24 @@
 #include <vector>
 
 #include "components/Components.hpp"
-#include "systems/combat/AttackSystem.hpp"
-#include "systems/items/LootSystem.hpp"
-#include "systems/rendering/RenderingSystem.hpp"
-#include "systems/rendering/LightingSystem.hpp"
-#include "domain/Event.hpp"
-#include "external/entt/entt.hpp"
-#include "systems/action/EventSystem.hpp"
-#include "systems/state/EquipmentSystem.hpp"
-#include "utils/ECS.hpp"
-#include "infrastructure/GameLogger.hpp"
-#include "utils/Error.hpp"
 #include "domain/Actor.hpp"
 #include "domain/Damage.hpp"
 #include "domain/Effect.hpp"
+#include "domain/Event.hpp"
 #include "domain/EventQueue.hpp"
 #include "domain/Position.hpp"
 #include "domain/Target.hpp"
 #include "external/entt/entity/fwd.hpp"
+#include "external/entt/entt.hpp"
+#include "infrastructure/GameLogger.hpp"
+#include "systems/action/EventSystem.hpp"
+#include "systems/items/LootSystem.hpp"
 #include "systems/position/TransitionSystem.hpp"
+#include "systems/rendering/LightingSystem.hpp"
+#include "systems/rendering/RenderingSystem.hpp"
+#include "systems/state/EquipmentSystem.hpp"
+#include "utils/ECS.hpp"
+#include "utils/Error.hpp"
 #include "utils/Log.hpp"
 
 namespace EventSystem
@@ -94,18 +93,34 @@ namespace EventSystem
 			LightingSystem::reset_lights(registry, registry.get<Position>(event.target.entity).cave_idx);
 	}
 
-	/* Automatically select strongest attacks. Probably going to get rewrite at some point.
-	 * */
 	void resolve_equip_event(entt::registry& registry, const Event& event)
 	{
-		const auto player = ECS::get_player(registry);
-		if (event.actor.entity == player)
-		{
-			auto &player_comp = registry.get<Player>(player);
-			player_comp.default_melee_attack = AttackSystem::get_strongest_melee_attack(registry, player);
-			player_comp.default_ranged_attack = AttackSystem::get_strongest_ranged_attack(registry, player);
-		}
+		const auto equipper = event.actor.entity;
+		const auto item = event.target.entity;
+		if (registry.all_of<Buff<Strength>>(item)) StateSystem::add_buff(registry, equipper, registry.get<Buff<Strength>>(item));
+		else if (registry.all_of<Buff<Dexterity>>(item)) StateSystem::add_buff(registry, equipper, registry.get<Buff<Dexterity>>(item));
+		else if (registry.all_of<Buff<Agility>>(item)) StateSystem::add_buff(registry, equipper, registry.get<Buff<Agility>>(item));
+		else if (registry.all_of<Buff<Perception>>(item)) StateSystem::add_buff(registry, equipper, registry.get<Buff<Perception>>(item));
+		else if (registry.all_of<Buff<Vitality>>(item)) StateSystem::add_buff(registry, equipper, registry.get<Buff<Vitality>>(item));
+		else if (registry.all_of<Buff<Endurance>>(item)) StateSystem::add_buff(registry, equipper, registry.get<Buff<Endurance>>(item));
+		else if (registry.all_of<Buff<Willpower>>(item)) StateSystem::add_buff(registry, equipper, registry.get<Buff<Willpower>>(item));
+		else if (registry.all_of<Buff<Charisma>>(item)) StateSystem::add_buff(registry, equipper, registry.get<Buff<Charisma>>(item));
 	}
+
+	void resolve_unequip_event(entt::registry& registry, const Event& event)
+	{
+		const auto unequipper = event.actor.entity;
+		const auto item = event.target.entity;
+		if (registry.all_of<Buff<Strength>>(item)) StateSystem::remove_buff(registry, unequipper, registry.get<Buff<Strength>>(item));
+		else if (registry.all_of<Buff<Dexterity>>(item)) StateSystem::remove_buff(registry, unequipper, registry.get<Buff<Dexterity>>(item));
+		else if (registry.all_of<Buff<Agility>>(item)) StateSystem::remove_buff(registry, unequipper, registry.get<Buff<Agility>>(item));
+		else if (registry.all_of<Buff<Perception>>(item)) StateSystem::remove_buff(registry, unequipper, registry.get<Buff<Perception>>(item));
+		else if (registry.all_of<Buff<Vitality>>(item)) StateSystem::remove_buff(registry, unequipper, registry.get<Buff<Vitality>>(item));
+		else if (registry.all_of<Buff<Endurance>>(item)) StateSystem::remove_buff(registry, unequipper, registry.get<Buff<Endurance>>(item));
+		else if (registry.all_of<Buff<Willpower>>(item)) StateSystem::remove_buff(registry, unequipper, registry.get<Buff<Willpower>>(item));
+		else if (registry.all_of<Buff<Charisma>>(item)) StateSystem::remove_buff(registry, unequipper, registry.get<Buff<Charisma>>(item));
+	}
+
 
 	/* Opposite of spawn event. Remove lights and other effects
 	 * Entity is not yet destroyed, but will be after resolving all events
@@ -155,10 +170,10 @@ namespace EventSystem
 		switch (event.type)
 		{
 			case Event::Type::Attack:
-				message += Utils::conjugate_third(event.attack_id) + " ";
+				message += "attacks ";
 				break;
 			case Event::Type::TakeDamage:
-				message += "takes " + event.damage.to_string() + " damage";
+				message += "takes " + event.damage_roll.to_string() + " damage";
 				break;
 			case Event::Type::Gather:
 				message += "gathers from ";
@@ -185,6 +200,11 @@ namespace EventSystem
 			message += ECS::get_colored_name(registry, event.target.entity);
 		if (event.weapon != entt::null)
 			message += " with a " + ECS::get_colored_name(registry, event.weapon);
+		if (event.type == Event::Type::Attack)
+		{
+			if (event.hit_quality < 0)
+				message += ", but misses";
+		}
 		registry.ctx().get<GameLogger>().log(message);
 		Log::log("Game Log: " + message);
 	}

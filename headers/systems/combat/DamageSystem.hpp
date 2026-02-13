@@ -2,8 +2,11 @@
 
 #include "external/entt/fwd.hpp"
 
-struct Damage;
+namespace Damage
+{
+	struct Roll;
+};
 namespace DamageSystem
 {
-	void take_damage(entt::registry& registry, const entt::entity entity, const Damage& damage);
+	void take_damage(entt::registry& registry, const entt::entity entity, const Damage::Roll& damage);
 };
