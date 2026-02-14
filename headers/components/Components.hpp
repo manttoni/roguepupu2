@@ -162,6 +162,7 @@ struct Alignment
 	double chaos_law = 0.0;
 	double evil_good = 0.0;
 	double tolerance = 0.0;
+	std::unordered_map<entt::entity, double> personal_opinions;
 
 	Alignment() = default;
 	Alignment(const double chaos_law, const double evil_good, const double tolerance = 0.0)

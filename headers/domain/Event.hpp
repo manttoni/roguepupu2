@@ -38,6 +38,7 @@ struct Event
 		Move,
 		TakeDamage,
 		Attack,
+		BecomeHostile,
 	};
 	Actor actor{};		// who does?
 	Type type = Type::None;	// what?

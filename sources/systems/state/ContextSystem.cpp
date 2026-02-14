@@ -173,7 +173,10 @@ namespace ContextSystem
 		}
 		if (is_player)
 			options.push_back("Inventory");
-		if (registry.all_of<Health>(entity) && owner == entt::null && ECS::get_attack_range(registry, player).contains(distance))
+		if (registry.all_of<Health>(entity) &&
+				!registry.any_of<Dead>(entity) &&
+				owner == entt::null &&
+				ECS::get_attack_range(registry, player).contains(distance))
 			options.push_back("Attack");
 		return options;
 	}

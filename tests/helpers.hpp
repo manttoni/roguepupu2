@@ -2,16 +2,17 @@
 
 #include <sstream>
 #include <algorithm>
-#include "external/entt/entt.hpp"
-#include "domain/Cell.hpp"
+#include "database/EntityFactory.hpp"
 #include "domain/Cave.hpp"
-#include "domain/World.hpp"
+#include "domain/Cell.hpp"
 #include "domain/Position.hpp"
+#include "domain/World.hpp"
+#include "external/entt/entt.hpp"
+#include "systems/rendering/RenderingSystem.hpp"
 #include "utils/ECS.hpp"
-#include "utils/Vec2.hpp"
 #include "utils/Error.hpp"
 #include "utils/Utils.hpp"
-#include "systems/rendering/RenderingSystem.hpp"
+#include "utils/Vec2.hpp"
 
 
 class RegistryTest : public ::testing::Test
@@ -82,5 +83,34 @@ namespace TestHelpers
 			if (it != highlight.end()) out << "\x1b[0m";
 		}
 		return out.str();
+	}
+	struct FightArena
+	{
+		std::vector<entt::entity> entities;
+		size_t cave_idx;
+	};
+	inline FightArena get_duel_arena(entt::registry& registry)
+	{
+		FightArena arena;
+		arena.entities = EntityFactory::instance().create_entities(registry, "test_creature", 2);
+		arena.cave_idx = TestHelpers::get_cave_idx(registry, 10, TestHelpers::CaveType::Room);
+		const auto& cave = ECS::get_cave(registry, arena.cave_idx);
+
+		// Give them positions and opposing alignments and aggressive AI
+		const auto mid_pos = cave.middle_position();
+		registry.emplace<Position>(arena.entities[0], mid_pos);
+		const Alignment a(Alignment::Type::LawfulGood);
+		registry.emplace_or_replace<Alignment>(arena.entities[0], a);
+		registry.emplace_or_replace<AI>(arena.entities[0]);
+		registry.get<AI>(arena.entities[0]).aggressive = true;
+
+		const auto left = Position(mid_pos.cell_idx - 1, arena.cave_idx);
+		registry.emplace<Position>(arena.entities[1], left);
+		const Alignment b(Alignment::Type::ChaoticEvil);
+		registry.emplace_or_replace<Alignment>(arena.entities[1], b);
+		registry.emplace_or_replace<AI>(arena.entities[1]);
+		registry.get<AI>(arena.entities[1]).aggressive = true;
+
+		return arena;
 	}
 };

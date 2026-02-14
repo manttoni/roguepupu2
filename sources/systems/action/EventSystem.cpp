@@ -21,6 +21,7 @@
 #include "systems/position/TransitionSystem.hpp"
 #include "systems/rendering/LightingSystem.hpp"
 #include "systems/rendering/RenderingSystem.hpp"
+#include "systems/state/AlignmentSystem.hpp"
 #include "systems/state/EquipmentSystem.hpp"
 #include "utils/ECS.hpp"
 #include "utils/Error.hpp"
@@ -161,6 +162,24 @@ namespace EventSystem
 		}
 	}
 
+	/* If actor attacked neutral or friendly target, they lose opinion.
+	 * */
+	void resolve_attack_event(entt::registry& registry, const Event& event)
+	{
+		// Does the target of attack already consider actor as hostile entity?
+		const bool is_hostile = AlignmentSystem::is_hostile(registry, event.target.entity, event.actor.entity);
+		if (!is_hostile)
+		{
+			// If not, they were betrayed/backstabbed, which will anger them
+			AlignmentSystem::lose_opinion(registry, event.target.entity, event.actor.entity, 1);
+		}
+	}
+
+	void resolve_become_hostile_event(entt::registry& registry, const Event& event)
+	{
+		(void) registry; (void) event;
+	}
+
 	void log_event(entt::registry& registry, const Event& event)
 	{
 		Log::log("event.type: " + std::to_string(static_cast<size_t>(event.type)));
@@ -192,6 +211,9 @@ namespace EventSystem
 				break;
 			case Event::Type::Death:
 				message += "dies";
+				break;
+			case Event::Type::BecomeHostile:
+				message += "becomes hostile toward ";
 				break;
 			default:
 				return;
@@ -253,6 +275,10 @@ namespace EventSystem
 					//resolve_death_event(registry, event);
 					break;
 				case Event::Type::Attack:
+					resolve_attack_event(registry, event);
+					break;
+				case Event::Type::BecomeHostile:
+					resolve_become_hostile_event(registry, event);
 					break;
 				default:
 					Error::fatal("Unhandled event type: " + std::to_string(static_cast<int>(event.type)));

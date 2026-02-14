@@ -108,7 +108,8 @@ namespace ActionSystem
 			if (intent.type != Intent::Type::None) break;
 			if (registry.all_of<Alignment, Health>(entity) &&
 				!registry.all_of<Dead>(entity) &&
-				AlignmentSystem::is_hostile(registry, player, entity))
+				AlignmentSystem::is_hostile(registry, player, entity) &&
+				AlignmentSystem::is_hostile(registry, entity, player))
 			{
 				intent.type = Intent::Type::Attack;
 				intent.target.entity = entity;
@@ -153,7 +154,8 @@ namespace ActionSystem
 						for (const auto entity : ECS::get_entities(registry, intent.target.position))
 						{
 							if (registry.all_of<Alignment>(entity) &&
-									AlignmentSystem::is_hostile(registry, player, entity))
+									AlignmentSystem::is_hostile(registry, player, entity) &&
+									AlignmentSystem::is_hostile(registry, entity, player))
 								intent.target.entity = entity;
 						}
 						if (intent.target.entity == entt::null)
