@@ -43,6 +43,8 @@ LiquidMixture LiquidMixture::flow(const double flow_volume)
 
 double LiquidMixture::remove_liquid(const Liquid::Type type, const double volume)
 {
+	if (volume < 0)
+		Log::log("Volume is lt 0: " + std::to_string(volume));
 	assert(volume >= 0);
 	const double remove = std::min(mixture[type], volume);
 	mixture[type] -= remove;
