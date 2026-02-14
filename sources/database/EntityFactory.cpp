@@ -416,6 +416,8 @@ void EntityFactory::emplace_default_components(entt::registry& registry, const e
 			registry.emplace<Damage::Spec>(entity, Damage::Type::Bludgeoning, Range<size_t>(1,2));
 		if (!registry.all_of<AttackRange>(entity))
 			registry.emplace<AttackRange>(entity, Range<double>(0, 1.5));
+		if (!registry.all_of<FGColor>(entity))
+			registry.emplace<FGColor>(entity, Color::white());
 	}
 
 	if (registry.get<Subcategory>(entity).subcategory == "weapons")

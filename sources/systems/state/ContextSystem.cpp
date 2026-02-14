@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "systems/combat/CombatSystem.hpp"
 #include "systems/state/AlignmentSystem.hpp"
 #include "systems/state/StateSystem.hpp"
 #include "systems/action/EventSystem.hpp"
@@ -143,11 +144,12 @@ namespace ContextSystem
 	std::vector<std::string> get_options(const entt::registry& registry, const entt::entity entity, const entt::entity owner)
 	{
 		assert(registry.all_of<Position>(entity) || InventorySystem::has_item(registry, owner, entity));
+		const auto player = ECS::get_player(registry);
 		const double distance = !registry.all_of<Position>(entity) ?
-			ECS::distance(registry, ECS::get_player(registry), owner) :
-			ECS::distance(registry, ECS::get_player(registry), entity);
-		const bool is_player = entity == ECS::get_player(registry);
-		const bool is_player_owned = owner == ECS::get_player(registry);
+			ECS::distance(registry, player, owner) :
+			ECS::distance(registry, player, entity);
+		const bool is_player = entity == player;
+		const bool is_player_owned = owner == player;
 		std::vector<std::string> options;
 		if (distance < 1.5)
 		{
@@ -155,7 +157,7 @@ namespace ContextSystem
 				options.push_back("Take");
 			if (!is_player && registry.all_of<Inventory, Position, Dead>(entity))
 				options.push_back("Loot");
-			if (GatheringSystem::can_gather(registry, ECS::get_player(registry), entity))
+			if (GatheringSystem::can_gather(registry, player, entity))
 				options.push_back("Gather");
 		}
 		if (is_player_owned)
@@ -163,7 +165,7 @@ namespace ContextSystem
 			options.push_back("Drop");
 			if (registry.all_of<Equipment>(entity))
 			{
-				if (EquipmentSystem::is_equipped(registry, ECS::get_player(registry), entity))
+				if (EquipmentSystem::is_equipped(registry, player, entity))
 					options.push_back("Unequip");
 				else
 					options.push_back("Equip");
@@ -171,6 +173,8 @@ namespace ContextSystem
 		}
 		if (is_player)
 			options.push_back("Inventory");
+		if (registry.all_of<Health>(entity) && owner == entt::null && ECS::get_attack_range(registry, player).contains(distance))
+			options.push_back("Attack");
 		return options;
 	}
 
@@ -197,9 +201,11 @@ namespace ContextSystem
 		else if (label == "Equip" || label == "Unequip")
 			EquipmentSystem::equip_or_unequip(registry, ECS::get_player(registry), entity);
 		//else if (label == "Take liquid")
-		//	This needs some kind of UI thing, use same as the Enter examine UI
+		//	This needs some kind of UI thing, use same as the Enter examine UI // Future me says: make a KeyboardSelector tool
 		else if (label == "Gather")
 			GatheringSystem::gather(registry, ECS::get_player(registry), entity);
+		else if (label == "Attack")
+			CombatSystem::attack(registry, ECS::get_player(registry), entity);
 		EventSystem::resolve_events(registry); // Do this so that log messages will show while menu is open
 	}
 
@@ -257,6 +263,8 @@ namespace ContextSystem
 			if (selection.label == "Back" || selection.label.empty())
 				break;
 			show_entity_details(registry, inventory[selection.index], entity);
+			if (CombatSystem::is_in_combat(registry, ECS::get_player(registry)))
+				break;
 		}
 	}
 
@@ -281,6 +289,8 @@ namespace ContextSystem
 			if (selection.label == "Back" || selection.label.empty())
 				break;
 			show_entity_details(registry, entities[selection.index]);
+			if (CombatSystem::is_in_combat(registry, ECS::get_player(registry)))
+				break;
 		}
 	}
 

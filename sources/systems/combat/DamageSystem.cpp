@@ -35,12 +35,19 @@ namespace DamageSystem
 		auto& hp = registry.get<Health>(entity).current;
 		hp -= damage_roll.result;
 
-		VisualEffectSystem::damage_flash(registry, entity);
-		ECS::spawn_liquid(
-				registry,
-				registry.get<Position>(entity),
-				LiquidMixture(Liquid::Type::Blood, damage_roll.result)
-				);
+		// This needs its own system, some AnimationSystem with queued animations
+		if (registry.ctx().get<GameState>().test_run == false)
+		{
+			VisualEffectSystem::damage_flash(registry, entity);
+		}
+		if (registry.all_of<Position>(entity))
+		{
+			ECS::spawn_liquid(
+					registry,
+					registry.get<Position>(entity),
+					LiquidMixture(Liquid::Type::Blood, damage_roll.result)
+					);
+		}
 
 		Event event = {.type = Event::Type::TakeDamage};
 		event.actor.entity = entity;

@@ -1,8 +1,10 @@
-#include "utils/ECS.hpp"
+#include "domain/Damage.hpp"
 #include "external/entt/entt.hpp"
 #include "systems/combat/DamageSystem.hpp"
+#include "systems/perception/VisionSystem.hpp"
+#include "systems/state/AlignmentSystem.hpp"
 #include "systems/state/EquipmentSystem.hpp"
-#include "domain/Damage.hpp"
+#include "utils/ECS.hpp"
 
 namespace CombatSystem
 {
@@ -151,5 +153,30 @@ namespace CombatSystem
 
 		for (const auto weapon : used_weapons)
 			attack_with(registry, attacker, defender, weapon);
+	}
+
+	/* Entity is in combat, if there are hostile entities within its vision,
+	 * that can see entity.
+	 * If 'entity' is hostile towards another entity it sees, that is not enough to return true.
+	 * The other entity has to be hostile.
+	 * "I am in combat if there is someone coming at me"
+	 * */
+	bool is_in_combat(const entt::registry& registry, const entt::entity entity)
+	{
+		for (const auto e1 : VisionSystem::get_visible_entities(registry, entity))
+		{
+			if (!registry.all_of<Alignment>(e1))
+				continue; // cannot have bad/any opinions
+			const auto visible = VisionSystem::get_visible_entities(registry, e1);
+			auto it = std::find(visible.begin(), visible.end(), entity);
+			if (it == visible.end())
+				continue; // cannot see 'entity'
+			if (!AlignmentSystem::is_hostile(registry, e1, entity))
+				continue; // does not want to attack 'entity'
+
+			// if 'entity' sees an entity, that also sees 'entity' and is hostile, then it is 'in combat'
+			return true;
+		}
+		return false;
 	}
 };

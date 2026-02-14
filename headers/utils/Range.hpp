@@ -1,6 +1,7 @@
 #pragma once
 
 #include <limits>
+#include <sstream>
 
 template<typename T>
 struct Range

@@ -152,7 +152,8 @@ namespace ActionSystem
 							continue;
 						for (const auto entity : ECS::get_entities(registry, intent.target.position))
 						{
-							if (AlignmentSystem::is_hostile(registry, player, entity))
+							if (registry.all_of<Alignment>(entity) &&
+									AlignmentSystem::is_hostile(registry, player, entity))
 								intent.target.entity = entity;
 						}
 						if (intent.target.entity == entt::null)

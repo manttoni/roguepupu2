@@ -1,6 +1,8 @@
 {
 	"test_creature": {
 		"glyph": "T",
+		"weight": 50,
+		"size": 50,
 		"solid": true,
 		"inventory": {},
 		"equipment_slots": {},
@@ -13,6 +15,11 @@
 			"strength": 1,
 			"dexterity": 1,
 			"agility": 1
+		},
+		"alignment": {
+			"tolerance": 0,
+			"chaos_law": 0,
+			"evil_good": 0
 		}
 	}
 }
