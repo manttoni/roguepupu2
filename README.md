@@ -32,7 +32,7 @@ cmake --build build
 ./build/roguepupu2
 ```
 
-## Tests
+### Tests
 ```bash
 ./build/roguepupu2_tests
 ```
