@@ -122,8 +122,13 @@ namespace ActionSystem
 	Intent get_player_intent(entt::registry& registry)
 	{
 		const auto player = ECS::get_player(registry);
+		const auto position = registry.get<Position>(player);
 		while (true)
 		{
+			Intent intent;
+			intent.actor.entity = player;
+			intent.actor.position = position;
+
 			RenderingSystem::render(registry);
 
 			const int key = UI::instance().input(500);
@@ -139,9 +144,18 @@ namespace ActionSystem
 			{
 				case KEY_RIGHT_CLICK: // make this work when combat system is implemented
 					{
-						Intent intent = {.type = Intent::Type::Attack};
+						intent.type = Intent::Type::Attack;
 						intent.target.position = UI::instance().get_clicked_position(registry);
-						if (!intent.target.position.is_valid())
+						if (!intent.target.position.is_valid() ||
+								!ECS::get_attack_range(registry, player)
+								.contains(ECS::distance(registry, intent.actor.position, intent.target.position)))
+							continue;
+						for (const auto entity : ECS::get_entities(registry, intent.target.position))
+						{
+							if (AlignmentSystem::is_hostile(registry, player, entity))
+								intent.target.entity = entity;
+						}
+						if (intent.target.entity == entt::null)
 							continue;
 						return intent;
 					}

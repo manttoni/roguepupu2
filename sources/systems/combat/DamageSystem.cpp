@@ -2,6 +2,7 @@
 
 #include <optional>
 
+#include "systems/rendering/VisualEffectSystem.hpp"
 #include "external/entt/entt.hpp"
 #include "components/Components.hpp"
 #include "utils/ECS.hpp"
@@ -33,6 +34,13 @@ namespace DamageSystem
 			return;
 		auto& hp = registry.get<Health>(entity).current;
 		hp -= damage_roll.result;
+
+		VisualEffectSystem::damage_flash(registry, entity);
+		ECS::spawn_liquid(
+				registry,
+				registry.get<Position>(entity),
+				LiquidMixture(Liquid::Type::Blood, damage_roll.result)
+				);
 
 		Event event = {.type = Event::Type::TakeDamage};
 		event.actor.entity = entity;

@@ -263,16 +263,18 @@ namespace ECS
 			Range<double> range = registry.get<AttackRange>(entity).range; // This is unarmed
 			if (registry.all_of<EquipmentSlots>(entity))
 			{
-				const auto& loadout = registry.get<EquipmentSlots>(entity).get_active_loadout();
-				if (loadout.main_hand != entt::null)
+				const auto& equipped = registry.get<EquipmentSlots>(entity).equipped_items;
+				const auto main_hand = equipped.at(Equipment::Slot::MainHand);
+				const auto off_hand = equipped.at(Equipment::Slot::OffHand);
+				if (main_hand != entt::null)
 				{
-					const auto& main_hand_range = get_attack_range(registry, loadout.main_hand);
+					const auto& main_hand_range = get_attack_range(registry, main_hand);
 					range.min = std::min(range.min, main_hand_range.min);
 					range.max = std::max(range.max, main_hand_range.max);
 				}
-				if (loadout.off_hand != entt::null && loadout.off_hand != loadout.main_hand)
+				if (off_hand != entt::null && off_hand != main_hand)
 				{
-					const auto& off_hand_range = get_attack_range(registry, loadout.off_hand);
+					const auto& off_hand_range = get_attack_range(registry, off_hand);
 					range.min = std::min(range.min, off_hand_range.min);
 					range.max = std::max(range.max, off_hand_range.max);
 				}
@@ -296,5 +298,11 @@ namespace ECS
 			.charisma = get_attribute<Charisma>(registry, entity)
 		};
 		return attributes;
+	}
+
+	inline void spawn_liquid(entt::registry& registry, const Position& position, const LiquidMixture& lm)
+	{
+		auto& cell = get_cell(registry, position);
+		cell.get_liquid_mixture() += lm;
 	}
 };

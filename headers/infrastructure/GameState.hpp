@@ -8,4 +8,5 @@ struct GameState
 	entt::entity player = entt::null;
 	bool game_running;
 	size_t turn_number = 1;
+	bool test_run = false;
 };

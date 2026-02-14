@@ -15,6 +15,8 @@ struct Range
 	Range() : min(T{}), max(T{}) {}
 	Range(const T min, const T max) : min(min), max(max) {}
 
+	bool operator==(const Range& other) const = default;
+
 	double average() const
 	{
 		return (static_cast<double>(min) + static_cast<double>(max)) / 2.0;
@@ -25,5 +27,11 @@ struct Range
 	{
 		static_assert(std::is_arithmetic_v<T>, "Value has to be numeric type");
 		return min <= static_cast<T>(value) && max >= static_cast<T>(value);
+	}
+
+	friend std::ostream& operator<<(std::ostream& os, const Range& range)
+	{
+		os << "[" << range.min << "," << range.max << "]";
+		return os;
 	}
 };

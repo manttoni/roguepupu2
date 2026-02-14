@@ -130,13 +130,18 @@ namespace CombatSystem
 		// on assertion that is the only logical attack in that case.
 		std::vector<entt::entity> used_weapons;
 
-		const auto& loadout = registry.get<EquipmentSlots>(attacker).get_active_loadout();
-		if (loadout.main_hand != entt::null &&
-				registry.get<AttackRange>(loadout.main_hand).range.contains(distance))
-			used_weapons.push_back(loadout.main_hand);
-		if (loadout.off_hand != entt::null &&
-				registry.get<AttackRange>(loadout.off_hand).range.contains(distance))
-			used_weapons.push_back(loadout.off_hand);
+		//const auto& loadout = registry.get<EquipmentSlots>(attacker).get_active_loadout();
+		//Don't use loadouts ever, they are just optional thing for QOL for player, not dev
+
+		const auto& equipped = registry.get<EquipmentSlots>(attacker).equipped_items;
+		const auto main_hand = equipped.at(Equipment::Slot::MainHand);
+		const auto off_hand = equipped.at(Equipment::Slot::OffHand);
+		if (main_hand != entt::null &&
+				registry.get<AttackRange>(main_hand).range.contains(distance))
+			used_weapons.push_back(main_hand);
+		if (off_hand != entt::null && off_hand != main_hand &&
+				registry.get<AttackRange>(off_hand).range.contains(distance))
+			used_weapons.push_back(off_hand);
 
 		if (used_weapons.empty())
 		{

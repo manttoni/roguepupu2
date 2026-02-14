@@ -17,7 +17,7 @@
 			"type": "piercing",
 			"range": "1-10"
 		},
-		"range": "0-30"
+		"range": "2-30"
 	},
 	"spear": {
 		"melee_weapon": {},

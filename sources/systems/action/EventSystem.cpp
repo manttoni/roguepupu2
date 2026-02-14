@@ -198,8 +198,13 @@ namespace EventSystem
 		}
 		if (event.target.entity != entt::null)
 			message += ECS::get_colored_name(registry, event.target.entity);
-		if (event.weapon != entt::null)
-			message += " with a " + ECS::get_colored_name(registry, event.weapon);
+		if (event.type == Event::Type::Attack)
+		{
+			if (event.weapon != entt::null)
+				message += " (" + ECS::get_colored_name(registry, event.weapon) + ")";
+			else
+				message += " (unarmed)";
+		}
 		if (event.type == Event::Type::Attack)
 		{
 			if (event.hit_quality < 0)

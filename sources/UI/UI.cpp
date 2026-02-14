@@ -202,7 +202,7 @@ int UI::input(int delay)
 		{
 			if (mouse_event.bstate & BUTTON1_CLICKED)
 				key = KEY_LEFT_CLICK;
-			else if (mouse_event.bstate & BUTTON2_CLICKED)
+			else if (mouse_event.bstate & BUTTON3_CLICKED)
 				key = KEY_RIGHT_CLICK;
 			else // mouse movement triggered the event
 			{
@@ -279,7 +279,7 @@ Position UI::get_clicked_position(const entt::registry& registry)
 	if (click_coords.y < 0 ||
 		click_coords.x < 0 ||
 		click_coords.y >= static_cast<int>(cave.get_size()) ||
-		click_coords.y >= static_cast<int>(cave.get_size()))
+		click_coords.x >= static_cast<int>(cave.get_size()))
 		return Position::invalid_position();
 	const size_t click_idx = click_coords.to_idx(cave.get_size());
 	return Position(click_idx, cave.get_idx());
