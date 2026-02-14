@@ -7,7 +7,7 @@ C++ roguelike cave exploration game and engine focused on ECS architecture, data
 - Entity Component System using EnTT
 - Data-driven configuration with JSON
 - Automated unit and integration tests (Google Test)
-- Cave generation using Perlin noise
+- Cave erosion simulation using Perlin noise and A*
 
 ## Tech Stack
 - C++
