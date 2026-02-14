@@ -146,7 +146,7 @@ namespace RenderingSystem
 		const int y = middle.y + cell.y - player.y;
 		const int x = middle.x + cell.x - player.x;
 		if (y > Screen::height() || x > Screen::width() ||
-			y < 0 || x < 0)
+				y < 0 || x < 0)
 			return;
 
 		UI::instance().enable_color_pair(visual.color_pair);
@@ -206,28 +206,27 @@ namespace RenderingSystem
 		UI::instance().disable_color_pair(ColorPair(color, Color{}));
 	}
 
-	/*void show_player_status(const entt::registry& registry)
-	  {
-	  const size_t bar_len = 25;
-	  PANEL* status_panel = UI::instance().get_panel(UI::Panel::Status);
-	  WINDOW* status_window = panel_window(status_panel);
-	  werase(status_window);
-	  box(status_window, 0, 0);
-	  mvwhline(status_window, 2, 1, ACS_HLINE, bar_len);
-	  mvwhline(status_window, 4, 1, ACS_HLINE, bar_len);
+	void show_player_status(const entt::registry& registry)
+	{
+		const size_t bar_len = 25;
+		PANEL* status_panel = UI::instance().get_panel(UI::Panel::Status);
+		WINDOW* status_window = panel_window(status_panel);
+		werase(status_window);
+		box(status_window, 0, 0);
+		mvwhline(status_window, 2, 1, ACS_HLINE, bar_len);
+		mvwhline(status_window, 4, 1, ACS_HLINE, bar_len);
 
-	  const auto player = ECS::get_player(registry);
-	  const auto& resources = registry.get<Resources>(player);
+		const auto player = ECS::get_player(registry);
 
-	  const double hp_per = static_cast<double>(resources.health) / static_cast<double>(ECS::get_health_max(registry, player));
-	  draw_bar(Color(400,0,0), std::max(0.0, hp_per), 1, bar_len);
+		const double hp_per = static_cast<double>(registry.get<Health>(player).current) / static_cast<double>(StateSystem::get_max_health(registry, player));
+		draw_bar(Color(400,0,0), std::max(0.0, hp_per), 1, bar_len);
 
-	  const double ft_per = static_cast<double>(resources.fatigue) / static_cast<double>(ECS::get_fatigue_max(registry, player));
-	  draw_bar(Color(0,400,0), std::max(0.0, ft_per), 3, bar_len);
+		const double ft_per = static_cast<double>(registry.get<Stamina>(player).current) / static_cast<double>(StateSystem::get_max_stamina(registry, player));
+		draw_bar(Color(0,400,0), std::max(0.0, ft_per), 3, bar_len);
 
-	  const double mp_per = static_cast<double>(resources.mana) / static_cast<double>(ECS::get_mana_max(registry, player));
-	  draw_bar(Color(0,0,600), std::max(0.0, mp_per), 5, bar_len);
-	  }*/
+		const double mp_per = static_cast<double>(registry.get<Mana>(player).current) / static_cast<double>(StateSystem::get_max_mana(registry, player));
+		draw_bar(Color(0,0,600), std::max(0.0, mp_per), 5, bar_len);
+	}
 
 	void show_debug(const entt::registry& registry)
 	{
@@ -249,7 +248,7 @@ namespace RenderingSystem
 	{
 		render_active_cave(registry);
 		print_log(registry);
-		//show_player_status(registry);
+		show_player_status(registry);
 		show_debug(registry);
 		UI::instance().update();
 		registry.ctx().get<RenderData>().render_frame++;
