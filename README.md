@@ -18,15 +18,21 @@ C++ roguelike cave exploration game and engine focused on ECS architecture, data
 - CMake
 
 ### Build
+```bash
 git clone https://github.com/manttoni/roguepupu2
 cd roguepupu2
 mkdir build && cd build
 cmake ..
 cd ..
 cmake --build build
+```
 
 ### Run
+```bash
 ./build/roguepupu2
+```
 
 ## Tests
+```bash
 ./build/roguepupu2_tests
+```
