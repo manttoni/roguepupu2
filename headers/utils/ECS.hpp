@@ -14,6 +14,7 @@
 #include "generation/CaveGenerator.hpp"
 #include "infrastructure/DevTools.hpp"
 #include "infrastructure/GameLogger.hpp"
+#include "infrastructure/GameSettings.hpp"
 #include "infrastructure/GameState.hpp"
 #include "systems/position/TransitionSystem.hpp"
 #include "systems/rendering/RenderData.hpp"
@@ -238,6 +239,7 @@ namespace ECS
 		registry.ctx().emplace<EventQueue>();
 		registry.ctx().emplace<Dev>();
 		registry.ctx().emplace<LootTableDatabase>();
+		registry.ctx().emplace<GameSettings>();
 	}
 
 	/* Get attack range of creature or weapon.

@@ -2,6 +2,7 @@
 #include <ncurses.h>
 #include <vector>
 
+#include "UI/menus/SettingsMenu.hpp"
 #include "UI/Dialog.hpp"
 #include "UI/UI.hpp"
 #include "components/Components.hpp"
@@ -187,9 +188,17 @@ namespace ActionSystem
 					}
 				case 'c':
 					return {.type = Intent::Type::ShowPlayer};
-				case 'h':
-					return {.type = Intent::Type::Hide};
 				case KEY_ESCAPE:
+					{
+						Menu::Element selection;
+						selection = Dialog::get_selection("", {"Continue", "Controls", "Settings", "Quit"}, Screen::middle(), selection.index);
+						//if (selection.label == "Controls")
+						//	ControlsMenu::show_menu(registry);
+						if (selection.label == "Settings")
+							SettingsMenu::show_menu(registry);
+						if (selection.label != "Quit")
+							continue;
+					}
 					registry.ctx().get<GameState>().game_running = false;
 					return {.type = Intent::Type::DoNothing};
 				case ' ':

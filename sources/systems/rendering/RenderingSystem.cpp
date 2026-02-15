@@ -173,7 +173,8 @@ namespace RenderingSystem
 		if (registry.ctx().get<RenderData>().print_log == false)
 			return;
 		const auto logger = registry.ctx().get<GameLogger>();
-		const auto& messages = logger.last(20);
+		const int log_length = std::get<int>(registry.ctx().get<GameSettings>().settings.at(GameSettings::Type::LogLength).value);
+		const auto& messages = logger.last(std::min(Screen::height(), std::max(0, log_length)));
 		ColorPair log_pair = ColorPair(Color(500, 500, 500), Color{});
 		const size_t n = messages.size();
 		const size_t height = Screen::height();
@@ -246,9 +247,12 @@ namespace RenderingSystem
 
 	void render(entt::registry& registry)
 	{
+		if (registry.ctx().get<GameState>().test_run)
+			return;
 		render_active_cave(registry);
 		print_log(registry);
-		show_player_status(registry);
+		if (std::get<bool>(registry.ctx().get<GameSettings>().settings[GameSettings::Type::ShowStatus].value))
+			show_player_status(registry);
 		show_debug(registry);
 		UI::instance().update();
 		registry.ctx().get<RenderData>().render_frame++;

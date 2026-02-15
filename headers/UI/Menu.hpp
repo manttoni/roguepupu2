@@ -4,55 +4,35 @@
 #include <optional>
 #include <panel.h>
 #include <vector>
+#include <variant>
 #include "utils/Vec2.hpp"
+#include "utils/Screen.hpp"
 
 class Menu
 {
 	public:
 		struct Element
 		{
+			using ElementValue = std::variant<bool*, int*, std::string*, double*>;
 			enum class Type { None, Text, Button, TextField, ValueSelector, Checkbox };
 
-			// Core
 			Type type = Type::None;
 			std::string label = "";
-			size_t index = 0;
-
-			// TextField
-			std::optional<size_t> min_input, max_input;
-			std::optional<std::string> input;
-
-			// ValueSelector
-			std::optional<int> min_value, max_value;
-			std::optional<int> value;
-
-			// Checkbox
-			std::optional<bool> check;
+			size_t index = 0; // set when returned in 'get_selection'
+			ElementValue value;
+			int min_value, max_value; // length of string, limits of numbers
 
 			Element() = default;
-
-			// For any type
-			Element(const Type type, const std::string& label)
-				: type(type), label(label) {}
-
-			// For TextField
-			Element(const Type type, const std::string& label, const size_t min_input, const size_t max_input)
-				:type(type), label(label), min_input(min_input), max_input(max_input) { assert(type == Type::TextField); }
-
-			// For ValueSelector
-			Element(const Type type, const std::string& label, const int min_value, const int max_value)
-				: type(type), label(label), min_value(min_value), max_value(max_value) { assert(type == Type::ValueSelector); }
-
-			// For Checkbox
-			Element(const Type type, const std::string& label, const bool check)
-				: type(type), label(label), check(check) { assert(type == Type::Checkbox); }
+			Element(const Type type, const std::string& label, const ElementValue value = ElementValue{(bool*)nullptr}, const int min_value = 0, const int max_value = 10)
+				: type(type), label(label), value(value), min_value(min_value), max_value(max_value)
+			{}
 
 			size_t get_size() const;
 			std::string get_text() const;
 		};
 
 	public:
-		Menu(const Vec2& position);
+		Menu(const Vec2& position = Screen::middle());
 		~Menu();
 
 	private:
@@ -74,7 +54,4 @@ class Menu
 	public:
 		bool add_element(Element element); // validates elements
 		Element get_selection(const size_t default_selected = 0);
-		int get_value(const std::string& label) const;
-		std::string get_input(const std::string& label) const;
-		bool get_check(const std::string& label) const;
 };

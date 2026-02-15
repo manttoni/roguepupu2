@@ -28,13 +28,7 @@ Game::Game()
 {
 	ECS::init_registry(registry);
 
-	const auto choice = Dialog::get_selection("Create custom character?", {"No", "Yes"}).label;
-	if (choice == "No")
-		registry.ctx().get<GameState>().player = EntityFactory::instance().create_entity(registry, "rabdin");
-	else if (choice == "Yes")
-		registry.ctx().get<GameState>().player = CharacterCreation::create_character(registry);
-	else
-		game_over = true;
+	registry.ctx().get<GameState>().player = EntityFactory::instance().create_entity(registry, "rabdin");
 
 	const size_t cave_idx = registry.ctx().get<World>().new_cave();
 	CaveGenerator::Data data(registry, ECS::get_cave(registry, cave_idx));

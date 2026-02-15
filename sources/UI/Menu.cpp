@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <vector>
 
+#include "utils/Error.hpp"
 #include "utils/Screen.hpp"
 #include "UI/Menu.hpp"
 #include "UI/UI.hpp"
@@ -49,17 +50,15 @@ size_t Menu::Element::get_size() const
 	}
 	if (type == Type::TextField)
 	{
-		assert(max_input);
 		const std::string ascii = ": _";
-		size += *max_input + ascii.size();
+		size += max_value + ascii.size();
 	}
 	if (type == Type::ValueSelector) // Value: < 10 >
 	{
-		assert(min_value && max_value);
 		const std::string ascii = ": <  >";
 		const size_t number_size = std::max(
-				std::to_string(*min_value).size(),
-				std::to_string(*max_value).size()
+				std::to_string(min_value).size(),
+				std::to_string(max_value).size()
 				);
 		size += ascii.size() + number_size;
 	}
@@ -81,66 +80,47 @@ std::string Menu::Element::get_text() const
 		case Type::Text:
 			return label;
 		case Type::TextField:
-			return label + ": " + *input + "_";
+			if (auto strPtr = std::get_if<std::string*>(&value))
+				return label + ": " + **strPtr + "_";
+			else
+				Error::fatal("Menu element (" + label + ") is invalid: value not string");
 		case Type::ValueSelector:
 			{
-				std::string text = label;
-				if (*value == *min_value)
-					text += ":   ";
+				if (auto intPtr = std::get_if<int*>(&value))
+				{
+					std::string text = label;
+					if (**intPtr == min_value)
+						text += ":   ";
+					else
+						text += ": < ";
+					text += std::to_string(**intPtr);
+					if (**intPtr == max_value)
+						text += "  ";
+					else
+						text += " >";
+					return text;
+				}
 				else
-					text += ": < ";
-				text += std::to_string(*value);
-				if (*value == *max_value)
-					text += "  ";
-				else
-					text += " >";
-				return text;
+					Error::fatal("Menu element (" + label + ") is invalid: value not int");
 			}
 		case Type::Checkbox:
-			return label + ": [" + (*check ? "X]" : " ]");
+			if (auto boolPtr = std::get_if<bool*>(&value))
+				return label + ": [" + (**boolPtr ? "X]" : " ]");
+			else
+				Error::fatal("Menu element (" + label + ") is invalid: value not bool");
 		default:
 			return "???";
 	}
 }
 
-/* Adds an element to elements if it is valid.
- * Initialize some values if they are missing.
- * Return success.
- * */
 bool Menu::add_element(Element element)
 {
-	if (element.type == Element::Type::None || element.label.empty())
-		return false;
-	switch (element.type)
+	if (auto intPtr = std::get_if<int*>(&element.value))
 	{
-		case Element::Type::Button:
-		case Element::Type::Text:
-			elements.push_back(element);
-			break;
-		case Element::Type::TextField:
-			if (!element.max_input)
-				element.max_input = 10;
-			if (!element.min_input)
-				element.min_input = 0;
-			if (!element.input)
-				element.input.emplace("");
-			elements.push_back(element);
-			break;
-		case Element::Type::ValueSelector:
-			if (!element.min_value || !element.max_value)
-				return false;
-			if (!element.value)
-				element.value = (*element.min_value + *element.max_value) / 2;
-			elements.push_back(element);
-			break;
-		case Element::Type::Checkbox:
-			if (!element.check)
-				element.check = false;
-			elements.push_back(element);
-			break;
-		default:
-			return false;
+		**intPtr = std::max(element.min_value, **intPtr);
+		**intPtr = std::min(element.max_value, **intPtr);
 	}
+	elements.push_back(element);
 	return true;
 }
 
@@ -282,10 +262,12 @@ void Menu::change_value(Element& e, const int key)
 	switch (key)
 	{
 		case KEY_LEFT:
-			*e.value = std::max(*e.min_value, *e.value - 1);
+			if (auto intPtr = std::get_if<int*>(&e.value))
+				**intPtr = std::max(e.min_value, **intPtr - 1);
 			return;
 		case KEY_RIGHT:
-			*e.value = std::min(*e.max_value, *e.value + 1);
+			if (auto intPtr = std::get_if<int*>(&e.value))
+				**intPtr = std::min(e.max_value, **intPtr + 1);
 			return;
 		default:
 			return;
@@ -294,16 +276,20 @@ void Menu::change_value(Element& e, const int key)
 
 void Menu::input_text(Element& e, const int key)
 {
-	if (key == KEY_BACKSPACE && !e.input->empty())
-		e.input->pop_back();
-	else if (std::isalpha(static_cast<unsigned char>(key)) && e.input->size() < *e.max_input)
-		*e.input += key;
+	if (auto strPtr = std::get_if<std::string*>(&e.value))
+	{
+		if (key == KEY_BACKSPACE && !(*strPtr)->empty())
+			(*strPtr)->pop_back();
+		else if (std::isalpha(static_cast<unsigned char>(key)) && (*strPtr)->size() < static_cast<size_t>(e.max_value))
+			**strPtr += key;
+	}
 }
 
 void Menu::set_bool(Element& e, const int key)
 {
 	if (key == '\n' || key == KEY_ENTER || key == KEY_LEFT_CLICK)
-		*e.check ^= true;
+		if (auto boolPtr = std::get_if<bool*>(&e.value))
+			**boolPtr ^= true;
 }
 
 bool Menu::selection_confirmed(const Element& e, const int key) const
@@ -341,42 +327,5 @@ Menu::Element Menu::get_selection(const size_t default_selected)
 		}
 	}
 	return Element{};
-}
-
-int Menu::get_value(const std::string& label) const
-{
-	for (const auto& elt : elements)
-	{
-		if (elt.label == label)
-		{
-			assert(elt.value);
-			return *elt.value;
-		}
-	}
-	std::abort();
-}
-std::string Menu::get_input(const std::string& label) const
-{
-	for (const auto& elt : elements)
-	{
-		if (elt.label == label)
-		{
-			assert(elt.input);
-			return *elt.input;
-		}
-	}
-	std::abort();
-}
-bool Menu::get_check(const std::string& label) const
-{
-	for (const auto& elt : elements)
-	{
-		if (elt.label == label)
-		{
-			assert(elt.check);
-			return *elt.check;
-		}
-	}
-	std::abort();
 }
 

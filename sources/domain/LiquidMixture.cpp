@@ -101,11 +101,13 @@ std::string LiquidMixture::to_string() const
 			break;
 		const auto type = it->first;
 		if (it != mixture.begin())
-			string += " | ";
-		string += Liquid(type).color.markup();
+			string += "\n";// | ";
+		//const auto color = Liquid(type).color * 3; // brighter text looks better agains black
+		//string += color.markup();
+		string += std::to_string(it->second) + " ";
 		string += Liquid::to_string(type);
 		string += "(" + std::format("{:.1f}", 100.0 * it->second / get_volume()) + "%)";
-		string += "{reset}";
+		//string += "{reset}";
 	}
 	return string;
 }

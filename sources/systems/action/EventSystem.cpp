@@ -227,13 +227,15 @@ namespace EventSystem
 			else
 				message += " (unarmed)";
 		}
+		registry.ctx().get<GameLogger>().log(message);
+
+		std::string secondary_message = "";
 		if (event.type == Event::Type::Attack)
 		{
 			if (event.hit_quality < 0)
-				message += ", but misses";
+				secondary_message += "The attack misses";
 		}
-		registry.ctx().get<GameLogger>().log(message);
-		Log::log("Game Log: " + message);
+		registry.ctx().get<GameLogger>().log(secondary_message);
 	}
 
 	void resolve_events(entt::registry& registry)

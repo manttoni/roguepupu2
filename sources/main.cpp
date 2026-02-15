@@ -57,9 +57,8 @@ void run()
 					"Back:         esc",
 					"Inventory:    i",
 					"Character:    c",
-					"Stealth:      h",
+					"Hide:         h",
 					"DevTools:     `",
-					"Hide log:     l",
 					"Swap loadout: w"
 					});
 

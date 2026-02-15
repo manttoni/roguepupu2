@@ -41,13 +41,18 @@ TEST_F(RegistryTest, TakingDamagePrintsLog)
 	EventSystem::resolve_events(registry);
 
 	const auto logger = registry.ctx().get<GameLogger>();
-	const auto last_message = logger.last(2).front();
-
-	ASSERT_FALSE(last_message.empty());
-
+	const auto messages = logger.last(30);
 	const std::string expected_message = ECS::get_colored_name(registry, creature) + " takes " + damage.to_string() + " damage";
+	for (const auto& message : messages)
+	{
+		if (message == expected_message)
+		{
+			SUCCEED();
+			return;
+		}
+	}
 
-	EXPECT_EQ(expected_message, last_message);
+	FAIL() << "Did not find expected message";
 }
 
 
