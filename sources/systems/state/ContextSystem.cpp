@@ -281,7 +281,9 @@ namespace ContextSystem
 		{
 			std::vector<std::string> text;
 			text.push_back(cell.to_string());
-			text.push_back(mixture.to_string());
+			const auto mixstring = mixture.to_string();
+			if (!mixstring.empty())
+				text.push_back(mixture.to_string());
 			auto entities = ECS::get_entities(registry, position);
 			std::sort(entities.begin(), entities.end(), [&](const auto a, const auto b) {
 					return ECS::get_name(registry, a) < ECS::get_name(registry, b);

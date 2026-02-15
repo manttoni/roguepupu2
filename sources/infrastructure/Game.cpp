@@ -5,7 +5,6 @@
 #include <panel.h>
 
 #include "UI/UI.hpp"
-#include "infrastructure/CharacterCreation.hpp"
 #include "database/EntityFactory.hpp"           // for EntityFactory
 #include "domain/Cave.hpp"
 #include "external/entt/entt.hpp"

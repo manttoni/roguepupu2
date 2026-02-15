@@ -14,5 +14,6 @@ std::vector<std::string> GameLogger::last(size_t n) const
 
 void GameLogger::log(const std::string& message)
 {
-	messages.push_back(message);
+	if (!message.empty())
+		messages.push_back(message);
 }
