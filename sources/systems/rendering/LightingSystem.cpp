@@ -19,12 +19,12 @@ namespace LightingSystem
 	void apply_lights(entt::registry& registry, const size_t cave_idx)
 	{
 		auto& cave = ECS::get_cave(registry, cave_idx);
-		for (const auto entity : registry.view<Glow, Position, FGColor>())
+		for (const auto entity : registry.view<Glow, Position, Color>())
 		{
-			const auto& [glow, position, color] = registry.get<Glow, Position, FGColor>(entity);
+			const auto& [glow, position, color] = registry.get<Glow, Position, Color>(entity);
 			if (position.cave_idx != cave_idx)
 				continue;
-			Color glow_color = color.color * glow.intensity;
+			Color glow_color = color * glow.intensity;
 
 			cave.get_cell(position).add_light(glow_color);
 			for (const auto affected_pos : cave.get_nearby_positions(position, glow.radius))

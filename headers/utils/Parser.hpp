@@ -18,7 +18,7 @@ namespace Parser
 	Color parse_color(const nlohmann::json& data);
 	Effect parse_effect(const nlohmann::json& data);
 	Conditions parse_conditions(const nlohmann::json& data);
-	nlohmann::json read_file(const std::filesystem::path& path);
+	nlohmann::json read_json_file(const std::filesystem::path& path);
 	void parse_cave_generation_conf(const std::string& conf_id, CaveGenerator::Data& data);
 	LootTable parse_loot_table(const nlohmann::json& data);
 	Damage::Spec parse_damage_spec(const nlohmann::json& data);

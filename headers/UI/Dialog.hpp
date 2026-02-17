@@ -14,17 +14,19 @@ namespace Dialog
 	 * otherwise will block until user selects an option.
 	 * If only showing message, it will disappear when next update happens.
 	 * */
-	Menu::Element get_selection(
+	Menu::Selection get_selection(
 			const std::vector<std::string>& text,
 			const std::vector<std::string>& buttons = {},
 			const Vec2& position = Screen::middle(),
 			const size_t default_selected = 0
 			);
-	Menu::Element get_selection(
+	Menu::Selection get_selection(
 			const std::string& text,
 			const std::vector<std::string>& buttons = {},
 			const Vec2& position = Screen::middle(),
 			const size_t default_selected = 0
 			);
 	void show_message(const std::string& message);
+	bool confirm(const std::string& message);
+	void alert(const std::string& message);
 };

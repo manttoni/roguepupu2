@@ -33,7 +33,7 @@ class EntityFactory
 		std::vector<std::string> get_category_names() const;
 		std::vector<std::string> get_subcategory_names(const std::string& category) const;
 		std::vector<std::string> filter_entity_ids(const nlohmann::json& filter) const;
-		void add_entities(nlohmann::json& json, const std::string& category, const std::string& subcategory);
+		void add_entities(nlohmann::json& json);
 		void init();
 		void read_definitions(const std::filesystem::path& path);
 };

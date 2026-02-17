@@ -190,17 +190,22 @@ namespace ActionSystem
 					return {.type = Intent::Type::ShowPlayer};
 				case KEY_ESCAPE:
 					{
-						Menu::Element selection;
-						selection = Dialog::get_selection("", {"Continue", "Controls", "Settings", "Quit"}, Screen::middle(), selection.index);
+						Menu::Selection selection = Dialog::get_selection(std::vector<std::string>{}, {"Continue", "Controls", "Settings", "Main Menu"}, Screen::middle(), selection.index);
+						if (selection.cancelled) // ESC will not exit
+							continue;
+						assert(selection.element.has_value());
+						const auto label = selection.element->label;
 						//if (selection.label == "Controls")
 						//	ControlsMenu::show_menu(registry);
-						if (selection.label == "Settings")
+						if (label == "Settings")
 							SettingsMenu::show_menu(registry);
-						if (selection.label != "Quit")
-							continue;
+						if (label == "Main Menu")
+						{
+							registry.ctx().get<GameState>().game_running = false;
+							return {.type = Intent::Type::DoNothing};
+						}
 					}
-					registry.ctx().get<GameState>().game_running = false;
-					return {.type = Intent::Type::DoNothing};
+					break;
 				case ' ':
 					return {.type = Intent::Type::DoNothing};
 				case 'l':
@@ -217,11 +222,13 @@ namespace ActionSystem
 
 	void act_round(entt::registry& registry, const size_t cave_idx)
 	{
-		std::vector<entt::entity> entities = ECS::get_entities_in_cave(
-				registry,
-				cave_idx,
-				Category("creatures")
-				);
+		std::vector<entt::entity> entities = ECS::get_creatures(registry, cave_idx);
+		assert(!entities.empty());
+		std::sort(entities.begin(), entities.end(),
+				[&](const auto a, const auto b)
+				{
+				return StateSystem::get_initiative(registry, a) > StateSystem::get_initiative(registry, b);
+				});
 		const auto player = ECS::get_player(registry); // if no player, this is entt::null
 		for (const auto entity : entities)
 		{

@@ -11,31 +11,29 @@
 #include <string>
 #include <utility>
 
+
+#include "UI/Dialog.hpp"
+#include "UI/UI.hpp"
 #include "domain/Cave.hpp"
 #include "domain/Cell.hpp"
+#include "domain/Liquid.hpp"
 #include "domain/LiquidMixture.hpp"
 #include "domain/Position.hpp"
 #include "generation/CaveGenerator.hpp"
+#include "generation/EntitySpawner.hpp"
+#include "infrastructure/GameState.hpp"
 #include "systems/environment/LiquidSystem.hpp"
 #include "systems/position/MovementSystem.hpp"
+#include "systems/rendering/LightingSystem.hpp"
 #include "systems/rendering/RenderingSystem.hpp"
+#include "utils/Log.hpp"
 #include "utils/Math.hpp"
 #include "utils/Random.hpp"
-#include "generation/EntitySpawner.hpp"
-#include "systems/rendering/LightingSystem.hpp"
-#include "UI/Dialog.hpp"
-#include "domain/Liquid.hpp"
-#include "utils/Log.hpp"
 #include "utils/Vec2.hpp"
 
 namespace CaveGenerator
 {
-	void echo(const std::string& message)
-	{
-		return;
-		Log::log(message);
-		Dialog::show_message(message);
-	}
+
 	bool is_on_edge(const Data& data, const Vec2& coords)
 	{
 		const auto margin_size = static_cast<int>(data.margin.size);
@@ -52,8 +50,6 @@ namespace CaveGenerator
 	 * */
 	void set_rock_densities(Data& data)
 	{
-		if (!data.test_run)
-			echo("Setting rock densities...");
 		auto& cells = data.cave.get_cells();
 		const size_t seed = Random::rand<size_t>(0, 99999);
 		for (auto& cell : cells)
@@ -80,8 +76,6 @@ namespace CaveGenerator
 	 * */
 	void set_water_features(Data& data)
 	{
-		if (!data.test_run)
-			echo("Setting water features...");
 		const size_t total_features = data.features.sources + data.features.sinks;
 		std::map<Cell::Type, size_t> spawning_features =
 		{
@@ -135,7 +129,7 @@ namespace CaveGenerator
 
 	void render(Data& data)
 	{
-		if (data.test_run)
+		if (data.registry.ctx().get<GameState>().test_run)
 			return;
 		LightingSystem::reset_lights(data.registry, data.cave.get_idx());
 		RenderingSystem::render_generation(data.registry, data.cave.get_idx());
@@ -143,8 +137,6 @@ namespace CaveGenerator
 
 	void set_entities(Data& data)
 	{
-		if (!data.test_run)
-			echo("Setting entities...");
 		EntitySpawner::despawn_entities(data.registry, data.cave.get_idx());
 		EntitySpawner::spawn_entities(data.registry, data.cave.get_idx(), {{"category", "nature"}});
 	}
@@ -157,8 +149,6 @@ namespace CaveGenerator
 
 	void form_tunnels(Data& data)
 	{
-		if (!data.test_run)
-			echo("Forming tunnels...");
 		const auto& sources = data.cave.get_positions_with_type(Cell::Type::Source);
 		const auto& sinks = data.cave.get_positions_with_type(Cell::Type::Sink);
 
@@ -180,8 +170,7 @@ namespace CaveGenerator
 					}
 				}
 			}
-			if (!data.test_run)
-				render(data);
+			render(data);
 		}
 	}
 
@@ -245,8 +234,6 @@ namespace CaveGenerator
 	}
 	void smooth_terrain(Data& data)
 	{
-		if (!data.test_run)
-			echo("Smoothing terrain...");
 		// Set each density to the average within a radius
 		const auto radius = 1;
 		const auto intensity = data.smooth.intensity;
@@ -289,19 +276,23 @@ namespace CaveGenerator
 		set_water_features(data);
 		form_tunnels(data);
 		set_entities(data);
-		if (!data.test_run)
-			render(data);
+		render(data);
 	}
 
 	void generate_cave(Data& data)
 	{
+		const bool test_run = data.registry.ctx().get<GameState>().test_run;
+		if (!test_run)
+			UI::instance().set_current_panel(UI::Panel::Game, true);
 		generate(data);
-		if (data.test_run)
+		if (test_run)
 			return;
-		std::string choice = "";
-		while ((choice = Dialog::get_selection("Cave ready", {"OK", "Simulate liquids"}).label) != "OK")
+		while (true)
 		{
-			if (choice == "Simulate liquids")
+			const auto selection = Dialog::get_selection("Cave ready", {"OK", "Simulate liquids"});
+			if (selection.cancelled || selection.element->label == "OK")
+				break;
+			if (selection.element->label == "Simulate liquids")
 			{
 				for (size_t i = 0; i < 100; ++i)
 				{

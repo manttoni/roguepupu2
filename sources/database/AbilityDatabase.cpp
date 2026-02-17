@@ -32,7 +32,7 @@ void AbilityDatabase::read_abilities()
 
 void AbilityDatabase::read_definitions(const std::filesystem::path& path)
 {
-	nlohmann::json definitions = Parser::read_file(path);
+	nlohmann::json definitions = Parser::read_json_file(path);
 	const std::string category = path.stem().filename();
 	add_abilities(definitions, category);
 }

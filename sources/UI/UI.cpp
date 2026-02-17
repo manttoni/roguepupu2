@@ -61,7 +61,6 @@ void UI::print(const std::string& str)
 		wprintw(panel_window(current_panel), "%s", str.c_str());
 		return;
 	}
-	Log::log(str);
 	std::optional<Color> color;
 	std::optional<chtype> attr;
 	for (size_t i = 0; i < str.size(); ++i)
@@ -350,6 +349,9 @@ void UI::init_panel(const Panel id)
 		case Panel::Status:
 			panel = new_panel(newwin(7, 27, Screen::height() - 7, Screen::width() - 27));
 			break;
+		case Panel::Editor:
+			panel = new_panel(newwin(Screen::height(), Screen::width(), 0, 0));
+			break;
 	}
 	panels[id] = panel;
 }
@@ -358,6 +360,7 @@ void UI::init_panels()
 {
 	init_panel(Panel::Game);
 	init_panel(Panel::Status);
+	init_panel(Panel::Editor);
 }
 
 void UI::destroy_panel(Panel id)

@@ -1,9 +1,0 @@
-{
-	"campfire": {
-		"fgcolor": [600, 0, 50],
-		"glow": {
-			"radius": 4,
-			"strength": 0.1
-		}
-	}
-}

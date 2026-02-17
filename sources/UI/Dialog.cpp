@@ -12,7 +12,7 @@ namespace Dialog
 {
 	using Element = Menu::Element;
 	using Type = Element::Type;
-	Element get_selection(
+	Menu::Selection get_selection(
 			const std::vector<std::string>& text,
 			const std::vector<std::string>& buttons,
 			const Vec2& position,
@@ -26,12 +26,19 @@ namespace Dialog
 			dialog_box.add_element(Element(Type::Text, "--"));
 
 		for (const auto& label : buttons)
-			dialog_box.add_element(Element(Type::Button, label));
+		{
+			Element e(Type::Button, label);
+			if (label == "Back" || label == "Cancel" || label == "Quit")
+				e.is_cancel = true;
+			if (label == "Confirm" || label == "OK" || label == "Ok")
+				e.is_confirm = true;
+			dialog_box.add_element(e);
+		}
 
 		return dialog_box.get_selection(default_selected);
 	}
 
-	Menu::Element get_selection(
+	Menu::Selection get_selection(
 			const std::string& text,
 			const std::vector<std::string>& buttons,
 			const Vec2& position,
@@ -41,10 +48,18 @@ namespace Dialog
 		return get_selection(std::vector<std::string>{text}, buttons, position, default_selected);
 	}
 
-	void show_message(const std::string& message)
+	bool confirm(const std::string& message)
 	{
 		Menu m(Screen::middle());
 		m.add_element(Element(Type::Text, message));
-		m.get_selection(); // badly named but it will not block if there are no options/buttons
+		m.add_element(Element(Type::Text, "--"));
+		m.add_element(Element::confirm());
+		m.add_element(Element::cancel());
+		return m.get_selection().confirmed;
+	}
+
+	void alert(const std::string& message)
+	{
+		get_selection(message, {"Ok"});
 	}
 };

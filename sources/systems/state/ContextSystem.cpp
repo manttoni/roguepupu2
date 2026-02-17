@@ -115,7 +115,6 @@ namespace ContextSystem
 	std::vector<std::string> get_details(const entt::registry& registry, const entt::entity entity)
 	{
 		std::vector<std::string> details = { ECS::get_colored_name(registry, entity) };
-		details.push_back(registry.get<Category>(entity).category + " / " + registry.get<Subcategory>(entity).subcategory);
 
 		const auto& resources = get_resource_details(registry, entity);
 		if (!resources.empty())
@@ -153,7 +152,7 @@ namespace ContextSystem
 		std::vector<std::string> options;
 		if (distance < 1.5)
 		{
-			if (!is_player_owned && registry.get<Category>(entity).category == "items")
+			if (!is_player_owned) // Possible restrictions can be weight or adding Item tag?
 				options.push_back("Take");
 			if (!is_player && registry.all_of<Inventory, Position, Dead>(entity))
 				options.push_back("Loot");
@@ -218,7 +217,11 @@ namespace ContextSystem
 		auto buttons = get_options(registry, entity, owner);
 		buttons.push_back("Back");
 		const auto selection = Dialog::get_selection(text, buttons, Screen::topleft());
-		handle_selection(registry, entity, selection.label, owner);
+		if (selection.cancelled)
+			return;
+		assert(selection.element.has_value());
+		const auto label = selection.element->label;
+		handle_selection(registry, entity, label, owner);
 	}
 
 	std::vector<std::string> get_inventory_format(const entt::registry& registry, const std::vector<entt::entity>& inventory, const entt::entity entity)
@@ -244,7 +247,6 @@ namespace ContextSystem
 		auto& inventory_component = registry.get<Inventory>(entity);
 		auto& inventory = inventory_component.items;
 
-		Menu::Element selection;
 		while (true)
 		{
 			std::sort(inventory.begin(), inventory.end(), [&](const auto a, const auto b) {
@@ -262,9 +264,10 @@ namespace ContextSystem
 			text.push_back(ECS::get_colored_name(registry, entity) + "s Inventory");
 			std::vector<std::string> buttons = get_inventory_format(registry, inventory, entity);
 			buttons.push_back("Back");
-			selection = Dialog::get_selection(text, buttons, Screen::topleft(), selection.index);
-			if (selection.label == "Back" || selection.label.empty())
+			const Menu::Selection selection = Dialog::get_selection(text, buttons, Screen::topleft(), selection.index);
+			if (selection.cancelled)
 				break;
+			assert(selection.element.has_value());
 			show_entity_details(registry, inventory[selection.index], entity);
 			if (CombatSystem::is_in_combat(registry, ECS::get_player(registry)))
 				break;
@@ -276,7 +279,6 @@ namespace ContextSystem
 		const auto& cell = ECS::get_cell(registry, position);
 		const auto& mixture = cell.get_liquid_mixture();
 
-		Menu::Element selection;
 		while (true)
 		{
 			std::vector<std::string> text;
@@ -290,8 +292,8 @@ namespace ContextSystem
 					});
 			std::vector<std::string> buttons = ECS::get_colored_names(registry, entities);
 			buttons.push_back("Back");
-			selection = Dialog::get_selection(text, buttons, Screen::topleft(), selection.index);
-			if (selection.label == "Back" || selection.label.empty())
+			const Menu::Selection selection = Dialog::get_selection(text, buttons, Screen::topleft(), selection.index);
+			if (selection.cancelled)
 				break;
 			show_entity_details(registry, entities[selection.index]);
 			if (CombatSystem::is_in_combat(registry, ECS::get_player(registry)))

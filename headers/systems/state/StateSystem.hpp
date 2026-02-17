@@ -18,6 +18,7 @@ namespace StateSystem
 	int get_max_stamina(const entt::registry& registry, const entt::entity entity);
 	int get_max_mana(const entt::registry& registry, const entt::entity entity);
 	int get_vision_range(const entt::registry& registry, const entt::entity entity);
+	int get_initiative(const entt::registry& registry, const entt::entity entity);
 
 	template<typename T>
 		void assert_attribute_type()

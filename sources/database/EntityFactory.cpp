@@ -38,24 +38,10 @@ class AbilityDatabase;
 
 void EntityFactory::init()
 {
-	const std::filesystem::path root = "data/entities";
-	for (const auto& entry : std::filesystem::recursive_directory_iterator(root))
-	{
-		if (!entry.is_regular_file())
-			continue;
-		if (entry.path().extension() != ".json")
-			continue;
-		read_definitions(entry.path());
-	}
+	const std::filesystem::path file = "data/entities.json";
+	nlohmann::json definitions = Parser::read_json_file(file);
+	add_entities(definitions);
 	Log::log("Entities parsed");
-}
-
-void EntityFactory::read_definitions(const std::filesystem::path& path)
-{
-	nlohmann::json definitions = Parser::read_file(path);
-	const std::string category = path.parent_path().filename();
-	const std::string subcategory = path.stem().filename();
-	add_entities(definitions, category, subcategory);
 }
 
 using FieldParser = std::function<void(entt::registry&, entt::entity, const nlohmann::json&)>;
@@ -168,16 +154,6 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			reg.template emplace<EquipmentSlots>(e);
 		}
 	},
-	{ "category", [](auto& reg, auto e, const nlohmann::json& data)
-		{	// Main category like "weapons" or "potions". Comes from directory name
-			reg.template emplace<Category>(e, data.get<std::string>());
-		}
-	},
-	{ "subcategory", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			reg.template emplace<Subcategory>(e, data.get<std::string>());
-		}
-	},
 	{ "glyph", [](auto& reg, auto e, const nlohmann::json& data)
 		{
 			if (!data.is_string())
@@ -189,21 +165,10 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			reg.template emplace<Glyph>(e, glyph);
 		}
 	},
-	{ "fgcolor", [](auto& reg, auto e, const nlohmann::json& data)
+	{ "color", [](auto& reg, auto e, const nlohmann::json& data)
 		{
-			if (!data.is_array() || data.size() != 3)
-				Error::fatal("Invalid color values: " + data.dump(4));
-			Color color = Color(data[0].get<int>(), data[1].get<int>(), data[2].get<int>());
-			reg.template emplace<FGColor>(e, color);
-		}
-	},
-	{ "bgcolor", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			if (!data.is_array() || data.size() != 3)
-				Error::fatal("Invalid color values: " + data.dump(4));
-			const auto& c = data["color"];
-			Color color = Color(c[0].get<int>(), c[1].get<int>(), c[2].get<int>());
-			reg.template emplace<BGColor>(e, color);
+			Color color = Parser::parse_color(data);
+			reg.template emplace<Color>(e, color);
 		}
 	},
 	{ "level", [](auto& reg, auto e, const nlohmann::json& data)
@@ -340,11 +305,8 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 	},
 	{ "damage", [](auto& reg, auto e, const nlohmann::json& data)
 		{
-			if (!data.contains("type") || !data.contains("range"))
-				Error::fatal("Invalid damage: " + data.dump(4));
-			const auto type = Damage::string_to_type(data["type"].get<std::string>());
-			const auto range = Parser::parse_range<size_t>(data["range"]);
-			reg.template emplace<Damage::Spec>(e, type, range);
+			Damage::Spec spec = Parser::parse_damage_spec(data);
+			reg.template emplace<Damage::Spec>(e, spec);
 		}
 	},
 	{ "melee_weapon", [](auto& reg, auto e, const nlohmann::json& data)
@@ -388,56 +350,37 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			const auto range = Parser::parse_range<double>(data);
 			reg.template emplace<AttackRange>(e, range);
 		}
+	},
+	{ "tags", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			assert(data.is_array());
+			for (const auto& tag : data)
+			{
+				assert(tag.is_string());
+				const std::string& str = tag.get<std::string>();
+				if (str == "creature")
+					reg.template emplace<Creature>(e);
+				else if (str == "weapon")
+					reg.template emplace<Weapon>(e);
+				else if (str == "player")
+					reg.template emplace<Player>(e);
+				else if (str == "npc")
+					reg.template emplace<NPC>(e);
+				else if (str == "core")
+					continue;
+				else
+					Error::fatal("Unhandled tag: " + str);
+			}
+		}
 	}
 };
 
 // Add json data into map, and add categories to all of them
-void EntityFactory::add_entities(nlohmann::json& json, const std::string& category, const std::string& subcategory)
+void EntityFactory::add_entities(nlohmann::json& entities)
 {
-	for (const auto& [name, data] : json.items())
+	for (const auto& entity : entities)
 	{
-		if (!data.contains("category"))
-			data["category"] = category;
-		if (!data.contains("subcategory"))
-			data["subcategory"] = subcategory;
-		if (!data.contains("name"))
-			data["name"] = name;
-		LUT[name] = data;
-	}
-}
-
-void EntityFactory::emplace_default_components(entt::registry& registry, const entt::entity entity) const
-{
-	// If not explicitly defined in JSON, some components will still be added with a default value
-	if (registry.get<Category>(entity).category == "creatures")
-	{
-		// Creatures have unarmed damage, no need to manually add this to each
-		if (!registry.all_of<Damage::Spec>(entity))
-			registry.emplace<Damage::Spec>(entity, Damage::Type::Bludgeoning, Range<size_t>(1,2));
-		if (!registry.all_of<AttackRange>(entity))
-			registry.emplace<AttackRange>(entity, Range<double>(0, 1.5));
-		if (!registry.all_of<FGColor>(entity))
-			registry.emplace<FGColor>(entity, Color::white());
-	}
-
-	if (registry.get<Subcategory>(entity).subcategory == "weapons")
-	{
-		if (!registry.all_of<AttackRange>(entity))
-			registry.emplace<AttackRange>(entity, Range<double>(0, 1.5));
-	}
-}
-
-void verify_entity_components(const entt::registry& registry, const entt::entity entity)
-{
-	if (!registry.all_of<Category, Subcategory, Name>(entity))
-		Error::fatal("Entity doesn't have core components");
-
-	if (registry.get<Subcategory>(entity).subcategory == "weapons")
-	{
-		if (!registry.all_of<AttackRange, Damage::Spec>(entity))
-			Error::fatal("Weapon has no range or damage: " + registry.get<Name>(entity).name);
-		if (!registry.any_of<MeleeWeapon, RangedWeapon, ThrowingWeapon, AttackRange>(entity))
-			Error::fatal("Weapon has no type: " + registry.get<Name>(entity).name);
+		LUT[entity["name"].get<std::string>()] = entity;
 	}
 }
 
@@ -459,9 +402,6 @@ entt::entity EntityFactory::create_entity(entt::registry& registry, const std::s
 			Error::fatal(e.what());
 		}
 	}
-
-	emplace_default_components(registry, entity);
-	verify_entity_components(registry, entity);
 
 	if (position.has_value())
 	{

@@ -22,7 +22,7 @@ TEST_F(RegistryTest, EntityHasAggressiveIntent)
 TEST_F(RegistryTest, EntitiesFistFight)
 {
 	auto arena = TestHelpers::get_duel_arena(registry);
-	for (size_t i = 0; i < 10; ++i)
+	for (size_t i = 0; i < 100; ++i)
 	{
 		ActionSystem::act_round(registry, arena.cave_idx);
 	}

@@ -38,6 +38,7 @@ class UI
 		{
 			Game,
 			Status,
+			Editor,
 		};
 	private:
 		std::map<Panel, PANEL*> panels;
@@ -118,6 +119,7 @@ class UI
 		void disable_attr(const chtype attr) { wattroff(panel_window(current_panel), attr); }
 		void enable_color_pair(const ColorPair& color_pair);
 		void disable_color_pair(const ColorPair& color_pair);
+		void clear() { assert(current_panel != nullptr); assert(panel_window(current_panel) != nullptr); werase(panel_window(current_panel)); }// wrefresh(panel_window(current_panel)); }
 		void update() { update_panels(); doupdate(); }
 		void init_panels();
 		void destroy_panels();

@@ -58,6 +58,17 @@ namespace ECS
 			return result;
 		}
 
+	inline std::vector<entt::entity> get_creatures(const entt::registry& registry, const size_t cave_idx)
+	{
+		std::vector<entt::entity> creatures;
+		for (const auto creature : registry.view<Creature, Position>())
+		{
+			if (registry.get<Position>(creature).cave_idx == cave_idx)
+				creatures.push_back(creature);
+		}
+		return creatures;
+	}
+
 	inline entt::entity get_player(const entt::registry& registry)
 	{
 		return registry.ctx().get<GameState>().player;
@@ -67,9 +78,9 @@ namespace ECS
 
 	inline Color get_fgcolor(const entt::registry& registry, const entt::entity entity)
 	{
-		if (!registry.all_of<FGColor>(entity))
+		if (!registry.all_of<Color>(entity))
 			return Color::white();
-		return registry.get<FGColor>(entity).color;
+		return registry.get<Color>(entity);
 	}
 
 	inline std::string get_name(const entt::registry& registry, const entt::entity entity)
@@ -254,8 +265,8 @@ namespace ECS
 		// Could happen if trying to get range of "unarmed weapon slot", but then give creature instead
 		assert(entity != entt::null);
 
-		const bool is_creature = registry.get<Category>(entity).category == "creatures";
-		const bool is_weapon = registry.get<Subcategory>(entity).subcategory == "weapons";
+		const bool is_creature = registry.all_of<Creature>(entity);
+		const bool is_weapon = registry.all_of<Weapon>(entity);
 		// const bool is_shield... this will be here, but no shields yet
 
 		if (is_weapon)

@@ -10,4 +10,9 @@ namespace Error
 		Log::log(message);
 		throw std::runtime_error("Fatal error: " + message);
 	}
+
+	inline void warning(const std::string& message)
+	{
+		Log::log("Warning: " + message);
+	}
 };

@@ -1,0 +1,132 @@
+[
+    {
+        "alignment": {
+            "chaos_law": 0.0,
+            "evil_good": 0.0,
+            "tolerance": 0.0
+        },
+        "attributes": {
+            "agility": 8,
+            "charisma": 8,
+            "dexterity": 8,
+            "endurance": 8,
+            "perception": 8,
+            "strength": 8,
+            "vitality": 8,
+            "willpower": 8
+        },
+        "color": {
+            "blue": 500,
+            "green": 500,
+            "red": 500
+        },
+        "damage": {
+            "amount": "1-2",
+            "type": "bludgeoning"
+        },
+        "equipment_slots": true,
+        "glyph": "@",
+        "inventory": {},
+        "name": "rabdin",
+        "opaque": 0.0,
+        "range": "0-1.5",
+        "size": 0.0,
+        "solid": true,
+        "tags": [
+            "core",
+            "creature",
+            "player"
+        ],
+        "weight": 0.0
+    },
+    {
+        "color": {
+            "blue": 500,
+            "green": 500,
+            "red": 500
+        },
+        "damage": {
+            "amount": "1-6",
+            "type": "piercing"
+        },
+        "equipment": "one_handed",
+        "glyph": "d",
+        "name": "dagger",
+        "opaque": 0.0,
+        "range": "0-1.5",
+        "size": 0.1,
+        "solid": false,
+        "tags": [
+            "core",
+            "weapon"
+        ],
+        "weight": 0.1
+    },
+    {
+        "ai": {
+            "aggressive": false,
+            "idle_wander": false
+        },
+        "alignment": {
+            "chaos_law": 0.0,
+            "evil_good": 0.0,
+            "tolerance": 0.0
+        },
+        "attributes": {
+            "agility": 8,
+            "charisma": 8,
+            "dexterity": 8,
+            "endurance": 8,
+            "perception": 8,
+            "strength": 8,
+            "vitality": 8,
+            "willpower": 8
+        },
+        "color": {
+            "blue": 500,
+            "green": 500,
+            "red": 500
+        },
+        "damage": {
+            "amount": "1-2",
+            "type": "bludgeoning"
+        },
+        "equipment_slots": true,
+        "glyph": "t",
+        "inventory": {},
+        "name": "test_creature",
+        "opaque": 0.0,
+        "range": "0-1.5",
+        "size": 0.1,
+        "solid": true,
+        "tags": [
+            "core",
+            "creature",
+            "npc"
+        ],
+        "weight": 0.1
+    },
+    {
+        "color": {
+            "blue": 500,
+            "green": 500,
+            "red": 500
+        },
+        "damage": {
+            "amount": "1-10",
+            "type": "piercing"
+        },
+        "equipment": "two_handed",
+        "glyph": "p",
+        "name": "pickaxe",
+        "opaque": 0.0,
+        "range": "0-1.5",
+        "size": 2.0000000000000004,
+        "solid": false,
+        "tags": [
+            "core",
+            "weapon"
+        ],
+        "weight": 2.2000000000000006
+    }
+]

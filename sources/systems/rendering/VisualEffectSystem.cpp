@@ -19,12 +19,12 @@ namespace VisualEffectSystem
 		if (registry.ctx().get<GameState>().test_run == true)
 			return;
 		Color original = ECS::get_fgcolor(registry, entity);
-		registry.get<FGColor>(entity).color = fgcolor;
+		registry.replace<Color>(entity, fgcolor);
 		const Position& position = registry.get<Position>(entity);
 		RenderingSystem::render_cell(registry, position);
 		UI::instance().update();
 		std::this_thread::sleep_for(std::chrono::milliseconds(ms));
-		registry.get<FGColor>(entity).color = original;
+		registry.replace<Color>(entity, original);
 		RenderingSystem::render_cell(registry, position);
 	}
 	void damage_flash(entt::registry& registry, const entt::entity entity)

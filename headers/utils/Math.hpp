@@ -7,31 +7,43 @@ namespace Math
 {
 	template <typename T> static inline T clamp(const T& value, const T& min, const T& max)
 	{
-		return std::min(max, std::max(min, value));
+		if constexpr (std::is_arithmetic_v<T>)
+			return std::min(max, std::max(min, value));
+		else if constexpr (std::is_same_v<T, nlohmann::json>)
+		{
+			if (value.is_number_integer())
+				return nlohmann::json{
+					clamp(value.template get<int>(), min.template get<int>(), max.template get<int>())
+				};
+			else if (value.is_number_float())
+				return nlohmann::json{
+					clamp(value.template get<double>(), min.template get<double>(), max.template get<double>())
+				};
+			else
+				return value;
+		}
+		else
+			return value;
 	}
 	inline double map(double x, double a, double b, double c, double d)
 	{
 		return c + (x - a) * (d - c) / (b - a);
 	}
 
-	// increment safely
-	template <typename T> void increment(T& value, const T& max_limit)
+	inline double round1(const double v)
 	{
-		if (value > max_limit - T{1})
-		{
-			value = max_limit;
-			return;
-		}
-		value = value + T{1};
+		return std::round(v * 10.0) / 10.0;
 	}
-	template <typename T> void decrement(T& value, const T& min_limit)
+
+	inline size_t get_precision(double d)
 	{
-		if (value < min_limit + T{1})
+		size_t precision = 0;
+		while (d < 1.0)
 		{
-			value = min_limit;
-			return;
+			precision++;
+			d *= 10;
 		}
-		value = value - T{1};
+		return precision;
 	}
 
 	inline Vec2 polar_to_cartesian(const Vec2 center, const double radius, const double angle)

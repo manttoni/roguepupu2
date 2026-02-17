@@ -39,7 +39,6 @@ Game::Game()
 
 void Game::loop()
 {
-	Log::log("Game loop started");
 	registry.ctx().get<GameState>().game_running = true;
 	const auto player = ECS::get_player(registry);
 	while (registry.ctx().get<GameState>().game_running && game_over == false)

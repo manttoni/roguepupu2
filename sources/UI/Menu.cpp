@@ -7,13 +7,16 @@
 #include <cctype>
 #include <cstdlib>
 #include <vector>
+#include <variant>
 
+#include "UI/Menu.hpp"
 #include "utils/Error.hpp"
 #include "utils/Screen.hpp"
 #include "UI/Menu.hpp"
 #include "UI/UI.hpp"
 #include "utils/Vec2.hpp"
 #include "utils/Utils.hpp"
+#include "utils/Math.hpp"
 
 Menu::Menu(const Vec2& position) : position(position), panel(nullptr), height(0), width(0) {}
 Menu::~Menu()
@@ -32,7 +35,7 @@ Menu::~Menu()
  * */
 size_t Menu::Element::get_size() const
 {
-	size_t size = 0;
+	size_t size = 3 + 3; // 3 space on the left, 3 on right
 
 	for (size_t i = 0; i < label.size(); ++i)
 	{
@@ -51,14 +54,14 @@ size_t Menu::Element::get_size() const
 	if (type == Type::TextField)
 	{
 		const std::string ascii = ": _";
-		size += max_value + ascii.size();
+		size += value_range.max + ascii.size();
 	}
 	if (type == Type::ValueSelector) // Value: < 10 >
 	{
 		const std::string ascii = ": <  >";
 		const size_t number_size = std::max(
-				std::to_string(min_value).size(),
-				std::to_string(max_value).size()
+				std::to_string(value_range.min).size(),
+				std::to_string(value_range.max).size()
 				);
 		size += ascii.size() + number_size;
 	}
@@ -67,61 +70,156 @@ size_t Menu::Element::get_size() const
 		const std::string ascii = ": [X]";
 		size += ascii.size();
 	}
+	if (type == Type::MultiChoice)
+	{
+		const std::string ascii = ": <  >";
+		assert(!choices.empty());
+		auto it = std::max_element(choices.begin(), choices.end(),
+				[](const auto& a, const auto& b)
+				{
+				return a.size() < b.size();
+				});
+		size += ascii.size() + it->size();
+	}
 	return size;
 }
 
 /* This returns a string that will be printed in the menu on the screen
+ * The string consists of:
+ * - label on left
+ * - value string on right (if there is a value)
  * */
-std::string Menu::Element::get_text() const
+std::string Menu::Element::get_text(const size_t width) const
 {
+	std::string value_string = "";
 	switch (type)
 	{
 		case Type::Button:
 		case Type::Text:
+			if (is_cancel || is_confirm)
+				return "[A_BOLD]" + label + "[reset]";
 			return label;
 		case Type::TextField:
-			if (auto strPtr = std::get_if<std::string*>(&value))
-				return label + ": " + **strPtr + "_";
-			else
-				Error::fatal("Menu element (" + label + ") is invalid: value not string");
+			if (auto p = std::get_if<std::string*>(&value))
+				value_string = **p;
+			else if (auto p = std::get_if<nlohmann::json*>(&value))
+				value_string = (**p).get<std::string>();
+			else Error::fatal("Menu element (" + label + ") is invalid: value not string or json");
+			value_string += value_string.size() < static_cast<size_t>(value_range.max) ? "[A_BLINK]_[reset]" : "";
+			return std::format("{:<{}}{:>{}}",
+					label, width - value_range.max - 9,
+					value_string, value_string.size() - 5);
 		case Type::ValueSelector:
 			{
-				if (auto intPtr = std::get_if<int*>(&value))
+				std::string number = "";
+				bool is_min = false;
+				bool is_max = false;
+				if (auto p = std::get_if<int*>(&value))
 				{
-					std::string text = label;
-					if (**intPtr == min_value)
-						text += ":   ";
-					else
-						text += ": < ";
-					text += std::to_string(**intPtr);
-					if (**intPtr == max_value)
-						text += "  ";
-					else
-						text += " >";
-					return text;
+					is_min = **p == value_range.min;
+					is_max = **p == value_range.max;
+					number = std::to_string(**p);
 				}
-				else
-					Error::fatal("Menu element (" + label + ") is invalid: value not int");
+				else if (auto p = std::get_if<double*>(&value))
+				{
+					is_min = **p == value_range.min;
+					is_max = **p == value_range.max;
+					number = std::format("{:.{}f}", **p, Math::get_precision(delta));
+				}
+				else if (auto p = std::get_if<nlohmann::json*>(&value))
+				{
+					auto& j = **p;
+					if (j.is_number_integer())
+					{
+						is_min = **p == value_range.min;
+						is_max = **p == value_range.max;
+						number = std::to_string(j.get<int>());
+					}
+					else if (j.is_number_float())
+					{
+						is_min = **p == value_range.min;
+						is_max = **p == value_range.max;
+						number = std::format("{:.{}f}", j.get<double>(), Math::get_precision(delta));
+					}
+				}
+				if (number.empty())
+					Error::fatal("ValueSelector does not have a numeric value");
+
+				value_string += is_min ? "   " : " < ";
+				value_string += number;
+				value_string += is_max ? "   " : " >";
+				return std::format("{:<{}}{:>{}}",
+						label, width - value_string.size() - 9,
+						value_string, value_string.size() - 5);
 			}
 		case Type::Checkbox:
-			if (auto boolPtr = std::get_if<bool*>(&value))
-				return label + ": [" + (**boolPtr ? "X]" : " ]");
+			if (auto p = std::get_if<bool*>(&value))
+				value_string = std::string("[") + (**p ? "X" : " ") + "]";
+			else if (auto p = std::get_if<nlohmann::json*>(&value))
+				value_string = std::string("[") + ((**p).get<bool>() ? "X" : " ") + "]";
 			else
-				Error::fatal("Menu element (" + label + ") is invalid: value not bool");
+				Error::fatal("Menu element (" + label + ") is invalid: value not bool or json");
+			return std::format("{:<{}}{:>{}}",
+					label, width - value_string.size() - 13,
+					value_string, value_string.size() - 3);
+		case Type::MultiChoice:
+			{
+				std::string choice = "";
+				if (auto p = get_if<std::string*>(&value))
+					choice = **p;
+				else if (auto p = get_if<nlohmann::json*>(&value))
+					choice = (**p).get<std::string>();
+				else Error::fatal("Invalid MultiChoice element, value not string");
+				auto it = std::find(choices.begin(), choices.end(), choice);
+				if (it == choices.end())
+					Error::fatal("MultiChoice choice is not in choices");
+				const size_t index = it - choices.begin();
+				if (index == 0)
+					value_string += "   ";
+				else
+					value_string += " < ";
+				value_string += choice;
+				if (index == choices.size() - 1)
+					value_string += "  ";
+				else
+					value_string += " >";
+				return std::format("{:<{}}{:>{}}",
+						label, width - value_string.size() - 9,
+						value_string, value_string.size() - 5);
+			}
 		default:
 			return "???";
 	}
 }
 
-bool Menu::add_element(Element element)
+void Menu::add_element(Element element)
 {
+	assert(element.type != Element::Type::None);
 	if (auto intPtr = std::get_if<int*>(&element.value))
 	{
-		**intPtr = std::max(element.min_value, **intPtr);
-		**intPtr = std::min(element.max_value, **intPtr);
+		**intPtr = std::max(element.value_range.min, **intPtr);
+		**intPtr = std::min(element.value_range.max, **intPtr);
+	}
+	if (auto dblPtr = std::get_if<double*>(&element.value))
+	{
+		**dblPtr = std::max(static_cast<double>(element.value_range.min), **dblPtr);
+		**dblPtr = std::min(static_cast<double>(element.value_range.max), **dblPtr);
+	}
+	if (auto p = std::get_if<nlohmann::json*>(&element.value))
+	{
+		auto& j = **p;
+		if (j.is_number_float())
+		{
+			double v = j.get<double>();
+			**p = Math::clamp(v, static_cast<double>(element.value_range.min), static_cast<double>(element.value_range.max));
+		}
+		else if (j.is_number_integer())
+		{
+			int v = j.get<int>();
+			**p = Math::clamp(v, element.value_range.min, element.value_range.max);
+		}
 	}
 	elements.push_back(element);
-	return true;
 }
 
 /* Create/modify WINDOW that is inside PANEL.
@@ -151,10 +249,8 @@ void Menu::set_panel()
 
 	const Vec2 size(static_cast<int>(height), static_cast<int>(width));
 	Vec2 start = position - size / 2;
-	start = Vec2(
-			std::min(Screen::height(), std::max(0, start.y)),
-			std::min(Screen::width(), std::max(0, start.x))
-			);
+	start.y = std::max(0, std::min(start.y, Screen::height() - static_cast<int>(height)));
+	start.x = std::max(0, std::min(start.x, Screen::width() - static_cast<int>(width)));
 	if (!panel)
 	{
 		WINDOW* win = newwin(height, width, start.y, start.x);
@@ -223,16 +319,18 @@ void Menu::show_elements(const size_t selected) const
 	wmove(panel_window(panel), 1, 0); // because of box() start at y = 1
 	for (size_t i = 0; i < elements.size(); ++i)
 	{
-		const bool highlight = i == selected;
-		if (highlight == true) UI::instance().enable_attr(A_REVERSE);
+		const bool highlighted = i == selected;
+		if (highlighted == true) UI::instance().enable_attr(A_REVERSE);
 		if (elements[i].label == "--")
 		{
 			std::wstring line(width - 1, L'─');
 			UI::instance().print_wstr(line + L'\n');
 			continue;
 		}
-		UI::instance().print("  " + elements[i].get_text() + "\n");
-		if (highlight == true) UI::instance().disable_attr(A_REVERSE);
+		const std::string left = elements[i].highlight == '\0' ? "   " : std::string(" ") + elements[i].highlight + " ";
+		const std::string line = "  " + left + elements[i].get_text(width);
+		UI::instance().print(std::format("{:<{}}", line, width - 1) + "\n");
+		if (highlighted == true) UI::instance().disable_attr(A_REVERSE);
 	}
 	box(panel_window(panel), 0, 0);
 	UI::instance().update();
@@ -259,37 +357,108 @@ size_t Menu::select_element(const size_t selected, const int key) const
 
 void Menu::change_value(Element& e, const int key)
 {
+	double change = 0;
 	switch (key)
 	{
 		case KEY_LEFT:
-			if (auto intPtr = std::get_if<int*>(&e.value))
-				**intPtr = std::max(e.min_value, **intPtr - 1);
-			return;
+			change = -e.delta;
+			break;
 		case KEY_RIGHT:
-			if (auto intPtr = std::get_if<int*>(&e.value))
-				**intPtr = std::min(e.max_value, **intPtr + 1);
-			return;
+			change = e.delta;
+			break;
 		default:
 			return;
+	}
+
+	if (auto p = std::get_if<int*>(&e.value))
+		**p = Math::clamp(**p + static_cast<int>(change), e.value_range.min, e.value_range.max);
+	else if (auto p = std::get_if<nlohmann::json*>(&e.value))
+	{
+		auto& j = **p;
+		if (j.is_number_float())
+		{
+			double v = j.get<double>();
+			j = Math::clamp(v + change, static_cast<double>(e.value_range.min), static_cast<double>(e.value_range.max));
+		}
+		else if (j.is_number_integer())
+		{
+			int v = j.get<int>();
+			j = Math::clamp(v + static_cast<int>(change), e.value_range.min, e.value_range.max);
+		}
 	}
 }
 
 void Menu::input_text(Element& e, const int key)
 {
-	if (auto strPtr = std::get_if<std::string*>(&e.value))
+	if (auto p = std::get_if<std::string*>(&e.value))
 	{
-		if (key == KEY_BACKSPACE && !(*strPtr)->empty())
-			(*strPtr)->pop_back();
-		else if (std::isalpha(static_cast<unsigned char>(key)) && (*strPtr)->size() < static_cast<size_t>(e.max_value))
-			**strPtr += key;
+		if (key == KEY_BACKSPACE && !(*p)->empty())
+			(*p)->pop_back();
+		else if (std::isprint(static_cast<unsigned char>(key)) && (*p)->size() < static_cast<size_t>(e.value_range.max))
+			**p += key;
+	}
+	if (auto p = std::get_if<nlohmann::json*>(&e.value))
+	{
+		auto& j = **p;
+		if (!j.is_string())
+			Error::fatal("Json object in TextField is not string");
+		std::string s = j.get<std::string>();
+		if (key == KEY_BACKSPACE && !s.empty())
+			s.pop_back();
+		else if (std::isprint(static_cast<unsigned char>(key)) && s.size() < static_cast<size_t>(e.value_range.max))
+			s += key;
+		j = s;
 	}
 }
 
 void Menu::set_bool(Element& e, const int key)
 {
 	if (key == '\n' || key == KEY_ENTER || key == KEY_LEFT_CLICK)
+	{
 		if (auto boolPtr = std::get_if<bool*>(&e.value))
 			**boolPtr ^= true;
+		else if (auto p = std::get_if<nlohmann::json*>(&e.value))
+		{
+			auto& j = **p;
+			if (!j.is_boolean())
+				Error::fatal("Json in Checkbox is not boolean");
+			j = !j.get<bool>();
+		}
+		else
+			Error::fatal("Checkbox value is not bool or json");
+	}
+}
+
+void Menu::select_multi_choice(Element& e, const int key)
+{
+	const size_t max_idx = e.choices.size() - 1;
+	std::string choice = "";
+	if (auto p = std::get_if<std::string*>(&e.value))
+		choice = **p;
+	else if (auto p = std::get_if<nlohmann::json*>(&e.value))
+		choice = (**p).get<std::string>();
+	else Error::fatal("MultiChoice value not string or json");
+	auto it = std::find(e.choices.begin(), e.choices.end(), choice);
+	if (it == e.choices.end())
+		Error::fatal("MultiChoice choice not in choices");
+	size_t index = it - e.choices.begin();
+	switch (key)
+	{
+		case KEY_LEFT:
+			if (index > 0)
+				index--;
+			break;
+		case KEY_RIGHT:
+			if (index < max_idx)
+				index++;
+			break;
+		default:
+			break;
+	}
+	if (auto p = std::get_if<std::string*>(&e.value))
+		**p = e.choices[index];
+	else if (auto p = std::get_if<nlohmann::json*>(&e.value))
+		**p = e.choices[index];
 }
 
 bool Menu::selection_confirmed(const Element& e, const int key) const
@@ -302,7 +471,7 @@ bool Menu::selection_confirmed(const Element& e, const int key) const
 /* Needs either one or more Buttons or only unselectables. Will solve it if becomes problem.
  * Name is not good because can be used to simply display a message if has only unselectables.
  * */
-Menu::Element Menu::get_selection(const size_t default_selected)
+Menu::Selection Menu::get_selection(const size_t default_selected)
 {
 	int key = 0;
 	size_t selected = default_selected + get_unselectable_count(); // selected will always be one of the selectable elements
@@ -311,7 +480,7 @@ Menu::Element Menu::get_selection(const size_t default_selected)
 	{
 		show_elements(selected);
 		if (get_unselectable_count() == elements.size())
-			return Element{};
+			return Selection(); // This might or might not happen, probablyish not (always add some button)
 		key = UI::instance().input(100); // delay is pretty short because want hover highlight to update more often
 		selected = select_element(selected, key); // changes selected from keyboard or mouse hover
 		if (elements[selected].type == Element::Type::ValueSelector)
@@ -320,12 +489,27 @@ Menu::Element Menu::get_selection(const size_t default_selected)
 			input_text(elements[selected], key);
 		if (elements[selected].type == Element::Type::Checkbox)
 			set_bool(elements[selected], key);
+		if (elements[selected].type == Element::Type::MultiChoice)
+			select_multi_choice(elements[selected], key);
 		if (selection_confirmed(elements[selected], key)) // enter or left click on a Button
 		{
-			elements[selected].index = selected - get_unselectable_count();
-			return elements[selected];
+			// index matters even with confirm and cancel
+			const auto element = elements[selected];
+			const auto index = selected - get_unselectable_count();
+			Selection selection(index, element);
+			if (element.is_cancel)
+				selection.cancelled = true;
+			if (element.is_confirm)
+				selection.confirmed = true;
+			return selection;
+		}
+		if (blocking == false) // combine this flag with outer loop to make nice interactive menu UI
+		{
+			Selection s(selected - get_unselectable_count());
+			s.timed_out = true;
+			return s;
 		}
 	}
-	return Element{};
+	return Selection::cancel();
 }
 

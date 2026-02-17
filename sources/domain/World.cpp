@@ -30,7 +30,7 @@ const Cave& World::get_cave(const size_t idx) const
 size_t World::new_cave(size_t size, const Cell::Type fill)
 {
 	if (size == SIZE_MAX)
-		size = Parser::read_file("data/generation/cave/sizes.json")["default"].get<size_t>();
+		size = Parser::read_json_file("data/generation/cave/sizes.json")["default"].get<size_t>();
 	Cave cave(size, fill);
 	const size_t idx = caves.size();
 	cave.set_idx(idx);

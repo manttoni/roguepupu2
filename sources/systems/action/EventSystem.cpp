@@ -90,7 +90,7 @@ namespace EventSystem
 	void resolve_spawn_event(entt::registry& registry, const Event& event)
 	{
 		assert(event.target.entity != entt::null && event.target.position.is_valid());
-		if (registry.all_of<Glow, Position, FGColor>(event.target.entity))
+		if (registry.all_of<Glow, Position, Color>(event.target.entity))
 			LightingSystem::reset_lights(registry, registry.get<Position>(event.target.entity).cave_idx);
 	}
 

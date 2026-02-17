@@ -23,7 +23,7 @@ LootTableDatabase::LootTableDatabase()
 void LootTableDatabase::read_definitions()
 {
 	const std::filesystem::path path = "data/loot_tables.json";
-	nlohmann::json definitions = Parser::read_file(path);
+	nlohmann::json definitions = Parser::read_json_file(path);
 
 	for (const auto& [id, data] : definitions.items())
 	{

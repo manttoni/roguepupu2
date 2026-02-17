@@ -21,16 +21,31 @@ namespace Parser
 {
 	Color parse_color(const nlohmann::json& data)
 	{
-		if (!data.is_array() || data.size() != 3)
-			Error::fatal("Data not right sized array: " + data.dump(4));
-		if (!data[0].is_number() || !data[1].is_number() || !data[2].is_number())
-			Error::fatal("Color needs three numeric values");
-		const int r = data[0].get<int>();
-		const int g = data[1].get<int>();
-		const int b = data[2].get<int>();
-		if (r < 0 || r > 1000 || g < 0 || g > 1000 || b < 0 || b > 1000)
-			Error::fatal("Color value out of bounds [0,1000]");
-		return Color(r, g, b);
+		if (data.is_array() && data.size() == 3)
+		{
+			if (!data[0].is_number() || !data[1].is_number() || !data[2].is_number())
+				Error::fatal("Color needs three numeric values");
+			const int r = data[0].get<int>();
+			const int g = data[1].get<int>();
+			const int b = data[2].get<int>();
+			if (r < 0 || r > 1000 || g < 0 || g > 1000 || b < 0 || b > 1000)
+				Error::fatal("Color value out of bounds [0,1000]");
+			return Color(r, g, b);
+		}
+		if (data.is_object())
+		{
+			if (!data.contains("red") || !data.contains("green") || !data.contains("blue"))
+				Error::fatal("Color needs correct channels");
+			if (!data["red"].is_number_integer() || !data["green"].is_number_integer() || !data["blue"].is_number_integer())
+				Error::fatal("Color channel value not integer: " + data.dump(4));
+			const int r = data["red"].get<int>();
+			const int g = data["green"].get<int>();
+			const int b = data["blue"].get<int>();
+			if (r < 0 || r > 1000 || g < 0 || g > 1000 || b < 0 || b > 1000)
+				Error::fatal("Color value out of bounds [0,1000]");
+			return Color(r, g, b);
+		}
+		Error::fatal("Color format is wrong: " + data.dump(4));
 	}
 
 	Effect parse_effect(const nlohmann::json& data)
@@ -66,7 +81,7 @@ namespace Parser
 		return conditions;
 	}
 
-	nlohmann::json read_file(const std::filesystem::path& path)
+	nlohmann::json read_json_file(const std::filesystem::path& path)
 	{
 		std::ifstream file(path);
 		if (!file.is_open())
@@ -75,15 +90,22 @@ namespace Parser
 		try {
 			file >> defs;
 		} catch (const nlohmann::json::parse_error& e) {
-			Error::fatal(e.what());
+			Error::fatal("File: " + path.string() + ", error: " + e.what());
 		}
 		file.close();
 		return defs;
 	}
 
+	nlohmann::json parse_json_array(const std::filesystem::path& path)
+	{
+		auto data = read_json_file(path);
+		assert(data.is_array() || data.empty());
+		return data;
+	}
+
 	void parse_cave_generation_conf(const std::string& conf, CaveGenerator::Data& cgdata)
 	{
-		const nlohmann::json data = read_file("data/generation/cave/conf.json");
+		const nlohmann::json data = read_json_file("data/generation/cave/conf.json");
 		assert(data.contains(conf));
 		const nlohmann::json entry = data[conf];
 		const auto dentry = entry["density"];
@@ -104,7 +126,7 @@ namespace Parser
 		cgdata.margin = m;
 	}
 
-	Damage::Spec parse_damage(const nlohmann::json& data)
+	Damage::Spec parse_damage_spec(const nlohmann::json& data)
 	{
 		const auto type_str = data["type"].get<std::string>();
 		const auto range = parse_range<size_t>(data["amount"]);

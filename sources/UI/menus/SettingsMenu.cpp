@@ -23,7 +23,7 @@ namespace SettingsMenu
 			{
 				Menu::Element::ElementValue val = pi_val;
 				if (type == GameSettings::Type::LogLength)
-					menu.add_element(Element(Menu::Element::Type::ValueSelector, setting.label, val, 0, Screen::height()));
+					menu.add_element(Element(Menu::Element::Type::ValueSelector, setting.label, val, Range<int>(0, Screen::height())));
 			}
 		}
 		menu.add_element(Element(Type::Button, "Apply"));

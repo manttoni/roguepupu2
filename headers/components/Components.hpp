@@ -21,18 +21,6 @@ struct Name
 
 	bool operator==(const Name& other) const = default;
 };
-struct Category
-{
-	std::string category;
-
-	bool operator==(const Category& other) const = default;
-}; // data/entities/category/subcategory.json
-struct Subcategory
-{
-	std::string subcategory;
-
-	bool operator==(const Subcategory& other) const = default;
-};
 
 /* Optional components... */
 /* Physical */
@@ -48,8 +36,7 @@ struct Weight { double kilograms; };
 
 /* Rendering */
 struct Glyph { wchar_t glyph; };
-struct FGColor { Color color; };
-struct BGColor { Color color; };
+//struct FGColor { Color color; };
 struct NcursesAttr
 {
 	chtype attr;
@@ -64,6 +51,8 @@ struct NcursesAttr
 				return "[A_BOLD]";
 			case A_REVERSE:
 				return "[A_REVERSE]";
+			case A_BLINK:
+				return "[A_BLINK]";
 			default:
 				return "[A_NORMAL]";
 		}
@@ -86,7 +75,7 @@ struct NcursesAttr
 		if (!std::regex_match(markup, match, regex))
 			return false;
 
-		const std::vector<std::string> handled_attrs = {"A_BOLD", "A_DIM", "A_REVERSE", "A_NORMAL"};
+		const std::vector<std::string> handled_attrs = {"A_BOLD", "A_DIM", "A_REVERSE", "A_NORMAL", "A_BLINK"};
 		auto it = std::find(handled_attrs.begin(), handled_attrs.end(), match[1]);
 		return it != handled_attrs.end();
 	}
@@ -99,6 +88,7 @@ struct NcursesAttr
 		if (markup == "A_DIM") return A_DIM;
 		if (markup == "A_BOLD") return A_BOLD;
 		if (markup == "A_REVERSE") return A_REVERSE;
+		if (markup == "A_BLINK") return A_BLINK;
 		return A_NORMAL;
 	}
 
@@ -402,4 +392,8 @@ struct Player
 };
 struct Destroyed {};
 
-
+/* Tags
+ * */
+struct Creature {};
+struct Weapon {};
+struct NPC {};

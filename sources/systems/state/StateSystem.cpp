@@ -25,6 +25,10 @@ namespace StateSystem
 		const int perception = get_attribute<Perception>(registry, entity);
 		return 30.0 * (1.0 - std::exp(-0.05 * perception));
 	}
+	int get_initiative(const entt::registry& registry, const entt::entity entity)
+	{
+		return get_attribute<Dexterity>(registry, entity) + get_attribute<Agility>(registry, entity);
+	}
 	int get_max_health(const entt::registry& registry, const entt::entity entity)
 	{
 		return get_attribute<Vitality>(registry, entity);
