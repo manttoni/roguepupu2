@@ -10,7 +10,7 @@
 #include "domain/Damage.hpp"
 #include "domain/Effect.hpp"
 #include "domain/Event.hpp"
-#include "domain/EventQueue.hpp"
+#include "infrastructure/EventQueue.hpp"
 #include "domain/Position.hpp"
 #include "domain/Target.hpp"
 #include "external/entt/entity/fwd.hpp"

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include "Event.hpp"
+#include "domain/Event.hpp"
 
 /* A queue where Events are created when Effect has happened.
  * Event is a description of what Effect happened to who by who.

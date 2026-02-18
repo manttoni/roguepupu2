@@ -133,4 +133,13 @@ namespace Parser
 		return Damage::Spec(Damage::string_to_type(type_str), range);
 	}
 
+	Random::Perlin parse_perlin(const nlohmann::json& data)
+	{
+		Random::Perlin perlin;
+		perlin.enabled = data["enabled"].get<bool>();
+		perlin.frequency = data["frequency"].get<double>();
+		perlin.treshold = data["treshold"].get<double>();
+		perlin.octaves = data["octaves"].get<size_t>();
+		return perlin;
+	}
 };

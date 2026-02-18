@@ -11,7 +11,7 @@
 #include <string>
 #include <utility>
 
-
+#include "infrastructure/EventQueue.hpp"
 #include "UI/Dialog.hpp"
 #include "UI/UI.hpp"
 #include "domain/Cave.hpp"
@@ -133,12 +133,6 @@ namespace CaveGenerator
 			return;
 		LightingSystem::reset_lights(data.registry, data.cave.get_idx());
 		RenderingSystem::render_generation(data.registry, data.cave.get_idx());
-	}
-
-	void set_entities(Data& data)
-	{
-		EntitySpawner::despawn_entities(data.registry, data.cave.get_idx());
-		EntitySpawner::spawn_entities(data.registry, data.cave.get_idx(), {{"category", "nature"}});
 	}
 
 	void simulate_environment(Data& data)
@@ -275,7 +269,7 @@ namespace CaveGenerator
 		set_rock_densities(data);
 		set_water_features(data);
 		form_tunnels(data);
-		set_entities(data);
+		EntitySpawner::spawn_entities(data.registry, data.cave.get_idx());
 		render(data);
 	}
 
@@ -285,6 +279,7 @@ namespace CaveGenerator
 		if (!test_run)
 			UI::instance().set_current_panel(UI::Panel::Game, true);
 		generate(data);
+		data.registry.ctx().get<EventQueue>().queue.clear();
 		if (test_run)
 			return;
 		while (true)

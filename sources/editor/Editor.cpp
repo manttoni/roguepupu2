@@ -424,6 +424,9 @@ namespace Editor
 	 * */
 	void edit_entity(const Json& entity, Json& part, const Json& template_json, const std::string& part_id = "")
 	{
+		Log::log("Editing entity: " + entity.dump(4));
+		Log::log("Editing part: " + part.dump(4));
+		Log::log("Template: " + template_json.dump(4));
 		Selection selection;
 		while (true)
 		{
@@ -451,6 +454,9 @@ namespace Editor
 			// Add Menu::Elements for values in 'part'
 			for (auto& [key, value] : part.items())
 			{
+				if (!template_json.contains(key))
+					continue;
+				Log::log("Creating Menu::Element for key: " + key);
 				Type type = Type::None;
 
 				if (value.is_number())

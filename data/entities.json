@@ -128,5 +128,105 @@
             "weapon"
         ],
         "weight": 2.2000000000000006
+    },
+    {
+        "color": {
+            "blue": 500,
+            "green": 0,
+            "red": 400
+        },
+        "environment_sensitive": {
+            "hydro": "phobia",
+            "photo": "neutral"
+        },
+        "glow": {
+            "intensity": 0.02000000000000001,
+            "radius": 4.0
+        },
+        "glyph": "*",
+        "name": "glowing mushroom",
+        "opaque": 0.20000000000000004,
+        "size": 4.999999999999998,
+        "solid": false,
+        "spawn_chance": {
+            "chance": 0.1999999999999993,
+            "perlin": {
+                "enabled": true,
+                "frequency": 0.009999999999999691,
+                "octaves": 1,
+                "treshold": 0.3999999999999999
+            }
+        },
+        "tags": [
+            "core",
+            "spawns_naturally",
+            "has_glow"
+        ],
+        "weight": 4.999999999999998
+    },
+    {
+        "color": {
+            "blue": 0,
+            "green": 330,
+            "red": 670
+        },
+        "environment_sensitive": {
+            "hydro": "phobia",
+            "photo": "neutral"
+        },
+        "glyph": "$",
+        "name": "woody mushroom",
+        "opaque": 0.5,
+        "size": 40.0000000000003,
+        "solid": true,
+        "spawn_chance": {
+            "chance": 0.1999999999999993,
+            "perlin": {
+                "enabled": true,
+                "frequency": 0.19999999999999973,
+                "octaves": 16,
+                "treshold": 0.5
+            }
+        },
+        "tags": [
+            "core",
+            "spawns_naturally"
+        ],
+        "weight": 40.0000000000003
+    },
+    {
+        "color": {
+            "blue": 400,
+            "green": 300,
+            "red": 350
+        },
+        "environment_sensitive": {
+            "hydro": "philia",
+            "photo": "neutral"
+        },
+        "glow": {
+            "intensity": 0.02000000000000001,
+            "radius": 0.0
+        },
+        "glyph": "¤",
+        "name": "lotus",
+        "opaque": 0.0,
+        "size": 2.1000000000000005,
+        "solid": false,
+        "spawn_chance": {
+            "chance": 0.04999999999999925,
+            "perlin": {
+                "enabled": true,
+                "frequency": 0.5,
+                "octaves": 1,
+                "treshold": 0.5
+            }
+        },
+        "tags": [
+            "core",
+            "has_glow",
+            "spawns_naturally"
+        ],
+        "weight": 1.2
     }
 ]

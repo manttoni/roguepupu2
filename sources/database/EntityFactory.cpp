@@ -16,23 +16,24 @@
 #include <utility>
 #include <vector>
 
-#include "systems/items/LootSystem.hpp"
-#include "systems/state/StateSystem.hpp"
 #include "components/Components.hpp"                                 // for Resources
 #include "database/EntityFactory.hpp"                              // for EntityFactory
-#include "domain/Color.hpp"                                      // for Color
-#include "utils/Parser.hpp"
-#include "utils/Random.hpp"
-#include "external/entt/entt.hpp"
-#include "utils/ECS.hpp"
-#include "domain/Event.hpp"
-#include "utils/Error.hpp"
 #include "domain/Ability.hpp"
+#include "domain/Color.hpp"                                      // for Color
 #include "domain/Effect.hpp"
+#include "domain/Event.hpp"
 #include "domain/Position.hpp"
 #include "domain/Target.hpp"
 #include "external/entt/entity/fwd.hpp"
+#include "external/entt/entt.hpp"
+#include "systems/items/LootSystem.hpp"
+#include "systems/state/StateSystem.hpp"
+#include "utils/ECS.hpp"
+#include "utils/Error.hpp"
+#include "utils/JsonUtils.hpp"
 #include "utils/Log.hpp"
+#include "utils/Parser.hpp"
+#include "utils/Random.hpp"
 
 class AbilityDatabase;
 
@@ -43,9 +44,15 @@ void EntityFactory::init()
 	add_entities(definitions);
 	Log::log("Entities parsed");
 }
+void EntityFactory::add_entities(nlohmann::json& entities)
+{
+	for (const auto& entity : entities)
+	{
+		LUT[entity["name"].get<std::string>()] = entity;
+	}
+}
 
 using FieldParser = std::function<void(entt::registry&, entt::entity, const nlohmann::json&)>;
-
 std::unordered_map<std::string, FieldParser> field_parsers =
 {
 	{ "name", [](auto& reg, auto e, const nlohmann::json& data)
@@ -366,23 +373,28 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 					reg.template emplace<Player>(e);
 				else if (str == "npc")
 					reg.template emplace<NPC>(e);
-				else if (str == "core")
+				else if (str == "core" || str == "spawns_naturally" || str == "has_glow")
 					continue;
 				else
 					Error::fatal("Unhandled tag: " + str);
 			}
 		}
+	},
+	{ "spawn_chance", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			(void) reg; (void) e; (void) data;
+			// This data is already been processed and no longer needed
+		}
+	},
+	{ "environment_sensitive", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			(void) reg; (void) e; (void) data;
+			// This data is already been processed and no longer needed
+			// Affects spawning
+			// Could be useful after spawning
+		}
 	}
 };
-
-// Add json data into map, and add categories to all of them
-void EntityFactory::add_entities(nlohmann::json& entities)
-{
-	for (const auto& entity : entities)
-	{
-		LUT[entity["name"].get<std::string>()] = entity;
-	}
-}
 
 entt::entity EntityFactory::create_entity(entt::registry& registry, const std::string& name, const std::optional<Position>& position) const
 {
@@ -416,9 +428,9 @@ entt::entity EntityFactory::create_entity(entt::registry& registry, const std::s
 	return entity;
 }
 
-std::vector<entt::entity> EntityFactory::create_entities(entt::registry& registry, const nlohmann::json& filter) const
+std::vector<entt::entity> EntityFactory::create_entities(entt::registry& registry, const nlohmann::json& include, const nlohmann::json& exclude) const
 {
-	const auto entity_ids = filter_entity_ids(filter);
+	const auto entity_ids = filter_entity_ids(include, exclude);
 	return create_entities(registry, entity_ids);
 }
 
@@ -445,70 +457,14 @@ std::vector<entt::entity> EntityFactory::create_entities(entt::registry& registr
 	return entities;
 }
 
-bool EntityFactory::exclude(const nlohmann::json& data, const nlohmann::json& filter) const
+std::vector<std::string> EntityFactory::filter_entity_ids(const nlohmann::json& include, const nlohmann::json& exclude) const
 {
-	for (const auto& [filter_field, filter_data] : filter.items())
-	{
-		if (filter_data == "any")
-		{
-			if (data.contains(filter_field))
-				continue;
-			else
-				return true;
-		}
-		if (filter_data == "none")
-		{
-			if (data.contains(filter_field))
-				return true;
-			else
-				continue;
-		}
-		if (!data.contains(filter_field) || data[filter_field] != filter_data)
-			return true;
-	}
-	return false;
-}
-
-std::vector<std::string> EntityFactory::filter_entity_ids(const nlohmann::json& filter) const
-{
-	std::vector<std::string> pool;
+	std::vector<std::string> ids;
 	for (const auto& [name, data] : LUT)
 	{
-		if (!exclude(data, filter))
-			pool.push_back(name);
+		if (JsonUtils::contains_all(data, include) && JsonUtils::contains_none(data, exclude))
+			ids.push_back(name);
 	}
-	std::sort(pool.begin(), pool.end());
-	return pool;
-}
-
-std::vector<std::string> EntityFactory::get_category_names() const
-{
-	std::vector<std::string> category_names;
-	for (const auto& [name, data] : LUT)
-	{
-		if (!data.contains("category"))
-			Error::fatal("Uncategorized entity: " + name);
-		const auto category = data["category"].get<std::string>();
-		auto it = std::find(category_names.begin(), category_names.end(), category);
-		if (it == category_names.end())
-			category_names.push_back(category);
-	}
-	return category_names;
-}
-
-std::vector<std::string> EntityFactory::get_subcategory_names(const std::string& category) const
-{
-	std::vector<std::string> subcategory_names;
-	for (const auto& [name, data] : LUT)
-	{
-		if (!data.contains("category") || !data.contains("subcategory"))
-			Error::fatal("Uncategorized entity: " + name);
-		if (data["category"].get<std::string>() != category)
-			continue;
-		const auto subcategory = data["subcategory"].get<std::string>();
-		auto it = std::find(subcategory_names.begin(), subcategory_names.end(), subcategory);
-		if (it == subcategory_names.end())
-			subcategory_names.push_back(subcategory);
-	}
-	return subcategory_names;
+	std::sort(ids.begin(), ids.end());
+	return ids;
 }

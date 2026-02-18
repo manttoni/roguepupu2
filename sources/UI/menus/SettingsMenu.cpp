@@ -26,7 +26,7 @@ namespace SettingsMenu
 					menu.add_element(Element(Menu::Element::Type::ValueSelector, setting.label, val, Range<int>(0, Screen::height())));
 			}
 		}
-		menu.add_element(Element(Type::Button, "Apply"));
+		menu.add_element(Element::confirm());
 		menu.get_selection();
 	}
 };

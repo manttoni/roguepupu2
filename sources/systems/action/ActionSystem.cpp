@@ -19,7 +19,7 @@
 #include "systems/rendering/RenderingSystem.hpp"
 #include "systems/state/ContextSystem.hpp"
 #include "systems/state/EquipmentSystem.hpp"
-#include "infrastructure/DevTools.hpp"
+#include "UI/menus/DevMenu.hpp"
 #include "systems/state/AlignmentSystem.hpp"
 #include "utils/ECS.hpp"
 #include "utils/Error.hpp"

@@ -4,8 +4,8 @@
 #include "domain/Actor.hpp"
 #include "domain/Target.hpp"
 #include "external/entt/fwd.hpp"
+#include "domain/Damage.hpp"
 
-struct Attack;
 
 /* Describes something that has happaned
  * "actor does something to target (with something)"

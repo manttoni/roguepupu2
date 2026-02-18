@@ -30,6 +30,7 @@ class Color
 		std::string to_string() const;
 		std::string markup() const;
 		double get_illumination() const;
+		short get_channels_sum() const { return r + g + b; }
 
 		static bool is_markup(const std::string& str, const size_t i);
 		static Color from_markup(const std::string& str, const size_t i);

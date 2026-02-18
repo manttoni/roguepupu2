@@ -23,7 +23,7 @@
 #include "utils/Screen.hpp"
 #include "infrastructure/GameLogger.hpp"
 #include "utils/Math.hpp"
-#include "infrastructure/DevTools.hpp"
+#include "infrastructure/DevSettings.hpp"
 #include "systems/environment/LiquidSystem.hpp"
 #include "domain/Cave.hpp"
 #include "domain/Position.hpp"
@@ -231,7 +231,7 @@ namespace RenderingSystem
 
 	void show_debug(const entt::registry& registry)
 	{
-		if (registry.ctx().get<Dev>().show_debug == false)
+		if (std::get<bool>(registry.ctx().get<DevSettings>().settings.at(DevSettings::Type::ShowDebug).value) == false)
 			return;
 		UI::instance().set_current_panel(UI::Panel::Game);
 		const std::vector<std::string> debug =
@@ -249,9 +249,12 @@ namespace RenderingSystem
 	{
 		if (registry.ctx().get<GameState>().test_run)
 			return;
+		if (UI::instance().get_initialized_colors().size() >= 256 ||
+			UI::instance().get_initialized_color_pairs().size() >= 256)
+			UI::instance().reset_colors(); // 256 might be too late, but its complicated
 		render_active_cave(registry);
 		print_log(registry);
-		if (std::get<bool>(registry.ctx().get<GameSettings>().settings[GameSettings::Type::ShowStatus].value))
+		if (std::get<bool>(registry.ctx().get<GameSettings>().settings.at(GameSettings::Type::ShowStatus).value))
 			show_player_status(registry);
 		show_debug(registry);
 		UI::instance().update();
@@ -261,6 +264,9 @@ namespace RenderingSystem
 
 	void render_generation(const entt::registry& registry, const size_t cave_idx)
 	{
+		if (UI::instance().get_initialized_colors().size() >= 256 ||
+			UI::instance().get_initialized_color_pairs().size() >= 256)
+			UI::instance().reset_colors(); // 256 might be too late, but its complicated
 		UI::instance().set_current_panel(UI::Panel::Game);
 		const auto& cave = ECS::get_cave(registry, cave_idx);
 		for (const auto& pos : cave.get_positions())

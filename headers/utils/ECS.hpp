@@ -8,11 +8,11 @@
 #include "domain/Cave.hpp"
 #include "domain/Color.hpp"
 #include "domain/Event.hpp"
-#include "domain/EventQueue.hpp"
 #include "domain/World.hpp"
 #include "external/entt/entt.hpp"
 #include "generation/CaveGenerator.hpp"
-#include "infrastructure/DevTools.hpp"
+#include "infrastructure/DevSettings.hpp"
+#include "infrastructure/EventQueue.hpp"
 #include "infrastructure/GameLogger.hpp"
 #include "infrastructure/GameSettings.hpp"
 #include "infrastructure/GameState.hpp"
@@ -248,7 +248,7 @@ namespace ECS
 		registry.ctx().emplace<World>();
 		registry.ctx().emplace<RenderData>();
 		registry.ctx().emplace<EventQueue>();
-		registry.ctx().emplace<Dev>();
+		registry.ctx().emplace<DevSettings>();
 		registry.ctx().emplace<LootTableDatabase>();
 		registry.ctx().emplace<GameSettings>();
 	}
@@ -272,6 +272,7 @@ namespace ECS
 		if (is_weapon)
 			return registry.get<AttackRange>(entity).range;
 		else if (is_creature)
+
 		{
 			Range<double> range = registry.get<AttackRange>(entity).range; // This is unarmed
 			if (registry.all_of<EquipmentSlots>(entity))
@@ -315,7 +316,25 @@ namespace ECS
 
 	inline void spawn_liquid(entt::registry& registry, const Position& position, const LiquidMixture& lm)
 	{
+		assert(position.is_valid());
 		auto& cell = get_cell(registry, position);
 		cell.get_liquid_mixture() += lm;
+	}
+
+	inline double get_light_amount(const entt::registry& registry, const Position& position)
+	{
+		assert(position.is_valid());
+		const auto& cell = get_cell(registry, position);
+		double amount = 0;
+		for (const auto& [color, stacks] : cell.get_lights())
+			amount += static_cast<double>(stacks) * static_cast<double>(color.get_channels_sum());
+		return amount;
+	}
+
+	inline double get_liquid_amount(const entt::registry& registry, const Position& position, const Liquid::Type type)
+	{
+		assert(position.is_valid());
+		const auto& cell = get_cell(registry, position);
+		return cell.get_liquid_mixture().get_volume(type);
 	}
 };
