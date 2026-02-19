@@ -35,4 +35,6 @@ struct Range
 		os << "[" << range.min << "," << range.max << "]";
 		return os;
 	}
+
+	std::string to_string() const { return std::to_string(min) + " - " + std::to_string(max); }
 };

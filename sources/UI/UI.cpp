@@ -386,6 +386,7 @@ void UI::init()
 	init_panels();
 
 	// signals should reset original terminal mode
+	// when using gdb it will override these :(
 	std::signal(SIGSEGV, handle_signal);
 	std::signal(SIGABRT, handle_signal);
 	std::signal(SIGFPE, handle_signal);

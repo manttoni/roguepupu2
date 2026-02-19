@@ -17,6 +17,7 @@
 #include "utils/Vec2.hpp"
 #include "utils/Utils.hpp"
 #include "utils/Math.hpp"
+#include "utils/Parser.hpp"
 
 Menu::Menu(const Vec2& position) : position(position), panel(nullptr), height(0), width(0) {}
 Menu::~Menu()
@@ -183,6 +184,54 @@ std::string Menu::Element::get_text(const size_t width) const
 					value_string += "  ";
 				else
 					value_string += " >";
+				return std::format("{:<{}}{:>{}}",
+						label, width - value_string.size() - 9,
+						value_string, value_string.size() - 5);
+			}
+		case Type::RangeSelector:
+			{
+				std::string numbers = "";
+				bool is_min = false;
+				bool is_max = false;
+				if (auto p = std::get_if<Range<int>*>(&value))
+				{
+					is_min = (**p).min == value_range.min;
+					is_max = (**p).max == value_range.max;
+					numbers = (**p).to_string();
+				}
+				else if (auto p = std::get_if<Range<double>*>(&value))
+				{
+					is_min = (**p).min == value_range.min;
+					is_max = (**p).max == value_range.max;
+					numbers = (**p).to_string();
+				}
+				else if (auto p = std::get_if<nlohmann::json*>(&value))
+				{	// j = { "range": [min, max] }
+					auto& j = **p;
+					if (!JsonUtils::is_range(j))
+						Error::fatal("RangeSelector json has no/invalid range: " + j.dump(4));
+					const auto& range_json = j["range"];
+					if (range_json[0].is_number_integer())
+					{
+						Range<int> range_int = Parser::parse_range<int>(range_json);
+						is_min = range_int.min == value_range.min;
+						is_max = range_int.max == value_range.max;
+						numbers = range_int.to_string();
+					}
+					else
+					{
+						Range<double> range_dbl = Parser::parse_range<double>(range_json);
+						is_min = range_dbl.min == value_range.min;
+						is_max = range_dbl.max == value_range.max;
+						numbers = range_dbl.to_string();
+					}
+				}
+				if (numbers.empty())
+					Error::fatal("RangeSelector error");
+
+				value_string += is_min ? "   " : " < ";
+				value_string += numbers;
+				value_string += is_max ? "   " : " >";
 				return std::format("{:<{}}{:>{}}",
 						label, width - value_string.size() - 9,
 						value_string, value_string.size() - 5);
@@ -366,6 +415,12 @@ void Menu::change_value(Element& e, const int key)
 		case KEY_RIGHT:
 			change = e.delta;
 			break;
+		case KEY_SLEFT:
+			change = -10 * e.delta;
+			break;
+		case KEY_SRIGHT:
+			change = 10 * e.delta;
+			break;
 		default:
 			return;
 	}
@@ -461,6 +516,45 @@ void Menu::select_multi_choice(Element& e, const int key)
 		**p = e.choices[index];
 }
 
+void Menu::change_range_values(Element& e, const int key)
+{
+	if (key != KEY_SLEFT && key != KEY_SRIGHT && key != KEY_LEFT && key != KEY_RIGHT)
+		return;
+	bool shift = key == KEY_SLEFT || key == KEY_SRIGHT; // shift+arrows change min
+	bool left = key == KEY_SLEFT || key == KEY_LEFT;
+	if (auto p = std::get_if<Range<int>*>(&e.value))
+	{
+		auto& range = **p;
+		if (shift && left)
+			range.min = std::max(e.value_range.min, range.min - static_cast<int>(e.delta));
+		else if (shift && !left)
+			range.min = std::min(range.max, range.min + static_cast<int>(e.delta));
+		else if (!shift && left)
+			range.max = std::max(range.min, range.max - static_cast<int>(e.delta));
+		else if (!shift && !left)
+			range.max = std::min(e.value_range.max, range.max + static_cast<int>(e.delta));
+	}
+	else if (auto p = std::get_if<nlohmann::json*>(&e.value))
+	{
+		if (!JsonUtils::is_range(**p))
+			Error::fatal("RangeSelector json is not range");
+		double change = left ? -e.delta : e.delta;
+		auto& j = **p;
+		auto& range = j["range"];
+		const bool is_float = range[0].is_number_float();
+		if (shift && is_float)
+			range[0] = Math::clamp(range[0].get<double>() + change, static_cast<double>(e.value_range.min), range[1].get<double>());
+		else if (shift && !is_float)
+			range[0] = Math::clamp(range[0].get<int>() + static_cast<int>(change), e.value_range.min, range[1].get<int>());
+		else if (!shift && is_float)
+			range[1] = Math::clamp(range[1].get<double>() + change, range[0].get<double>(), static_cast<double>(e.value_range.max));
+		else
+			range[1] = Math::clamp(range[1].get<int>() + static_cast<int>(change), range[0].get<int>(), e.value_range.max);
+	}
+	else
+		Error::fatal("Unhandled ValueSelector value type");
+}
+
 bool Menu::selection_confirmed(const Element& e, const int key) const
 {
 	if (e.type != Element::Type::Button)
@@ -485,12 +579,14 @@ Menu::Selection Menu::get_selection(const size_t default_selected)
 		selected = select_element(selected, key); // changes selected from keyboard or mouse hover
 		if (elements[selected].type == Element::Type::ValueSelector)
 			change_value(elements[selected], key);
-		if (elements[selected].type == Element::Type::TextField)
+		else if (elements[selected].type == Element::Type::TextField)
 			input_text(elements[selected], key);
-		if (elements[selected].type == Element::Type::Checkbox)
+		else if (elements[selected].type == Element::Type::Checkbox)
 			set_bool(elements[selected], key);
-		if (elements[selected].type == Element::Type::MultiChoice)
+		else if (elements[selected].type == Element::Type::MultiChoice)
 			select_multi_choice(elements[selected], key);
+		else if (elements[selected].type == Element::Type::RangeSelector)
+			change_range_values(elements[selected], key);
 		if (selection_confirmed(elements[selected], key)) // enter or left click on a Button
 		{
 			// index matters even with confirm and cancel

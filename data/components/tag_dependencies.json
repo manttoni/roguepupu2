@@ -60,6 +60,9 @@
 		"environment_sensitive": {
 			"photo": { "multi_choice": [ "neutral", "philia", "phobia" ] },
 			"hydro": { "multi_choice": [ "neutral", "philia", "phobia" ] }
+		},
+		"spawn_position": {
+			"solid_neighbors": { "range": [0, 8], "delta": 1, "default": [0, 8] }
 		}
 	},
 	"weapon": {

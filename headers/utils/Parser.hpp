@@ -12,6 +12,7 @@
 #include "utils/Error.hpp"
 #include "utils/Random.hpp"
 #include "utils/Range.hpp"
+#include "utils/JsonUtils.hpp"
 
 namespace CaveGenerator { struct Data; };
 namespace Parser
@@ -33,7 +34,7 @@ namespace Parser
 				const T n = data.get<T>();
 				return {n, n};
 			}
-			if (data.is_string())
+			else if (data.is_string())
 			{
 				const auto str = data.get<std::string>();
 				const auto pos = str.find('-');
@@ -49,6 +50,16 @@ namespace Parser
 
 				return { min, max };
 			}
+			else if (data.is_array())
+			{
+				const T min = data[0].get<T>();
+				const T max = data[1].get<T>();
+				if (min > max)
+					Error::fatal("Invalid range: " + data.dump(4));
+				return { min, max };
+			}
+			else if (JsonUtils::is_range(data))
+				return parse_range<T>(data["range"]);
 			Error::fatal("Unsupported range format: " + data.dump(4));
 		}
 };

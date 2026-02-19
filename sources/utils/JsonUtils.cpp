@@ -58,4 +58,16 @@ namespace JsonUtils
 	{
 		return !contains_any(super, sub);
 	}
+
+	bool is_range(const Json& json)
+	{
+		if (!json.contains("range"))
+			return false;
+		const auto& range = json["range"];
+		if (!range.is_array() || range.size() != 2)
+			return false;
+		//if (range[0].type() != range[1].type())
+		//	return false;
+		return true;
+	}
 };

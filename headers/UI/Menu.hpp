@@ -15,8 +15,8 @@ class Menu
 	public:
 		struct Element
 		{
-			using ElementValue = std::variant<bool*, int*, std::string*, double*, nlohmann::json*>;
-			enum class Type { None, Text, Button, TextField, ValueSelector, Checkbox, MultiChoice };
+			using ElementValue = std::variant<bool*, int*, std::string*, double*, nlohmann::json*, Range<int>*, Range<double>*>;
+			enum class Type { None, Text, Button, TextField, ValueSelector, Checkbox, MultiChoice, RangeSelector };
 
 			Type type = Type::None;
 			std::string label = "";
@@ -91,6 +91,7 @@ class Menu
 		void input_text(Element& e, const int key);
 		void set_bool(Element& e, const int key);
 		void select_multi_choice(Element& e, const int key);
+		void change_range_values(Element& e, const int key);
 		bool selection_confirmed(const Element& e, const int key) const;
 
 	public:

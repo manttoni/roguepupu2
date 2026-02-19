@@ -8,4 +8,5 @@ namespace JsonUtils
 	bool contains_all(const Json& super, const Json& sub);
 	bool contains_any(const Json& super, const Json& sub);
 	bool contains_none(const Json& super, const Json& sub);
+	bool is_range(const Json& json);
 };

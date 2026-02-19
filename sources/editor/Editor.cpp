@@ -17,6 +17,7 @@
 #include "utils/Range.hpp"
 #include "utils/Math.hpp"
 #include "utils/Utils.hpp"
+#include "utils/JsonUtils.hpp"
 
 namespace Editor
 {
@@ -107,8 +108,38 @@ namespace Editor
 	{
 		for (const auto& [key, value] : template_json.items())
 		{
-			if (value.contains("min") && value.contains("max"))
+			if (value.contains("range"))
 			{
+				if (!JsonUtils::is_range(value))
+					Error::fatal("Invalid template json: unexpected 'range'");
+				if (!target.contains(key))
+				{
+					if (errors) errors->push_back("[missing range: " + key + "]");
+					target[key] = Json::object();
+					target[key]["range"] = value["default"];
+				}
+				else if (!target[key].is_object())
+				{
+					if (errors) errors->push_back("[mistyped range: " + key + "]");
+					target[key] = Json::object();
+					target[key]["range"] = value["default"];
+				}
+				else
+				{
+					const Range<double> r = Parser::parse_range<double>(target[key]["range"]);
+					const Range<double> r_limits = Parser::parse_range<double>(value["range"]);
+					if (!r_limits.contains(r.min) || !r_limits.contains(r.max))
+					{
+						if (errors) errors->push_back("[misranged range: " + key + "]");
+						target[key]["range"][0] = Math::clamp(r.min, r_limits.min, r_limits.max);
+						target[key]["range"][1] = Math::clamp(r.max, r_limits.min, r_limits.max);
+					}
+				}
+			}
+			else if (value.contains("min") || value.contains("max"))
+			{
+				if (!value.contains("min") || !value.contains("max"))
+					Error::fatal("Unexpected 'min' or 'max' in json value (need both): " + value.dump(4));
 				if (!target.contains(key))
 				{
 					if (errors) errors->push_back("[missing number: " + key + "]");
@@ -474,6 +505,23 @@ namespace Editor
 							range,
 							delta
 							));
+					continue;
+				}
+				else if (JsonUtils::is_range(value) && JsonUtils::is_range(template_json[key])) // { "range": [min, max] } both in value and template[key]
+				{
+					const Range<int> range(
+							template_json[key]["range"][0].get<int>(),
+							template_json[key]["range"][1].get<int>()
+							);
+					const double delta = template_json[key]["delta"].get<double>();
+					Element e(
+							Type::RangeSelector,
+							key,
+							&value,
+							range,
+							delta
+							);
+					menu.add_element(e);
 					continue;
 				}
 				else if (value.is_string() && template_json[key].is_object() && template_json[key].contains("multi_choice"))
