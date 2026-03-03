@@ -1,0 +1,76 @@
+{
+	"tags": ["core"],
+	"name": { "template_min_length": 3 },
+	"glyph": "",
+	"color": {
+		"red": { "template_min": 0, "template_max": 1000, "template_delta": 10, "template_default": 500 },
+		"green": { "template_min": 0, "template_max": 1000, "template_delta": 10, "template_default": 500 },
+		"blue": { "template_min": 0, "template_max": 1000, "template_delta": 10, "template_default": 500 }
+	},
+	"solid": false,
+	"opaque": { "template_min": 0.0, "template_max": 1.0, "template_delta": 0.1, "template_default": 0.0 },
+	"weight": { "template_min": 0.0, "template_max": 20000.0, "template_delta": 0.1, "template_default": 0.0 },
+	"size": { "template_min": 0.0, "template_max": 1000.0, "template_delta": 0.1, "template_default": 0.0 },
+	"attributes": {
+		"strength": { "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8 },
+		"dexterity": { "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8},
+		"agility": { "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8},
+		"perception": { "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8},
+		"vitality": { "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8},
+		"endurance": { "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8},
+		"willpower": { "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8},
+		"charisma": { "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8}
+	},
+	"alignment": {
+		"chaos_law": { "template_min": -1.0, "template_max": 1.0, "template_delta": 0.01, "template_default": 0.0 },
+		"evil_good": { "template_min": -1.0, "template_max": 1.0, "template_delta": 0.01, "template_default": 0.0 },
+		"tolerance": { "template_min": -10.0, "template_max": 10.0, "template_delta": 0.1, "template_default": 0.0 }
+	},
+	"inventory": {
+	},
+	"equipment_slots": true,
+	"damage": {
+		"type": { "template_multi_choice": ["bludgeoning", "piercing", "slashing"] },
+		"amount": { "template_range": [1,100], "template_delta": 1, "template_default": [1,2] }
+	},
+	"attack_range": { "template_range": [0.0, 100.0], "template_delta": 0.1, "template_default": [0.0, 1.5] },
+	"glow": {
+		"radius": { "template_min": 0.0, "template_max": 100.0, "template_default": 0.0, "template_delta": 0.5 },
+		"intensity": { "template_min": 0.0, "template_max": 100.0, "template_default": 0.1, "template_delta": 0.01 }
+	},
+	"destroy_when_stacked": false,
+	"spawn_chance": {
+		"perlin": {
+			"enabled": false,
+			"frequency": { "template_min": 0.0, "template_max": 1.0, "template_delta": 0.01, "template_default": 0.5 },
+			"treshold": { "template_min": 0.0, "template_max": 1.0, "template_delta": 0.01, "template_default": 0.5 },
+			"octaves": { "template_min": 1, "template_max": 16, "template_delta": 1, "template_default": 1 }
+		},
+		"chance": { "template_min": 0.0, "template_max": 1.0, "template_delta": 0.01, "template_default": 1.0 }
+	},
+	"environment_sensitive": {
+		"photo": { "template_multi_choice": [ "neutral", "philia", "phobia" ] },
+		"hydro": { "template_multi_choice": [ "neutral", "philia", "phobia" ] }
+	},
+	"spawn_position": {
+		"solid_neighbors": { "template_range": [0, 8], "template_delta": 1, "template_default": [0, 8] },
+		"rock_neighbors": { "template_range": [0, 8], "template_delta": 1, "template_default": [0, 8] }
+	},
+	"equipment_slot": {
+		"slot_usage": { "template_multi_choice": [ "use_one", "use_all" ] },
+		"off_hand": false,
+		"main_hand": false,
+		"ammo": false
+	},
+	"ai": {
+		"aggressive": false,
+		"idle_wander": false
+	},
+	"stackable": true,
+	"gather_effect": { "template_multi_choice": [ "dim", "destroy", "none" ] },
+	"loot_table_ref" : "",
+	"requires_tool": { "template_multi_choice": [ "cutting", "felling", "mining" ] },
+	"tool_type": { "template_multi_choice": [ "cutting", "felling", "mining" ] },
+	"requires_ammo": { "template_multi_choice": [ "arrow", "bolt", "bullet" ] },
+	"ammo_type": { "template_multi_choice": [ "arrow", "bolt", "bullet" ] }
+}

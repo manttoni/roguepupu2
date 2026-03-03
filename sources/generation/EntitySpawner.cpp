@@ -68,6 +68,22 @@ namespace EntitySpawner
 				if (hydro == "philia" && !has_water) continue;
 				if (hydro == "phobia" && has_water) continue;
 
+				const auto& spawn_position = entity_data["spawn_position"];
+				const auto solid_neighbors_range = Parser::parse_range<size_t>(spawn_position["solid_neighbors"]);
+				const auto rock_neighbors_range = Parser::parse_range<size_t>(spawn_position["rock_neighbors"]);
+				size_t solid_neighbors = 0;
+				size_t rock_neighbors = 0;
+				for (const auto& pos : cave.get_nearby_positions(spawn_pos, 1.5))
+				{
+					if (ECS::is_solid(registry, pos))
+						solid_neighbors++;
+					if (ECS::get_cell(registry, pos).get_type() == Cell::Type::Rock)
+						rock_neighbors++;
+				}
+				if (!solid_neighbors_range.contains(solid_neighbors) ||
+					!rock_neighbors_range.contains(rock_neighbors))
+					continue;
+
 				EntityFactory::instance().create_entity(registry, id, spawn_pos);
 				break;
 			}

@@ -19,7 +19,9 @@
 
 namespace Parser
 {
-	Color parse_color(const nlohmann::json& data)
+	using Json = nlohmann::json;
+
+	Color parse_color(const Json& data)
 	{
 		if (data.is_array() && data.size() == 3)
 		{
@@ -48,7 +50,7 @@ namespace Parser
 		Error::fatal("Color format is wrong: " + data.dump(4));
 	}
 
-	Effect parse_effect(const nlohmann::json& data)
+	Effect parse_effect(const Json& data)
 	{
 		Effect effect;
 		if (data.contains("type"))
@@ -66,37 +68,23 @@ namespace Parser
 			effect.entity_id = data["entity_id"].get<std::string>();
 		return effect;
 	}
-	Conditions parse_conditions(const nlohmann::json& data)
-	{
-		Conditions conditions;
-		if (data.contains("category"))
-			conditions.category = data["category"].get<std::string>();
-		if (data.contains("category_not"))
-			conditions.category_not = data["category_not"].get<std::string>();
-		if (data.contains("weight_min"))
-			conditions.weight_min = data["weight_min"].get<double>();
-		if (data.contains("weight_max"))
-			conditions.weight_max = data["weight_max"].get<double>();
 
-		return conditions;
-	}
-
-	nlohmann::json read_json_file(const std::filesystem::path& path)
+	Json read_json_file(const std::filesystem::path& path)
 	{
 		std::ifstream file(path);
 		if (!file.is_open())
 			Error::fatal("Could not open file: " + path.string());
-		nlohmann::json defs;
+		Json defs;
 		try {
 			file >> defs;
-		} catch (const nlohmann::json::parse_error& e) {
+		} catch (const Json::parse_error& e) {
 			Error::fatal("File: " + path.string() + ", error: " + e.what());
 		}
 		file.close();
 		return defs;
 	}
 
-	nlohmann::json parse_json_array(const std::filesystem::path& path)
+	Json parse_json_array(const std::filesystem::path& path)
 	{
 		auto data = read_json_file(path);
 		assert(data.is_array() || data.empty());
@@ -105,9 +93,14 @@ namespace Parser
 
 	void parse_cave_generation_conf(const std::string& conf, CaveGenerator::Data& cgdata)
 	{
-		const nlohmann::json data = read_json_file("data/generation/cave/conf.json");
+		const Json data = read_json_file("data/generation/cave/conf.json");
 		assert(data.contains(conf));
-		const nlohmann::json entry = data[conf];
+		parse_cave_generation_conf(data[conf], cgdata);
+	}
+
+	void parse_cave_generation_conf(const Json& conf, CaveGenerator::Data& cgdata)
+	{
+		const Json entry = conf;
 		const auto dentry = entry["density"];
 		const auto eentry = entry["erosion"];
 		const auto sentry = entry["smooth"];
@@ -126,14 +119,14 @@ namespace Parser
 		cgdata.margin = m;
 	}
 
-	Damage::Spec parse_damage_spec(const nlohmann::json& data)
+	Damage::Spec parse_damage_spec(const Json& data)
 	{
 		const auto type_str = data["type"].get<std::string>();
 		const auto range = parse_range<size_t>(data["amount"]);
 		return Damage::Spec(Damage::string_to_type(type_str), range);
 	}
 
-	Random::Perlin parse_perlin(const nlohmann::json& data)
+	Random::Perlin parse_perlin(const Json& data)
 	{
 		Random::Perlin perlin;
 		perlin.enabled = data["enabled"].get<bool>();
@@ -141,5 +134,36 @@ namespace Parser
 		perlin.treshold = data["treshold"].get<double>();
 		perlin.octaves = data["octaves"].get<size_t>();
 		return perlin;
+	}
+
+	ToolType parse_tool_type(const Json& data)
+	{
+		if (!data.is_string())
+			Error::fatal("Tool type is not string: " + data.dump(4));
+		const auto str = data.get<std::string>();
+		if (str == "none")
+			return ToolType::None;
+		if (str == "cutting")
+			return ToolType::Cutting;
+		if (str == "felling")
+			return ToolType::Felling;
+		if (str == "mining")
+			return ToolType::Mining;
+		Error::fatal("Unhandled tool type: " + data.dump(4));
+	}
+	AmmoType parse_ammo_type(const Json& data)
+	{
+		if (!data.is_string())
+			Error::fatal("Ammo type is not string: " + data.dump(4));
+		const auto str = data.get<std::string>();
+		if (str == "none")
+			return AmmoType::None;
+		if (str == "arrow")
+			return AmmoType::Arrow;
+		if (str == "bolt")
+			return AmmoType::Bolt;
+		if (str == "bullet")
+			return AmmoType::Bullet;
+		Error::fatal("Unhandled ammo type: " + data.dump(4));
 	}
 };

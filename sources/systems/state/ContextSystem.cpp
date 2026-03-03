@@ -152,7 +152,7 @@ namespace ContextSystem
 		std::vector<std::string> options;
 		if (distance < 1.5)
 		{
-			if (!is_player_owned) // Possible restrictions can be weight or adding Item tag?
+			if (!is_player_owned && registry.all_of<Item>(entity))
 				options.push_back("Take");
 			if (!is_player && registry.all_of<Inventory, Position, Dead>(entity))
 				options.push_back("Loot");

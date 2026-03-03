@@ -12,6 +12,7 @@ namespace Dialog
 {
 	using Element = Menu::Element;
 	using Type = Element::Type;
+
 	Menu::Selection get_selection(
 			const std::vector<std::string>& text,
 			const std::vector<std::string>& buttons,
@@ -61,5 +62,12 @@ namespace Dialog
 	void alert(const std::string& message)
 	{
 		get_selection(message, {"Ok"});
+	}
+
+	Menu::Selection get_input(const std::string& label, std::string* input)
+	{
+		Menu menu(Screen::middle());
+		menu.add_element(Element(Type::TextField, label, input));
+		return menu.get_selection();
 	}
 };

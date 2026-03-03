@@ -8,5 +8,6 @@ namespace JsonUtils
 	bool contains_all(const Json& super, const Json& sub);
 	bool contains_any(const Json& super, const Json& sub);
 	bool contains_none(const Json& super, const Json& sub);
-	bool is_range(const Json& json);
+	std::string to_string(const Json& j);
+	Json merge(const Json& a, const Json& b, const bool replace = false);
 };

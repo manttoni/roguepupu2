@@ -294,13 +294,13 @@ Position UI::get_selected_position(entt::registry& registry)
 	const auto player_pos = registry.get<Position>(player);
 	const auto& cave = ECS::get_cave(registry, player_pos);
 	Position selected = player_pos;
-	init_pair(1, COLOR_RED, COLOR_BLACK); // highlight color
+	//init_pair(1, COLOR_RED, COLOR_BLACK); // highlight color
 
 	int key = 0;
 	while (key != KEY_ENTER && key != '\n' && key != '\r')
 	{
 		// Highlight selected position
-		ECS::get_cell(registry, selected).set_attr(COLOR_PAIR(1));
+		ECS::get_cell(registry, selected).set_attr(A_REVERSE | A_BOLD);
 		RenderingSystem::render(registry);
 
 		// ESC resets attr and quits

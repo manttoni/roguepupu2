@@ -29,4 +29,5 @@ namespace Dialog
 	void show_message(const std::string& message);
 	bool confirm(const std::string& message);
 	void alert(const std::string& message);
+	Menu::Selection get_input(const std::string& label, std::string* input);
 };

@@ -31,7 +31,7 @@ namespace EquipmentSystem
 				is_equipped(registry, entity, item) ||
 				!InventorySystem::has_item(registry, entity, item))
 			return;
-		const auto& equipment = registry.get<Equipment>(item);
+		const auto& equipment = registry.get<EquipmentSlot>(item);
 		auto& equipment_slots = registry.get<EquipmentSlots>(entity);
 		auto& equipped_items = equipment_slots.equipped_items;
 		assert(equipment.use_one.has_value() != equipment.use_all.has_value());
@@ -98,8 +98,8 @@ namespace EquipmentSystem
 		auto& active_loadout = equipment_slots.loadouts[equipment_slots.active_loadout];
 
 		// update current loadout
-		active_loadout.main_hand = equipped_items[Equipment::Slot::MainHand];
-		active_loadout.off_hand = equipped_items[Equipment::Slot::OffHand];
+		active_loadout.main_hand = equipped_items[EquipmentSlot::Slot::MainHand];
+		active_loadout.off_hand = equipped_items[EquipmentSlot::Slot::OffHand];
 
 		unequip(registry, entity, active_loadout.main_hand);
 		unequip(registry, entity, active_loadout.off_hand);
@@ -136,17 +136,17 @@ namespace EquipmentSystem
 		if (!registry.all_of<EquipmentSlots>(entity))
 			return false;
 		const auto& equipped_items = registry.get<EquipmentSlots>(entity).equipped_items;
-		if (!equipped_items.contains(Equipment::Slot::MainHand) || equipped_items.at(Equipment::Slot::MainHand) == entt::null)
+		if (!equipped_items.contains(EquipmentSlot::Slot::MainHand) || equipped_items.at(EquipmentSlot::Slot::MainHand) == entt::null)
 			return false;
-		if (!equipped_items.contains(Equipment::Slot::OffHand) || equipped_items.at(Equipment::Slot::OffHand) == entt::null)
+		if (!equipped_items.contains(EquipmentSlot::Slot::OffHand) || equipped_items.at(EquipmentSlot::Slot::OffHand) == entt::null)
 			return false;
-		return equipped_items.at(Equipment::Slot::MainHand) != equipped_items.at(Equipment::Slot::OffHand) &&
+		return equipped_items.at(EquipmentSlot::Slot::MainHand) != equipped_items.at(EquipmentSlot::Slot::OffHand) &&
 			!shield_equipped(registry, entity);
 	}
 
 	/* Return true if entity can equip equipment without unequipping something first
 	 * */
-	bool has_free_slots(const entt::registry& registry, const entt::entity entity, const Equipment& equipment)
+	bool has_free_slots(const entt::registry& registry, const entt::entity entity, const EquipmentSlot& equipment)
 	{
 		const auto& equipped_items = registry.get<EquipmentSlots>(entity).equipped_items;
 		assert(equipment.use_all.has_value() != equipment.use_one.has_value());
@@ -179,7 +179,7 @@ namespace EquipmentSystem
 	{
 		for (size_t i = 0; i < 2; ++i)
 		{
-			if (has_free_slots(registry, entity, registry.get<Equipment>(item)))
+			if (has_free_slots(registry, entity, registry.get<EquipmentSlot>(item)))
 			{
 				equip(registry, entity, item);
 				return true;

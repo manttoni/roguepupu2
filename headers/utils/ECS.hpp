@@ -272,14 +272,13 @@ namespace ECS
 		if (is_weapon)
 			return registry.get<AttackRange>(entity).range;
 		else if (is_creature)
-
 		{
-			Range<double> range = registry.get<AttackRange>(entity).range; // This is unarmed
+			Range<double> range(0, 1.5); // This is unarmed default, all 8 surrounding cells are valid attack targets
 			if (registry.all_of<EquipmentSlots>(entity))
 			{
 				const auto& equipped = registry.get<EquipmentSlots>(entity).equipped_items;
-				const auto main_hand = equipped.at(Equipment::Slot::MainHand);
-				const auto off_hand = equipped.at(Equipment::Slot::OffHand);
+				const auto main_hand = equipped.at(EquipmentSlot::Slot::MainHand);
+				const auto off_hand = equipped.at(EquipmentSlot::Slot::OffHand);
 				if (main_hand != entt::null)
 				{
 					const auto& main_hand_range = get_attack_range(registry, main_hand);
@@ -336,5 +335,18 @@ namespace ECS
 		assert(position.is_valid());
 		const auto& cell = get_cell(registry, position);
 		return cell.get_liquid_mixture().get_volume(type);
+	}
+
+	inline bool is_solid(const entt::registry& registry, const Position& position)
+	{
+		const auto& cell = get_cell(registry, position);
+		if (cell.get_type() == Cell::Type::Rock)
+			return true;
+		for (const auto& entity : get_entities(registry, position))
+		{
+			if (registry.all_of<Solid>(entity))
+				return true;
+		}
+		return false;
 	}
 };

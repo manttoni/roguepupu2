@@ -136,8 +136,8 @@ namespace CombatSystem
 		//Don't use loadouts ever, they are just optional thing for QOL for player, not dev
 
 		const auto& equipped = registry.get<EquipmentSlots>(attacker).equipped_items;
-		const auto main_hand = equipped.at(Equipment::Slot::MainHand);
-		const auto off_hand = equipped.at(Equipment::Slot::OffHand);
+		const auto main_hand = equipped.at(EquipmentSlot::Slot::MainHand);
+		const auto off_hand = equipped.at(EquipmentSlot::Slot::OffHand);
 		if (main_hand != entt::null &&
 				registry.get<AttackRange>(main_hand).range.contains(distance))
 			used_weapons.push_back(main_hand);

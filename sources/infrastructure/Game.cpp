@@ -31,7 +31,7 @@ Game::Game()
 
 	const size_t cave_idx = registry.ctx().get<World>().new_cave();
 	CaveGenerator::Data data(registry, ECS::get_cave(registry, cave_idx));
-	Parser::parse_cave_generation_conf("default", data);
+	Parser::parse_cave_generation_conf(std::string("default"), data);
 	CaveGenerator::generate_cave(data);
 	const auto sources = data.cave.get_positions_with_type(Cell::Type::Source);
 	registry.emplace<Position>(ECS::get_player(registry), sources[0]);
@@ -47,7 +47,6 @@ void Game::loop()
 		ActionSystem::act_round(registry, ECS::get_cave(registry, registry.get<Position>(player)).get_idx());
 		LiquidSystem::simulate_liquids(registry);
 		registry.ctx().get<GameState>().turn_number++;
-		registry.ctx().get<GameLogger>().log("Turn " + std::to_string(registry.ctx().get<GameState>().turn_number));
 	}
 	if (registry.all_of<Dead>(player))
 		game_over = true;

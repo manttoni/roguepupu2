@@ -273,7 +273,7 @@ namespace CaveGenerator
 		render(data);
 	}
 
-	void generate_cave(Data& data)
+	void generate_cave(Data& data, const bool prompt)
 	{
 		const bool test_run = data.registry.ctx().get<GameState>().test_run;
 		if (!test_run)
@@ -282,7 +282,7 @@ namespace CaveGenerator
 		data.registry.ctx().get<EventQueue>().queue.clear();
 		if (test_run)
 			return;
-		while (true)
+		while (prompt)
 		{
 			const auto selection = Dialog::get_selection("Cave ready", {"OK", "Simulate liquids"});
 			if (selection.cancelled || selection.element->label == "OK")

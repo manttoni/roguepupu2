@@ -25,7 +25,7 @@ TEST_F(RegistryTest, EntityTakesDamage)
 	const auto health_before = registry.get<Health>(creature);
 	DamageSystem::take_damage(registry, creature, damage);
 	const auto health_after = registry.get<Health>(creature);
-	EXPECT_NE(health_before, health_after);
+	EXPECT_NE(health_before.current, health_after.current);
 }
 
 TEST_F(RegistryTest, TakingDamagePrintsLog)

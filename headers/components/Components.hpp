@@ -1,12 +1,12 @@
 #pragma once
 
-#include <regex>
-#include <ncurses.h>
 #include <cmath>
-#include <string>
 #include <map>
-#include <vector>
+#include <ncurses.h>
 #include <optional>
+#include <regex>
+#include <string>
+#include <vector>
 #include "utils/Error.hpp"
 #include "utils/Range.hpp"
 #include "domain/Color.hpp"
@@ -15,28 +15,15 @@
 #include "external/entt/fwd.hpp"
 
 /* Core components */
-struct Name
-{
-	std::string name;
-
-	bool operator==(const Name& other) const = default;
-};
-
-/* Optional components... */
-/* Physical */
-struct Solid
-{
-	bool value = true;
-
-	bool operator==(const Solid& other) const = default;
-};
+struct Name { std::string name; };
+struct Glyph { wchar_t glyph; };
+// Color is in domain, a class
+struct Solid { bool value = true; };
 struct Opaque { double value = 1.0; };	// value [0,1] is how much this entity blocks vision. 1 = completely opaque, 0, transparent
 struct Size { double liters; };
 struct Weight { double kilograms; };
 
-/* Rendering */
-struct Glyph { wchar_t glyph; };
-//struct FGColor { Color color; };
+// move this somewhere, is similar to Color
 struct NcursesAttr
 {
 	chtype attr;
@@ -99,7 +86,6 @@ struct NcursesAttr
 };
 
 /* State */
-struct Vision { double range; };
 struct Hidden {};
 struct Invisible {};
 struct Experience { size_t amount; };
@@ -126,15 +112,11 @@ template<typename T> struct BuffContainer
 	std::vector<Buff<T>> buffs;
 };
 
-struct Health
-{
-	int current;
-
-	bool operator!=(const Health& other) const = default;
-	bool operator==(const Health& other) const = default;
-};
+struct Health { int current; };
 struct Stamina { int current; };
 struct Mana { int current; };
+
+// This feels like it should have its own file
 struct Alignment
 {
 	enum class Type
@@ -193,33 +175,29 @@ struct Alignment
 		return hypot(chaos_law - other.chaos_law, evil_good - other.evil_good);
 	}
 };
+
 /* Inventory, gear, equipment... */
-struct Equipment
+struct EquipmentSlot
 {
 	enum class Slot
 	{
 		MainHand, // weapon or shield
 		OffHand, // weapon or shield
+		Ammo, // this is used when firing ranged weapons
 				 // rest are armor or things like that
 	};
 	std::optional<std::vector<Slot>> use_all; // this equipment uses all of these slots (f.e. two handed weapons)
 	std::optional<std::vector<Slot>> use_one; // this equipment uses one of these slots (f.e. one handed weapons)
-
-	static Slot slot_from_string(const std::string& str)
-	{
-		if (str == "MainHand") return Slot::MainHand;
-		if (str == "OffHand") return Slot::OffHand;
-		Error::fatal("Unknown equipment slot: " + str);
-	}
 };
 struct EquipmentSlots
 {
-	using Slot = Equipment::Slot;
+	using Slot = EquipmentSlot::Slot;
 
 	struct Loadout
-	{
+	{	// These are for players quality of life, just press w
 		entt::entity main_hand = entt::null;
 		entt::entity off_hand = entt::null;
+		entt::entity ammo = entt::null;
 	};
 	std::array<Loadout, 2> loadouts;
 	size_t active_loadout = 0;
@@ -234,8 +212,9 @@ struct EquipmentSlots
 	}
 
 	std::map<Slot, entt::entity> equipped_items{
-		{ Slot::MainHand, entt::null},
-		{ Slot::OffHand, entt::null},
+		{ Slot::MainHand, entt::null },
+		{ Slot::OffHand, entt::null },
+		{ Slot::Ammo, entt::null }
 	};
 };
 struct Inventory
@@ -248,95 +227,9 @@ struct AttackRange
 {
 	Range<double> range;
 };
-struct Projectile
-{
-	enum class Type
-	{
-		Arrow,
-		Bolt,
-		Bullet,
-	};
-	Type type;
-	Projectile(const std::string& str)
-	{
-		if (str == "arrow") type = Type::Arrow;
-		else if (str == "bolt") type = Type::Bolt;
-		else if (str == "bullet") type = Type::Bullet;
-		else Error::fatal("Unknown projectile type: " + str);
-	}
-	std::string to_string() const
-	{
-		switch (type)
-		{
-			case Type::Arrow: return "arrow";
-			case Type::Bolt: return "bolt";
-			case Type::Bullet: return "bullet";
-			default:
-				Error::fatal("unhandled projectile type: " +
-						std::to_string(static_cast<size_t>(type)));
-		}
-	}
-};
-struct Tool
-{
-	enum class Type
-	{
-		None,
-		Felling,
-		Cutting,
-		Mining,
-	};
-	Type type = Type::None;
-	static Type from_string(const std::string& str)
-	{
-		if (str == "none") return Type::None;
-		if (str == "felling") return Type::Felling;
-		if (str == "cutting") return Type::Cutting;
-		if (str == "mining") return Type::Mining;
-		Error::fatal("Invalid Tool::Type string");
-	}
-	std::string to_string() const
-	{
-		switch (type)
-		{
-			case Type::None: return "none";
-			case Type::Felling: return "felling";
-			case Type::Cutting: return "cutting";
-			case Type::Mining: return "mining";
-			default: Error::fatal("Type convert error");
-		}
-	}
-
-};
-struct FinesseWeapon {};
-struct VersatileWeapon {};
-struct MechanicalWeapon {};
-struct MeleeWeapon {};
-struct ThrowingWeapon {};
-struct RangedWeapon {};
 
 /* Crafting related */
-struct Gatherable
-{
-	enum class Effect
-	{
-		None,
-		Dim,
-		Destroy,
-	};
 
-	static Effect from_string(const std::string& str)
-	{
-		if (str == "none") return Effect::None;
-		if (str == "dim") return Effect::Dim;
-		if (str == "destroy") return Effect::Destroy;
-		Error::fatal("Invalid Gatherable::Effect string");
-	}
-
-	Effect effect = Effect::None; // what happens when gathered
-	Tool::Type tool_type;
-	std::vector<std::string> loot_table_ids;
-};
 
 /* Liquid */
 struct LiquidContainer
@@ -384,16 +277,36 @@ struct Abilities
 	std::map<std::string, Ability> abilities;
 };
 
-/* Mark entity with this if they are the player.
- * Store data that only player has.
- * */
-struct Player
-{
-};
+/* Tags - contain no data, but are data themselves by existing */
+struct Creature {};
+struct Player {};
+struct NPC {};
+
 struct Destroyed {};
 
-/* Tags
- * */
-struct Creature {};
+struct Equipment {};
+
+struct Item {};
+using Stackable = bool;
+struct LootTableRef { std::string id; };
+
+struct Tool {};
+enum class ToolType { None, Cutting, Felling, Mining };
+using RequiresTool = ToolType;
+
 struct Weapon {};
-struct NPC {};
+struct FinesseWeapon {};
+struct VersatileWeapon {};
+struct MechanicalWeapon {};
+struct MeleeWeapon {};
+struct ThrowingWeapon {};
+struct RangedWeapon {};
+
+struct Ammo{};
+enum class AmmoType { None, Arrow, Bolt, Bullet };
+using RequiresAmmo = AmmoType;
+
+struct Gatherable {};
+enum class GatherEffect { None, Dim, Destroy };
+struct Mushroom {};
+struct Plant {};

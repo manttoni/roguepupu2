@@ -94,5 +94,5 @@ namespace CaveGenerator
 
 	// Modify an existing cave in World.
 	// Has to be indexed in World.
-	void generate_cave(Data& data);
+	void generate_cave(Data& data, const bool prompt = false);
 };

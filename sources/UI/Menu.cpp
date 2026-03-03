@@ -54,12 +54,12 @@ size_t Menu::Element::get_size() const
 	}
 	if (type == Type::TextField)
 	{
-		const std::string ascii = ": _";
+		const std::string ascii = "_";
 		size += value_range.max + ascii.size();
 	}
 	if (type == Type::ValueSelector) // Value: < 10 >
 	{
-		const std::string ascii = ": <  >";
+		const std::string ascii = "<  >";
 		const size_t number_size = std::max(
 				std::to_string(value_range.min).size(),
 				std::to_string(value_range.max).size()
@@ -68,12 +68,12 @@ size_t Menu::Element::get_size() const
 	}
 	if (type == Type::Checkbox)
 	{
-		const std::string ascii = ": [X]";
+		const std::string ascii = "[X]";
 		size += ascii.size();
 	}
 	if (type == Type::MultiChoice)
 	{
-		const std::string ascii = ": <  >";
+		const std::string ascii = "<  >";
 		assert(!choices.empty());
 		auto it = std::max_element(choices.begin(), choices.end(),
 				[](const auto& a, const auto& b)
@@ -81,6 +81,15 @@ size_t Menu::Element::get_size() const
 				return a.size() < b.size();
 				});
 		size += ascii.size() + it->size();
+	}
+	if (type == Type::RangeSelector)
+	{
+		const std::string ascii = "<  -  >";
+		const size_t number_size = std::max(
+				std::to_string(value_range.min).size(),
+				std::to_string(value_range.max).size()
+				);
+		size += ascii.size() + number_size * 2;
 	}
 	return size;
 }
@@ -161,7 +170,7 @@ std::string Menu::Element::get_text(const size_t width) const
 			else
 				Error::fatal("Menu element (" + label + ") is invalid: value not bool or json");
 			return std::format("{:<{}}{:>{}}",
-					label, width - value_string.size() - 13,
+					label, width - value_string.size() - 11,
 					value_string, value_string.size() - 3);
 		case Type::MultiChoice:
 			{
@@ -203,14 +212,14 @@ std::string Menu::Element::get_text(const size_t width) const
 				{
 					is_min = (**p).min == value_range.min;
 					is_max = (**p).max == value_range.max;
-					numbers = (**p).to_string();
+					numbers = std::format("{:.{}f}", (**p).min, Math::get_precision(delta)) + " - " + std::format("{:.{}f}", (**p).max, Math::get_precision(delta));
 				}
 				else if (auto p = std::get_if<nlohmann::json*>(&value))
-				{	// j = { "range": [min, max] }
+				{	// j = [min, max]
 					auto& j = **p;
-					if (!JsonUtils::is_range(j))
+					if (!j.is_array() || j.size() != 2)
 						Error::fatal("RangeSelector json has no/invalid range: " + j.dump(4));
-					const auto& range_json = j["range"];
+					const auto& range_json = j;
 					if (range_json[0].is_number_integer())
 					{
 						Range<int> range_int = Parser::parse_range<int>(range_json);
@@ -223,7 +232,7 @@ std::string Menu::Element::get_text(const size_t width) const
 						Range<double> range_dbl = Parser::parse_range<double>(range_json);
 						is_min = range_dbl.min == value_range.min;
 						is_max = range_dbl.max == value_range.max;
-						numbers = range_dbl.to_string();
+						numbers = std::format("{:.{}f}", range_dbl.min, Math::get_precision(delta)) + " - " + std::format("{:.{}f}", range_dbl.max, Math::get_precision(delta));
 					}
 				}
 				if (numbers.empty())
@@ -378,6 +387,7 @@ void Menu::show_elements(const size_t selected) const
 		}
 		const std::string left = elements[i].highlight == '\0' ? "   " : std::string(" ") + elements[i].highlight + " ";
 		const std::string line = "  " + left + elements[i].get_text(width);
+		UI::instance().set_color_theme();
 		UI::instance().print(std::format("{:<{}}", line, width - 1) + "\n");
 		if (highlighted == true) UI::instance().disable_attr(A_REVERSE);
 	}
@@ -536,11 +546,11 @@ void Menu::change_range_values(Element& e, const int key)
 	}
 	else if (auto p = std::get_if<nlohmann::json*>(&e.value))
 	{
-		if (!JsonUtils::is_range(**p))
+		auto& j = **p;
+		if (!j.is_array() || j.size() != 2)
 			Error::fatal("RangeSelector json is not range");
 		double change = left ? -e.delta : e.delta;
-		auto& j = **p;
-		auto& range = j["range"];
+		auto& range = j;
 		const bool is_float = range[0].is_number_float();
 		if (shift && is_float)
 			range[0] = Math::clamp(range[0].get<double>() + change, static_cast<double>(e.value_range.min), range[1].get<double>());
@@ -568,8 +578,9 @@ bool Menu::selection_confirmed(const Element& e, const int key) const
 Menu::Selection Menu::get_selection(const size_t default_selected)
 {
 	int key = 0;
-	size_t selected = default_selected + get_unselectable_count(); // selected will always be one of the selectable elements
+	size_t selected = std::min(default_selected + get_unselectable_count(), elements.size() - 1);
 	set_panel();
+	UI::instance().set_color_theme();
 	while (key != KEY_ESCAPE)
 	{
 		show_elements(selected);
@@ -587,19 +598,19 @@ Menu::Selection Menu::get_selection(const size_t default_selected)
 			select_multi_choice(elements[selected], key);
 		else if (elements[selected].type == Element::Type::RangeSelector)
 			change_range_values(elements[selected], key);
-		if (selection_confirmed(elements[selected], key)) // enter or left click on a Button
+		if (key == KEY_ESCAPE || selection_confirmed(elements[selected], key))
 		{
-			// index matters even with confirm and cancel
+			// index matters even with confirm and cancel, to keep selected position
 			const auto element = elements[selected];
 			const auto index = selected - get_unselectable_count();
 			Selection selection(index, element);
-			if (element.is_cancel)
+			if (element.is_cancel || key == KEY_ESCAPE)
 				selection.cancelled = true;
 			if (element.is_confirm)
 				selection.confirmed = true;
 			return selection;
 		}
-		if (blocking == false) // combine this flag with outer loop to make nice interactive menu UI
+		if (key != KEY_ESCAPE && blocking == false) // combine this flag with outer loop to make nice interactive menu UI
 		{
 			Selection s(selected - get_unselectable_count());
 			s.timed_out = true;

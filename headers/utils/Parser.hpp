@@ -13,21 +13,28 @@
 #include "utils/Random.hpp"
 #include "utils/Range.hpp"
 #include "utils/JsonUtils.hpp"
+#include "components/Components.hpp"
 
 namespace CaveGenerator { struct Data; };
 namespace Parser
 {
-	Color parse_color(const nlohmann::json& data);
-	Effect parse_effect(const nlohmann::json& data);
-	Conditions parse_conditions(const nlohmann::json& data);
-	nlohmann::json read_json_file(const std::filesystem::path& path);
+	using Json = nlohmann::json;
+
+	Color parse_color(const Json& data);
+	Effect parse_effect(const Json& data);
+	Conditions parse_conditions(const Json& data);
+	Json read_json_file(const std::filesystem::path& path);
 	void parse_cave_generation_conf(const std::string& conf_id, CaveGenerator::Data& data);
-	LootTable parse_loot_table(const nlohmann::json& data);
-	Damage::Spec parse_damage_spec(const nlohmann::json& data);
-	Random::Perlin parse_perlin(const nlohmann::json& data);
+	void parse_cave_generation_conf(const Json& conf, CaveGenerator::Data& data);
+	LootTable parse_loot_table(const Json& data);
+	Damage::Spec parse_damage_spec(const Json& data);
+	Random::Perlin parse_perlin(const Json& data);
+
+	ToolType parse_tool_type(const Json& data);
+	AmmoType parse_ammo_type(const Json& data);
 
 	template<typename T>
-		Range<T> parse_range(const nlohmann::json& data)
+		Range<T> parse_range(const Json& data)
 		{
 			if (data.is_number())
 			{
@@ -58,7 +65,7 @@ namespace Parser
 					Error::fatal("Invalid range: " + data.dump(4));
 				return { min, max };
 			}
-			else if (JsonUtils::is_range(data))
+			else if (data.contains("range"))
 				return parse_range<T>(data["range"]);
 			Error::fatal("Unsupported range format: " + data.dump(4));
 		}

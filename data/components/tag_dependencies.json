@@ -1,84 +1,73 @@
 {
 	"core": {
-		"name": { "min_length": 3 },
-		"glyph": "",
-		"tags": [],
-		"color": {
-			"red": { "min": 0, "max": 1000, "delta": 10, "default": 500 },
-			"green": { "min": 0, "max": 1000, "delta": 10, "default": 500 },
-			"blue": { "min": 0, "max": 1000, "delta": 10, "default": 500 }
-		},
-		"solid": false,
-		"opaque": { "min": 0.0, "max": 1.0, "delta": 0.1, "default": 0.0 },
-		"weight": { "min": 0.0, "max": 20000.0, "delta": 0.1, "default": 0.0 },
-		"size": { "min": 0.0, "max": 1000.0, "delta": 0.1, "default": 0.0 }
+		"components": [ "tags", "name", "glyph", "color", "solid", "opaque", "weight", "size" ]
 	},
 	"creature": {
-		"attributes": {
-			"strength": { "min": 1, "max": 100, "delta": 1, "default": 8 },
-			"dexterity": { "min": 1, "max": 100, "delta": 1, "default": 8},
-			"agility": { "min": 1, "max": 100, "delta": 1, "default": 8},
-			"perception": { "min": 1, "max": 100, "delta": 1, "default": 8},
-			"vitality": { "min": 1, "max": 100, "delta": 1, "default": 8},
-			"endurance": { "min": 1, "max": 100, "delta": 1, "default": 8},
-			"willpower": { "min": 1, "max": 100, "delta": 1, "default": 8},
-			"charisma": { "min": 1, "max": 100, "delta": 1, "default": 8}
-		},
-		"alignment": {
-			"chaos_law": { "min": -1.0, "max": 1.0, "delta": 0.01, "default": 0.0 },
-			"evil_good": { "min": -1.0, "max": 1.0, "delta": 0.01, "default": 0.0 },
-			"tolerance": { "min": -10.0, "max": 10.0, "delta": 0.1, "default": 0.0 }
-		},
-		"inventory": {
-		},
-		"equipment_slots": true,
-		"damage": {
-			"type": { "multi_choice": ["bludgeoning", "piercing", "slashing"] },
-			"amount": "1-2"
-		},
-		"range": "0-1.5"
+		"components": [ "attributes", "alignment", "inventory", "equipment_slots", "damage" ]
 	},
 	"has_glow": {
-		"glow": {
-			"radius": { "min": 0.0, "max": 100.0, "default": 0.0, "delta": 0.5 },
-			"intensity": { "min": 0.0, "max": 100.0, "default": 0.1, "delta": 0.01 }
-		}
+		"components": [ "glow", "color" ]
 	},
 	"fragile": {
-		"destroy_when_stacked": false
+		"components": [ "destroy_when_stacked" ]
 	},
 	"spawns_naturally": {
-		"spawn_chance": {
-			"perlin": {
-				"enabled": false,
-				"frequency": { "min": 0.0, "max": 1.0, "delta": 0.01, "default": 0.5 },
-				"treshold": { "min": 0.0, "max": 1.0, "delta": 0.01, "default": 0.5 },
-				"octaves": { "min": 1, "max": 16, "delta": 1, "default": 1 }
-			},
-			"chance": { "min": 0.0, "max": 1.0, "delta": 0.01, "default": 1.0 }
-		},
-		"environment_sensitive": {
-			"photo": { "multi_choice": [ "neutral", "philia", "phobia" ] },
-			"hydro": { "multi_choice": [ "neutral", "philia", "phobia" ] }
-		},
-		"spawn_position": {
-			"solid_neighbors": { "range": [0, 8], "delta": 1, "default": [0, 8] }
-		}
+		"components": [ "spawn_chance", "environment_sensitive", "spawn_position" ]
+	},
+	"equipment": {
+		"components": [ "equipment_slot" ]
 	},
 	"weapon": {
-		"damage": {
-			"type": { "multi_choice": [ "bludgeoning", "piercing", "slashing" ] },
-			"amount": "1-6"
-		},
-		"range": "0-1.5",
-		"equipment": { "multi_choice": [ "one_handed", "two_handed" ] }
+		"components": [ "damage" ],
+		"tags": [ "item", "equipment" ]
 	},
 	"player": {
+		"components": [],
+		"tags": [ "creature" ]
 	},
 	"npc": {
-		"ai": {
-			"aggressive": false,
-			"idle_wander": false
-		}
+		"components": [ "ai" ],
+		"tags": [ "creature" ]
+	},
+	"item": {
+		"components": [ "stackable" ]
+	},
+	"mechanical_weapon": {
+		"tags": [ "weapon" ]
+	},
+	"versatile_weapon": {
+		"tags": [ "weapon" ]
+	},
+	"finesse_weapon": {
+		"tags": [ "weapon" ]
+	},
+	"throwing_weapon": {
+		"components": [ "attack_range" ],
+		"tags": [ "weapon" ]
+	},
+	"ranged_weapon": {
+		"components": [ "attack_range", "requires_ammo" ],
+		"tags": [ "weapon" ]
+	},
+	"improvised_weapon": {
+		"tags": [ "weapon" ]
+	},
+	"ammo": {
+		"components": [ "ammo_type", "damage" ],
+		"tags": [ "item" ]
+	},
+	"melee_weapon": {
+		"tags": [ "weapon" ]
+	},
+	"tool": {
+		"components": [ "tool_type" ],
+		"tags": [ "item" ]
+	},
+	"gatherable": {
+		"components": [ "gather_effect", "loot_table_ref", "requires_tool" ]
+	},
+	"mushroom": {
+	},
+	"plant": {
 	}
 }

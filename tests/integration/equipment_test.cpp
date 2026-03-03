@@ -93,11 +93,11 @@ TEST_F(RegistryTest, HasFreeSlotsWorksDualWield)
 	InventorySystem::add_item(registry, creature, dagger1);
 	InventorySystem::add_item(registry, creature, dagger2);
 
-	EXPECT_TRUE(EquipmentSystem::has_free_slots(registry, creature, registry.get<Equipment>(dagger1)));
+	EXPECT_TRUE(EquipmentSystem::has_free_slots(registry, creature, registry.get<EquipmentSlot>(dagger1)));
 	EquipmentSystem::equip(registry, creature, dagger1);
-	EXPECT_TRUE(EquipmentSystem::has_free_slots(registry, creature, registry.get<Equipment>(dagger2)));
+	EXPECT_TRUE(EquipmentSystem::has_free_slots(registry, creature, registry.get<EquipmentSlot>(dagger2)));
 	EquipmentSystem::equip(registry, creature, dagger2);
-	EXPECT_FALSE(EquipmentSystem::has_free_slots(registry, creature, registry.get<Equipment>(dagger1)));
+	EXPECT_FALSE(EquipmentSystem::has_free_slots(registry, creature, registry.get<EquipmentSlot>(dagger1)));
 }
 
 TEST_F(RegistryTest, HasFreeSlotsWorksTwoHanded1)
@@ -109,10 +109,10 @@ TEST_F(RegistryTest, HasFreeSlotsWorksTwoHanded1)
 	const auto dagger = EntityFactory::instance().create_entity(registry, "dagger");
 	InventorySystem::add_items(registry, creature, {pickaxe, dagger});
 
-	EXPECT_TRUE(EquipmentSystem::has_free_slots(registry, creature, registry.get<Equipment>(pickaxe)));
+	EXPECT_TRUE(EquipmentSystem::has_free_slots(registry, creature, registry.get<EquipmentSlot>(pickaxe)));
 	EquipmentSystem::equip(registry, creature, pickaxe);
-	EXPECT_FALSE(EquipmentSystem::has_free_slots(registry, creature, registry.get<Equipment>(pickaxe)));
-	EXPECT_FALSE(EquipmentSystem::has_free_slots(registry, creature, registry.get<Equipment>(dagger)));
+	EXPECT_FALSE(EquipmentSystem::has_free_slots(registry, creature, registry.get<EquipmentSlot>(pickaxe)));
+	EXPECT_FALSE(EquipmentSystem::has_free_slots(registry, creature, registry.get<EquipmentSlot>(dagger)));
 }
 
 TEST_F(RegistryTest, HasFreeSlotsWorksTwoHanded2)
@@ -124,9 +124,9 @@ TEST_F(RegistryTest, HasFreeSlotsWorksTwoHanded2)
 	const auto dagger = EntityFactory::instance().create_entity(registry, "dagger");
 	InventorySystem::add_items(registry, creature, {pickaxe, dagger});
 
-	EXPECT_TRUE(EquipmentSystem::has_free_slots(registry, creature, registry.get<Equipment>(pickaxe)));
+	EXPECT_TRUE(EquipmentSystem::has_free_slots(registry, creature, registry.get<EquipmentSlot>(pickaxe)));
 	EquipmentSystem::equip(registry, creature, dagger);
-	EXPECT_FALSE(EquipmentSystem::has_free_slots(registry, creature, registry.get<Equipment>(pickaxe)));
+	EXPECT_FALSE(EquipmentSystem::has_free_slots(registry, creature, registry.get<EquipmentSlot>(pickaxe)));
 }
 
 TEST_F(RegistryTest, WeaponsHaveSlots)
@@ -138,8 +138,8 @@ TEST_F(RegistryTest, WeaponsHaveSlots)
 				);
 	for (const auto weapon : weapons)
 	{
-		EXPECT_TRUE(registry.all_of<Equipment>(weapon));
-		const auto& equipment = registry.get<Equipment>(weapon);
+		EXPECT_TRUE(registry.all_of<EquipmentSlot>(weapon));
+		const auto& equipment = registry.get<EquipmentSlot>(weapon);
 		EXPECT_TRUE(equipment.use_all || equipment.use_one) << registry.get<Name>(weapon).name;
 	}
 }
@@ -147,11 +147,11 @@ TEST_F(RegistryTest, WeaponsHaveSlots)
 TEST_F(RegistryTest, DaggerHasUseOne)
 {
 	const auto dagger = EntityFactory::instance().create_entity(registry, "dagger");
-	const auto& equipment = registry.get<Equipment>(dagger);
+	const auto& equipment = registry.get<EquipmentSlot>(dagger);
 	const auto& use_one = equipment.use_one;
 	ASSERT_TRUE(use_one.has_value());
-	auto main_it = std::find(use_one->begin(), use_one->end(), Equipment::Slot::MainHand);
-	auto off_it = std::find(use_one->begin(), use_one->end(), Equipment::Slot::OffHand);
+	auto main_it = std::find(use_one->begin(), use_one->end(), EquipmentSlot::Slot::MainHand);
+	auto off_it = std::find(use_one->begin(), use_one->end(), EquipmentSlot::Slot::OffHand);
 	EXPECT_NE(main_it, use_one->end());
 	EXPECT_NE(off_it, use_one->end());
 }

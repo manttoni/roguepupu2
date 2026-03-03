@@ -62,13 +62,16 @@ namespace EventSystem
 		assert(event.actor.position.is_valid());
 		assert(event.target.entity != entt::null);
 		assert(event.target.position.is_valid());
-		const auto& comp = registry.get<Gatherable>(event.target.entity);
-		LootSystem::give_loot(registry, event.actor.entity, comp.loot_table_ids);
-		switch (comp.effect)
+
+		const auto gatherable = event.target.entity;
+		const auto gather_effect = registry.get<GatherEffect>(gatherable);
+		const auto loot_table = registry.get<LootTableRef>(gatherable);
+		LootSystem::give_loot(registry, event.actor.entity, loot_table.id);
+		switch (gather_effect)
 		{
-			case Gatherable::Effect::None:
+			case GatherEffect::None:
 				break;
-			case Gatherable::Effect::Dim:
+			case GatherEffect::Dim:
 				registry.emplace_or_replace<NcursesAttr>(event.target.entity, A_DIM);
 				if (registry.all_of<Glow>(event.target.entity))
 				{
@@ -76,11 +79,11 @@ namespace EventSystem
 					LightingSystem::reset_lights(registry, event.target.position.cave_idx);
 				}
 				break;
-			case Gatherable::Effect::Destroy:
+			case GatherEffect::Destroy:
 				ECS::destroy_entity(registry, event.target.entity);
 				break;
 		}
-		registry.erase<Gatherable>(event.target.entity);
+		registry.erase<Gatherable, GatherEffect, LootTableRef, RequiresTool>(event.target.entity);
 	}
 
 	/* Spawning is when entity gains a position.
@@ -155,7 +158,7 @@ namespace EventSystem
 
 		if (entity != ECS::get_player(registry))
 		{
-			if (!registry.all_of<EquipmentSlots>(entity) || !registry.all_of<Equipment>(item))
+			if (!registry.all_of<EquipmentSlots>(entity) || !registry.all_of<EquipmentSlot>(item))
 				return;
 			Log::log("Equipping item: " + registry.get<Name>(item).name);
 			EquipmentSystem::equip_in_free_slots(registry, entity, item);
@@ -241,7 +244,6 @@ namespace EventSystem
 	void resolve_events(entt::registry& registry)
 	{
 		auto& queue = registry.ctx().get<EventQueue>().queue;
-		Log::log("Resolving events (" + std::to_string(queue.size()) + ")");
 		for (size_t i = 0; i < queue.size(); ++i)
 		{
 			const auto& event = queue[i];

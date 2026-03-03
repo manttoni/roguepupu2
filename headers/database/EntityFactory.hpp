@@ -30,6 +30,7 @@ class EntityFactory
 		std::vector<entt::entity> create_entities(entt::registry& registry, const std::string& id, const size_t amount) const;
 		std::vector<std::string> filter_entity_ids(const nlohmann::json& include = {}, const nlohmann::json& exclude = {}) const;
 		void add_entities(nlohmann::json& json);
+		void verify_field_parsers() const;
 		void init();
 		void clear() { LUT.clear(); }
 };

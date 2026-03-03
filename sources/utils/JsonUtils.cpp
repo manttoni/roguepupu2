@@ -1,4 +1,5 @@
 #include "utils/JsonUtils.hpp"
+#include "utils/Error.hpp"
 
 namespace JsonUtils
 {
@@ -59,15 +60,31 @@ namespace JsonUtils
 		return !contains_any(super, sub);
 	}
 
-	bool is_range(const Json& json)
+	std::string to_string(const Json& j)
 	{
-		if (!json.contains("range"))
-			return false;
-		const auto& range = json["range"];
-		if (!range.is_array() || range.size() != 2)
-			return false;
-		//if (range[0].type() != range[1].type())
-		//	return false;
-		return true;
+		if (j.is_string())
+			return j.get<std::string>();
+		if (j.is_number_integer())
+			return std::to_string(j.get<long long>());
+		if (j.is_number_unsigned())
+			return std::to_string(j.get<unsigned long long>());
+		if (j.is_number_float())
+			return std::to_string(j.get<double>());
+		if (j.is_boolean())
+			return j.get<bool>() ? "true" : "false";
+		Error::fatal("Unhandled json type: " + j.dump(4));
 	}
+
+	/*Json merge(const Json& a, const Json& b, const bool replace)
+	{
+		if (a.type() != b.type())
+			return Json{};
+
+		if (a.is_object())
+			return merge_objects(a, b, replace);
+		else if (a.is_array())
+			return merge_arrays(a, b, replace);
+		else
+			return Json{};
+	}*/
 };

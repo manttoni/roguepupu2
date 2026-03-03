@@ -1,22 +1,24 @@
-#include <nlohmann/json.hpp>                              // for basic_json
-#include <stddef.h>
-#include <nlohmann/detail/iterators/iter_impl.hpp>
-#include <nlohmann/detail/iterators/iteration_proxy.hpp>
-#include <nlohmann/json_fwd.hpp>
-#include <codecvt>
-#include <locale>
-#include <filesystem>                                     // for path
-#include <string>                                         // for string, ope...
 #include <algorithm>
+#include <codecvt>
+#include <filesystem>                                     // for path
 #include <functional>
 #include <limits>
+#include <locale>
 #include <map>
+#include <nlohmann/detail/iterators/iter_impl.hpp>
+#include <nlohmann/detail/iterators/iteration_proxy.hpp>
+#include <nlohmann/json.hpp>                              // for basic_json
+#include <nlohmann/json_fwd.hpp>
 #include <optional>
+#include <stddef.h>
+#include <string>                                         // for string, ope...
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
+
 #include "components/Components.hpp"                                 // for Resources
+#include "core/paths.hpp"
 #include "database/EntityFactory.hpp"                              // for EntityFactory
 #include "domain/Ability.hpp"
 #include "domain/Color.hpp"                                      // for Color
@@ -34,23 +36,8 @@
 #include "utils/Log.hpp"
 #include "utils/Parser.hpp"
 #include "utils/Random.hpp"
-
 class AbilityDatabase;
 
-void EntityFactory::init()
-{
-	const std::filesystem::path file = "data/entities.json";
-	nlohmann::json definitions = Parser::read_json_file(file);
-	add_entities(definitions);
-	Log::log("Entities parsed");
-}
-void EntityFactory::add_entities(nlohmann::json& entities)
-{
-	for (const auto& entity : entities)
-	{
-		LUT[entity["name"].get<std::string>()] = entity;
-	}
-}
 
 using FieldParser = std::function<void(entt::registry&, entt::entity, const nlohmann::json&)>;
 std::unordered_map<std::string, FieldParser> field_parsers =
@@ -89,27 +76,12 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			reg.template emplace<Inventory>(e, inventory);
 		}
 	},
-	{ "vision", [](auto& reg, auto e, const nlohmann::json& data)
-		{	// Can see and has a vision range. This might get replaced by some perception stat, probably will
-			if (!data.is_number() || data.get<double>() < 0)
-				Error::fatal("Vision range should be positive number");
-			reg.template emplace<Vision>(e, data.get<double>());
-		}
-	},
 	{ "glow", [](auto& reg, auto e, const nlohmann::json& data)
 		{	// Emits light around it
 			if (!data.contains("intensity") || !data["intensity"].is_number() ||
 				!data.contains("radius") || !data["radius"].is_number())
 				Error::fatal("Glow requires intensity and radius numbers: " + data.dump(4));
 			reg.template emplace<Glow>(e, data["intensity"].get<double>(), data["radius"].get<double>());
-		}
-	},
-	{ "player", [](auto& reg, auto e, const nlohmann::json& data)
-		{	// Is a playable character
-			if (!data.is_boolean())
-				Error::fatal("Player should be boolean: " + data.dump(4));
-			if (data.get<bool>() == true)
-				reg.template emplace<Player>(e);
 		}
 	},
 	{ "weight", [](auto& reg, auto e, const nlohmann::json& data)
@@ -119,40 +91,32 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			reg.template emplace<Weight>(e, data.get<double>());
 		}
 	},
-	{ "equipment", [](auto& reg, auto e, const nlohmann::json& data)
-		{	// This entity is a piece of equipment that can be equipped in slots
-			Equipment equipment;
-			if (data.is_string())
-			{
-				const auto str = data.get<std::string>();
-				if (str == "one_handed")
-					equipment.use_one.emplace(std::vector<Equipment::Slot>{Equipment::Slot::MainHand, Equipment::Slot::OffHand});
-				else if (str == "two_handed")
-					equipment.use_all.emplace(std::vector<Equipment::Slot>{Equipment::Slot::MainHand, Equipment::Slot::OffHand});
-				else
-					equipment.use_all.emplace(std::vector<Equipment::Slot>{Equipment::slot_from_string(str)});
-			}
-			else if (data.is_object() && data.size() == 1)
-			{
-				auto it = data.items().begin();
-				if (it == data.items().end())
-					Error::fatal("Equipment slots parse error");
-				const auto& key = it.key();
-				const auto& value = it.value();
-				std::vector<std::string> slot_strings = value.get<std::vector<std::string>>();
-				std::vector<Equipment::Slot> slots;
-				for (const auto& str : slot_strings)
-					slots.push_back(Equipment::slot_from_string(str));
-				if (key == "use_all")
-					equipment.use_all.emplace(slots);
-				else if (key == "use_one")
-					equipment.use_one.emplace(slots);
-				else
-					Error::fatal("Invalid equipment component: " + data.dump(4));
-			}
+	{ "equipment_slot", [](auto& reg, auto e, const nlohmann::json& data)
+		{	// The equipment slot where this is equipped
+			if (!data.is_object())
+				Error::fatal("Equipment slot should be object");
+
+			using Slot = EquipmentSlot::Slot;
+
+			EquipmentSlot es{};
+			std::vector<Slot> slots;
+
+			if (data["main_hand"].get<bool>())
+				slots.push_back(Slot::MainHand);
+			if (data["off_hand"].get<bool>())
+				slots.push_back(Slot::OffHand);
+			if (data["ammo"].get<bool>())
+				slots.push_back(Slot::Ammo);
+
+			const auto su = data["slot_usage"].get<std::string>();
+			if (su == "use_one")
+				es.use_one.emplace(slots);
+			else if (su == "use_all")
+				es.use_all.emplace(slots);
 			else
-				Error::fatal("Invalid equipment component: " + data.dump(4));
-			reg.template emplace<Equipment>(e, equipment);
+				Error::fatal("Invalid slot_usage: " + su);
+
+			reg.template emplace<EquipmentSlot>(e, es);
 		}
 	},
 	{ "equipment_slots", [](auto& reg, auto e, const nlohmann::json& data)
@@ -210,29 +174,6 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			if (data.contains("idle_wander")) comp.idle_wander = true;
 
 			reg.template emplace<AI>(e, comp);
-		}
-	},
-	{ "spawn", [](auto& reg, auto e, const nlohmann::json& data)
-		{	// unused at this point
-			(void) reg; (void) e; (void) data;
-		}
-	},
-	{ "gatherable", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			Gatherable comp;
-			if (data.contains("tool"))
-				comp.tool_type = Tool::from_string(data["tool"].get<std::string>());
-			if (data.contains("gather_effect"))
-				comp.effect = Gatherable::from_string(data["gather_effect"].get<std::string>());
-			if (data.contains("loot_tables"))
-				comp.loot_table_ids = data["loot_tables"].get<std::vector<std::string>>();
-
-			reg.template emplace<Gatherable>(e, comp);
-		}
-	},
-	{ "tool", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			reg.template emplace<Tool>(e, Tool::from_string(data.get<std::string>()));
 		}
 	},
 	{ "transition", [](auto& reg, auto e, const nlohmann::json& data)
@@ -316,43 +257,7 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			reg.template emplace<Damage::Spec>(e, spec);
 		}
 	},
-	{ "melee_weapon", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			(void) data;
-			reg.template emplace<MeleeWeapon>(e);
-		}
-	},
-	{ "ranged_weapon", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			(void) data;
-			reg.template emplace<RangedWeapon>(e);
-		}
-	},
-	{ "throwing_weapon", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			(void) data;
-			reg.template emplace<ThrowingWeapon>(e);
-		}
-	},
-	{ "finesse_weapon", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			(void) data;
-			reg.template emplace<FinesseWeapon>(e);
-		}
-	},
-	{ "versatile_weapon", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			(void) data;
-			reg.template emplace<VersatileWeapon>(e);
-		}
-	},
-	{ "mechanical_weapon", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			(void) data;
-			reg.template emplace<MechanicalWeapon>(e);
-		}
-	},
-	{ "range", [](auto& reg, auto e, const nlohmann::json& data)
+	{ "attack_range", [](auto& reg, auto e, const nlohmann::json& data)
 		{
 			const auto range = Parser::parse_range<double>(data);
 			reg.template emplace<AttackRange>(e, range);
@@ -361,29 +266,36 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 	{ "tags", [](auto& reg, auto e, const nlohmann::json& data)
 		{
 			assert(data.is_array());
+			static const std::vector<std::string> ignored_tags = {
+				"core", "spawns_naturally", "has_glow"
+			};
 			for (const auto& tag : data)
 			{
 				assert(tag.is_string());
 				const std::string& str = tag.get<std::string>();
-				if (str == "creature")
-					reg.template emplace<Creature>(e);
-				else if (str == "weapon")
-					reg.template emplace<Weapon>(e);
-				else if (str == "player")
-					reg.template emplace<Player>(e);
-				else if (str == "npc")
-					reg.template emplace<NPC>(e);
-				else if (str == "core" || str == "spawns_naturally" || str == "has_glow")
+				if (std::find(ignored_tags.begin(), ignored_tags.end(), str) != ignored_tags.end())
 					continue;
+				if (str.size() < 3) continue;
+				else if (str == "creature") reg.template emplace<Creature>(e);
+				else if (str == "player") reg.template emplace<Player>(e);
+				else if (str == "npc") reg.template emplace<NPC>(e);
+				else if (str == "item") reg.template emplace<Item>(e);
+				else if (str == "equipment") reg.template emplace<Equipment>(e);
+				else if (str == "weapon") reg.template emplace<Weapon>(e);
+				else if (str == "mechanical_weapon") reg.template emplace<MechanicalWeapon>(e);
+				else if (str == "versatile_weapon") reg.template emplace<VersatileWeapon>(e);
+				else if (str == "finesse_weapon") reg.template emplace<FinesseWeapon>(e);
+				else if (str == "throwing_weapon") reg.template emplace<ThrowingWeapon>(e);
+				else if (str == "ranged_weapon") reg.template emplace<RangedWeapon>(e);
+				else if (str == "melee_weapon") reg.template emplace<MeleeWeapon>(e);
+				else if (str == "gatherable") reg.template emplace<Gatherable>(e);
+				else if (str == "mushroom") reg.template emplace<Mushroom>(e);
+				else if (str == "plant") reg.template emplace <Plant>(e);
+				else if (str == "tool") reg.template emplace<Tool>(e);
+				else if (str == "ammo") reg.template emplace<Ammo>(e);
 				else
 					Error::fatal("Unhandled tag: " + str);
 			}
-		}
-	},
-	{ "spawn_chance", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			(void) reg; (void) e; (void) data;
-			// This data is already been processed and no longer needed
 		}
 	},
 	{ "environment_sensitive", [](auto& reg, auto e, const nlohmann::json& data)
@@ -393,8 +305,104 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			// Affects spawning
 			// Could be useful after spawning
 		}
+	},
+	{ "gather_effect", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			if (!data.is_string())
+				Error::fatal("Gather effect is not string");
+			const auto str = data.get<std::string>();
+			GatherEffect effect{};
+			if (str == "dim")
+				effect = GatherEffect::Dim;
+			else if (str == "destroy")
+				effect = GatherEffect::Destroy;
+			else
+				Error::fatal("Unhandled gather effect: " + str);
+			reg.template emplace<GatherEffect>(e, effect);
+		}
+	},
+	{ "requires_ammo", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			const AmmoType type = Parser::parse_ammo_type(data);
+			reg.template emplace<RequiresAmmo>(e, type); // alias of AmmoType
+		}
+	},
+	{ "ammo_type", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			const AmmoType type = Parser::parse_ammo_type(data);
+			reg.template emplace<AmmoType>(e, type);
+		}
+	},
+	{ "requires_tool", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			const ToolType type = Parser::parse_tool_type(data);
+			reg.template emplace<RequiresTool>(e, type); // alias of ToolType
+		}
+	},
+	{ "tool_type", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			const ToolType type = Parser::parse_tool_type(data);
+			reg.template emplace<ToolType>(e, type);
+		}
+	},
+	{ "loot_table_ref", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			if (!data.is_string())
+				Error::fatal("Loot table ref not string");
+			reg.template emplace<LootTableRef>(e, data.get<std::string>());
+		}
+	},
+	{ "stackable", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			reg.template emplace<Stackable>(e, data.get<bool>());
+		}
 	}
 };
+
+/* Some components are ignored. They are probably part of spawning logic, and are not used anymore after creation.
+ * */
+bool ignored_component(const std::string& component)
+{
+	static const std::vector<std::string> ignored_components = {
+		/* unused components */	"spawn_chance", "spawn_position"
+	};
+	auto it = std::find(ignored_components.begin(), ignored_components.end(), component);
+	return it != ignored_components.end();
+}
+
+/* Make life easier and check all field parsers at once.
+ * They have to handle every tag and component, unless ignored.
+ * */
+void EntityFactory::verify_field_parsers() const
+{
+	const auto component_definitions = Parser::read_json_file(component_definitions_file);
+
+	std::string errors = "";
+	for (const auto& [component, data] : component_definitions.items())
+	{
+		if (!field_parsers.contains(component) && !ignored_component(component))
+			errors += "[unhandled component: " + component + "]";
+	}
+	if (!errors.empty())
+		Error::fatal("Cannot verify field parsers: " + errors);
+}
+
+void EntityFactory::init()
+{
+	const std::filesystem::path file = "data/entities.json";
+	nlohmann::json definitions = Parser::read_json_file(file);
+	add_entities(definitions);
+	Log::log("Entities parsed");
+	verify_field_parsers();
+}
+
+void EntityFactory::add_entities(nlohmann::json& entities)
+{
+	for (const auto& entity : entities)
+	{
+		LUT[entity["name"].get<std::string>()] = entity;
+	}
+}
 
 entt::entity EntityFactory::create_entity(entt::registry& registry, const std::string& name, const std::optional<Position>& position) const
 {
@@ -405,6 +413,7 @@ entt::entity EntityFactory::create_entity(entt::registry& registry, const std::s
 	const auto& data = LUT.at(name);
 	for (const auto& [field_name, field_data] : data.items())
 	{
+		if (ignored_component(field_name)) continue;
 		auto it = field_parsers.find(field_name);
 		if (it == field_parsers.end())
 			Error::fatal("Unknown field name: " + field_name);

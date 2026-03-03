@@ -16,12 +16,17 @@
             "willpower": 8
         },
         "color": {
-            "blue": 500,
-            "green": 500,
-            "red": 500
+            "blue": 790,
+            "green": 460,
+            "red": 120
         },
         "damage": {
-            "amount": "1-2",
+            "amount": {
+                "range": [
+                    1,
+                    2
+                ]
+            },
             "type": "bludgeoning"
         },
         "equipment_slots": true,
@@ -29,37 +34,61 @@
         "inventory": {},
         "name": "rabdin",
         "opaque": 0.0,
-        "range": "0-1.5",
-        "size": 0.0,
+        "size": 50.0,
         "solid": true,
         "tags": [
             "core",
             "creature",
             "player"
         ],
-        "weight": 0.0
+        "weight": 50.0
     },
     {
+        "attack_range": {
+            "range": [
+                0.0,
+                1.5
+            ]
+        },
         "color": {
             "blue": 500,
             "green": 500,
             "red": 500
         },
         "damage": {
-            "amount": "1-6",
+            "amount": {
+                "range": [
+                    1,
+                    4
+                ]
+            },
             "type": "piercing"
         },
-        "equipment": "one_handed",
+        "equipment_slot": {
+            "ammo": false,
+            "left_hand": true,
+            "main_hand": true,
+            "off_hand": true,
+            "right_hand": true,
+            "slot_usage": "use_one"
+        },
         "glyph": "d",
         "name": "dagger",
         "opaque": 0.0,
-        "range": "0-1.5",
         "size": 0.1,
         "solid": false,
+        "stackable": false,
         "tags": [
             "core",
-            "weapon"
+            "weapon",
+            "item",
+            "equipment",
+            "finesse_weapon",
+            "melee_weapon",
+            "throwing_weapon",
+            "tool"
         ],
+        "tool_type": "cutting",
         "weight": 0.1
     },
     {
@@ -88,7 +117,12 @@
             "red": 500
         },
         "damage": {
-            "amount": "1-2",
+            "amount": {
+                "range": [
+                    1,
+                    2
+                ]
+            },
             "type": "bludgeoning"
         },
         "equipment_slots": true,
@@ -96,7 +130,6 @@
         "inventory": {},
         "name": "test_creature",
         "opaque": 0.0,
-        "range": "0-1.5",
         "size": 0.1,
         "solid": true,
         "tags": [
@@ -113,84 +146,139 @@
             "red": 500
         },
         "damage": {
-            "amount": "1-10",
+            "amount": {
+                "range": [
+                    2,
+                    12
+                ]
+            },
             "type": "piercing"
         },
-        "equipment": "two_handed",
+        "equipment_slot": {
+            "ammo": false,
+            "left_hand": true,
+            "main_hand": true,
+            "off_hand": true,
+            "right_hand": true,
+            "slot_usage": "use_all"
+        },
         "glyph": "p",
         "name": "pickaxe",
         "opaque": 0.0,
-        "range": "0-1.5",
         "size": 2.0000000000000004,
         "solid": false,
+        "stackable": false,
         "tags": [
             "core",
-            "weapon"
+            "weapon",
+            "item",
+            "equipment",
+            "melee_weapon",
+            "tool"
         ],
+        "tool_type": "mining",
         "weight": 2.2000000000000006
     },
     {
         "color": {
-            "blue": 500,
+            "blue": 300,
             "green": 0,
-            "red": 400
+            "red": 600
         },
         "environment_sensitive": {
             "hydro": "phobia",
             "photo": "neutral"
         },
+        "gather_effect": "dim",
         "glow": {
             "intensity": 0.02000000000000001,
             "radius": 4.0
         },
         "glyph": "*",
+        "loot_table_ref": "lt_glowing_mushroom",
         "name": "glowing mushroom",
         "opaque": 0.20000000000000004,
+        "requires_tool": "cutting",
         "size": 4.999999999999998,
         "solid": false,
         "spawn_chance": {
-            "chance": 0.1999999999999993,
+            "chance": 0.5999999999999996,
             "perlin": {
                 "enabled": true,
                 "frequency": 0.009999999999999691,
-                "octaves": 1,
-                "treshold": 0.3999999999999999
+                "octaves": 2,
+                "treshold": 0.6000000000000001
+            }
+        },
+        "spawn_position": {
+            "rock_neighbors": {
+                "range": [
+                    2,
+                    4
+                ]
+            },
+            "solid_neighbors": {
+                "range": [
+                    0,
+                    8
+                ]
             }
         },
         "tags": [
             "core",
             "spawns_naturally",
-            "has_glow"
+            "has_glow",
+            "gatherable",
+            "mushroom"
         ],
         "weight": 4.999999999999998
     },
     {
         "color": {
             "blue": 0,
-            "green": 330,
-            "red": 670
+            "green": 300,
+            "red": 600
         },
         "environment_sensitive": {
             "hydro": "phobia",
             "photo": "neutral"
         },
+        "gather_effect": "destroy",
         "glyph": "$",
+        "loot_table_ref": "lt_woody_mushroom",
         "name": "woody mushroom",
         "opaque": 0.5,
+        "requires_tool": "felling",
         "size": 40.0000000000003,
         "solid": true,
         "spawn_chance": {
-            "chance": 0.1999999999999993,
+            "chance": 0.09999999999999924,
             "perlin": {
                 "enabled": true,
-                "frequency": 0.19999999999999973,
+                "frequency": 0.0499999999999997,
                 "octaves": 16,
-                "treshold": 0.5
+                "treshold": 0.9000000000000004
+            }
+        },
+        "spawn_position": {
+            "rock_neighbors": {
+                "range": [
+                    0,
+                    0
+                ]
+            },
+            "solid_neighbors": {
+                "range": [
+                    0,
+                    2
+                ]
             }
         },
         "tags": [
             "core",
-            "spawns_naturally"
+            "spawns_naturally",
+            "gatherable",
+            "mushroom"
         ],
         "weight": 40.0000000000003
     },
@@ -204,14 +292,17 @@
             "hydro": "philia",
             "photo": "neutral"
         },
+        "gather_effect": "destroy",
         "glow": {
             "intensity": 0.02000000000000001,
             "radius": 0.0
         },
         "glyph": "¤",
+        "loot_table_ref": "lt_lotus",
         "name": "lotus",
         "opaque": 0.0,
-        "size": 2.1000000000000005,
+        "requires_tool": "cutting",
+        "size": 2.0000000000000004,
         "solid": false,
         "spawn_chance": {
             "chance": 0.04999999999999925,
@@ -222,11 +313,113 @@
                 "treshold": 0.5
             }
         },
+        "spawn_position": {
+            "rock_neighbors": {
+                "range": [
+                    0,
+                    0
+                ]
+            },
+            "solid_neighbors": {
+                "range": [
+                    0,
+                    0
+                ]
+            }
+        },
         "tags": [
             "core",
             "has_glow",
-            "spawns_naturally"
+            "spawns_naturally",
+            "gatherable",
+            "plant"
         ],
-        "weight": 1.2
+        "weight": 2.0000000000000004
+    },
+    {
+        "ammo_type": "arrow",
+        "color": {
+            "blue": 500,
+            "green": 500,
+            "red": 500
+        },
+        "damage": {
+            "amount": {
+                "range": [
+                    1,
+                    2
+                ]
+            },
+            "type": "piercing"
+        },
+        "equipment_slot": {
+            "ammo": true,
+            "left_hand": true,
+            "main_hand": true,
+            "off_hand": true,
+            "right_hand": true,
+            "slot_usage": "use_one"
+        },
+        "glyph": "a",
+        "name": "arrow",
+        "opaque": 0.0,
+        "size": 0.1,
+        "solid": false,
+        "stackable": true,
+        "tags": [
+            "core",
+            "item",
+            "equipment",
+            "ammo",
+            "improvised_weapon",
+            "weapon",
+            "melee_weapon"
+        ],
+        "weight": 0.0
+    },
+    {
+        "attack_range": {
+            "range": [
+                1.5000000000000002,
+                30.000000000000156
+            ]
+        },
+        "color": {
+            "blue": 500,
+            "green": 500,
+            "red": 500
+        },
+        "damage": {
+            "amount": {
+                "range": [
+                    1,
+                    10
+                ]
+            },
+            "type": "piercing"
+        },
+        "equipment_slot": {
+            "ammo": false,
+            "left_hand": true,
+            "main_hand": true,
+            "off_hand": true,
+            "right_hand": true,
+            "slot_usage": "use_all"
+        },
+        "glyph": "l",
+        "name": "longbow",
+        "opaque": 0.0,
+        "requires_ammo": "arrow",
+        "size": 0.9999999999999999,
+        "solid": false,
+        "stackable": false,
+        "tags": [
+            "core",
+            "ranged_weapon",
+            "weapon",
+            "item",
+            "equipment"
+        ],
+        "weight": 1.0
     }
 ]

@@ -37,6 +37,9 @@ namespace Math
 
 	inline size_t get_precision(double d)
 	{
+		d -= std::floor(d);
+		if (d == 0.0)
+			return 0;
 		size_t precision = 0;
 		while (d < 1.0)
 		{
