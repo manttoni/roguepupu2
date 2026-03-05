@@ -84,13 +84,6 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			reg.template emplace<Glow>(e, data["intensity"].get<double>(), data["radius"].get<double>());
 		}
 	},
-	{ "weight", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			if (!data.is_number() || data.get<double>() < 0)
-				Error::fatal("Weight should be positive number: " + data.dump(4));
-			reg.template emplace<Weight>(e, data.get<double>());
-		}
-	},
 	{ "equipment_slot", [](auto& reg, auto e, const nlohmann::json& data)
 		{	// The equipment slot where this is equipped
 			if (!data.is_object())
@@ -169,30 +162,20 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 		{
 			if (!data.is_object())
 				Error::fatal("AI needs to be an object: " + data.dump(4));
-			AI comp;
-			if (data.contains("aggressive")) comp.aggressive = true;
-			if (data.contains("idle_wander")) comp.idle_wander = true;
-
-			reg.template emplace<AI>(e, comp);
+			AI ai;
+			if (data["aggressive"].get<bool>())
+				ai.aggressive = true;
+			if (data["idle_wander"].get<bool>())
+				ai.idle_wander = true;
+			//if (data["predator"].get<bool>())
+			//	ai.predator = true;
+			reg.template emplace<AI>(e, ai);
 		}
 	},
 	{ "transition", [](auto& reg, auto e, const nlohmann::json& data)
 		{
 			if (data.is_boolean() && data == true)
 				reg.template emplace<Transition>(e, entt::null);
-		}
-	},
-	{ "size", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			double size = 0;
-			if (data.is_string() && data.get<std::string>() == "-inf")
-				size = -std::numeric_limits<double>::infinity();
-			else if (data.is_string() && data.get<std::string>() == "inf")
-				size = std::numeric_limits<double>::infinity();
-			else if (data.is_number())
-				size = data.get<double>();
-			else Error::fatal("Unhandled size type: " + data.dump(4));
-			reg.template emplace<Size>(e, size);
 		}
 	},
 	{ "attributes", [](auto& reg, auto e, const nlohmann::json& data)
@@ -247,8 +230,8 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 	},
 	{ "destroy_when_stacked", [](auto& reg, auto e, const nlohmann::json& data)
 		{
-			(void) data;
-			reg.template emplace<DestroyWhenStacked>(e);
+			assert(data.is_boolean() && "destroy_when_stacked should be boolean");
+			reg.template emplace<DestroyWhenStacked>(e, data.get<bool>());
 		}
 	},
 	{ "damage", [](auto& reg, auto e, const nlohmann::json& data)
@@ -288,11 +271,13 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 				else if (str == "throwing_weapon") reg.template emplace<ThrowingWeapon>(e);
 				else if (str == "ranged_weapon") reg.template emplace<RangedWeapon>(e);
 				else if (str == "melee_weapon") reg.template emplace<MeleeWeapon>(e);
+				else if (str == "improvised_weapon") reg.template emplace<ImprovisedWeapon>(e);
 				else if (str == "gatherable") reg.template emplace<Gatherable>(e);
 				else if (str == "mushroom") reg.template emplace<Mushroom>(e);
 				else if (str == "plant") reg.template emplace <Plant>(e);
 				else if (str == "tool") reg.template emplace<Tool>(e);
 				else if (str == "ammo") reg.template emplace<Ammo>(e);
+				else if (str == "door") reg.template emplace<Door>(e);
 				else
 					Error::fatal("Unhandled tag: " + str);
 			}
@@ -354,7 +339,20 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 	},
 	{ "stackable", [](auto& reg, auto e, const nlohmann::json& data)
 		{
+			assert(data.is_boolean() && "stackable should be bool");
 			reg.template emplace<Stackable>(e, data.get<bool>());
+		}
+	},
+	{ "closed", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			assert(data.is_boolean() && "closed should be bool");
+			reg.template emplace<Closed>(e, data.get<bool>());
+		}
+	},
+	{ "mass", [](auto& reg, auto e, const nlohmann::json& data)
+		{	// Verifying here is actually redundant, since Editor will notice these
+			assert(data.is_number() && data.get<double>() >= 0 && "mass should be positive number");
+			reg.template emplace<Mass>(e, data.get<double>());
 		}
 	}
 };
@@ -437,9 +435,9 @@ entt::entity EntityFactory::create_entity(entt::registry& registry, const std::s
 	return entity;
 }
 
-std::vector<entt::entity> EntityFactory::create_entities(entt::registry& registry, const nlohmann::json& include, const nlohmann::json& exclude) const
+std::vector<entt::entity> EntityFactory::create_entities(entt::registry& registry, const nlohmann::json& filters) const
 {
-	const auto entity_ids = filter_entity_ids(include, exclude);
+	const auto entity_ids = filter_entity_ids(filters);
 	return create_entities(registry, entity_ids);
 }
 
@@ -466,14 +464,28 @@ std::vector<entt::entity> EntityFactory::create_entities(entt::registry& registr
 	return entities;
 }
 
-std::vector<std::string> EntityFactory::filter_entity_ids(const nlohmann::json& include, const nlohmann::json& exclude) const
+std::vector<std::string> EntityFactory::filter_entity_ids(const nlohmann::json& filters) const
 {
+	Log::log("Filter: " + filters.dump(4));
 	std::vector<std::string> ids;
-	for (const auto& [name, data] : LUT)
+	for (const auto& [id, data] : LUT)
 	{
-		if (JsonUtils::contains_all(data, include) && JsonUtils::contains_none(data, exclude))
-			ids.push_back(name);
+		bool include = true;
+		for (const auto& [filter_type, filter_data] : filters.items())
+		{
+			if (filter_type == "contains_all" && !JsonUtils::contains_all(data, filter_data))
+				include = false;
+			else if (filter_type == "contains_any" && !JsonUtils::contains_any(data, filter_data))
+				include = false;
+			else if (filter_type == "contains_none" && !JsonUtils::contains_none(data, filter_data))
+				include = false;
+
+			if (include == false) break;
+		}
+		if (include)
+			ids.push_back(id);
+		Log::log("Include " + id + ": " + (include ? "true" : "false"));
 	}
-	std::sort(ids.begin(), ids.end());
 	return ids;
 }
+

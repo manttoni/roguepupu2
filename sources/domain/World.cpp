@@ -37,3 +37,14 @@ size_t World::new_cave(size_t size, const Cell::Type fill)
 	caves.push_back(std::move(cave));
 	return idx;
 }
+
+size_t World::new_cave(const Cave::Type cave_type, size_t size)
+{
+	if (size == SIZE_MAX)
+		size = Parser::read_json_file("data/generation/cave/sizes.json")["default"].get<size_t>();
+	Cave cave(size, cave_type);
+	const size_t idx = caves.size();
+	cave.set_idx(idx);
+	caves.push_back(std::move(cave));
+	return idx;
+}

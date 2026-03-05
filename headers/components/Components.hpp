@@ -20,8 +20,7 @@ struct Glyph { wchar_t glyph; };
 // Color is in domain, a class
 struct Solid { bool value = true; };
 struct Opaque { double value = 1.0; };	// value [0,1] is how much this entity blocks vision. 1 = completely opaque, 0, transparent
-struct Size { double liters; };
-struct Weight { double kilograms; };
+struct Mass { double value; };
 
 // move this somewhere, is similar to Color
 struct NcursesAttr
@@ -244,7 +243,7 @@ struct LiquidContainer
  * */
 struct BaseLocation
 {
-	size_t idx;
+	Position position;
 	double radius;
 };
 
@@ -264,7 +263,6 @@ struct Transition
 
 	bool operator==(const Transition& other) const = default;
 };
-struct DestroyWhenStacked {}; // Maybe just a relic, but spider webs have to be destroyed when you walk on them
 
 /* Other */
 struct AI
@@ -274,39 +272,45 @@ struct AI
 };
 struct Abilities
 {
-	std::map<std::string, Ability> abilities;
+	std::map<std::string, Ability> abilities; // this is actually not implemented at all (anymore)
 };
-
-/* Tags - contain no data, but are data themselves by existing */
-struct Creature {};
-struct Player {};
-struct NPC {};
-
-struct Destroyed {};
-
-struct Equipment {};
-
-struct Item {};
-using Stackable = bool;
 struct LootTableRef { std::string id; };
 
-struct Tool {};
+/* Booleans */
+struct Closed { bool value; };
+struct Stackable { bool value; }; // This needs some number to tell how much is stacked
+struct DestroyWhenStacked { bool value; }; // TODO: rename, does not mean stacked in inventory, but in cell, aka stepped on/fragile
+
+/* Enums and their aliases. Might need struct wrapping, but these at least dont look like they will conflict */
+enum class AmmoType { None, Arrow, Bolt, Bullet };
 enum class ToolType { None, Cutting, Felling, Mining };
 using RequiresTool = ToolType;
-
-struct Weapon {};
-struct FinesseWeapon {};
-struct VersatileWeapon {};
-struct MechanicalWeapon {};
-struct MeleeWeapon {};
-struct ThrowingWeapon {};
-struct RangedWeapon {};
-
-struct Ammo{};
-enum class AmmoType { None, Arrow, Bolt, Bullet };
 using RequiresAmmo = AmmoType;
-
-struct Gatherable {};
 enum class GatherEffect { None, Dim, Destroy };
-struct Mushroom {};
-struct Plant {};
+
+/* Tags - contain no data, but are data themselves by existing
+ * Check data/components/tag_dependencies.json
+ * A Tag comes with Components which have the necessary data
+ * A Tag can also come with other Tags, f.e. all Weapons are also Items.
+ * A Tag is a promise that the entity will fulfill that functionality
+ * */
+struct Creature {}; // is something like an animal
+struct Player {}; // player can control this
+struct NPC {}; // AI controls this
+struct Destroyed {}; // Mark entity for destruction and destroy it at a certain point
+struct Equipment {}; // This entity is a piece of equipment
+struct Door {}; // is a door
+struct Item {}; // is an item
+struct Tool {}; // is a tool
+struct Weapon {}; // is a weapon
+struct FinesseWeapon {}; // used with dexterity
+struct VersatileWeapon {}; // if off_hand is empty, is more effective
+struct MechanicalWeapon {}; // is a machine, usual attributes dont affect usage
+struct MeleeWeapon {}; // attack adjacent cells, also diagonal
+struct ImprovisedWeapon {}; // not supposed to be used as a melee weapon, but its possible
+struct ThrowingWeapon {}; // is good for throwing
+struct RangedWeapon {}; // can attack distant targets, uses ammo
+struct Ammo{}; // is ammo
+struct Gatherable {}; // can be gathered with tools
+struct Mushroom {}; // is a mushroom growing naturally
+struct Plant {}; // is a plant growing naturally

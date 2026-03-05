@@ -40,7 +40,7 @@ void Cell::set_glyph()
 			break;
 		case Type::Floor:
 			{
-				const std::string floor_chars = ",.:;\'\"";
+				const std::string floor_chars = " ,.:;\'\"";
 				glyph = floor_chars[Random::rand<size_t>(0, floor_chars.size() - 1)];
 			}
 			break;

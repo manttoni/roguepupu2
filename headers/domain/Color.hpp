@@ -39,6 +39,7 @@ class Color
 		static inline Color grey() { return Color(100, 100, 100); }
 		static inline Color dark_grey() { return Color(50,50,50); }
 		static inline Color white() { return Color(500, 500, 500); }
+		static inline Color bright_white() { return Color(750, 750, 750); }
 		static inline Color red() { return Color(500, 0, 0); }
 		static inline Color green() { return Color(0, 500, 0); }
 		static inline Color blue() { return Color(0, 0, 500); }

@@ -26,15 +26,32 @@ struct Dead;
 Game::Game()
 {
 	ECS::init_registry(registry);
+	registry.ctx().get<GameState>().player = select_character(registry);
+	const auto player = ECS::get_player(registry);
+	if (player == entt::null) game_over = true;
 
-	registry.ctx().get<GameState>().player = EntityFactory::instance().create_entity(registry, "rabdin");
+	const auto& spawn_room = create_spawn_room(registry);
 
-	const size_t cave_idx = registry.ctx().get<World>().new_cave();
-	CaveGenerator::Data data(registry, ECS::get_cave(registry, cave_idx));
-	Parser::parse_cave_generation_conf(std::string("default"), data);
-	CaveGenerator::generate_cave(data);
-	const auto sources = data.cave.get_positions_with_type(Cell::Type::Source);
-	registry.emplace<Position>(ECS::get_player(registry), sources[0]);
+	registry.emplace<Position>(player, spawn_room.middle_position());
+}
+
+Cave& Game::create_spawn_room(entt::registry& registry)
+{
+	const auto idx = registry.ctx().get<World>().new_cave(Cave::Type::Room, 10);
+	return ECS::get_cave(registry, idx);
+}
+
+entt::entity Game::select_character(entt::registry& registry)
+{
+	const nlohmann::json player_filter = {
+		{ "contains_all", {{ "tags", {"player"}}}} // must include 'tags' and it must include 'player'
+	};
+	const auto players = EntityFactory::instance().filter_entity_ids(player_filter);
+	assert(!players.empty());
+	const auto selection = Dialog::get_selection("Select character", players);
+	if (selection.cancelled || !selection.element) return entt::null;
+
+	return EntityFactory::instance().create_entity(registry, selection.element->label);
 }
 
 void Game::loop()

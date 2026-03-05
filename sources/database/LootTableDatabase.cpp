@@ -20,6 +20,8 @@ LootTableDatabase::LootTableDatabase()
 	read_definitions();
 }
 
+
+/* This can be done better */
 void LootTableDatabase::read_definitions()
 {
 	const std::filesystem::path path = "data/loot_tables.json";
@@ -40,8 +42,8 @@ void LootTableDatabase::read_definitions()
 			lt.item_ids = data["item_ids"].get<std::vector<std::string>>();
 		if (data.contains("weights"))
 			lt.weights = data["weights"].get<std::vector<double>>();
-		if (data.contains("filter"))
-			lt.item_ids = EntityFactory::instance().filter_entity_ids(data["filter"]);
+		//if (data.contains("filter"))
+		//	lt.item_ids = EntityFactory::instance().filter_entity_ids(data["filter"]);
 		if (data.contains("item_weights"))
 		{
 			for (const auto& [id, weight] : data["item_weights"].items())

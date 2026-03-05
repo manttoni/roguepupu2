@@ -225,8 +225,8 @@ namespace ECS
 		double liquid_level = get_cell(registry, pos).get_liquid_level();
 		for (const auto entity : get_entities(registry, pos))
 		{
-			if (registry.all_of<Size>(entity))
-				liquid_level += registry.get<Size>(entity).liters;
+			if (registry.all_of<Mass>(entity))
+				liquid_level += registry.get<Mass>(entity).value;
 		}
 		return liquid_level;
 	}

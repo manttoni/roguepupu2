@@ -14,6 +14,25 @@ Cave::Cave(const size_t size, const Cell::Type fill) : size(size)
 		cells.push_back(Cell(i, fill));
 }
 
+Cave::Cave(const size_t size, const Type type) : Cave(size)
+{
+	switch (type)
+	{
+		case Type::Room:
+			for (auto& cell : cells)
+			{
+				const auto idx = cell.get_idx();
+				const auto y = idx / size;
+				const auto x = idx % size;
+				if (y == 0 || y == size - 1 ||
+						x == 0 || x == size - 1)
+					continue;
+				cell.set_type(Cell::Type::Floor);
+			}
+			break;
+	}
+}
+
 std::vector<Position> Cave::get_positions() const
 {
 	std::vector<Position> positions;

@@ -177,17 +177,27 @@ namespace EntityEditor
 	}
 
 	/* When removing a tag, it will call update_entity, which will call this to remove components
-	 * that are redundant without that tag. No need to do recursion into data, just remove on the component level
+	 * that are redundant without that tag.
 	 * */
 	void erase_redundant(Json& entity, const Json& template_json, std::vector<std::string>* errors = nullptr)
 	{
+		if (!entity.is_object())
+			return;
 		for (auto it = entity.begin(); it != entity.end(); )
 		{
 			const auto& key = it.key();
-			if (!template_json.contains(key))
+			auto& value = it.value();
+			if (!template_json.contains(key) && !template_json.contains("template_"+key))
 			{
-				if (errors) errors->push_back("[redundant component: " + key + "]");
+				// Remove whole key if template json says it is redundant
+				if (errors) errors->push_back("[redundant component/data: " + key + "]");
 				it = entity.erase(it);
+			}
+			else if (value.is_object())
+			{
+				// recursion into removing part of value, if value is object
+				erase_redundant(value, template_json[key], errors);
+				it++;
 			}
 			else
 				it++;
@@ -405,7 +415,7 @@ namespace EntityEditor
 				if (selection.element->label == entity["name"].get<std::string>())
 					return entity;
 			}
-			assert(0 || "Something is wrong");
+			assert(0 && "Something is wrong");
 		}
 		return Json{};
 	}

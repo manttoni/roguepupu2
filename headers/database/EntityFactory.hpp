@@ -25,10 +25,10 @@ class EntityFactory
 		EntityFactory() { if (LUT.empty()) init(); }
 		const std::unordered_map<std::string, nlohmann::json>& get_LUT() const { return LUT; }
 		entt::entity create_entity(entt::registry& registry, const std::string& name, const std::optional<Position>& position = std::nullopt) const;
-		std::vector<entt::entity> create_entities(entt::registry& registry, const nlohmann::json& include = {}, const nlohmann::json& exclude = {}) const;
+		std::vector<entt::entity> create_entities(entt::registry& registry, const nlohmann::json& filters) const;
 		std::vector<entt::entity> create_entities(entt::registry& registry, const std::vector<std::string>& entity_ids) const;
 		std::vector<entt::entity> create_entities(entt::registry& registry, const std::string& id, const size_t amount) const;
-		std::vector<std::string> filter_entity_ids(const nlohmann::json& include = {}, const nlohmann::json& exclude = {}) const;
+		std::vector<std::string> filter_entity_ids(const nlohmann::json& filters) const;
 		void add_entities(nlohmann::json& json);
 		void verify_field_parsers() const;
 		void init();

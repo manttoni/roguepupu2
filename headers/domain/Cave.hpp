@@ -49,7 +49,9 @@ class Cave
 		Position middle_position() const { return Position(size * size / 2 + size / 2, idx); }
 
 	public:
+		enum class Type { Room };
 		Cave(const size_t size, const Cell::Type fill = Cell::Type::Rock);
+		Cave(const size_t size, const Type type); // can create square shaped room
 
 		Cave(const Cave& other) = default;
 		Cave& operator=(const Cave& other) = default;

@@ -30,6 +30,7 @@
 #include "utils/Math.hpp"
 #include "utils/Random.hpp"
 #include "utils/Vec2.hpp"
+#include "utils/ECS.hpp"
 
 namespace CaveGenerator
 {
@@ -158,14 +159,18 @@ namespace CaveGenerator
 					smooth_terrain(data);
 					simulate_environment(data);
 					if (MovementSystem::find_path(data.registry, source, sink, false).empty())
-					{
-
 						flag = false;
-					}
 				}
 			}
 			render(data);
 		}
+
+		// Disable sources and sinks
+		// This will stop water from spawning at sources, should result in nicer water bodies
+		for (const auto& source : sources)
+			ECS::get_cell(data.registry, source).set_type(Cell::Type::Floor);
+		for (const auto& sink : sinks)
+			ECS::get_cell(data.registry, sink).set_type(Cell::Type::Floor);
 	}
 
 	// A* to find path of least resistance through solid rock
@@ -273,7 +278,7 @@ namespace CaveGenerator
 		render(data);
 	}
 
-	void generate_cave(Data& data, const bool prompt)
+	void generate_cave(Data& data, const bool prompt) // Extra parameter is for manual testing, also rendering of generation is for manual testing
 	{
 		const bool test_run = data.registry.ctx().get<GameState>().test_run;
 		if (!test_run)

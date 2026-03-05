@@ -128,6 +128,6 @@ class UI
 		void resize_terminal();
 		Vec2 get_window_dimensions(const WINDOW* const window) const;
 		Vec2 get_window_start(const WINDOW* const window) const;
-		void set_color_theme() { enable_color_pair(ColorPair(Color::white(), Color::black())); }
+		void set_color_theme() { enable_color_pair(ColorPair(Color::bright_white(), Color::black())); }
 };
 

@@ -1,6 +1,6 @@
 {
 	"core": {
-		"components": [ "tags", "name", "glyph", "color", "solid", "opaque", "weight", "size" ]
+		"components": [ "tags", "name", "glyph", "color", "solid", "opaque", "mass" ]
 	},
 	"creature": {
 		"components": [ "attributes", "alignment", "inventory", "equipment_slots", "damage" ]
@@ -15,7 +15,8 @@
 		"components": [ "spawn_chance", "environment_sensitive", "spawn_position" ]
 	},
 	"equipment": {
-		"components": [ "equipment_slot" ]
+		"components": [ "equipment_slot" ],
+		"tags": [ "item" ]
 	},
 	"weapon": {
 		"components": [ "damage" ],
@@ -54,7 +55,7 @@
 	},
 	"ammo": {
 		"components": [ "ammo_type", "damage" ],
-		"tags": [ "item" ]
+		"tags": [ "equipment" ]
 	},
 	"melee_weapon": {
 		"tags": [ "weapon" ]
@@ -67,7 +68,15 @@
 		"components": [ "gather_effect", "loot_table_ref", "requires_tool" ]
 	},
 	"mushroom": {
+		"tags": [ "spawns_naturally" ]
 	},
 	"plant": {
+		"tags": [ "spawns_naturally" ]
+	},
+	"container": {
+		"components": [ "inventory" ]
+	},
+	"door": {
+		"components": [ "closed" ]
 	}
 }

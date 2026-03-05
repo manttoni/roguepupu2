@@ -9,8 +9,7 @@
 	},
 	"solid": false,
 	"opaque": { "template_min": 0.0, "template_max": 1.0, "template_delta": 0.1, "template_default": 0.0 },
-	"weight": { "template_min": 0.0, "template_max": 20000.0, "template_delta": 0.1, "template_default": 0.0 },
-	"size": { "template_min": 0.0, "template_max": 1000.0, "template_delta": 0.1, "template_default": 0.0 },
+	"mass": { "template_min": 0.0, "template_max": 20000.0, "template_delta": 0.1, "template_default": 0.0 },
 	"attributes": {
 		"strength": { "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8 },
 		"dexterity": { "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8},
@@ -72,5 +71,6 @@
 	"requires_tool": { "template_multi_choice": [ "cutting", "felling", "mining" ] },
 	"tool_type": { "template_multi_choice": [ "cutting", "felling", "mining" ] },
 	"requires_ammo": { "template_multi_choice": [ "arrow", "bolt", "bullet" ] },
-	"ammo_type": { "template_multi_choice": [ "arrow", "bolt", "bullet" ] }
+	"ammo_type": { "template_multi_choice": [ "arrow", "bolt", "bullet" ] },
+	"closed": true
 }

@@ -17,7 +17,7 @@
 TEST_F(RegistryTest, EquipAndUnequip)
 {
 	const nlohmann::json filter = {
-		{"equipment", "any"}
+		{"contains_all", {"tags", {"equipment"}}}
 	};
 	const auto equipment_ids = EntityFactory::instance().filter_entity_ids(filter);
 	for (const auto& id : equipment_ids)
@@ -131,10 +131,14 @@ TEST_F(RegistryTest, HasFreeSlotsWorksTwoHanded2)
 
 TEST_F(RegistryTest, WeaponsHaveSlots)
 {
+	nlohmann::json filter = nlohmann::json::object();
+	filter["contains_all"] = nlohmann::json::object();
+	filter["contains_all"]["tags"] = nlohmann::json::array();
+	filter["contains_all"]["tags"].push_back("weapon");
 	const auto weapons = EntityFactory::instance()
 		.create_entities(
 				registry,
-				nlohmann::json{{"subcategory", "weapons"}}
+				filter
 				);
 	for (const auto weapon : weapons)
 	{

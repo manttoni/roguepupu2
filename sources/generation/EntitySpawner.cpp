@@ -37,7 +37,7 @@ namespace EntitySpawner
 		std::shuffle(floor_cells.begin(), floor_cells.end(), Random::rng());
 
 		// get entity ids/names and reference to all entity data (look up table)
-		auto ids = EntityFactory::instance().filter_entity_ids({{"tags", {"spawns_naturally"}}});
+		auto ids = EntityFactory::instance().filter_entity_ids({{"contains_all", {"tags", {"spawns_naturally"}}}});
 		const auto& LUT = EntityFactory::instance().get_LUT();
 
 		for (const auto& spawn_pos : floor_cells)
