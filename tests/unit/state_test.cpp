@@ -8,10 +8,17 @@
 
 TEST_F(RegistryTest, AllCreaturesHaveAllAttributes)
 {
+	const nlohmann::json filter = {
+		{
+			"contains_all", {
+				"tags", { "creature" }
+			}
+		}
+	};
 	const auto creatures = EntityFactory::instance()
 		.create_entities(
 				registry,
-				nlohmann::json{{"category", "creatures"}}
+				filter
 				);
 	for (const auto creature : creatures)
 	{

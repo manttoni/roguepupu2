@@ -31,8 +31,15 @@ TEST_F(RegistryTest, GetAttackRangeWorksWeapons)
 {
 	const auto creature = EntityFactory::instance()
 		.create_entity(registry, "test_creature");
+	nlohmann::json filter = {
+		{ "contains_all",
+			{
+				"tags", { "weapon" }
+			}
+		}
+	};
 	const auto weapons = EntityFactory::instance()
-		.create_entities(registry, nlohmann::json{{"subcategory", "weapons"}});
+		.create_entities(registry, filter);
 	for (const auto w : weapons)
 	{
 		InventorySystem::add_item(registry, creature, w);
