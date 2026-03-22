@@ -173,9 +173,9 @@
     },
     {
         "color": {
-            "blue": 300,
+            "blue": 600,
             "green": 0,
-            "red": 600
+            "red": 450
         },
         "environment_sensitive": {
             "hydro": "phobia",
@@ -194,7 +194,7 @@
         "requires_tool": "cutting",
         "solid": false,
         "spawn_chance": {
-            "chance": 0.5999999999999996,
+            "chance": 0.49999999999999956,
             "perlin": {
                 "enabled": true,
                 "frequency": 0.009999999999999691,
@@ -413,7 +413,7 @@
         "alignment": {
             "chaos_law": 0.0,
             "evil_good": 0.0,
-            "tolerance": -0.9999999999999999
+            "tolerance": -2.0
         },
         "attributes": {
             "agility": 8,

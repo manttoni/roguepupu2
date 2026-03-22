@@ -7,7 +7,7 @@
 #include "domain/Cave.hpp"        // for Cave
 #include "domain/Cell.hpp"        // for Cell
 #include "domain/Position.hpp"
-
+/*
 Cave::Cave(const size_t size, const Cell::Type fill) : size(size)
 {
 	for (size_t i = 0; i < size * size; ++i)
@@ -31,6 +31,14 @@ Cave::Cave(const size_t size, const Type type) : Cave(size)
 			}
 			break;
 	}
+}
+*/
+
+Cave::Cave(const size_t idx, const size_t size, const size_t depth, const Cell::Type fill)
+	: idx(idx), size(size), depth(depth)
+{
+	for (size_t i = 0; i < get_area(); ++i)
+		cells.emplace_back(i, fill);
 }
 
 std::vector<Position> Cave::get_positions() const

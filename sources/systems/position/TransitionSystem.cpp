@@ -13,13 +13,14 @@ namespace TransitionSystem
 {
 	void transition(entt::registry& registry, const entt::entity traveler, const entt::entity portal)
 	{
-		assert(registry.all_of<Transition>(portal));
+		(void) registry; (void) traveler; (void) portal;
+		/*assert(registry.all_of<Transition>(portal));
 		auto& comp = registry.get<Transition>(portal);
 		if (comp.destination == entt::null)
 		{	// This might be an unlinked next level portal
 			if (registry.get<Name>(portal).name == "natural passage")
 			{	// It is a passage to a cave
-				const size_t cave_idx = ECS::generate_cave(registry);
+				//const size_t cave_idx = ECS::generate_cave(registry);
 				comp.destination = ECS::get_unlinked_passage(registry, cave_idx);
 			}
 			else return;
@@ -27,7 +28,7 @@ namespace TransitionSystem
 		registry.emplace_or_replace<Position>(
 				traveler,
 				registry.get<Position>(comp.destination)
-				);
+				);*/
 	}
 
 	void link_portals(entt::registry& registry, const entt::entity a, const entt::entity b)

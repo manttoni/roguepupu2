@@ -72,7 +72,7 @@ namespace CaveGenerator
 	}
 
 	/* Set -inf for sinks because LiquidSystem will then flow any amount into it
-	 * Set +inf for sources for the vibes
+	 * Set +inf for sources
 	 * Divide cave like a pizza, each slice gets one feature.
 	 * */
 	void set_water_features(Data& data)
@@ -125,9 +125,19 @@ namespace CaveGenerator
 				cell.set_liquid_source(liquid_source);
 			}
 		}
+
+		// If this is the first level, or idx == 0,
+		// player character spawn point is in the middle
+		if (data.cave.get_idx() == 0)
+		{
+			auto middle_pos = data.cave.middle_position();
+			data.cave.get_cell(middle_pos).set_type(Cell::Type::Source); // this position will now be a part of the tunnels
+		}
+
 		assert(spawning_features.empty());
 	}
 
+	// This is for inspecting the result during generation
 	void render(Data& data)
 	{
 		if (data.registry.ctx().get<GameState>().test_run)
@@ -195,9 +205,7 @@ namespace CaveGenerator
 			if (current_pos == end)
 				return;
 
-			// A erosion
-			// Erosion here is very large scale and interesting
-			cave.get_cell(current_pos).reduce_density(data.erosion.erosion_a);
+			cave.get_cell(current_pos).reduce_density(data.erosion.primary);
 
 			open_set.erase(std::find(open_set.begin(), open_set.end(), current_pos)); // is found
 			for (const auto neighbor_pos : cave.get_nearby_positions(current_pos, 1.5))
@@ -210,16 +218,10 @@ namespace CaveGenerator
 				if (g_score.count(neighbor_pos) == 0)
 					g_score[neighbor_pos] = std::numeric_limits<double>::infinity();
 
-				// B erosion
-				// erosion here will make smooth cave like C
-				cave.get_cell(neighbor_pos).reduce_density(data.erosion.erosion_b);
+				cave.get_cell(neighbor_pos).reduce_density(data.erosion.secondary);
 
 				if (tentative_g_score < g_score[neighbor_pos])
 				{
-					// C erosion
-					// same effect as B
-					cave.get_cell(neighbor_pos).reduce_density(data.erosion.erosion_c);
-
 					g_score[neighbor_pos] = tentative_g_score;
 					f_score[neighbor_pos] = tentative_g_score +
 						cave.distance(neighbor_pos, end) *
@@ -267,23 +269,18 @@ namespace CaveGenerator
 		}
 	}
 
-
-
-	void generate(Data& data)
+	void generate(entt::registry& registry, const size_t cave_idx, const bool prompt) // Extra parameter is for manual testing, also rendering of generation is for manual testing
 	{
+		Data data(registry, ECS::get_cave(registry, cave_idx));
+		const bool test_run = data.registry.ctx().get<GameState>().test_run;
+		if (!test_run)
+			UI::instance().set_current_panel(UI::Panel::Game, true);
 		set_rock_densities(data);
 		set_water_features(data);
 		form_tunnels(data);
 		EntitySpawner::spawn_entities(data.registry, data.cave.get_idx());
 		render(data);
-	}
 
-	void generate_cave(Data& data, const bool prompt) // Extra parameter is for manual testing, also rendering of generation is for manual testing
-	{
-		const bool test_run = data.registry.ctx().get<GameState>().test_run;
-		if (!test_run)
-			UI::instance().set_current_panel(UI::Panel::Game, true);
-		generate(data);
 		data.registry.ctx().get<EventQueue>().queue.clear();
 		if (test_run)
 			return;

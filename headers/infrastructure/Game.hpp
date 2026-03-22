@@ -13,6 +13,6 @@ class Game
 		bool is_over() const { return game_over; }
 		Game();
 		void loop();
-		entt::entity select_character(entt::registry& registry);
+		void select_character(entt::registry& registry);
 		Cave& create_spawn_room(entt::registry& registry);
 };

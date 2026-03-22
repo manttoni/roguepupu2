@@ -26,22 +26,18 @@ struct Dead;
 Game::Game()
 {
 	ECS::init_registry(registry);
-	registry.ctx().get<GameState>().player = select_character(registry);
+	select_character(registry);
 	const auto player = ECS::get_player(registry);
-	if (player == entt::null) game_over = true;
-
-	const auto& spawn_room = create_spawn_room(registry);
-
-	registry.emplace<Position>(player, spawn_room.middle_position());
+	if (player == entt::null)
+		game_over = true;
+	else
+	{
+		CaveGenerator::generate(registry, 0, true);
+		registry.emplace<Position>(player, ECS::get_cave(registry, 0).middle_position());
+	}
 }
 
-Cave& Game::create_spawn_room(entt::registry& registry)
-{
-	const auto idx = registry.ctx().get<World>().new_cave(Cave::Type::Room, 10);
-	return ECS::get_cave(registry, idx);
-}
-
-entt::entity Game::select_character(entt::registry& registry)
+void Game::select_character(entt::registry& registry)
 {
 	const nlohmann::json player_filter = {
 		{ "contains_all", {{ "tags", {"player"}}}} // must include 'tags' and it must include 'player'
@@ -49,9 +45,9 @@ entt::entity Game::select_character(entt::registry& registry)
 	const auto players = EntityFactory::instance().filter_entity_ids(player_filter);
 	assert(!players.empty());
 	const auto selection = Dialog::get_selection("Select character", players);
-	if (selection.cancelled || !selection.element) return entt::null;
+	if (selection.cancelled || !selection.element) return;
 
-	return EntityFactory::instance().create_entity(registry, selection.element->label);
+	registry.ctx().get<GameState>().player = EntityFactory::instance().create_entity(registry, selection.element->label);
 }
 
 void Game::loop()

@@ -231,15 +231,6 @@ namespace ECS
 		return liquid_level;
 	}
 
-	inline size_t generate_cave(entt::registry& registry, const std::string& conf_id = "default")
-	{
-		const size_t cave_idx = get_world(registry).new_cave();
-		CaveGenerator::Data data(registry, get_cave(registry, cave_idx));
-		Parser::parse_cave_generation_conf(conf_id, data);
-		CaveGenerator::generate_cave(data);
-		return cave_idx;
-	}
-
 	inline void init_registry(entt::registry& registry)
 	{
 		registry.ctx().emplace<GameState>();

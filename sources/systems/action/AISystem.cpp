@@ -25,7 +25,7 @@ namespace AISystem
 				});
 		for (const auto entity : visible_entities)
 		{
-			if (!registry.any_of<Alignment>(entity))
+			if (!registry.any_of<Alignment>(entity) || entity == intent.actor.entity)
 				continue;
 			if (AlignmentSystem::is_hostile(registry, intent.actor.entity, entity))
 			{

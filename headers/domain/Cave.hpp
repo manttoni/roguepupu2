@@ -21,6 +21,18 @@ class Cave
 		size_t get_area() const { return size * size; }
 
 	private:
+		size_t depth;
+	public:
+		size_t get_depth() const { return depth; }
+
+	private:
+		std::vector<size_t> connections;
+	public:
+		std::vector<size_t> get_connections() const { return connections; }
+		void set_connections(const std::vector<size_t> connections) { this->connections = connections; }
+		void add_connection(const size_t connection) { connections.push_back(connection); }
+
+	private:
 		std::vector<Cell> cells;
 	public:
 		const std::vector<Cell>& get_cells() const { return cells; }
@@ -49,10 +61,7 @@ class Cave
 		Position middle_position() const { return Position(size * size / 2 + size / 2, idx); }
 
 	public:
-		enum class Type { Room };
-		Cave(const size_t size, const Cell::Type fill = Cell::Type::Rock);
-		Cave(const size_t size, const Type type); // can create square shaped room
-
+		Cave(const size_t idx, const size_t size, const size_t depth, const Cell::Type fill = Cell::Type::Rock);
 		Cave(const Cave& other) = default;
 		Cave& operator=(const Cave& other) = default;
 

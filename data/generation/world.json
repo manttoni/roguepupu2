@@ -1,0 +1,6 @@
+{
+	"max_caves": 11,
+	"max_depth": 10,
+	"max_connections": 2,
+	"cave_size": 50
+}

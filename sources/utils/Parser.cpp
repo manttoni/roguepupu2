@@ -91,34 +91,6 @@ namespace Parser
 		return data;
 	}
 
-	void parse_cave_generation_conf(const std::string& conf, CaveGenerator::Data& cgdata)
-	{
-		const Json data = read_json_file("data/generation/cave/conf.json");
-		assert(data.contains(conf));
-		parse_cave_generation_conf(data[conf], cgdata);
-	}
-
-	void parse_cave_generation_conf(const Json& conf, CaveGenerator::Data& cgdata)
-	{
-		const Json entry = conf;
-		const auto dentry = entry["density"];
-		const auto eentry = entry["erosion"];
-		const auto sentry = entry["smooth"];
-		const auto fentry = entry["features"];
-		const auto mentry = entry["margin"];
-		using namespace CaveGenerator;
-		const Data::Density d{dentry["frequency"].get<double>(), dentry["octaves"].get<size_t>()};
-		const Data::Erosion e{eentry["erosion_a"].get<double>(), eentry["erosion_b"].get<double>(), eentry["erosion_c"].get<double>()};
-		const Data::Smooth s{sentry["intensity"].get<double>(), sentry["iterations"].get<size_t>(), sentry["rock"].get<bool>()};
-		const Data::Features f{fentry["sinks"].get<size_t>(), fentry["sources"].get<size_t>()};
-		const Data::Margin m{mentry["size"].get<size_t>(), mentry["multiplier"].get<size_t>()};
-		cgdata.density = d;
-		cgdata.erosion = e;
-		cgdata.smooth = s;
-		cgdata.features = f;
-		cgdata.margin = m;
-	}
-
 	Damage::Spec parse_damage_spec(const Json& data)
 	{
 		const auto type_str = data["type"].get<std::string>();

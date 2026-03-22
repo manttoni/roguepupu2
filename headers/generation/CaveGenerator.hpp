@@ -2,6 +2,7 @@
 
 #include "external/entt/entt.hpp"
 #include "domain/Cave.hpp"
+#include "utils/Parser.hpp"
 
 namespace CaveGenerator
 {
@@ -9,49 +10,65 @@ namespace CaveGenerator
 	{
 		struct Density
 		{
-			double frequency = 0.1;	// Smaller values produce smoother diff in density
-			size_t octaves = 8;		// More irregularities in density
+			double frequency;
+			size_t octaves;
 		};
+
 		struct Erosion
-		{	// Premake these for different types of caves.
-			// These can be set to create smooth lavatubes or jagged karst caves.
-			// f.e. lava could have high erosion_a while fresh water has low.
-			// Low erosion values will take longer. One way is to use high values with big size,
-			// and low values with small size
-			double erosion_a = 2.0;		// Erode cell with lowest f_score
-			double erosion_b = 0.005;	// Each of that cells neighbors
-			double erosion_c = 0.0;		// When finding new best g_score
+		{
+			double primary;
+			double secondary;
 		};
+
 		struct Smooth
 		{
-			double intensity = 0.0;
-			size_t iterations = 0;
-			bool rock = false;
+			double intensity;
+			size_t iterations;
+			bool rock;
 		};
+
 		struct Features
-		{	// What geological features does the cave have.
-			// Could have some Chambers or something
-			//
-			// These are the basic way to generate caves
-			size_t sinks = 2;	// water flows here
-			size_t sources = 2;	// from here
-			// Chamber chamber?
+		{
+			size_t sinks;
+			size_t sources;
 		};
+
 		struct Margin
 		{
-			size_t size = 1;
-			size_t multiplier = 1000;
+			size_t size;
+			size_t multiplier;
 		};
 
-		entt::registry& registry;	// To be able to use systems and spawn entities
-		Cave& cave;					// This has to be indexed in World
-		Density density;			// Set initial densities
-		Erosion erosion;			// Change this if want some specific kind of erosion
-		Smooth smooth;
-		Features features;			// Change this to create more tunnels and more?
-		Margin margin;				// Make edges denser
+		entt::registry& registry;
+		Cave& cave;
 
-		Data(entt::registry& registry, Cave& cave) : registry(registry), cave(cave) {}
+		Density density;
+		Erosion erosion;
+		Smooth smooth;
+		Features features;
+		Margin margin;
+
+		Data(entt::registry& registry, Cave& cave)
+			: registry(registry), cave(cave)
+		{
+			auto conf = Parser::read_json_file("data/generation/cave.json");
+
+			density.frequency = conf["density"]["frequency"].get<double>();
+			density.octaves   = conf["density"]["octaves"].get<size_t>();
+
+			erosion.primary   = conf["erosion"]["primary"].get<double>();
+			erosion.secondary = conf["erosion"]["secondary"].get<double>();
+
+			smooth.intensity  = conf["smooth"]["intensity"].get<double>();
+			smooth.iterations = conf["smooth"]["iterations"].get<size_t>();
+			smooth.rock       = conf["smooth"]["rock"].get<bool>();
+
+			features.sinks   = conf["features"]["sinks"].get<size_t>();
+			features.sources = conf["features"]["sources"].get<size_t>();
+
+			margin.size       = conf["margin"]["size"].get<size_t>();
+			margin.multiplier = conf["margin"]["multiplier"].get<size_t>();
+		}
 	};
 
 	// Give each cell a density [1,9] from Perlin Noise
@@ -92,7 +109,8 @@ namespace CaveGenerator
 	// Evaluate all entities with spawn data in json
 	void spawn_entities(Data& data);
 
-	// Modify an existing cave in World.
+	// Generate a cave in a blank Cave object
 	// Has to be indexed in World.
-	void generate_cave(Data& data, const bool prompt = false);
+	// prompt is temporarily for inspecting result
+	void generate(entt::registry& registry, const size_t cave_idx, const bool prompt = false);
 };

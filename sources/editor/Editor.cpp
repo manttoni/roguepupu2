@@ -58,8 +58,6 @@ namespace Editor
 			assert(selection.element.has_value());
 			if (selection.element->label == "Entity Editor")
 				EntityEditor::entity_editor();
-			else if (selection.element->label == "Cave Editor")
-				CaveEditor::cave_editor();
 		}
 	}
 };
