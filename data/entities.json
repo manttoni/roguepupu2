@@ -479,5 +479,80 @@
             "npc",
             "spawns_naturally"
         ]
+    },
+    {
+        "ai": {
+            "aggressive": true,
+            "idle_wander": true
+        },
+        "alignment": {
+            "chaos_law": 0.0,
+            "evil_good": 0.0,
+            "tolerance": -2.0
+        },
+        "attributes": {
+            "agility": 20,
+            "charisma": 8,
+            "dexterity": 8,
+            "endurance": 10,
+            "perception": 9,
+            "strength": 15,
+            "vitality": 14,
+            "willpower": 8
+        },
+        "color": {
+            "blue": 340,
+            "green": 250,
+            "red": 250
+        },
+        "damage": {
+            "amount": {
+                "range": [
+                    2,
+                    6
+                ]
+            },
+            "type": "slashing"
+        },
+        "environment_sensitive": {
+            "hydro": "neutral",
+            "photo": "neutral"
+        },
+        "equipment_slots": false,
+        "glyph": "p",
+        "inventory": {},
+        "mass": 36.0,
+        "name": "panther",
+        "opaque": 0.1,
+        "solid": true,
+        "spawn_chance": {
+            "chance": 0.01,
+            "perlin": {
+                "enabled": false,
+                "frequency": 0.5,
+                "octaves": 1,
+                "treshold": 0.5
+            }
+        },
+        "spawn_position": {
+            "rock_neighbors": {
+                "range": [
+                    0,
+                    8
+                ]
+            },
+            "solid_neighbors": {
+                "range": [
+                    0,
+                    8
+                ]
+            }
+        },
+        "tags": [
+            "core",
+            "creature",
+            "npc",
+            "spawns_naturally"
+        ]
     }
 ]

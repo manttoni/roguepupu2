@@ -16,6 +16,7 @@
 #include "infrastructure/GameLogger.hpp"
 #include "infrastructure/GameSettings.hpp"
 #include "infrastructure/GameState.hpp"
+#include "systems/perception/VisionSystem.hpp"
 #include "systems/position/TransitionSystem.hpp"
 #include "systems/rendering/RenderData.hpp"
 #include "systems/state/StateSystem.hpp"
@@ -339,5 +340,13 @@ namespace ECS
 				return true;
 		}
 		return false;
+	}
+
+	inline bool player_can_see_position(const entt::registry& registry, const Position& position)
+	{
+		const auto player = get_player(registry);
+		const auto can_see = VisionSystem::has_vision(registry, player, position);
+		Log::log("Player can see? " + std::to_string(can_see));
+		return can_see;
 	}
 };

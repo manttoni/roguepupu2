@@ -100,6 +100,14 @@ namespace VisionSystem
 		return true;
 	}
 
+	bool has_vision(const entt::registry& registry, const entt::entity seer, const entt::entity target)
+	{
+		if (!registry.all_of<Position>(target))
+			return false; // Target is nowhere. Can happen if it is in an inventory
+		const auto position = registry.get<Position>(target);
+		return has_vision(registry, seer, position);
+	}
+
 	/* Get all positions entity can see
 	 * */
 	std::vector<Position> get_visible_positions(const entt::registry& registry, const entt::entity entity)

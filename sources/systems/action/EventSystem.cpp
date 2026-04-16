@@ -186,6 +186,12 @@ namespace EventSystem
 	void log_event(entt::registry& registry, const Event& event)
 	{
 		Log::log("event.type: " + std::to_string(static_cast<size_t>(event.type)));
+
+		// If player cannot see it, don't log it
+		if (!ECS::player_can_see_position(registry, event.target.position))
+			return;
+		// Is it possible that seeing the actor can turn the tables?
+
 		std::string message;
 		if (event.actor.entity != entt::null)
 			message += ECS::get_colored_name(registry, event.actor.entity) + " ";
