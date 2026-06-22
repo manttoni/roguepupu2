@@ -84,14 +84,14 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			reg.template emplace<Glow>(e, data["intensity"].get<double>(), data["radius"].get<double>());
 		}
 	},
-	{ "equipment_slot", [](auto& reg, auto e, const nlohmann::json& data)
-		{	// The equipment slot where this is equipped
+	{ "equipment_slots_used", [](auto& reg, auto e, const nlohmann::json& data)
+		{	// The equipment slot(s) where this is equipped
 			if (!data.is_object())
 				Error::fatal("Equipment slot should be object");
 
-			using Slot = EquipmentSlot::Slot;
+			using Slot = EquipmentSlot;
 
-			EquipmentSlot es{};
+			EquipmentSlotsUsed esu;
 			std::vector<Slot> slots;
 
 			if (data["main_hand"].get<bool>())
@@ -100,16 +100,18 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 				slots.push_back(Slot::OffHand);
 			if (data["ammo"].get<bool>())
 				slots.push_back(Slot::Ammo);
+			if (data["body"].get<bool>())
+				slots.push_back(Slot::Body);
 
 			const auto su = data["slot_usage"].get<std::string>();
 			if (su == "use_one")
-				es.use_one.emplace(slots);
+				esu.use_one.emplace(slots);
 			else if (su == "use_all")
-				es.use_all.emplace(slots);
+				esu.use_all.emplace(slots);
 			else
 				Error::fatal("Invalid slot_usage: " + su);
 
-			reg.template emplace<EquipmentSlot>(e, es);
+			reg.template emplace<EquipmentSlotsUsed>(e, esu);
 		}
 	},
 	{ "equipment_slots", [](auto& reg, auto e, const nlohmann::json& data)
@@ -181,37 +183,29 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 	{ "attributes", [](auto& reg, auto e, const nlohmann::json& data)
 		{
 			if (!data.is_object())
-				Error::fatal("Incorrect format: " + data.dump(4));
-			if (data.contains("endurance"))
-			{
-				reg.template emplace<Endurance>(e, data["endurance"].get<int>());
-				reg.template emplace<Stamina>(e, StateSystem::get_max_stamina(reg, e));
-			}
-			if (data.contains("willpower"))
-			{
-				reg.template emplace<Willpower>(e, data["willpower"].get<int>());
-				reg.template emplace<Mana>(e, StateSystem::get_max_mana(reg, e));
-			}
-			if (data.contains("vitality"))
-			{
-				reg.template emplace<Vitality>(e, data["vitality"].get<int>());
-				reg.template emplace<Health>(e, StateSystem::get_max_health(reg, e));
-			}
-			if (data.contains("perception"))
-				reg.template emplace<Perception>(e, data["perception"].get<int>());
+				Error::fatal("Should be object: " + data.dump(4));
+			if (data.contains("constitution"))
+				reg.template emplace<Constitution>(e, data["constitution"].get<int>());
+			if (data.contains("wisdom"))
+				reg.template emplace<Wisdom>(e, data["wisdom"].get<int>());
+			if (data.contains("intelligence"))
+				reg.template emplace<Intelligence>(e, data["intelligence"].get<int>());
 			if (data.contains("charisma"))
 				reg.template emplace<Charisma>(e, data["charisma"].get<int>());
 			if (data.contains("strength"))
 				reg.template emplace<Strength>(e, data["strength"].get<int>());
 			if (data.contains("dexterity"))
 				reg.template emplace<Dexterity>(e, data["dexterity"].get<int>());
-			if (data.contains("agility"))
-				reg.template emplace<Agility>(e, data["agility"].get<int>());
 		}
 	},
-	{ "health", [](auto& reg, auto e, const nlohmann::json& data)
-		{	// Entities can have health, even without vitality. They just cannot heal/be repaired
-			reg.template emplace<Health>(e, data.get<int>());
+	{ "hit_points", [](auto& reg, auto e, const nlohmann::json& data)
+		{	// Give some initial hp. Probably never used
+			reg.template emplace<HitPoints>(e, data.get<int>());
+		}
+	},
+	{ "hit_points_max", [](auto& reg, auto e, const nlohmann::json& data)
+		{	// Give some initial max hp. Can be used as max hp increasing buff
+			reg.template emplace<HitPointsMax>(e, data.get<int>());
 		}
 	},
 	{ "liquid_container", [](auto& reg, auto e, const nlohmann::json& data)
@@ -236,8 +230,8 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 	},
 	{ "damage", [](auto& reg, auto e, const nlohmann::json& data)
 		{
-			Damage::Spec spec = Parser::parse_damage_spec(data);
-			reg.template emplace<Damage::Spec>(e, spec);
+			Damage::Roll roll = Parser::parse_damage_roll(data);
+			reg.template emplace<Damage::Roll>(e, roll);
 		}
 	},
 	{ "attack_range", [](auto& reg, auto e, const nlohmann::json& data)
@@ -390,7 +384,7 @@ void EntityFactory::init()
 	const std::filesystem::path file = "data/entities.json";
 	nlohmann::json definitions = Parser::read_json_file(file);
 	add_entities(definitions);
-	Log::log("Entities parsed");
+	Log::info() << "Entities parsed";
 	verify_field_parsers();
 }
 
@@ -406,12 +400,16 @@ entt::entity EntityFactory::create_entity(entt::registry& registry, const std::s
 {
 	if (LUT.find(name) == LUT.end())
 		Error::fatal("Entity not found: " + name);
+	Log::debug() << "Creating " << name;
 
 	auto entity = registry.create();
 	const auto& data = LUT.at(name);
 	for (const auto& [field_name, field_data] : data.items())
 	{
 		if (ignored_component(field_name)) continue;
+
+		Log::debug() << "Component name: " << field_name;
+
 		auto it = field_parsers.find(field_name);
 		if (it == field_parsers.end())
 			Error::fatal("Unknown field name: " + field_name);
@@ -466,7 +464,6 @@ std::vector<entt::entity> EntityFactory::create_entities(entt::registry& registr
 
 std::vector<std::string> EntityFactory::filter_entity_ids(const nlohmann::json& filters) const
 {
-	Log::log("Filter: " + filters.dump(4));
 	std::vector<std::string> ids;
 	for (const auto& [id, data] : LUT)
 	{
@@ -484,7 +481,6 @@ std::vector<std::string> EntityFactory::filter_entity_ids(const nlohmann::json& 
 		}
 		if (include)
 			ids.push_back(id);
-		Log::log("Include " + id + ": " + (include ? "true" : "false"));
 	}
 	return ids;
 }

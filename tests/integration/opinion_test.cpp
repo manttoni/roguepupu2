@@ -28,7 +28,7 @@ TEST_F(RegistryTest, FriendlyLosesOpinionOnAttack)
 	// By default test_creature has only 1 hp,
 	// so give it more so it can have a worse opinion and not be dead instead,
 	// in case it matters
-	registry.emplace_or_replace<Health>(entities[1], 1000000); // It is over max_health, is allowed
+	registry.emplace_or_replace<HitPoints>(entities[1], 1000000); // It is over max_health, is allowed
 
 	// 1 should lose opinion of 0, because of betrayal
 	// (0 still has the same opinion of 1)

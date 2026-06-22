@@ -164,6 +164,12 @@ namespace EntityEditor
 				}
 				add_missing_array(target[key], value, errors);
 			}
+			else if (value.type() != target[key].type())
+			{
+				if (errors)
+					errors->push_back(std::string("[wrong type: ") + target[key].type_name() + " which should be " + value.type_name() + "]");
+				target[key] = Json(value.type());
+			}
 			else
 			{
 				if (!target.contains(key))

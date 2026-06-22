@@ -4,28 +4,50 @@
 #include <string>
 #include <chrono>
 #include <sstream>
+#include "utils/ANSI.hpp"
 
 namespace Log
 {
-	const std::string logfile = "logs/logs.log";
-	static inline std::string timestamp()
-	{
-		auto now = std::chrono::system_clock::now();
-		std::time_t time = std::chrono::system_clock::to_time_t(now);
-		std::tm tm = *std::localtime(&time);
-		std::ostringstream oss;
-		oss << std::put_time(&tm, "[%d.%m.%Y %H:%M:%S]");
-		return oss.str();
-	}
+	constexpr const char* logfile = "logs/logs.log";
 
-	static inline void log(const std::string& message, const std::string& filename = logfile)
-	{
-		std::ofstream os(filename, std::ios::app);
-		if (!os)
-			throw std::runtime_error("Can't open " + filename);
+	using Clock = std::chrono::system_clock;
 
-		os << timestamp() << " " << message << std::endl;
-		os.close();
-	}
+	class Stream
+	{
+		private:
+			std::ostringstream buffer;
+
+		public:
+			Stream(const std::string& label = "", const ANSI::Code c = "");
+			Stream(Stream&&) = default;
+			Stream& operator=(Stream&&) = default;
+
+			Stream(const Stream&) = delete;
+			Stream& operator=(const Stream&) = delete;
+
+			~Stream();
+
+			template <typename T>
+				Stream& operator<<(const T& value)
+				{
+					buffer << value;
+					return *this;
+				}
+			using Manip = std::ostream& (*)(std::ostream&);
+
+			Stream& operator<<(Manip m)
+			{
+				m(buffer);
+				return *this;
+			}
+	};
+
+	std::string timestamp();
+	void write(const std::string& message, const std::string& filename = logfile);
+
+	Stream info();
+	Stream debug();
+	Stream warning();
+	Stream error();
 }
 

@@ -91,11 +91,24 @@ namespace Parser
 		return data;
 	}
 
-	Damage::Spec parse_damage_spec(const Json& data)
+	Damage::Roll parse_damage_roll(const Json& data)
 	{
 		const auto type_str = data["type"].get<std::string>();
-		const auto range = parse_range<size_t>(data["amount"]);
-		return Damage::Spec(Damage::string_to_type(type_str), range);
+		const auto dice_str = data["dice"].get<std::string>();
+
+		std::regex diceroll_regex(R"(^(\d*)d(\d+)(?:([+\-])(\d+))?$)");
+		std::smatch matches;
+
+		if (!std::regex_match(dice_str, matches, diceroll_regex))
+			Error::fatal("Invalid dice string");
+
+		const size_t amount = std::stoi(matches[1].str());
+		const size_t sides = std::stoi(matches[2].str());
+		const int sign = std::stoi(matches[3].str() + '1');
+		const int modifier = std::stoi(matches[4].str());
+
+		Damage::Roll roll(Damage::string_to_type(type_str), Dice(amount, sides), sign * modifier);
+		return roll;
 	}
 
 	Random::Perlin parse_perlin(const Json& data)

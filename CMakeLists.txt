@@ -57,6 +57,9 @@ enable_testing()
 file(GLOB_RECURSE TEST_SRCS "tests/*.cpp")
 add_executable(${PROJECT_NAME}_tests ${TEST_SRCS})
 
+# Test mode
+target_compile_definitions(${PROJECT_NAME}_tests PRIVATE RUNNING_TESTS)
+
 # Add include directories for tests
 target_include_directories(${PROJECT_NAME}_tests PRIVATE headers tests tests/helpers)
 

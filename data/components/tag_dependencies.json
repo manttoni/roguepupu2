@@ -15,7 +15,7 @@
 		"components": [ "spawn_chance", "environment_sensitive", "spawn_position" ]
 	},
 	"equipment": {
-		"components": [ "equipment_slot" ],
+		"components": [ "equipment_slots_used" ],
 		"tags": [ "item" ]
 	},
 	"weapon": {

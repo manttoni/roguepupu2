@@ -13,11 +13,9 @@
 	"attributes": {
 		"strength": { "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8 },
 		"dexterity": { "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8},
-		"agility": { "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8},
-		"perception": { "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8},
-		"vitality": { "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8},
-		"endurance": { "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8},
-		"willpower": { "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8},
+		"constitution": { "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8},
+		"intelligence": { "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8},
+		"wisdom": { "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8},
 		"charisma": { "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8}
 	},
 	"alignment": {
@@ -30,9 +28,9 @@
 	"equipment_slots": true,
 	"damage": {
 		"type": { "template_multi_choice": ["bludgeoning", "piercing", "slashing"] },
-		"amount": { "template_range": [1,100], "template_delta": 1, "template_default": [1,2] }
+		"amount": ""
 	},
-	"attack_range": { "template_range": [0.0, 100.0], "template_delta": 0.1, "template_default": [0.0, 1.5] },
+	"attack_range": { "template_multi_choice": ["melee", "ranged"] },
 	"glow": {
 		"radius": { "template_min": 0.0, "template_max": 100.0, "template_default": 0.0, "template_delta": 0.5 },
 		"intensity": { "template_min": 0.0, "template_max": 100.0, "template_default": 0.1, "template_delta": 0.01 }
@@ -55,15 +53,17 @@
 		"solid_neighbors": { "template_range": [0, 8], "template_delta": 1, "template_default": [0, 8] },
 		"rock_neighbors": { "template_range": [0, 8], "template_delta": 1, "template_default": [0, 8] }
 	},
-	"equipment_slot": {
+	"equipment_slots_used": {
 		"slot_usage": { "template_multi_choice": [ "use_one", "use_all" ] },
 		"off_hand": false,
 		"main_hand": false,
-		"ammo": false
+		"ammo": false,
+		"body": false
 	},
 	"ai": {
 		"aggressive": false,
-		"idle_wander": false
+		"idle_wander": false,
+		"follow_player": false
 	},
 	"stackable": true,
 	"gather_effect": { "template_multi_choice": [ "dim", "destroy", "none" ] },

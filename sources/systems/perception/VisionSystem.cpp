@@ -22,7 +22,7 @@ namespace VisionSystem
 	{
 		if (ECS::get_cell(registry, position).get_type() == Cell::Type::Rock)
 			return 1.0;
-		double opaqueness = 0.0;
+		double opaqueness = 0.01; // Try to add some global difficulty of seeing really far
 		for (const auto entity : ECS::get_entities(registry, position))
 		{
 			if (registry.all_of<Opaque>(entity))
@@ -86,15 +86,15 @@ namespace VisionSystem
 	 * */
 	bool has_vision(const entt::registry& registry, const entt::entity entity, const Position& target_pos)
 	{
-		if (!registry.all_of<Position, Perception>(entity))
+		if (!registry.all_of<Position>(entity))
 			return false;
 		const Position& entity_pos = registry.get<Position>(entity);
 		if (entity_pos.cave_idx != target_pos.cave_idx)
 			return false;
 
-		const auto vision_range = StateSystem::get_vision_range(registry, entity);
+		/*const auto vision_range = StateSystem::get_vision_range(registry, entity);
 		if (vision_range < ECS::distance(registry, entity_pos, target_pos))
-			return false;
+			return false;*/
 		if (!has_line_of_sight(registry, entity_pos, target_pos))
 			return false;
 		return true;
@@ -112,7 +112,7 @@ namespace VisionSystem
 	 * */
 	std::vector<Position> get_visible_positions(const entt::registry& registry, const entt::entity entity)
 	{
-		if (!registry.all_of<Perception, Position>(entity))
+		if (!registry.all_of<Position>(entity))
 			return {};
 
 		const auto& entity_pos = registry.get<Position>(entity);

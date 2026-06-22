@@ -14,23 +14,24 @@
 
 /* Capture this from ncurses so it will print */
 extern "C" void __assert_fail(
-    const char* expr,
-    const char* file,
-    unsigned int line,
-    const char* func)
+		const char* expr,
+		const char* file,
+		unsigned int line,
+		const char* func)
 {
-    endwin();
-    fprintf(stderr,
-        "Assertion failed: %s\nFile: %s:%u\nFunction: %s\n",
-        expr, file, line, func);
+	endwin();
+	fprintf(stderr,
+			"Assertion failed: %s\nFile: %s:%u\nFunction: %s\n",
+			expr, file, line, func);
 
-	Log::log("Assertion failed: " + std::string(expr) + " in file: " + file + ":" + std::to_string(line) + " in function: " + func);
-    abort();
+	Log::error() << "Assertion failed: " << expr << " in file: " << file << ":" << line << " in function: " << func;
+	abort();
 }
 
 void run()
 {
 	Game* game = nullptr;
+	Menu::Selection selection;
 	while (true)
 	{
 		std::vector<std::string> options;
@@ -40,7 +41,7 @@ void run()
 		options.push_back("Editor");
 		options.push_back("Controls");
 		options.push_back("Quit");
-		const auto selection = Dialog::get_selection("*** Roguepupu 2 ***", options);
+		selection = Dialog::get_selection("*** Roguepupu 2 ***", options, Screen::middle(), selection.index);
 		if (selection.cancelled)
 			break;
 		assert(selection.element.has_value());
@@ -80,7 +81,7 @@ void run()
 
 int main()
 {
-	Log::log("--- Run started ---");
+	Log::info() << "--- Run started ---";
 
 	UI::instance().init();
 	run();

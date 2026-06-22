@@ -28,7 +28,7 @@ class UI
 	private:
 		static void handle_signal(int sig)
 		{
-			Log::log("Received signal: " + std::to_string(sig));
+			Log::info() << "Received signal: " << sig;
 			endwin();
 			std::exit(sig);
 		}

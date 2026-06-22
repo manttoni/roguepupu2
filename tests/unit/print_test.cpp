@@ -5,6 +5,7 @@
 #include "domain/Color.hpp"
 #include "components/Components.hpp"
 #include "gtest/gtest.h"
+#include "domain/NcursesAttr.hpp"
 
 TEST(PrintTest, ColorMarkup)
 {

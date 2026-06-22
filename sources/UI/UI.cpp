@@ -404,12 +404,12 @@ void UI::init()
 	fflush(stdout);				// to know current cursor location
 
 	set_current_panel(Panel::Game);
-	Log::log("UI inited");
+	Log::info() << "UI initialized";
 }
 
 void UI::end()
 {
-	Log::log("UI ended");
+	Log::info() << "UI ended";
 	destroy_panels();
 
 	// this will restore normal terminal mode

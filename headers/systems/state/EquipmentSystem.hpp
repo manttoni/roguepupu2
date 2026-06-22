@@ -2,7 +2,8 @@
 
 #include "external/entt/fwd.hpp"
 
-struct EquipmentSlot;
+struct EquipmentSlotsUsed;
+enum class EquipmentSlot;
 namespace EquipmentSystem
 {
 	void equip_or_unequip(entt::registry& registry, const entt::entity entity, const entt::entity item);
@@ -13,6 +14,7 @@ namespace EquipmentSystem
 	void swap_loadout(entt::registry& registry, const entt::entity entity);
 	bool is_equipped(const entt::registry& registry, const entt::entity entity, const entt::entity item);
 	bool is_dual_wielding(const entt::registry& registry, const entt::entity entity);
-	bool has_free_slots(const entt::registry& registry, const entt::entity entity, const EquipmentSlot& equipment_slot);
+	bool has_free_slots(const entt::registry& registry, const entt::entity entity, const EquipmentSlotsUsed& equipment_slot);
 	bool equip_in_free_slots(entt::registry& registry, const entt::entity entity, const entt::entity item);
+	entt::entity get_equipment_at(const entt::registry& registry, const entt::entity entity, const EquipmentSlot slot);
 };

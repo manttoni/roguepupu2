@@ -13,7 +13,7 @@
 #include "generation/CaveGenerator.hpp"
 #include "infrastructure/DevSettings.hpp"
 #include "infrastructure/EventQueue.hpp"
-#include "infrastructure/GameLogger.hpp"
+#include "infrastructure/EventLogger.hpp"
 #include "infrastructure/GameSettings.hpp"
 #include "infrastructure/GameState.hpp"
 #include "systems/perception/VisionSystem.hpp"
@@ -235,7 +235,7 @@ namespace ECS
 	inline void init_registry(entt::registry& registry)
 	{
 		registry.ctx().emplace<GameState>();
-		registry.ctx().emplace<GameLogger>();
+		registry.ctx().emplace<EventLogger>();
 		registry.ctx().emplace<AbilityDatabase>();
 		registry.ctx().emplace<World>();
 		registry.ctx().emplace<RenderData>();
@@ -269,8 +269,8 @@ namespace ECS
 			if (registry.all_of<EquipmentSlots>(entity))
 			{
 				const auto& equipped = registry.get<EquipmentSlots>(entity).equipped_items;
-				const auto main_hand = equipped.at(EquipmentSlot::Slot::MainHand);
-				const auto off_hand = equipped.at(EquipmentSlot::Slot::OffHand);
+				const auto main_hand = equipped.at(EquipmentSlot::MainHand);
+				const auto off_hand = equipped.at(EquipmentSlot::OffHand);
 				if (main_hand != entt::null)
 				{
 					const auto& main_hand_range = get_attack_range(registry, main_hand);
@@ -293,14 +293,12 @@ namespace ECS
 	{
 		using namespace StateSystem;
 		Attributes attributes = {
-			.strength = get_attribute<Strength>(registry, entity),
-			.dexterity = get_attribute<Dexterity>(registry, entity),
-			.agility = get_attribute<Agility>(registry, entity),
-			.perception = get_attribute<Perception>(registry, entity),
-			.vitality = get_attribute<Vitality>(registry, entity),
-			.endurance = get_attribute<Endurance>(registry, entity),
-			.willpower = get_attribute<Willpower>(registry, entity),
-			.charisma = get_attribute<Charisma>(registry, entity)
+			.strength = get_stat<Strength>(registry, entity),
+			.dexterity = get_stat<Dexterity>(registry, entity),
+			.constitution = get_stat<Constitution>(registry, entity),
+			.intelligence = get_stat<Intelligence>(registry, entity),
+			.wisdom = get_stat<Wisdom>(registry, entity),
+			.charisma = get_stat<Charisma>(registry, entity)
 		};
 		return attributes;
 	}
@@ -342,11 +340,17 @@ namespace ECS
 		return false;
 	}
 
+	inline bool player_can_see_entity(const entt::registry& registry, const entt::entity e)
+	{
+		if (get_player(registry) == entt::null || e == entt::null)
+			return false;
+		return VisionSystem::has_vision(registry, ECS::get_player(registry), e);
+	}
+
 	inline bool player_can_see_position(const entt::registry& registry, const Position& position)
 	{
 		const auto player = get_player(registry);
 		const auto can_see = VisionSystem::has_vision(registry, player, position);
-		Log::log("Player can see? " + std::to_string(can_see));
 		return can_see;
 	}
 };

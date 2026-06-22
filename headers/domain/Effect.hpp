@@ -39,5 +39,5 @@ struct Effect
 	double magnitude = 0.0;
 
 	// When dealing direct damage
-	std::optional<Damage::Spec> damage = std::nullopt;
+	std::optional<Damage::Roll> damage = std::nullopt;
 };

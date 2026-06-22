@@ -31,35 +31,30 @@ namespace ContextSystem
 	std::vector<std::string> get_attribute_details(const entt::registry& registry, const entt::entity entity)
 	{
 		std::vector<std::string> details;
-		if (registry.all_of<Vitality>(entity))
-			details.push_back("Vitality : " + std::to_string(StateSystem::get_attribute<Vitality>(registry, entity)));
-		if (registry.all_of<Endurance>(entity))
-			details.push_back("Endurance : " + std::to_string(StateSystem::get_attribute<Endurance>(registry, entity)));
-		if (registry.all_of<Willpower>(entity))
-			details.push_back("Willpower : " + std::to_string(StateSystem::get_attribute<Willpower>(registry, entity)));
-		if (registry.all_of<Perception>(entity))
-			details.push_back("Perception : " + std::to_string(StateSystem::get_attribute<Perception>(registry, entity)));
 		if (registry.all_of<Strength>(entity))
-			details.push_back("Strength : " + std::to_string(StateSystem::get_attribute<Strength>(registry, entity)));
+			details.push_back("Strength : " + std::to_string(StateSystem::get_stat<Strength>(registry, entity)));
 		if (registry.all_of<Dexterity>(entity))
-			details.push_back("Dexterity : " + std::to_string(StateSystem::get_attribute<Dexterity>(registry, entity)));
-		if (registry.all_of<Agility>(entity))
-			details.push_back("Agility : " + std::to_string(StateSystem::get_attribute<Agility>(registry, entity)));
+			details.push_back("Dexterity : " + std::to_string(StateSystem::get_stat<Dexterity>(registry, entity)));
+		if (registry.all_of<Constitution>(entity))
+			details.push_back("Constitution : " + std::to_string(StateSystem::get_stat<Constitution>(registry, entity)));
+		if (registry.all_of<Intelligence>(entity))
+			details.push_back("Intelligence : " + std::to_string(StateSystem::get_stat<Intelligence>(registry, entity)));
+		if (registry.all_of<Wisdom>(entity))
+			details.push_back("Wisdom : " + std::to_string(StateSystem::get_stat<Wisdom>(registry, entity)));
 		if (registry.all_of<Charisma>(entity))
-			details.push_back("Charisma : " + std::to_string(StateSystem::get_attribute<Charisma>(registry, entity)));
+			details.push_back("Charisma : " + std::to_string(StateSystem::get_stat<Charisma>(registry, entity)));
 		return details;
 	}
 	std::vector<std::string> get_resource_details(const entt::registry& registry, const entt::entity entity)
 	{
 		std::vector<std::string> details;
-		if (registry.all_of<Health>(entity))
+		if (registry.all_of<HitPoints>(entity))
 		{
-			std::string health = "Health : " + std::to_string(registry.get<Health>(entity).current);
-			if (registry.all_of<Vitality>(entity))
-				health += " / " + std::to_string(StateSystem::get_max_health(registry, entity));
-			details.push_back(health);
+			std::ostringstream ss;
+			ss << "HP : " << registry.get<HitPoints>(entity).value << " / " << registry.get<HitPointsMax>(entity).value;
+			details.push_back(ss.str());
 		}
-		if (registry.all_of<Stamina>(entity))
+		/*if (registry.all_of<Stamina>(entity))
 		{
 			std::string stamina = "Stamina : " + std::to_string(registry.get<Stamina>(entity).current);
 			if (registry.all_of<Endurance>(entity))
@@ -72,7 +67,7 @@ namespace ContextSystem
 			if (registry.all_of<Willpower>(entity))
 				mana += " / " + std::to_string(StateSystem::get_max_mana(registry, entity));
 			details.push_back(mana);
-		}
+		}*/
 		return details;
 	}
 
@@ -112,9 +107,27 @@ namespace ContextSystem
 		return details;
 	}
 
+	std::vector<std::string> get_defence_details(const entt::registry& registry, const entt::entity entity)
+	{
+		// Get things like AC, resistances, saving throws
+		std::vector<std::string> details;
+
+		if (registry.any_of<ArmorClass, Dexterity>(entity))
+			details.push_back("AC : " + std::to_string(StateSystem::get_armor_class(registry, entity)));
+
+		return details;
+	}
+
 	std::vector<std::string> get_details(const entt::registry& registry, const entt::entity entity)
 	{
 		std::vector<std::string> details = { ECS::get_colored_name(registry, entity) };
+
+		const auto& defences = get_defence_details(registry, entity);
+		if (!defences.empty())
+		{
+			details.push_back("--");
+			details.insert(details.end(), defences.begin(), defences.end());
+		}
 
 		const auto& resources = get_resource_details(registry, entity);
 		if (!resources.empty())
@@ -172,7 +185,7 @@ namespace ContextSystem
 		}
 		if (is_player)
 			options.push_back("Inventory");
-		if (registry.all_of<Health>(entity) &&
+		if (registry.all_of<HitPoints>(entity) &&
 				!registry.any_of<Dead>(entity) &&
 				owner == entt::null &&
 				ECS::get_attack_range(registry, player).contains(distance))

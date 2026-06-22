@@ -21,3 +21,10 @@ struct Target
 	bool operator==(const Target& other) const = default;
 	bool operator!=(const Target& other) const = default;
 };
+
+inline std::ostream& operator<<(std::ostream& os, const Target& a)
+{
+	return os <<
+		"Entity: " << static_cast<std::uint32_t>(a.entity) << std::endl <<
+		"Position: " << a.position << std::endl;
+}

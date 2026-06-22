@@ -34,6 +34,7 @@ class Color
 
 		static bool is_markup(const std::string& str, const size_t i);
 		static Color from_markup(const std::string& str, const size_t i);
+		static std::string without_markups(const std::string& str);
 
 		static inline Color black() { return Color(0, 0, 0); }
 		static inline Color grey() { return Color(100, 100, 100); }

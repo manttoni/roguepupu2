@@ -21,7 +21,7 @@
 #include "utils/ECS.hpp"
 #include "utils/Unicode.hpp"
 #include "utils/Screen.hpp"
-#include "infrastructure/GameLogger.hpp"
+#include "infrastructure/EventLogger.hpp"
 #include "utils/Math.hpp"
 #include "infrastructure/DevSettings.hpp"
 #include "systems/environment/LiquidSystem.hpp"
@@ -172,9 +172,9 @@ namespace RenderingSystem
 	{
 		if (registry.ctx().get<RenderData>().print_log == false)
 			return;
-		const auto logger = registry.ctx().get<GameLogger>();
+		const auto logger = registry.ctx().get<EventLogger>();
 		const int log_length = std::get<int>(registry.ctx().get<GameSettings>().settings.at(GameSettings::Type::LogLength).value);
-		const auto& messages = logger.last(std::min(Screen::height(), std::max(0, log_length)));
+		const auto& messages = logger.get_last_messages(std::min(Screen::height(), std::max(0, log_length)));
 		ColorPair log_pair = ColorPair(Color(500, 500, 500), Color{});
 		const size_t n = messages.size();
 		const size_t height = Screen::height();
@@ -207,7 +207,7 @@ namespace RenderingSystem
 		UI::instance().disable_color_pair(ColorPair(color, Color{}));
 	}
 
-	void show_player_status(const entt::registry& registry)
+	/*void show_player_status(const entt::registry& registry)
 	{
 		const size_t bar_len = 25;
 		PANEL* status_panel = UI::instance().get_panel(UI::Panel::Status);
@@ -227,7 +227,7 @@ namespace RenderingSystem
 
 		const double mp_per = static_cast<double>(registry.get<Mana>(player).current) / static_cast<double>(StateSystem::get_max_mana(registry, player));
 		draw_bar(Color(0,0,600), std::max(0.0, mp_per), 5, bar_len);
-	}
+	}*/
 
 	void show_debug(const entt::registry& registry)
 	{
@@ -254,14 +254,15 @@ namespace RenderingSystem
 			UI::instance().reset_colors(); // 256 might be too late, but its complicated
 		render_active_cave(registry);
 		print_log(registry);
-		if (std::get<bool>(registry.ctx().get<GameSettings>().settings.at(GameSettings::Type::ShowStatus).value))
-			show_player_status(registry);
+		//if (std::get<bool>(registry.ctx().get<GameSettings>().settings.at(GameSettings::Type::ShowStatus).value))
+		//	show_player_status(registry);
 		show_debug(registry);
 		UI::instance().update();
 		registry.ctx().get<RenderData>().render_frame++;
 		UI::instance().enable_attr(A_NORMAL);
 	}
 
+	// For testing. This renders a cave as it is being generated
 	void render_generation(const entt::registry& registry, const size_t cave_idx)
 	{
 		if (UI::instance().get_initialized_colors().size() >= 256 ||

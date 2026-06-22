@@ -35,21 +35,17 @@ struct Attributes
 {
 	int strength;
 	int dexterity;
-	int agility;
-	int perception;
-	int vitality;
-	int endurance;
-	int willpower;
+	int constitution;
+	int intelligence;
+	int wisdom;
 	int charisma;
 };
 
 using AttributeTypes = std::tuple<
 	Strength,
 	Dexterity,
-	Agility,
-	Perception,
-	Vitality,
-	Endurance,
-	Willpower,
+	Constitution,
+	Intelligence,
+	Wisdom,
 	Charisma
 >;

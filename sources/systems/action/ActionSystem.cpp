@@ -107,7 +107,7 @@ namespace ActionSystem
 		for (const auto entity : ECS::get_entities(registry, destination_pos))
 		{
 			if (intent.type != Intent::Type::None) break;
-			if (registry.all_of<Alignment, Health>(entity) &&
+			if (registry.all_of<Alignment, HitPoints>(entity) &&
 				!registry.all_of<Dead>(entity) &&
 				AlignmentSystem::is_hostile(registry, player, entity) &&
 				AlignmentSystem::is_hostile(registry, entity, player))

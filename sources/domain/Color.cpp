@@ -141,3 +141,4 @@ Color Color::from_markup(const std::string& str, const size_t idx)
 
 	return Color(r, g, b);
 }
+

@@ -24,7 +24,7 @@ namespace AlignmentSystem
 		double opinion = aA.tolerance - aA.distance(bA);
 		opinion += hypot(2, 2) / 2; // if alignment in center, everything else is neutral. Same alignment will be > 0. Should work
 		if (registry.all_of<Charisma>(b))
-			opinion += StateSystem::get_attribute<Charisma>(registry, b) / 10;
+			opinion += StateSystem::get_stat<Charisma>(registry, b) / 10;
 
 		// if a has personal opinions of b
 		if (aA.personal_opinions.contains(b))

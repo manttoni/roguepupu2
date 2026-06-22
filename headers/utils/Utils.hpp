@@ -5,6 +5,7 @@
 #include <regex>
 #include <codecvt>
 #include <locale>
+#include "domain/NcursesAttr.hpp"
 
 namespace Utils
 {
@@ -46,5 +47,27 @@ namespace Utils
 		std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
 		return conv.to_bytes(ws);
 	}
+
+	// Remove color and ncurses attribute markups
+	inline std::string without_markups(const std::string& str)
+	{
+		std::string without = "";
+		for (size_t i = 0; i < str.size(); ++i)
+		{
+			if (str[i] == '{' && Color::is_markup(str, i))
+			{
+				i = str.find('}', i);
+				continue;
+			}
+			if (str[i] == '[' && NcursesAttr::is_markup(str, i))
+			{
+				i = str.find(']', i);
+				continue;
+			}
+			without += str[i];
+		}
+		return without;
+	}
+
 }
 

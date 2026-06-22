@@ -56,7 +56,7 @@ void Game::loop()
 	const auto player = ECS::get_player(registry);
 	while (registry.ctx().get<GameState>().game_running && game_over == false)
 	{
-		Log::log("Round " + std::to_string(registry.ctx().get<GameState>().turn_number));
+		Log::info() << "Round " << registry.ctx().get<GameState>().turn_number;
 		ActionSystem::act_round(registry, ECS::get_cave(registry, registry.get<Position>(player)).get_idx());
 		LiquidSystem::simulate_liquids(registry);
 		registry.ctx().get<GameState>().turn_number++;

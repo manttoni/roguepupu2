@@ -30,9 +30,13 @@ namespace DamageSystem
 
 	void take_damage(entt::registry& registry, const entt::entity entity, const Damage::Roll& damage_roll)
 	{
-		if (!registry.all_of<Health>(entity))
+		if (!registry.all_of<HitPoints>(entity))
+		{
+			Log::warning() << "Entity \"" << ECS::get_name(registry, entity) << "\" has no HitPoints component";
 			return;
-		auto& hp = registry.get<Health>(entity).current;
+		}
+
+		auto& hp = registry.get<HitPoints>(entity).value;
 		hp -= damage_roll.result;
 
 		// This needs its own system, some AnimationSystem with queued animations
@@ -40,6 +44,8 @@ namespace DamageSystem
 		{
 			VisualEffectSystem::damage_flash(registry, entity);
 		}
+
+		// Creatures should have blood component
 		if (registry.all_of<Position>(entity))
 		{
 			ECS::spawn_liquid(

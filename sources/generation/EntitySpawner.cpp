@@ -96,6 +96,6 @@ namespace EntitySpawner
 			}
 		}
 
-		Log::log("Spawned " + std::to_string(spawned) + " entities");
+		Log::info() << "Spawned " << spawned << " entities";
 	}
 };

@@ -7,12 +7,7 @@ namespace Error
 {
 	[[noreturn]] inline void fatal(const std::string& message)
 	{
-		Log::log(message);
+		Log::error() << message;
 		throw std::runtime_error("Fatal error: " + message);
-	}
-
-	inline void warning(const std::string& message)
-	{
-		Log::log("Warning: " + message);
 	}
 };

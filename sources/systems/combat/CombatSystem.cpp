@@ -10,113 +10,66 @@ namespace CombatSystem
 {
 	Damage::Roll get_damage_roll(const entt::registry& registry, const entt::entity attacker, const entt::entity weapon)
 	{
-		const auto& damage_spec = weapon == entt::null ?
-			registry.get<Damage::Spec>(attacker) : // unarmed
-			registry.get<Damage::Spec>(weapon);
-		auto damage_roll = damage_spec.roll();
-		auto& damage = damage_roll.result; // double
-
-		// Mechanical weapons do their own thing, nothing you can do about it
-		if (registry.all_of<MechanicalWeapon>(weapon))
-			return damage_roll;
-
-		// Finesse weapons can be optionally used with DEX
-		const bool finesse = weapon == entt::null ?
-			registry.all_of<FinesseWeapon>(attacker) :
-			registry.all_of<FinesseWeapon>(weapon);
-
-		// Versatile weapons get a bonus if not dual wielding
-		const bool versatile = registry.all_of<VersatileWeapon>(weapon);
-
-		// Dual wielding will get penalty
-		const bool dual_wielding = EquipmentSystem::is_dual_wielding(registry, attacker);
-
-		const auto attributes = ECS::get_attributes(registry, attacker);
-		if (finesse)
-		{
-			damage *= 100 + std::max(attributes.strength, attributes.dexterity);
-			damage /= 100;
-		}
+		int modifier = 0;
+		if (registry.any_of<FinesseWeapon, RangedWeapon>(weapon))
+			modifier = StateSystem::get_stat<Dexterity>(registry, attacker);
 		else
-		{
-			damage *= 100 + attributes.strength;
-			damage /= 100;
-		}
+			modifier = StateSystem::get_stat<Strength>(registry, attacker);
 
-		if (dual_wielding)
-		{
-			damage *= 0.8;
-		}
-		else if (versatile)
-		{
-			damage *= 1.2;
-		}
+		Damage::Roll weapon_damage_roll = registry.get<Damage::Roll>(weapon);
+		if (registry.all_of<VersatileWeapon>(weapon) && !EquipmentSystem::is_dual_wielding(registry, attacker))
+			weapon_damage_roll.dice.sides += 2;
 
+		Damage::Roll damage_roll(weapon_damage_roll.type, weapon_damage_roll.dice, weapon_damage_roll.modifier + modifier);
 		return damage_roll;
+	}
+
+	int get_attack_roll(const entt::registry& registry, const entt::entity attacker, const entt::entity weapon, const int advantage)
+	{
+		int modifier = 0;
+		if (registry.any_of<FinesseWeapon, RangedWeapon>(weapon))
+			modifier = StateSystem::get_stat<Dexterity>(registry, attacker);
+		else
+			modifier = StateSystem::get_stat<Strength>(registry, attacker);
+
+		const auto roll = Dice(1, 20).roll(advantage);
+		return roll + modifier;
+	}
+
+	int get_attack_advantage(const entt::registry& registry, const entt::entity attacker, const entt::entity defender, const entt::entity weapon)
+	{
+		(void) registry; (void) attacker; (void) defender; (void) weapon;
+		return 0;
 	}
 
 	void attack_with(entt::registry& registry, const entt::entity attacker, const entt::entity defender, const entt::entity weapon)
 	{
-		// Ranged weapons use Perception and Dexterity for accuracy
-		// Melee weapons use Agility and Dexterity or Sterngth for accuracy
-		int accuracy = 0;
-		const bool melee = weapon == entt::null || registry.all_of<MeleeWeapon>(weapon);
-		const bool ranged = registry.all_of<RangedWeapon>(weapon);
-		//const bool mechanical = registry.all_of<MechanicalWeapon>(weapon); // f.e. crossbow, pistol
-		const bool finesse = weapon == entt::null ?
-			registry.all_of<FinesseWeapon>(attacker) :
-			registry.all_of<FinesseWeapon>(weapon);
+		const int advantage = get_attack_advantage(registry, attacker, defender, weapon);
+		const int attack_roll = get_attack_roll(registry, attacker, weapon, advantage);
+		const auto armor_class = StateSystem::get_armor_class(registry, defender);
 
-		const auto attacker_attributes = ECS::get_attributes(registry, attacker);
-		const auto defender_attributes = ECS::get_attributes(registry, defender);
+		Event attack_event;
+		attack_event.type = Event::Type::Attack;
+		attack_event.weapon = weapon;
+		attack_event.actor.entity = attacker;
+		attack_event.target.entity = defender;
+		attack_event.advantage = advantage;
+		ECS::queue_event(registry, attack_event);
 
-		if (melee)
+		if (attack_roll < armor_class)
 		{
-			accuracy += attacker_attributes.agility;
-			if (finesse)
-				accuracy += std::max(attacker_attributes.dexterity, attacker_attributes.strength);
-			else
-				accuracy += attacker_attributes.strength;
-		}
-		else if (ranged)
-			accuracy += attacker_attributes.perception + attacker_attributes.dexterity;
-		else
-			Error::fatal("Weapon is not melee nor ranged");
-
-		// Evasion comes from Agility and Perception
-		int evasion = defender_attributes.agility + defender_attributes.perception;
-
-		// hit range [-200, 200]
-		// Negative means miss, positive is hit
-		int hit_quality = Random::rand<int>(0, accuracy) - Random::rand<int>(0, evasion);
-
-		Event event;
-		event.type = Event::Type::Attack;
-		event.weapon = weapon;
-		event.hit_quality = hit_quality; // logger can print some more info about attack with this data
-		event.actor.entity = attacker;
-		event.target.entity = defender;
-		ECS::queue_event(registry, event);
-
-		if (hit_quality >= 0)
-		{
-			auto damage_roll = get_damage_roll(registry, attacker, weapon);
-			// if is critical hit, multiply...
-			//
-			// defender can resist damage with armor or spells
-			// but they dont exist yet
-			DamageSystem::take_damage(registry, defender, damage_roll);
-			return;
-		}
-		else
-		{
-			// When attacker misses, defender gets a chance to counter attack
-			// but one thing at a time
+			Event miss_event = attack_event;
+			miss_event.type = Event::Type::MissAttack;
+			ECS::queue_event(registry, miss_event);
 			return;
 		}
 
-		return;
+		auto damage_roll = get_damage_roll(registry, attacker, weapon);
+		Event hit_event = attack_event;
+		hit_event.type = Event::Type::HitAttack;
+		ECS::queue_event(registry, hit_event);
 
+		DamageSystem::take_damage(registry, defender, damage_roll);
 	}
 
 	/* Attacker has to have something to attack defender regardless of distance.
@@ -136,8 +89,8 @@ namespace CombatSystem
 		//Don't use loadouts ever, they are just optional thing for QOL for player, not dev
 
 		const auto& equipped = registry.get<EquipmentSlots>(attacker).equipped_items;
-		const auto main_hand = equipped.at(EquipmentSlot::Slot::MainHand);
-		const auto off_hand = equipped.at(EquipmentSlot::Slot::OffHand);
+		const auto main_hand = equipped.at(EquipmentSlot::MainHand);
+		const auto off_hand = equipped.at(EquipmentSlot::OffHand);
 		if (main_hand != entt::null &&
 				registry.get<AttackRange>(main_hand).range.contains(distance))
 			used_weapons.push_back(main_hand);

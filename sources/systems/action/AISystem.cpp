@@ -12,6 +12,7 @@
 
 namespace AISystem
 {
+	// Remake this for the simplified range feature
 	bool will_engage_enemy(const entt::registry& registry, Intent& intent)
 	{
 		if (!intent.actor.position.is_valid())

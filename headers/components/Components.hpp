@@ -22,82 +22,21 @@ struct Solid { bool value = true; };
 struct Opaque { double value = 1.0; };	// value [0,1] is how much this entity blocks vision. 1 = completely opaque, 0, transparent
 struct Mass { double value; };
 
-// move this somewhere, is similar to Color
-struct NcursesAttr
-{
-	chtype attr;
-
-	std::string markup() const
-	{
-		switch (attr)
-		{
-			case A_DIM:
-				return "[A_DIM]";
-			case A_BOLD:
-				return "[A_BOLD]";
-			case A_REVERSE:
-				return "[A_REVERSE]";
-			case A_BLINK:
-				return "[A_BLINK]";
-			default:
-				return "[A_NORMAL]";
-		}
-	}
-
-	inline static bool is_markup(const std::string& str, const size_t idx)
-	{
-		if (idx >= str.size() || str[idx] != '[')
-			return false;
-
-		const auto close = str.find(']', idx);
-		if (close == std::string::npos)
-			return false;
-
-		const auto markup = str.substr(idx, close - idx + 1);
-		if (markup == "[reset]")
-			return true;
-		std::regex regex(R"(\[(A_[A-Z_]*)\])");
-		std::smatch match;
-		if (!std::regex_match(markup, match, regex))
-			return false;
-
-		const std::vector<std::string> handled_attrs = {"A_BOLD", "A_DIM", "A_REVERSE", "A_NORMAL", "A_BLINK"};
-		auto it = std::find(handled_attrs.begin(), handled_attrs.end(), match[1]);
-		return it != handled_attrs.end();
-	}
-
-	inline static chtype from_markup(const std::string& str, const size_t idx)
-	{
-		assert(is_markup(str, idx));
-		const auto close = str.find(']', idx);
-		const auto markup = str.substr(idx + 1, close - idx - 1);
-		if (markup == "A_DIM") return A_DIM;
-		if (markup == "A_BOLD") return A_BOLD;
-		if (markup == "A_REVERSE") return A_REVERSE;
-		if (markup == "A_BLINK") return A_BLINK;
-		return A_NORMAL;
-	}
-
-	bool operator==(const NcursesAttr& other) const = default;
-	bool operator==(const chtype attr) const { return attr == this->attr; }
-	bool operator!=(const NcursesAttr& other) const = default;
-	bool operator!=(const chtype attr) const { return attr != this->attr; }
-};
-
 /* State */
 struct Hidden {};
 struct Invisible {};
 struct Experience { size_t amount; };
 struct Dead { size_t turn_number; };
 
-struct Vitality { int value; };		// health
-struct Endurance { int value; };	// stamina
-struct Willpower { int value; };	// mana
-struct Charisma { int value; };		// opinion
-struct Perception { int value; };	// vision range
 struct Strength { int value; };
-struct Agility { int value; };
 struct Dexterity { int value; };
+struct Constitution { int value; };
+struct Intelligence { int value; };
+struct Wisdom { int value; };
+struct Charisma { int value; };
+
+struct ArmorClass { int value; };
+struct Initiative { int value; };
 
 template<typename T> struct Buff
 {
@@ -111,9 +50,10 @@ template<typename T> struct BuffContainer
 	std::vector<Buff<T>> buffs;
 };
 
-struct Health { int current; };
-struct Stamina { int current; };
-struct Mana { int current; };
+struct HitPoints { int value; };
+struct HitPointsMax { int value; };
+/*struct Stamina { int current; };
+struct Mana { int current; };*/
 
 // This feels like it should have its own file
 struct Alignment
@@ -176,21 +116,22 @@ struct Alignment
 };
 
 /* Inventory, gear, equipment... */
-struct EquipmentSlot
+enum class EquipmentSlot
 {
-	enum class Slot
-	{
-		MainHand, // weapon or shield
-		OffHand, // weapon or shield
-		Ammo, // this is used when firing ranged weapons
-				 // rest are armor or things like that
-	};
+	MainHand,
+	OffHand,
+	Ammo,
+	Body,
+};
+struct EquipmentSlotsUsed
+{
+	using Slot = EquipmentSlot;
 	std::optional<std::vector<Slot>> use_all; // this equipment uses all of these slots (f.e. two handed weapons)
 	std::optional<std::vector<Slot>> use_one; // this equipment uses one of these slots (f.e. one handed weapons)
 };
 struct EquipmentSlots
 {
-	using Slot = EquipmentSlot::Slot;
+	using Slot = EquipmentSlot;
 
 	struct Loadout
 	{	// These are for players quality of life, just press w
@@ -212,9 +153,14 @@ struct EquipmentSlots
 
 	std::map<Slot, entt::entity> equipped_items{
 		{ Slot::MainHand, entt::null },
-		{ Slot::OffHand, entt::null },
-		{ Slot::Ammo, entt::null }
+			{ Slot::OffHand, entt::null },
+			{ Slot::Ammo, entt::null },
+			{ Slot::Body, entt::null }
 	};
+};
+struct MaxDexMod
+{
+	int value;
 };
 struct Inventory
 {

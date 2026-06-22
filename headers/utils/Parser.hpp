@@ -27,7 +27,7 @@ namespace Parser
 	void parse_cave_generation_conf(const std::string& conf_id, CaveGenerator::Data& data);
 	void parse_cave_generation_conf(const Json& conf, CaveGenerator::Data& data);
 	LootTable parse_loot_table(const Json& data);
-	Damage::Spec parse_damage_spec(const Json& data);
+	Damage::Roll parse_damage_roll(const Json& data);
 	Random::Perlin parse_perlin(const Json& data);
 
 	ToolType parse_tool_type(const Json& data);
