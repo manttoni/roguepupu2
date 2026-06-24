@@ -7,60 +7,56 @@
 #include "systems/position/MovementSystem.hpp"
 #include "systems/state/AlignmentSystem.hpp"
 #include "systems/state/EquipmentSystem.hpp"
+#include "systems/combat/CombatSystem.hpp"
 #include "utils/ECS.hpp"
 #include "utils/Random.hpp"
 
 namespace AISystem
 {
-	// Remake this for the simplified range feature
 	bool will_engage_enemy(const entt::registry& registry, Intent& intent)
 	{
-		if (!intent.actor.position.is_valid())
-			return false;
-
 		auto visible_entities = VisionSystem::get_visible_entities(registry, intent.actor.entity);
 		std::sort(visible_entities.begin(), visible_entities.end(),
 				[&](const auto a, const auto b)
 				{
 				return ECS::distance(registry, a, intent.actor.entity) < ECS::distance(registry, b, intent.actor.entity);
 				});
+
 		for (const auto entity : visible_entities)
 		{
-			if (!registry.any_of<Alignment>(entity) || entity == intent.actor.entity)
+			if (entity == intent.actor.entity)
 				continue;
 			if (AlignmentSystem::is_hostile(registry, intent.actor.entity, entity))
 			{
-				// npc will attack if it has at least one weapon with enough range
-				const auto distance = ECS::distance(registry, intent.actor.entity, entity);
-				if (ECS::get_attack_range(registry, intent.actor.entity).contains(distance))
+				if (CombatSystem::can_attack<MeleeWeapon>(registry, intent.actor.entity, entity))
 				{
 					intent.target.entity = entity;
-					intent.type = Intent::Type::Attack;
+					intent.type = Intent::Type::MeleeAttack;
 					return true;
 				}
-
-				// npc might want to swap loadout, if it has a weapon with more suitable range
-				if (registry.all_of<EquipmentSlots>(intent.actor.entity))
+				else if (CombatSystem::can_attack<RangedWeapon>(registry, intent.actor.entity, entity))
 				{
-					const auto& slots = registry.get<EquipmentSlots>(intent.actor.entity);
-					const auto& other_loadout = slots.get_other_loadout();
-					if ((other_loadout.main_hand != entt::null && ECS::get_attack_range(registry, other_loadout.main_hand).contains(distance)) ||
-						(other_loadout.off_hand != entt::null && ECS::get_attack_range(registry, other_loadout.off_hand).contains(distance)))
-					{
-						intent.type = Intent::Type::SwapLoadout;
-						return true;
-					}
+					intent.target.entity = entity;
+					intent.type = Intent::Type::RangedAttack;
+					return true;
 				}
-
-				// no attack was suitable, then approach
-				intent.target.position = MovementSystem::get_first_step(
-						registry,
-						intent.actor.position,
-						registry.get<Position>(entity));
-				intent.type = Intent::Type::Move;
-				return true;
+				else if (CombatSystem::can_attack<ThrowingWeapon>(registry, intent.actor.entity, entity))
+				{
+					intent.target.entity = entity;
+					intent.type = Intent::Type::ThrowingAttack;
+					return true;
+				}
+				else
+				{	// Could maybe move this to some other function like will_approach_enemy/entity
+					intent.target.position = MovementSystem::get_first_step(registry,
+							intent.actor.position,
+							registry.get<Position>(entity));
+					intent.type = Intent::Type::Move;
+					return true;
+				}
 			}
 		}
+
 		return false;
 	}
 
@@ -103,6 +99,11 @@ namespace AISystem
 
 		if (ai.idle_wander == true && will_wander(registry, intent) == true)
 			return intent;
+
+		// Future plans
+		// Swapping equipment
+		// Drink potions
+		// Flee
 
 		intent.type = Intent::Type::DoNothing;
 		return intent;

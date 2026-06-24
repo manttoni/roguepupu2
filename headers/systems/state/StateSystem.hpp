@@ -16,13 +16,6 @@ namespace StateSystem
 	size_t level_to_xp(const size_t level);
 	size_t xp_to_level(const size_t xp);
 
-	// Calculating stats
-	/*int get_max_stamina(const entt::registry& registry, const entt::entity entity);
-	int get_max_mana(const entt::registry& registry, const entt::entity entity);*/
-
-	// Change this to darkvision based on race
-	//int get_vision_range(const entt::registry& registry, const entt::entity entity);
-
 	// Derived
 	int get_initiative(const entt::registry& registry, const entt::entity entity);
 	int get_armor_class(const entt::registry& registry, const entt::entity entity);
@@ -50,7 +43,7 @@ namespace StateSystem
 		int get_stat(const entt::registry& registry, const entt::entity entity)
 		{
 			if (!registry.all_of<T>(entity))
-				Error::fatal("Wrong use of get_stat or get_modifier. Entity must have T component");
+				return 0;
 			int stat = registry.get<T>(entity).value;
 			if (registry.all_of<EquipmentSlots>(entity))
 			{

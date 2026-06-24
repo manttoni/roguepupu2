@@ -55,19 +55,19 @@ namespace ContextSystem
 			details.push_back(ss.str());
 		}
 		/*if (registry.all_of<Stamina>(entity))
-		{
-			std::string stamina = "Stamina : " + std::to_string(registry.get<Stamina>(entity).current);
-			if (registry.all_of<Endurance>(entity))
-				stamina += " / " + std::to_string(StateSystem::get_max_stamina(registry, entity));
-			details.push_back(stamina);
-		}
-		if (registry.all_of<Mana>(entity))
-		{
-			std::string mana = "Mana : " + std::to_string(registry.get<Mana>(entity).current);
-			if (registry.all_of<Willpower>(entity))
-				mana += " / " + std::to_string(StateSystem::get_max_mana(registry, entity));
-			details.push_back(mana);
-		}*/
+		  {
+		  std::string stamina = "Stamina : " + std::to_string(registry.get<Stamina>(entity).current);
+		  if (registry.all_of<Endurance>(entity))
+		  stamina += " / " + std::to_string(StateSystem::get_max_stamina(registry, entity));
+		  details.push_back(stamina);
+		  }
+		  if (registry.all_of<Mana>(entity))
+		  {
+		  std::string mana = "Mana : " + std::to_string(registry.get<Mana>(entity).current);
+		  if (registry.all_of<Willpower>(entity))
+		  mana += " / " + std::to_string(StateSystem::get_max_mana(registry, entity));
+		  details.push_back(mana);
+		  }*/
 		return details;
 	}
 
@@ -186,11 +186,49 @@ namespace ContextSystem
 		if (is_player)
 			options.push_back("Inventory");
 		if (registry.all_of<HitPoints>(entity) &&
-				!registry.any_of<Dead>(entity) &&
-				owner == entt::null &&
-				ECS::get_attack_range(registry, player).contains(distance))
+				owner == entt::null && // To not attack stuff in inventory?
+				CombatSystem::can_attack(registry, player, entity))
 			options.push_back("Attack");
 		return options;
+	}
+
+	void handle_attack_selection(entt::registry& registry, const entt::entity entity)
+	{
+		const auto player = ECS::get_player(registry);
+		const auto melee = CombatSystem::can_attack<MeleeWeapon>(registry, player, entity);
+		const auto ranged = CombatSystem::can_attack<RangedWeapon>(registry, player, entity);
+		const auto throwing = CombatSystem::can_attack<ThrowingWeapon>(registry, player, entity);
+		std::vector<std::string> choices;
+
+		if (melee)
+			choices.push_back("Melee");
+		if (ranged)
+			choices.push_back("Ranged");
+		if (throwing)
+			choices.push_back("Throwing");
+		std::string choice = "";
+
+		if (choices.size() == 0)
+			Log::warning() << "Shouldn't be able to be in attack selection menu";
+
+		choices.push_back("Cancel");
+		if (choices.size() == 2) // The only possible attack and "Cancel"
+			choice = choices.front();
+		else
+		{
+			const auto selection = Dialog::get_selection("Attacking " + ECS::get_colored_name(registry, entity), choices);
+			if (selection.cancelled)
+				return;
+			assert(selection.element.has_value() && "Must select Menu::Element");
+			choice = selection.element->label;
+		}
+
+		if (choice == "Melee")
+			CombatSystem::melee_attack(registry, player, entity);
+		else if (choice == "Ranged")
+			CombatSystem::ranged_attack(registry, player, entity);
+		else if (choice == "Throwing")
+			CombatSystem::throwing_attack(registry, player, entity);
 	}
 
 	/* Take - take item to players inventory from ground or other inventory
@@ -220,7 +258,10 @@ namespace ContextSystem
 		else if (label == "Gather")
 			GatheringSystem::gather(registry, ECS::get_player(registry), entity);
 		else if (label == "Attack")
-			CombatSystem::attack(registry, ECS::get_player(registry), entity);
+		{
+			handle_attack_selection(registry, entity); // Player chooses how to attack entity, if more than 1 choice
+
+		}
 		EventSystem::resolve_events(registry); // Do this so that log messages will show while menu is open
 	}
 

@@ -166,11 +166,15 @@ struct Inventory
 {
 	std::vector<entt::entity> items;
 };
+struct UnarmedWeapons // bite, claw, punch...
+{
+	std::vector<entt::entity> weapons;
+};
 
 /* Weapons etc... */
 struct AttackRange
 {
-	Range<double> range;
+	double value;
 };
 
 /* Crafting related */
@@ -222,9 +226,8 @@ struct Abilities
 };
 struct LootTableRef { std::string id; };
 
-/* Booleans */
 struct Closed { bool value; };
-struct Stackable { bool value; }; // This needs some number to tell how much is stacked
+struct Stackable { size_t stack_size; };
 struct DestroyWhenStacked { bool value; }; // TODO: rename, does not mean stacked in inventory, but in cell, aka stepped on/fragile
 
 /* Enums and their aliases. Might need struct wrapping, but these at least dont look like they will conflict */
@@ -256,6 +259,7 @@ struct MeleeWeapon {}; // attack adjacent cells, also diagonal
 struct ImprovisedWeapon {}; // not supposed to be used as a melee weapon, but its possible
 struct ThrowingWeapon {}; // is good for throwing
 struct RangedWeapon {}; // can attack distant targets, uses ammo
+struct UnarmedWeapon {}; // is like a regular weapon, but counts as always equipped, but not in a slot
 struct Ammo{}; // is ammo
 struct Gatherable {}; // can be gathered with tools
 struct Mushroom {}; // is a mushroom growing naturally

@@ -32,7 +32,7 @@ TEST_F(RegistryTest, FriendlyLosesOpinionOnAttack)
 
 	// 1 should lose opinion of 0, because of betrayal
 	// (0 still has the same opinion of 1)
-	CombatSystem::attack(registry, entities[0], entities[1]);
+	CombatSystem::melee_attack(registry, entities[0], entities[1]);
 
 	// attack queued an event, event handler will call "lose_opinion()"
 	EventSystem::resolve_events(registry);

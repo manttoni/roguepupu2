@@ -24,7 +24,7 @@ namespace InventorySystem
 
 	void remove_item(entt::registry& registry, const entt::entity owner, const entt::entity item)
 	{
-		if (owner == entt::null)
+		if (owner == entt::null) // on the ground
 		{
 			registry.erase<Position>(item);
 			return;
@@ -77,5 +77,4 @@ namespace InventorySystem
 	{
 		return registry.all_of<Inventory>(entity);
 	}
-
 };

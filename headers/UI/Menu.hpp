@@ -6,6 +6,7 @@
 #include <vector>
 #include <variant>
 #include <nlohmann/json.hpp>
+#include <regex>
 #include "utils/Vec2.hpp"
 #include "utils/Screen.hpp"
 #include "utils/Range.hpp"
@@ -27,6 +28,7 @@ class Menu
 			char highlight = '\0'; // Mark an element with some char
 			bool is_cancel = false;
 			bool is_confirm = false;
+			std::regex pattern;
 
 			Element() = default;
 			Element(const Type type, const std::string& label) : type(type), label(label) {}

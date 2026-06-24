@@ -76,6 +76,14 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 			reg.template emplace<Inventory>(e, inventory);
 		}
 	},
+	{ "unarmed_weapons", [](auto& reg, auto e, const nlohmann::json& data)
+		{
+			(void) data;
+			std::vector<entt::entity> ua;
+			ua.push_back(EntityFactory::instance().create_entity(reg, "test_unarmed_weapon"));
+			reg.template emplace<UnarmedWeapons>(e, ua);
+		}
+	},
 	{ "glow", [](auto& reg, auto e, const nlohmann::json& data)
 		{	// Emits light around it
 			if (!data.contains("intensity") || !data["intensity"].is_number() ||
@@ -236,7 +244,7 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 	},
 	{ "attack_range", [](auto& reg, auto e, const nlohmann::json& data)
 		{
-			const auto range = Parser::parse_range<double>(data);
+			const auto range = data.get<double>();
 			reg.template emplace<AttackRange>(e, range);
 		}
 	},
@@ -272,6 +280,7 @@ std::unordered_map<std::string, FieldParser> field_parsers =
 				else if (str == "tool") reg.template emplace<Tool>(e);
 				else if (str == "ammo") reg.template emplace<Ammo>(e);
 				else if (str == "door") reg.template emplace<Door>(e);
+				else if (str == "unarmed_weapon") reg.template emplace<UnarmedWeapon>(e);
 				else
 					Error::fatal("Unhandled tag: " + str);
 			}
@@ -428,6 +437,13 @@ entt::entity EntityFactory::create_entity(entt::registry& registry, const std::s
 		spawn_event.target.entity = entity;
 		spawn_event.target.position = *position;
 		ECS::queue_event(registry, spawn_event);
+	}
+
+	// Add some mock stuff
+	if (registry.all_of<Creature>(entity))
+	{
+		registry.emplace<HitPoints>(entity, 10);
+		registry.emplace<HitPointsMax>(entity, 10);
 	}
 
 	return entity;

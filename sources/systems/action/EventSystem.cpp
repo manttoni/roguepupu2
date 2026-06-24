@@ -295,6 +295,9 @@ namespace EventSystem
 				case Event::Type::Attack:
 					resolve_attack_event(registry, event);
 					break;
+				case Event::Type::AttackHit:
+				case Event::Type::AttackMiss:
+					break;
 				case Event::Type::BecomeHostile:
 					resolve_become_hostile_event(registry, event);
 					break;

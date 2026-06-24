@@ -25,12 +25,13 @@
 	},
 	"inventory": {
 	},
+	"unarmed_weapons": {
+	},
 	"equipment_slots": true,
 	"damage": {
 		"type": { "template_multi_choice": ["bludgeoning", "piercing", "slashing"] },
-		"amount": ""
+		"amount": { "template_regex": "dice_roll" }
 	},
-	"attack_range": { "template_multi_choice": ["melee", "ranged"] },
 	"glow": {
 		"radius": { "template_min": 0.0, "template_max": 100.0, "template_default": 0.0, "template_delta": 0.5 },
 		"intensity": { "template_min": 0.0, "template_max": 100.0, "template_default": 0.1, "template_delta": 0.01 }
@@ -46,8 +47,9 @@
 		"chance": { "template_min": 0.0, "template_max": 1.0, "template_delta": 0.01, "template_default": 1.0 }
 	},
 	"environment_sensitive": {
-		"photo": { "template_multi_choice": [ "neutral", "philia", "phobia" ] },
-		"hydro": { "template_multi_choice": [ "neutral", "philia", "phobia" ] }
+		"photo": { "template_multi_choice": [ "phobia", "neutral", "philia" ] },
+		"hydro": { "template_multi_choice": [ "phobia", "neutral", "philia" ] },
+		"agora": { "template_multi_choice": [ "phobia", "neutral", "philia" ] }
 	},
 	"spawn_position": {
 		"solid_neighbors": { "template_range": [0, 8], "template_delta": 1, "template_default": [0, 8] },
@@ -65,12 +67,11 @@
 		"idle_wander": false,
 		"follow_player": false
 	},
-	"stackable": true,
 	"gather_effect": { "template_multi_choice": [ "dim", "destroy", "none" ] },
-	"loot_table_ref" : "",
 	"requires_tool": { "template_multi_choice": [ "cutting", "felling", "mining" ] },
 	"tool_type": { "template_multi_choice": [ "cutting", "felling", "mining" ] },
 	"requires_ammo": { "template_multi_choice": [ "arrow", "bolt", "bullet" ] },
 	"ammo_type": { "template_multi_choice": [ "arrow", "bolt", "bullet" ] },
-	"closed": true
+	"closed": true,
+	"attack_range": { "template_min": 0.0, "template_max": 100.0, "template_delta": 0.1, "template_default": 1.5 }
 }

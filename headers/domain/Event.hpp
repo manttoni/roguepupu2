@@ -40,8 +40,8 @@ struct Event
 		Move,
 		TakeDamage,
 		Attack,
-		MissAttack,
-		HitAttack,
+		AttackHit,
+		AttackMiss,
 		BecomeHostile,
 	};
 

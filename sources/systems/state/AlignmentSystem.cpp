@@ -59,6 +59,8 @@ namespace AlignmentSystem
 	 * */
 	bool is_hostile(const entt::registry& registry, const entt::entity a, const entt::entity b)
 	{
+		if (!registry.all_of<Alignment>(a) || !registry.all_of<Alignment>(b))
+			return false;
 		return get_opinion(registry, a, b) < 0.0; // Save these magic numbers somewhere
 	}
 
@@ -66,6 +68,8 @@ namespace AlignmentSystem
 	 * */
 	bool is_friendly(const entt::registry& registry, const entt::entity a, const entt::entity b)
 	{
+		if (!registry.all_of<Alignment>(a) || !registry.all_of<Alignment>(b))
+			return false;
 		return get_opinion(registry, a, b) >= 1;
 	}
 

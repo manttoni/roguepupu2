@@ -245,50 +245,6 @@ namespace ECS
 		registry.ctx().emplace<GameSettings>();
 	}
 
-	/* Get attack range of creature or weapon.
-	 * If creature, not all it's attacks/weapons have to be in that range,
-	 * but create range from shortest and longest possible ranges from any weapon/attack,
-	 * even unarmed attacks. Combat system will then decide what attacks will be used.
-	 *
-	 * This is for checking whether an entity can attack something based on just distance.
-	 * */
-	inline Range<double> get_attack_range(const entt::registry& registry, const entt::entity entity)
-	{
-		// Could happen if trying to get range of "unarmed weapon slot", but then give creature instead
-		assert(entity != entt::null);
-
-		const bool is_creature = registry.all_of<Creature>(entity);
-		const bool is_weapon = registry.all_of<Weapon>(entity);
-		// const bool is_shield... this will be here, but no shields yet
-
-		if (is_weapon)
-			return registry.get<AttackRange>(entity).range;
-		else if (is_creature)
-		{
-			Range<double> range(0, 1.5); // This is unarmed default, all 8 surrounding cells are valid attack targets
-			if (registry.all_of<EquipmentSlots>(entity))
-			{
-				const auto& equipped = registry.get<EquipmentSlots>(entity).equipped_items;
-				const auto main_hand = equipped.at(EquipmentSlot::MainHand);
-				const auto off_hand = equipped.at(EquipmentSlot::OffHand);
-				if (main_hand != entt::null)
-				{
-					const auto& main_hand_range = get_attack_range(registry, main_hand);
-					range.min = std::min(range.min, main_hand_range.min);
-					range.max = std::max(range.max, main_hand_range.max);
-				}
-				if (off_hand != entt::null && off_hand != main_hand)
-				{
-					const auto& off_hand_range = get_attack_range(registry, off_hand);
-					range.min = std::min(range.min, off_hand_range.min);
-					range.max = std::max(range.max, off_hand_range.max);
-				}
-			}
-			return range;
-		}
-		std::abort(); // this function is still unfinished, needs shield bash ranges etc
-	}
-
 	inline Attributes get_attributes(const entt::registry& registry, const entt::entity entity)
 	{
 		using namespace StateSystem;

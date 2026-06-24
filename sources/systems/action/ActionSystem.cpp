@@ -50,8 +50,11 @@ namespace ActionSystem
 			case Intent::Type::Move:
 				MovementSystem::move(registry, intent.actor.entity, intent.target.position);
 				break;
-			case Intent::Type::Attack:
-				CombatSystem::attack(registry, intent.actor.entity, intent.target.entity);
+			case Intent::Type::MeleeAttack:
+				CombatSystem::melee_attack(registry, intent.actor.entity, intent.target.entity);
+				break;
+			case Intent::Type::RangedAttack:
+				CombatSystem::ranged_attack(registry, intent.actor.entity, intent.target.entity);
 				break;
 			case Intent::Type::UseAbility:
 				AbilitySystem::use_ability(registry, intent.actor, intent.ability_id, intent.target);
@@ -148,9 +151,7 @@ namespace ActionSystem
 					{
 						intent.type = Intent::Type::Attack;
 						intent.target.position = UI::instance().get_clicked_position(registry);
-						if (!intent.target.position.is_valid() ||
-								!ECS::get_attack_range(registry, player)
-								.contains(ECS::distance(registry, intent.actor.position, intent.target.position)))
+						if (!intent.target.position.is_valid())
 							continue;
 						for (const auto entity : ECS::get_entities(registry, intent.target.position))
 						{

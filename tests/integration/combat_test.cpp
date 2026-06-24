@@ -15,8 +15,8 @@ TEST_F(RegistryTest, EntityHasAggressiveIntent)
 	const Intent ia = AISystem::get_npc_intent(registry, arena.entities[0]);
 	const Intent ib = AISystem::get_npc_intent(registry, arena.entities[1]);
 
-	EXPECT_TRUE(ia.type == Intent::Type::Attack) << static_cast<size_t>(ia.type);
-	EXPECT_TRUE(ib.type == Intent::Type::Attack) << static_cast<size_t>(ib.type);
+	EXPECT_EQ(ia.type, Intent::Type::MeleeAttack) << static_cast<size_t>(ia.type);
+	EXPECT_EQ(ib.type, Intent::Type::MeleeAttack) << static_cast<size_t>(ib.type);
 }
 
 TEST_F(RegistryTest, EntitiesFistFight)

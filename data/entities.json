@@ -6,28 +6,17 @@
             "tolerance": 0.0
         },
         "attributes": {
-            "agility": 8,
             "charisma": 8,
+            "constitution": 8,
             "dexterity": 8,
-            "endurance": 8,
-            "perception": 8,
+            "intelligence": 8,
             "strength": 8,
-            "vitality": 8,
-            "willpower": 8
+            "wisdom": 8
         },
         "color": {
             "blue": 790,
             "green": 460,
             "red": 120
-        },
-        "damage": {
-            "amount": {
-                "range": [
-                    1,
-                    2
-                ]
-            },
-            "type": "bludgeoning"
         },
         "equipment_slots": true,
         "glyph": "@",
@@ -40,31 +29,23 @@
             "core",
             "creature",
             "player"
-        ]
+        ],
+        "unarmed_weapons": {}
     },
     {
-        "attack_range": {
-            "range": [
-                0.0,
-                1.5
-            ]
-        },
+        "attack_range": 1.5,
         "color": {
             "blue": 500,
             "green": 500,
             "red": 500
         },
         "damage": {
-            "amount": {
-                "range": [
-                    1,
-                    4
-                ]
-            },
+            "amount": "1d4",
             "type": "piercing"
         },
-        "equipment_slot": {
+        "equipment_slots_used": {
             "ammo": false,
+            "body": false,
             "main_hand": true,
             "off_hand": true,
             "slot_usage": "use_one"
@@ -74,7 +55,6 @@
         "name": "dagger",
         "opaque": 0.0,
         "solid": false,
-        "stackable": false,
         "tags": [
             "core",
             "weapon",
@@ -90,6 +70,7 @@
     {
         "ai": {
             "aggressive": false,
+            "follow_player": false,
             "idle_wander": false
         },
         "alignment": {
@@ -98,28 +79,17 @@
             "tolerance": 0.0
         },
         "attributes": {
-            "agility": 8,
             "charisma": 8,
+            "constitution": 8,
             "dexterity": 8,
-            "endurance": 8,
-            "perception": 8,
+            "intelligence": 8,
             "strength": 8,
-            "vitality": 8,
-            "willpower": 8
+            "wisdom": 8
         },
         "color": {
             "blue": 500,
             "green": 500,
             "red": 500
-        },
-        "damage": {
-            "amount": {
-                "range": [
-                    1,
-                    2
-                ]
-            },
-            "type": "bludgeoning"
         },
         "equipment_slots": true,
         "glyph": "t",
@@ -132,25 +102,23 @@
             "core",
             "creature",
             "npc"
-        ]
+        ],
+        "unarmed_weapons": {}
     },
     {
+        "attack_range": 1.5,
         "color": {
             "blue": 500,
             "green": 500,
             "red": 500
         },
         "damage": {
-            "amount": {
-                "range": [
-                    2,
-                    12
-                ]
-            },
+            "amount": "1d8",
             "type": "piercing"
         },
-        "equipment_slot": {
+        "equipment_slots_used": {
             "ammo": false,
+            "body": false,
             "main_hand": true,
             "off_hand": true,
             "slot_usage": "use_all"
@@ -160,7 +128,6 @@
         "name": "pickaxe",
         "opaque": 0.0,
         "solid": false,
-        "stackable": false,
         "tags": [
             "core",
             "weapon",
@@ -178,6 +145,7 @@
             "red": 450
         },
         "environment_sensitive": {
+            "agora": "philia",
             "hydro": "phobia",
             "photo": "neutral"
         },
@@ -187,7 +155,6 @@
             "radius": 4.0
         },
         "glyph": "*",
-        "loot_table_ref": "lt_glowing_mushroom",
         "mass": 6.899999999999997,
         "name": "glowing mushroom",
         "opaque": 0.20000000000000004,
@@ -231,12 +198,12 @@
             "red": 600
         },
         "environment_sensitive": {
+            "agora": "neutral",
             "hydro": "phobia",
             "photo": "neutral"
         },
         "gather_effect": "destroy",
         "glyph": "$",
-        "loot_table_ref": "lt_woody_mushroom",
         "mass": 35.0,
         "name": "woody mushroom",
         "opaque": 0.5,
@@ -279,6 +246,7 @@
             "red": 350
         },
         "environment_sensitive": {
+            "agora": "neutral",
             "hydro": "philia",
             "photo": "neutral"
         },
@@ -288,7 +256,6 @@
             "radius": 0.0
         },
         "glyph": "¤",
-        "loot_table_ref": "lt_lotus",
         "mass": 0.30000000000000004,
         "name": "lotus",
         "opaque": 0.0,
@@ -332,19 +299,11 @@
             "green": 500,
             "red": 500
         },
-        "damage": {
-            "amount": {
-                "range": [
-                    1,
-                    2
-                ]
-            },
-            "type": "piercing"
-        },
-        "equipment_slot": {
+        "equipment_slots_used": {
             "ammo": true,
-            "main_hand": true,
-            "off_hand": true,
+            "body": false,
+            "main_hand": false,
+            "off_hand": false,
             "slot_usage": "use_one"
         },
         "glyph": "a",
@@ -352,40 +311,27 @@
         "name": "arrow",
         "opaque": 0.0,
         "solid": false,
-        "stackable": true,
         "tags": [
             "core",
             "item",
             "equipment",
-            "ammo",
-            "improvised_weapon",
-            "weapon",
-            "melee_weapon"
+            "ammo"
         ]
     },
     {
-        "attack_range": {
-            "range": [
-                1.5000000000000002,
-                30.000000000000156
-            ]
-        },
+        "attack_range": 30.0,
         "color": {
             "blue": 500,
             "green": 500,
             "red": 500
         },
         "damage": {
-            "amount": {
-                "range": [
-                    1,
-                    10
-                ]
-            },
+            "amount": "1d8",
             "type": "piercing"
         },
-        "equipment_slot": {
+        "equipment_slots_used": {
             "ammo": false,
+            "body": false,
             "main_hand": true,
             "off_hand": true,
             "slot_usage": "use_all"
@@ -396,7 +342,6 @@
         "opaque": 0.0,
         "requires_ammo": "arrow",
         "solid": false,
-        "stackable": false,
         "tags": [
             "core",
             "ranged_weapon",
@@ -408,6 +353,7 @@
     {
         "ai": {
             "aggressive": true,
+            "follow_player": false,
             "idle_wander": true
         },
         "alignment": {
@@ -416,32 +362,22 @@
             "tolerance": -2.0
         },
         "attributes": {
-            "agility": 8,
             "charisma": 8,
+            "constitution": 8,
             "dexterity": 8,
-            "endurance": 8,
-            "perception": 8,
+            "intelligence": 8,
             "strength": 8,
-            "vitality": 8,
-            "willpower": 8
+            "wisdom": 8
         },
         "color": {
             "blue": 290,
             "green": 410,
             "red": 270
         },
-        "damage": {
-            "amount": {
-                "range": [
-                    1,
-                    1
-                ]
-            },
-            "type": "slashing"
-        },
         "environment_sensitive": {
+            "agora": "philia",
             "hydro": "philia",
-            "photo": "neutral"
+            "photo": "phobia"
         },
         "equipment_slots": false,
         "glyph": "l",
@@ -478,81 +414,39 @@
             "creature",
             "npc",
             "spawns_naturally"
-        ]
+        ],
+        "unarmed_weapons": {}
     },
     {
-        "ai": {
-            "aggressive": true,
-            "idle_wander": true
-        },
-        "alignment": {
-            "chaos_law": 0.0,
-            "evil_good": 0.0,
-            "tolerance": -2.0
-        },
-        "attributes": {
-            "agility": 20,
-            "charisma": 8,
-            "dexterity": 8,
-            "endurance": 10,
-            "perception": 9,
-            "strength": 15,
-            "vitality": 14,
-            "willpower": 8
-        },
+        "attack_range": 1.5,
         "color": {
-            "blue": 340,
-            "green": 250,
-            "red": 250
+            "blue": 500,
+            "green": 500,
+            "red": 500
         },
         "damage": {
-            "amount": {
-                "range": [
-                    2,
-                    6
-                ]
-            },
-            "type": "slashing"
+            "amount": "1d1",
+            "type": "bludgeoning"
         },
-        "environment_sensitive": {
-            "hydro": "neutral",
-            "photo": "neutral"
+        "equipment_slots_used": {
+            "ammo": false,
+            "body": false,
+            "main_hand": false,
+            "off_hand": false,
+            "slot_usage": "use_one"
         },
-        "equipment_slots": false,
-        "glyph": "p",
-        "inventory": {},
-        "mass": 36.0,
-        "name": "panther",
-        "opaque": 0.1,
-        "solid": true,
-        "spawn_chance": {
-            "chance": 0.01,
-            "perlin": {
-                "enabled": false,
-                "frequency": 0.5,
-                "octaves": 1,
-                "treshold": 0.5
-            }
-        },
-        "spawn_position": {
-            "rock_neighbors": {
-                "range": [
-                    0,
-                    8
-                ]
-            },
-            "solid_neighbors": {
-                "range": [
-                    0,
-                    8
-                ]
-            }
-        },
+        "glyph": "u",
+        "mass": 0.0,
+        "name": "test_unarmed_weapon",
+        "opaque": 0.0,
+        "solid": false,
         "tags": [
             "core",
-            "creature",
-            "npc",
-            "spawns_naturally"
+            "unarmed_weapon",
+            "weapon",
+            "item",
+            "equipment",
+            "melee_weapon"
         ]
     }
 ]

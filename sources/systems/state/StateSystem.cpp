@@ -21,29 +21,10 @@ namespace StateSystem
 		return xp / 1000;
 	}
 
-	/*int get_vision_range(const entt::registry& registry, const entt::entity entity)
-	{
-		// Invent some darkvision and/or lighting system to replace this completely
-		// Lighting system actually does exist already. Darkvision could be bonus from character creation
-		//
-		// But probably can make this so that there is opaque stuff in the way and some areas are dark, so
-		// even darkvision range can be infinite
-		//
-		// So just remake the VisionSystem some day
-		return 10;
-	}*/
 	int get_initiative(const entt::registry& registry, const entt::entity entity)
 	{
 		return Dice(1, 20).roll() + get_attribute_modifier<Dexterity>(registry, entity) + get_stat<Initiative>(registry, entity);
 	}
-	/*int get_max_stamina(const entt::registry& registry, const entt::entity entity)
-	{
-		return get_stat<Endurance>(registry, entity);
-	}
-	int get_max_mana(const entt::registry& registry, const entt::entity entity)
-	{
-		return get_stat<Willpower>(registry, entity);
-	}*/
 	int get_attribute_modifier(const int attribute)
 	{
 		return (attribute - 10) / 2;

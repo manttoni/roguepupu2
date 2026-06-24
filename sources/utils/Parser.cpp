@@ -93,8 +93,16 @@ namespace Parser
 
 	Damage::Roll parse_damage_roll(const Json& data)
 	{
+		Log::debug() << "Parsing damage roll";
+
+		assert(data.contains("type"));
+		assert(data["type"].is_string());
+		assert(data.contains("amount"));
+		assert(data["amount"].is_string());
 		const auto type_str = data["type"].get<std::string>();
-		const auto dice_str = data["dice"].get<std::string>();
+		const auto dice_str = data["amount"].get<std::string>();
+
+		Log::debug() << dice_str;
 
 		std::regex diceroll_regex(R"(^(\d*)d(\d+)(?:([+\-])(\d+))?$)");
 		std::smatch matches;
@@ -102,12 +110,27 @@ namespace Parser
 		if (!std::regex_match(dice_str, matches, diceroll_regex))
 			Error::fatal("Invalid dice string");
 
-		const size_t amount = std::stoi(matches[1].str());
-		const size_t sides = std::stoi(matches[2].str());
-		const int sign = std::stoi(matches[3].str() + '1');
-		const int modifier = std::stoi(matches[4].str());
+		const size_t amount = matches[1].str().empty()
+			? 1
+			: std::stoul(matches[1].str());
 
-		Damage::Roll roll(Damage::string_to_type(type_str), Dice(amount, sides), sign * modifier);
+		const size_t sides = std::stoul(matches[2].str());
+
+		int sign = 1;
+		if (matches[3].matched)
+			sign = (matches[3].str() == "-") ? -1 : 1;
+
+		const int modifier = matches[4].matched
+			? std::stoi(matches[4].str())
+			: 0;
+
+		Damage::Roll roll(
+				Damage::string_to_type(type_str),
+				Dice(amount, sides),
+				sign * modifier
+				);
+
+		Log::debug() << "Parsed damage roll";
 		return roll;
 	}
 

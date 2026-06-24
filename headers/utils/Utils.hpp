@@ -48,7 +48,7 @@ namespace Utils
 		return conv.to_bytes(ws);
 	}
 
-	// Remove color and ncurses attribute markups
+	// Remove {color} and [ncurses] attribute markups
 	inline std::string without_markups(const std::string& str)
 	{
 		std::string without = "";

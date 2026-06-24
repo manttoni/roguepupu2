@@ -3,7 +3,7 @@
 		"components": [ "tags", "name", "glyph", "color", "solid", "opaque", "mass" ]
 	},
 	"creature": {
-		"components": [ "attributes", "alignment", "inventory", "equipment_slots", "damage" ]
+		"components": [ "attributes", "alignment", "inventory", "equipment_slots", "unarmed_weapons" ]
 	},
 	"has_glow": {
 		"components": [ "glow", "color" ]
@@ -19,7 +19,7 @@
 		"tags": [ "item" ]
 	},
 	"weapon": {
-		"components": [ "damage" ],
+		"components": [ "damage", "attack_range" ],
 		"tags": [ "item", "equipment" ]
 	},
 	"player": {
@@ -43,21 +43,24 @@
 		"tags": [ "weapon" ]
 	},
 	"throwing_weapon": {
-		"components": [ "attack_range" ],
+		"components": [ "range" ],
 		"tags": [ "weapon" ]
 	},
 	"ranged_weapon": {
-		"components": [ "attack_range", "requires_ammo" ],
+		"components": [ "range", "requires_ammo" ],
 		"tags": [ "weapon" ]
 	},
 	"improvised_weapon": {
 		"tags": [ "weapon" ]
 	},
 	"ammo": {
-		"components": [ "ammo_type", "damage" ],
+		"components": [ "ammo_type" ],
 		"tags": [ "equipment" ]
 	},
 	"melee_weapon": {
+		"tags": [ "weapon" ]
+	},
+	"unarmed_weapon": {
 		"tags": [ "weapon" ]
 	},
 	"tool": {

@@ -1,4 +1,5 @@
 #include <filesystem>
+#include <regex>
 #include <ncurses.h>
 #include <nlohmann/json.hpp>
 #include <panel.h>
@@ -16,6 +17,7 @@
 #include "utils/Parser.hpp"
 #include "utils/Screen.hpp"
 #include "utils/Range.hpp"
+#include "utils/Regex.hpp"
 #include "utils/Math.hpp"
 #include "utils/Utils.hpp"
 #include "utils/JsonUtils.hpp"
@@ -75,7 +77,26 @@ namespace EntityEditor
 	{
 		for (const auto& [key, value] : template_json.items())
 		{
-			if (value.contains("template_range"))
+			if (value.contains("template_regex"))
+			{
+				if (!target.contains(key))
+				{
+					if (errors) errors->push_back("[missing string: " + key + "]");
+					target[key] = "";
+				}
+				else if (!target[key].is_string())
+				{
+					if (errors) errors->push_back("[wrong type: " + key + "]");
+					target[key] = "";
+				}
+				else if (value["template_regex"].get<std::string>() == "dice_roll" &&
+						!std::regex_match(target[key].get<std::string>(), std::regex{Regex::DICE_ROLL.data()}))
+				{
+					if (errors) errors->push_back("[regex doesn't match: " + key + "]");
+					target[key] = "";
+				}
+			}
+			else if (value.contains("template_range"))
 			{
 				if (!target.contains(key))
 				{
@@ -163,12 +184,6 @@ namespace EntityEditor
 					target[key] = Json::array();
 				}
 				add_missing_array(target[key], value, errors);
-			}
-			else if (value.type() != target[key].type())
-			{
-				if (errors)
-					errors->push_back(std::string("[wrong type: ") + target[key].type_name() + " which should be " + value.type_name() + "]");
-				target[key] = Json(value.type());
 			}
 			else
 			{
@@ -443,8 +458,8 @@ namespace EntityEditor
 	{
 		if (!verify_entity(entity))
 		{
-			Dialog::alert("Cannot save invalid entity");
-			return;
+			if (!Dialog::confirm("Save invalid entity?"))
+				return;
 		}
 
 		Json data = Parser::read_json_file(entities_file);
@@ -519,6 +534,32 @@ namespace EntityEditor
 				tags.erase(it);
 			update_entity(entity);
 		}
+	}
+
+	void delete_entity(const Json& entity)
+	{
+		const auto name = entity["name"].get<std::string>();
+
+		if (!Dialog::confirm("Delete " + name))
+			return;
+
+		Json data = Parser::read_json_file(entities_file);
+
+		data.erase(
+				std::remove_if(data.begin(), data.end(),
+					[&](const Json& obj)
+					{
+					return obj["name"] == name;
+					}),
+				data.end()
+				);
+
+		std::ofstream file(entities_file);
+		assert(file);
+
+		file << data.dump(4);
+
+		Dialog::alert("Entity deleted");
 	}
 
 	/* 'entity' is the entity being edited, edit it through 'part'
@@ -635,6 +676,7 @@ namespace EntityEditor
 			if (entity == part)
 			{
 				menu.add_element(Element(Type::Button, "Auto correct"));
+				menu.add_element(Element(Type::Button, "Delete"));
 				menu.add_element(Menu::Element::confirm("Save"));
 			}
 			menu.add_element(Menu::Element::cancel());
@@ -664,6 +706,8 @@ namespace EntityEditor
 				edit_tags(part);
 			else if (label == "Auto correct")
 				update_entity(part);
+			else if (label == "Delete")
+				delete_entity(entity);
 			else
 			{
 				assert(part.contains(label));
@@ -705,3 +749,4 @@ namespace EntityEditor
 	}
 
 };
+

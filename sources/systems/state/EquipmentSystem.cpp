@@ -198,4 +198,17 @@ namespace EquipmentSystem
 		const auto equipped_items = registry.get<EquipmentSlots>(entity).equipped_items;
 		return equipped_items.at(slot);
 	}
+
+	/* Gets also unarmed weapons
+	 * */
+	std::vector<entt::entity> get_all_equipped_weapons(const entt::registry& registry, const entt::entity entity)
+	{
+		const auto regular_weapons = get_equipped_items<Weapon>(registry, entity);
+		const auto unarmed_weapons = registry.get<UnarmedWeapons>(entity).weapons;
+		std::vector<entt::entity> all_weapons;
+		all_weapons.reserve(unarmed_weapons.size() + regular_weapons.size());
+		all_weapons.insert(all_weapons.end(), regular_weapons.begin(), regular_weapons.end());
+		all_weapons.insert(all_weapons.end(), unarmed_weapons.begin(), unarmed_weapons.end());
+		return all_weapons;
+	}
 };

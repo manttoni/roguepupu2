@@ -19,4 +19,6 @@ namespace ContextSystem
 	 * */
 	void examine_cell(entt::registry& registry, const Position& position);
 
+
+	void handle_attack_selection(entt::registry& registry, const entt::entity entity);
 };
