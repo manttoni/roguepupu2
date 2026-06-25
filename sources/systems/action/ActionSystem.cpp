@@ -29,6 +29,7 @@
 #include "domain/Target.hpp"
 #include "external/entt/entity/fwd.hpp"
 #include "systems/rendering/RenderData.hpp"
+#include "utils/Debug.hpp"
 #include "utils/Vec2.hpp"
 
 namespace ActionSystem
@@ -234,7 +235,10 @@ namespace ActionSystem
 		for (const auto entity : entities)
 		{
 			if (!registry.valid(entity) || registry.any_of<Dead>(entity))
+			{
+				Log::debug() << "Dead or invalid entity: " << Debug::entity_details(registry, entity);
 				continue;
+			}
 
 			// Get entity intent. Intent is what they want to do.
 			Intent intent = entity == player ?
@@ -245,7 +249,7 @@ namespace ActionSystem
 			intent.actor.entity = entity;
 			intent.actor.position = registry.get<Position>(entity);
 
-			// Intent has been validated and will not be executed
+			// Intent has been validated and will now be executed
 			resolve_intent(registry, intent);
 
 			// Events are things that happened.

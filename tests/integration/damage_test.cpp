@@ -32,7 +32,6 @@ TEST_F(RegistryTest, EntityTakesDamage)
 
 TEST_F(RegistryTest, TakingDamageUpdatesLog)
 {
-	Log::debug() << "Damage test start";
 	const auto creature = EntityFactory::instance().create_entity(registry, "test_creature");
 
 	const Damage::Roll damage(Damage::Type::Piercing, 1);
@@ -46,27 +45,24 @@ TEST_F(RegistryTest, TakingDamageUpdatesLog)
 	EventSystem::resolve_events(registry);
 
 	auto size = registry.ctx().get<EventLogger>().get_last_events(1).size();
-	Log::debug() << size << " events in last 1 events in logger";
 
 	ASSERT_TRUE(size > 0);
 
 	// EventSystem will log a message with the damage info
 
 	const auto logger = registry.ctx().get<EventLogger>();
-	const auto messages = logger.get_last_messages(30);
-	const std::string expected_message = ECS::get_colored_name(registry, creature) + " takes 1 piercing damage";
+	const auto messages = logger.get_last_messages(1);
+	const std::string expected_message = "Test_creature takes 1 piercing damage";
 	for (const auto& message : messages)
 	{
-		if (message == expected_message)
+		if (Utils::without_markups(message) == expected_message)
 		{
-			Log::debug() << "Damage test end success";
 			SUCCEED();
 			return;
 		}
+		Log::debug() << "message: " << Utils::without_markups(message) << " | expected message: " << expected_message;
 	}
 
-	Log::debug() << "Damage test end fail";
-	FAIL() << "Did not find expected message, found " << messages.size() << " messages";
+	FAIL() << "Did not find expected message, found " << messages.size() << " messages: " << messages.front();
 }
-
 

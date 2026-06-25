@@ -172,7 +172,6 @@ namespace CaveGenerator
 						flag = false;
 				}
 			}
-			render(data);
 		}
 
 		// Disable sources and sinks

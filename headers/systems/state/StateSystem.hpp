@@ -9,6 +9,7 @@
 #include "external/entt/entt.hpp"
 #include "components/Components.hpp"
 #include "domain/Attribute.hpp"
+#include "utils/Debug.hpp"
 
 namespace StateSystem
 {
@@ -42,16 +43,25 @@ namespace StateSystem
 	template<typename T>
 		int get_stat(const entt::registry& registry, const entt::entity entity)
 		{
-			if (!registry.all_of<T>(entity))
+			if (!registry.valid(entity))
+			{
+				Log::warning() << "Invalid entity" << Debug::entity_details(registry, entity);
 				return 0;
+			}
+			if (!registry.all_of<T>(entity))
+			{
+				Log::warning() << "Entity doesnt have T" << Debug::entity_details(registry, entity);
+				return 0;
+			}
+
 			int stat = registry.get<T>(entity).value;
-			if (registry.all_of<EquipmentSlots>(entity))
+			/*if (registry.all_of<EquipmentSlots>(entity))
 			{
 				const auto equipped_items = registry.get<EquipmentSlots>(entity).equipped_items;
 				for (const auto [slot, item] : equipped_items)
-					if (registry.all_of<T>(item))
+					if (item != entt::null && registry.all_of<T>(item))
 						stat += registry.get<T>(item).value; // Crash if has no value member
-			}
+			}*/
 			// invent enchantment/potion systems
 			return stat;
 		}
@@ -59,6 +69,11 @@ namespace StateSystem
 	template<typename T>
 		int get_attribute_modifier(const entt::registry& registry, const entt::entity entity)
 		{
+			if (!registry.all_of<T>(entity))
+			{
+				Log::warning() << registry.get<Name>(entity).name << " doesn't have attribute T";
+				return 0;
+			}
 			const int stat = get_stat<T>(registry, entity);
 			return get_attribute_modifier(stat);
 		}

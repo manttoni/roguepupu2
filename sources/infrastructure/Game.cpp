@@ -54,6 +54,7 @@ void Game::loop()
 {
 	registry.ctx().get<GameState>().game_running = true;
 	const auto player = ECS::get_player(registry);
+	assert(player != entt::null);
 	while (registry.ctx().get<GameState>().game_running && game_over == false)
 	{
 		Log::info() << "Round " << registry.ctx().get<GameState>().turn_number;

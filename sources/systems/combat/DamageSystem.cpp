@@ -36,6 +36,9 @@ namespace DamageSystem
 			return;
 		}
 
+		if (!damage_roll.is_rolled)
+			Error::fatal("Dice have not rolled");
+
 		auto& hp = registry.get<HitPoints>(entity).value;
 		hp -= damage_roll.result;
 

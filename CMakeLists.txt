@@ -14,7 +14,23 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if(MSVC)
     add_compile_options(/W4 /WX)
 else()
-    add_compile_options(-Wall -Wextra -Werror -g -O3)
+    add_compile_options(-Wall -Wextra -Werror)
+endif()
+
+# ========================
+# Sanitizers
+# ========================
+option(ENABLE_ASAN "Enable AddressSanitizer" ON)
+
+if(ENABLE_ASAN AND NOT MSVC)
+    add_compile_options(
+        -fsanitize=address
+        -fno-omit-frame-pointer
+    )
+
+    add_link_options(
+        -fsanitize=address
+    )
 endif()
 
 # ========================

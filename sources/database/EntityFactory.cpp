@@ -409,15 +409,12 @@ entt::entity EntityFactory::create_entity(entt::registry& registry, const std::s
 {
 	if (LUT.find(name) == LUT.end())
 		Error::fatal("Entity not found: " + name);
-	Log::debug() << "Creating " << name;
 
 	auto entity = registry.create();
 	const auto& data = LUT.at(name);
 	for (const auto& [field_name, field_data] : data.items())
 	{
 		if (ignored_component(field_name)) continue;
-
-		Log::debug() << "Component name: " << field_name;
 
 		auto it = field_parsers.find(field_name);
 		if (it == field_parsers.end())

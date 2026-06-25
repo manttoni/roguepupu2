@@ -93,7 +93,6 @@ namespace Parser
 
 	Damage::Roll parse_damage_roll(const Json& data)
 	{
-		Log::debug() << "Parsing damage roll";
 
 		assert(data.contains("type"));
 		assert(data["type"].is_string());
@@ -101,8 +100,6 @@ namespace Parser
 		assert(data["amount"].is_string());
 		const auto type_str = data["type"].get<std::string>();
 		const auto dice_str = data["amount"].get<std::string>();
-
-		Log::debug() << dice_str;
 
 		std::regex diceroll_regex(R"(^(\d*)d(\d+)(?:([+\-])(\d+))?$)");
 		std::smatch matches;
@@ -130,7 +127,6 @@ namespace Parser
 				sign * modifier
 				);
 
-		Log::debug() << "Parsed damage roll";
 		return roll;
 	}
 

@@ -34,11 +34,11 @@ namespace Damage
 		bool is_rolled = false;
 		int advantage = 0;
 
-		Roll() = default;
-		Roll(const Type type, const Dice dice, const int modifier = 0, const int advantage = 0) : type(type), dice(dice), modifier(modifier), advantage(advantage) {}
-		Roll(const Type type, const int modifier) : type(type), modifier(modifier) {}
-
 		void roll(const int advantage = 0);
+		Roll() = default;
+		Roll(const Type type, const Dice dice, const int modifier = 0, const int advantage = 0) : type(type), dice(dice), modifier(modifier), advantage(advantage) { roll(); }
+		Roll(const Type type, const int modifier) : type(type), modifier(modifier) { roll(); }
+
 
 		bool operator==(const Roll& other) const = default;
 		bool operator!=(const Roll& other) const = default;
@@ -67,9 +67,18 @@ inline std::ostream& operator<<(std::ostream& os, const Damage::Roll& roll)
 {
 	if (roll.is_rolled)
 		os << roll.result << " ";
+	os << roll.type;
+	if (!roll.dice.is_valid() || roll.modifier == 0)
+		return os;
 
-	os << roll.type << " damage";
-	os << " (" << roll.dice << (roll.modifier > 0 ? "+" + std::to_string(roll.modifier) : (roll.modifier < 0 ? std::to_string(roll.modifier) : "")) << ")";
+	os << " (";
+	if (roll.dice.is_valid())
+		os << roll.dice;
+	if (roll.modifier > 0)
+		os << "+" << roll.modifier;
+	else if (roll.modifier < 0)
+		os << roll.modifier;
+	os << ")";
 
 	return os;
 }

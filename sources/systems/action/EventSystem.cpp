@@ -179,10 +179,10 @@ namespace EventSystem
 			const bool actor_hidden = !ECS::player_can_see_entity(registry, event.actor.entity);
 			const bool target_hidden = !ECS::player_can_see_entity(registry, event.target.entity);
 
+			// Returning here means that player will not get a log entry
 			if ((event.actor.entity != entt::null && actor_hidden) ||
 				(event.target.entity != entt::null && target_hidden))
 			{
-				Log::debug() << "Not running tests and there is a hidden entity, and it is not getting logged";
 				return;
 			}
 		}
@@ -219,6 +219,11 @@ namespace EventSystem
 			case Event::Type::BecomeHostile:
 				stream << "becomes hostile toward ";
 				break;
+			case Event::Type::AttackMiss:
+				stream << "doesn't hit ";
+				break;
+			case Event::Type::AttackHit:
+				break;
 			default:
 				Log::warning() << "Unsupported event.type in event handler log_event";
 				return;
@@ -235,7 +240,7 @@ namespace EventSystem
 
 		event.message = stream.str();
 		registry.ctx().get<EventLogger>().log_event(event);
-		Log::debug() << std::endl << event;
+		Log::debug() << "Event logged:" << std::endl << event;
 	}
 
 	void finalize(entt::registry& registry, Event& event)
@@ -257,7 +262,6 @@ namespace EventSystem
 	void resolve_events(entt::registry& registry)
 	{
 		auto& queue = registry.ctx().get<EventQueue>().queue;
-		Log::info() << "Resolving " << queue.size() << " events";
 		for (size_t i = 0; i < queue.size(); ++i)
 		{
 			auto& event = queue[i];

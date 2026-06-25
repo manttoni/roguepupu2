@@ -23,7 +23,11 @@ namespace StateSystem
 
 	int get_initiative(const entt::registry& registry, const entt::entity entity)
 	{
-		return Dice(1, 20).roll() + get_attribute_modifier<Dexterity>(registry, entity) + get_stat<Initiative>(registry, entity);
+		const auto roll = Dice(1, 20).roll();
+		const auto dexmod = get_attribute_modifier<Dexterity>(registry, entity);
+		const auto initiative_mod = 0;//get_stat<Initiative>(registry, entity);
+
+		return roll + dexmod + initiative_mod;
 	}
 	int get_attribute_modifier(const int attribute)
 	{
