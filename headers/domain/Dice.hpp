@@ -13,6 +13,9 @@ struct Dice
 
 	int roll(const int advantage = 0) const;
 	inline bool is_valid() const { return amount > 0 && sides > 0; }
+
+	bool operator==(const Dice& other) const = default;
+	bool operator!=(const Dice& other) const = default;
 };
 
 inline std::ostream& operator<<(std::ostream& os, const Dice& dice)

@@ -23,7 +23,7 @@ namespace DamageSystem
 		if (entity == ECS::get_player(registry))
 			registry.ctx().get<GameState>().game_running = false;
 
-		Event event = {.type = Event::Type::Death};
+		Event event(Event::Type::Death);
 		event.actor.entity = entity;
 		ECS::queue_event(registry, event);
 	}
@@ -58,7 +58,7 @@ namespace DamageSystem
 					);
 		}
 
-		Event event = {.type = Event::Type::TakeDamage};
+		Event event(Event::Type::TakeDamage);
 		event.actor.entity = entity;
 		event.damage_roll = damage_roll;
 		ECS::queue_event(registry, event);

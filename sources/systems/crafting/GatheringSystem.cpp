@@ -43,7 +43,7 @@ namespace GatheringSystem
 		if (!can_gather(registry, gatherer, gatherable))
 			return;
 
-		Event event = {.type = Event::Type::Gather};
+		Event event(Event::Type::Gather);
 		event.actor.entity = gatherer;
 		event.target.entity = gatherable;
 		ECS::queue_event(registry, event);

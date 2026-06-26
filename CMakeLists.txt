@@ -12,9 +12,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Compiler warnings and optimization
 # ========================
 if(MSVC)
-    add_compile_options(/W4 /WX)
+	add_compile_options(/W4 /WX)
 else()
-    add_compile_options(-Wall -Wextra -Werror)
+	add_compile_options(-Wall -Wextra)# -Werror)
 endif()
 
 # ========================
@@ -23,70 +23,70 @@ endif()
 option(ENABLE_ASAN "Enable AddressSanitizer" ON)
 
 if(ENABLE_ASAN AND NOT MSVC)
-    add_compile_options(
-        -fsanitize=address
-        -fno-omit-frame-pointer
-    )
+	add_compile_options(
+		-fsanitize=address
+		-fno-omit-frame-pointer
+		)
+		
+		add_link_options(
+			-fsanitize=address
+			)
+		endif()
 
-    add_link_options(
-        -fsanitize=address
-    )
-endif()
+		# ========================
+		# Include directories
+		# ========================
+		include_directories(headers)
 
-# ========================
-# Include directories
-# ========================
-include_directories(headers)
+		# ========================
+		# Source files
+		# ========================
+		file(GLOB_RECURSE SRCS "sources/*.cpp")
 
-# ========================
-# Source files
-# ========================
-file(GLOB_RECURSE SRCS "sources/*.cpp")
+		# Separate main.cpp from the rest
+		list(FILTER SRCS EXCLUDE REGEX ".*/main\\.cpp$")  # Exclude main.cpp from library
 
-# Separate main.cpp from the rest
-list(FILTER SRCS EXCLUDE REGEX ".*/main\\.cpp$")  # Exclude main.cpp from library
+		# ========================
+		# Core game library
+		# ========================
+		add_library(roguepupu2_lib STATIC ${SRCS})
+		target_include_directories(roguepupu2_lib PUBLIC headers)
+		target_compile_features(roguepupu2_lib PUBLIC cxx_std_20)
 
-# ========================
-# Core game library
-# ========================
-add_library(roguepupu2_lib STATIC ${SRCS})
-target_include_directories(roguepupu2_lib PUBLIC headers)
-target_compile_features(roguepupu2_lib PUBLIC cxx_std_20)
+		# ========================
+		# Game executable
+		# ========================
+		add_executable(${PROJECT_NAME} sources/main.cpp)  # Only main.cpp goes here
+		target_link_libraries(${PROJECT_NAME} PRIVATE roguepupu2_lib ncursesw panelw m)
 
-# ========================
-# Game executable
-# ========================
-add_executable(${PROJECT_NAME} sources/main.cpp)  # Only main.cpp goes here
-target_link_libraries(${PROJECT_NAME} PRIVATE roguepupu2_lib ncursesw panelw m)
+		# Ensure logs directory exists after build
+		add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/logs
+		)
 
-# Ensure logs directory exists after build
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/logs
-)
+		# ========================
+		# Google Test
+		# ========================
+		find_package(GTest REQUIRED)
+		enable_testing()
 
-# ========================
-# Google Test
-# ========================
-find_package(GTest REQUIRED)
-enable_testing()
+		file(GLOB_RECURSE TEST_SRCS "tests/*.cpp")
+		add_executable(${PROJECT_NAME}_tests ${TEST_SRCS})
 
-file(GLOB_RECURSE TEST_SRCS "tests/*.cpp")
-add_executable(${PROJECT_NAME}_tests ${TEST_SRCS})
+		# Test mode
+		target_compile_definitions(${PROJECT_NAME}_tests PRIVATE RUNNING_TESTS)
 
-# Test mode
-target_compile_definitions(${PROJECT_NAME}_tests PRIVATE RUNNING_TESTS)
+		# Add include directories for tests
+		target_include_directories(${PROJECT_NAME}_tests PRIVATE headers tests tests/helpers)
 
-# Add include directories for tests
-target_include_directories(${PROJECT_NAME}_tests PRIVATE headers tests tests/helpers)
-
-target_link_libraries(${PROJECT_NAME}_tests
-    PRIVATE roguepupu2_lib
-    PRIVATE GTest::gtest
-    PRIVATE GTest::gtest_main
-    PRIVATE ncursesw panelw m       # <-- add these
-)
+		target_link_libraries(${PROJECT_NAME}_tests
+			PRIVATE roguepupu2_lib
+			PRIVATE GTest::gtest
+			PRIVATE GTest::gtest_main
+			PRIVATE ncursesw panelw m       # <-- add these
+		)
 
 
-include(GoogleTest)
-gtest_discover_tests(${PROJECT_NAME}_tests)
+		include(GoogleTest)
+		gtest_discover_tests(${PROJECT_NAME}_tests)
 

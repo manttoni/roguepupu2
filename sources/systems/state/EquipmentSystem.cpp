@@ -64,7 +64,7 @@ namespace EquipmentSystem
 		}
 		assert(is_equipped(registry, entity, item));
 
-		Event event = {.type = Event::Type::Equip};
+		Event event(Event::Type::Equip);
 		event.actor.entity = entity;
 		event.target.entity = item;
 		ECS::queue_event(registry, event);
@@ -83,7 +83,7 @@ namespace EquipmentSystem
 				equipped_items[slot] = entt::null;
 		}
 
-		Event event = {.type = Event::Type::Unequip};
+		Event event(Event::Type::Unequip);
 		event.actor.entity = entity;
 		event.target.entity = item;
 		ECS::queue_event(registry, event);

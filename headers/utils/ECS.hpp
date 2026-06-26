@@ -197,7 +197,7 @@ namespace ECS
 	{
 		registry.emplace<Destroyed>(entity);
 
-		Event destroy_event = {.type = Event::Type::Destroy};
+		Event destroy_event(Event::Type::Destroy);
 		destroy_event.target.entity = entity;
 		queue_event(registry, destroy_event);
 	}

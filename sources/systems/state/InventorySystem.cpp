@@ -41,7 +41,7 @@ namespace InventorySystem
 	{
 		auto& inventory = registry.get<Inventory>(entity).items;
 		inventory.push_back(item);
-		Event event = {.type = Event::Type::ReceiveItem};
+		Event event(Event::Type::ReceiveItem);
 		event.actor.entity = entity;
 		event.target.entity = item;
 		ECS::queue_event(registry, event);
@@ -65,7 +65,7 @@ namespace InventorySystem
 		remove_item(registry, owner, item);
 		registry.emplace_or_replace<Position>(item, pos);
 
-		Event event = {.type = Event::Type::Drop};
+		Event event(Event::Type::Drop);
 		event.actor.entity = owner;
 		event.actor.position = pos;
 		event.target.entity = item;

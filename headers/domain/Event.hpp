@@ -45,6 +45,9 @@ struct Event
 		BecomeHostile,
 	};
 
+	Event() = default;
+	Event(const Type type) : type(type) {}
+	Event(const Event& other) = default;
 	Event& operator=(const Event& other) = default;
 
 	std::string message = ""; // A general description will be formed in event handler

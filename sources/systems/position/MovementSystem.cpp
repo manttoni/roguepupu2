@@ -139,7 +139,7 @@ namespace MovementSystem
 	{
 		registry.emplace_or_replace<Position>(entity, position);
 
-		Event event = {.type = Event::Type::Move};
+		Event event(Event::Type::Move);
 		event.actor.entity = entity;
 		event.target.position = position;
 		ECS::queue_event(registry, event);

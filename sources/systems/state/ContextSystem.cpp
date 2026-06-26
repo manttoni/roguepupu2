@@ -301,6 +301,7 @@ namespace ContextSystem
 		auto& inventory_component = registry.get<Inventory>(entity);
 		auto& inventory = inventory_component.items;
 
+		Menu::Selection selection;
 		while (true)
 		{
 			std::sort(inventory.begin(), inventory.end(), [&](const auto a, const auto b) {
@@ -315,10 +316,10 @@ namespace ContextSystem
 				break;
 			}
 			std::vector<std::string> text;
-			text.push_back(ECS::get_colored_name(registry, entity) + "s Inventory");
+			text.push_back(ECS::get_colored_name(registry, entity) + "s inventory");
 			std::vector<std::string> buttons = get_inventory_format(registry, inventory, entity);
 			buttons.push_back("Back");
-			const Menu::Selection selection = Dialog::get_selection(text, buttons, Screen::topleft(), selection.index);
+			selection = Dialog::get_selection(text, buttons, Screen::topleft(), selection.index);
 			if (selection.cancelled)
 				break;
 			assert(selection.element.has_value());
@@ -333,6 +334,7 @@ namespace ContextSystem
 		const auto& cell = ECS::get_cell(registry, position);
 		const auto& mixture = cell.get_liquid_mixture();
 
+		Menu::Selection selection;
 		while (true)
 		{
 			std::vector<std::string> text;
@@ -346,7 +348,7 @@ namespace ContextSystem
 					});
 			std::vector<std::string> buttons = ECS::get_colored_names(registry, entities);
 			buttons.push_back("Back");
-			const Menu::Selection selection = Dialog::get_selection(text, buttons, Screen::topleft(), selection.index);
+			selection = Dialog::get_selection(text, buttons, Screen::topleft(), selection.index);
 			if (selection.cancelled)
 				break;
 			show_entity_details(registry, entities[selection.index]);
