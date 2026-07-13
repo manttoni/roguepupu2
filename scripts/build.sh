@@ -26,7 +26,12 @@ build_debug() {
 }
 
 run_tests() {
-    ./build-debug/roguepupu2_tests
+    if [[ ! -x "$BUILD_DEBUG/roguepupu2_tests" ]]; then
+        echo "Debug tests have not been built."
+        exit 1
+    fi
+
+    "$BUILD_DEBUG/roguepupu2_tests"
 }
 
 configure_release() {

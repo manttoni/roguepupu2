@@ -1,6 +1,7 @@
 #include "utils/Log.hpp"
 #include "utils/ANSI.hpp"
 #include <iomanip>
+#include <filesystem>
 
 namespace Log
 {
@@ -31,6 +32,8 @@ namespace Log
 
 	void write(const std::string& message, const std::string& filename)
 	{
+		if (std::filesystem::is_directory("logs"))
+			std::filesystem::create_directories("logs");
 		std::ofstream os(filename, std::ios::app);
 		if (!os)
 			throw std::runtime_error("Can't open " + filename);
