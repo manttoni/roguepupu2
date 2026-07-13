@@ -20,7 +20,10 @@ class Color
 		bool operator==(const Color& other) const;
 		bool operator!=(const Color& other) const;
 		bool operator<(const Color& other) const;
+		Color operator+(const Color& other);
+		Color operator-(const Color& other);
 		Color& operator+=(const Color& other);
+		Color& operator-=(const Color& other);
 		Color operator*(const int scalar) const;
 		Color operator*(const double scalar) const;
 		Color operator/(const int scalar) const;
@@ -45,3 +48,9 @@ class Color
 		static inline Color green() { return Color(0, 500, 0); }
 		static inline Color blue() { return Color(0, 0, 500); }
 };
+
+inline std::ostream& operator<<(std::ostream& os, const Color& color)
+{
+	os << color.to_string();
+	return os;
+}

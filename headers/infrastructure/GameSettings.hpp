@@ -9,6 +9,7 @@ struct GameSettings
 	{
 		ShowStatus, // show hp, mp and sp
 		LogLength,	// how many lines of log to render
+		ShowDebug,
 	};
 	struct Setting
 	{
@@ -17,6 +18,7 @@ struct GameSettings
 	};
 	std::map<Type, Setting> settings = {
 		{ Type::ShowStatus, { "Show status", true } },
-		{ Type::LogLength, { "Log length", std::numeric_limits<int>::max() } }
+		{ Type::LogLength, { "Log length", std::numeric_limits<int>::max() } },
+		{ Type::ShowDebug, { "Show debug", true } }
 	};
 };

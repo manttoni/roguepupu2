@@ -69,6 +69,11 @@ double LiquidMixture::get_volume(const Liquid::Type type) const
 	return volume_total;
 }
 
+Vec2<double> LiquidMixture::get_momentum() const
+{
+	return momentum;
+}
+
 double LiquidMixture::get_viscosity() const
 {
 	double viscosity = 0;
@@ -112,4 +117,15 @@ std::string LiquidMixture::to_string() const
 		//string += "{reset}";
 	}
 	return string;
+}
+
+bool LiquidMixture::empty() const
+{
+	for (const auto [type, amount] : mixture)
+	{
+		assert(amount >= 0);
+		if (amount > 0)
+			return false;
+	}
+	return true;
 }

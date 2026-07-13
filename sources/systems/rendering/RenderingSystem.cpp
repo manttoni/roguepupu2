@@ -31,6 +31,8 @@
 #include "infrastructure/GameState.hpp"
 #include "utils/Error.hpp"
 #include "utils/Vec2.hpp"
+#include "UI/Dialog.hpp"
+#include "utils/Time.hpp"
 
 namespace RenderingSystem
 {
@@ -93,7 +95,7 @@ namespace RenderingSystem
 			case Cell::Type::Floor:
 			case Cell::Type::Source:
 			case Cell::Type::Sink:
-				return Color(25, 30, 20);
+				return Color(25, 30, 20) + cell.get_bgcolor();
 			default:
 				Error::fatal("Cell without type");
 		}
@@ -140,9 +142,9 @@ namespace RenderingSystem
 		UI::instance().set_current_panel(UI::Panel::Game, true);
 		const auto& cave = ECS::get_cave(registry, position);
 		const Visual visual = get_visual(registry, position);
-		const Vec2 middle = Screen::middle();
-		const Vec2 cell(position.cell_idx, cave.get_size());
-		const Vec2 player(registry.get<Position>(ECS::get_player(registry)).cell_idx, cave.get_size());
+		const Vec2<int> middle = Screen::middle();
+		const Vec2<int> cell = Vec2<int>::from_idx(position.cell_idx, cave.get_size());
+		const Vec2<int> player = Vec2<int>::from_idx(registry.get<Position>(ECS::get_player(registry)).cell_idx, cave.get_size());
 		const int y = middle.y + cell.y - player.y;
 		const int x = middle.x + cell.x - player.x;
 		if (y > Screen::height() || x > Screen::width() ||
@@ -189,7 +191,64 @@ namespace RenderingSystem
 		UI::instance().disable_color_pair(log_pair);
 	}
 
-	void draw_bar(const Color& color, const double percentage, const size_t y, const size_t width)
+	void show_debug(const entt::registry& registry)
+	{
+		if (ECS::get_setting_value<bool>(registry, GameSettings::Type::ShowDebug) == false)
+			return;
+		const auto text = Debug::debug_text(registry);
+		size_t y = 0;
+		const auto screen_width = Screen::width();
+		for (const auto& line : text)
+		{
+			const auto size = line.size();
+			UI::instance().print(y, screen_width - size, line);
+			y++;
+		}
+	}
+
+	void render(entt::registry& registry)
+	{
+		if (registry.ctx().get<GameState>().test_run)
+			return;
+		if (UI::instance().get_initialized_colors().size() >= 256 ||
+			UI::instance().get_initialized_color_pairs().size() >= 256)
+			UI::instance().reset_colors(); // 256 might be too late, but its complicated
+		render_active_cave(registry);
+		print_log(registry);
+		//if (std::get<bool>(registry.ctx().get<GameSettings>().settings.at(GameSettings::Type::ShowStatus).value))
+		//	show_player_status(registry);
+		show_debug(registry);
+		UI::instance().update();
+		registry.ctx().get<RenderData>().render_frame++;
+		//UI::instance().enable_attr(A_NORMAL);
+	}
+
+	// For testing. This renders a cave as it is being generated
+	void render_generation(const entt::registry& registry, const size_t cave_idx)
+	{
+		if (UI::instance().get_initialized_colors().size() >= 256 ||
+			UI::instance().get_initialized_color_pairs().size() >= 256)
+			UI::instance().reset_colors(); // 256 might be too late, but its complicated
+		UI::instance().set_current_panel(UI::Panel::Game);
+		const auto& cave = ECS::get_cave(registry, cave_idx);
+		for (const auto& pos : cave.get_positions())
+		{
+			const Visual visual = get_visual(registry, pos);
+			const Vec2<int> coords = Vec2<int>::from_idx(pos.cell_idx, cave.get_size());
+			UI::instance().enable_color_pair(visual.color_pair);
+			if (visual.attr != A_NORMAL)
+				UI::instance().enable_attr(visual.attr);
+			UI::instance().print_wide(coords.y, coords.x, visual.glyph);
+			if (visual.attr != A_NORMAL)
+				UI::instance().disable_attr(visual.attr);
+			UI::instance().disable_color_pair(visual.color_pair);
+		}
+		UI::instance().update();
+	}
+
+};
+
+/*void draw_bar(const Color& color, const double percentage, const size_t y, const size_t width)
 	{
 		const size_t full_blocks = width * percentage;
 		const double per_block = 1.0 / static_cast<double>(width);
@@ -205,7 +264,7 @@ namespace RenderingSystem
 		UI::instance().print_wstr(y, 1, bar);
 
 		UI::instance().disable_color_pair(ColorPair(color, Color{}));
-	}
+	}*/
 
 	/*void show_player_status(const entt::registry& registry)
 	{
@@ -229,60 +288,3 @@ namespace RenderingSystem
 		draw_bar(Color(0,0,600), std::max(0.0, mp_per), 5, bar_len);
 	}*/
 
-	void show_debug(const entt::registry& registry)
-	{
-		if (std::get<bool>(registry.ctx().get<DevSettings>().settings.at(DevSettings::Type::ShowDebug).value) == false)
-			return;
-		UI::instance().set_current_panel(UI::Panel::Game);
-		const std::vector<std::string> debug =
-		{
-			"Colors: " + std::to_string(UI::instance().get_initialized_colors().size()),
-			"ColorPairs: " + std::to_string(UI::instance().get_initialized_color_pairs().size()),
-			"Turn Number: " + std::to_string(registry.ctx().get<GameState>().turn_number),
-			"Liquids volume: " + std::to_string(LiquidSystem::get_liquids_volume(registry, ECS::get_active_cave(registry).get_idx()))
-		};
-		for (size_t i = 0; i < debug.size(); ++i)
-			UI::instance().print(i, 0, debug[i]);
-	}
-
-	void render(entt::registry& registry)
-	{
-		if (registry.ctx().get<GameState>().test_run)
-			return;
-		if (UI::instance().get_initialized_colors().size() >= 256 ||
-			UI::instance().get_initialized_color_pairs().size() >= 256)
-			UI::instance().reset_colors(); // 256 might be too late, but its complicated
-		render_active_cave(registry);
-		print_log(registry);
-		//if (std::get<bool>(registry.ctx().get<GameSettings>().settings.at(GameSettings::Type::ShowStatus).value))
-		//	show_player_status(registry);
-		show_debug(registry);
-		UI::instance().update();
-		registry.ctx().get<RenderData>().render_frame++;
-		UI::instance().enable_attr(A_NORMAL);
-	}
-
-	// For testing. This renders a cave as it is being generated
-	void render_generation(const entt::registry& registry, const size_t cave_idx)
-	{
-		if (UI::instance().get_initialized_colors().size() >= 256 ||
-			UI::instance().get_initialized_color_pairs().size() >= 256)
-			UI::instance().reset_colors(); // 256 might be too late, but its complicated
-		UI::instance().set_current_panel(UI::Panel::Game);
-		const auto& cave = ECS::get_cave(registry, cave_idx);
-		for (const auto& pos : cave.get_positions())
-		{
-			const Visual visual = get_visual(registry, pos);
-			const Vec2 coords(pos.cell_idx, cave.get_size());
-			UI::instance().enable_color_pair(visual.color_pair);
-			if (visual.attr != A_NORMAL)
-				UI::instance().enable_attr(visual.attr);
-			UI::instance().print_wide(coords.y, coords.x, visual.glyph);
-			if (visual.attr != A_NORMAL)
-				UI::instance().disable_attr(visual.attr);
-			UI::instance().disable_color_pair(visual.color_pair);
-		}
-		UI::instance().update();
-	}
-
-};

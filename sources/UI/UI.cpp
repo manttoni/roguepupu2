@@ -167,7 +167,6 @@ void UI::resize_terminal()
 // otherwise will be non-blocking, but waiting for delay times ms
 int UI::input(int delay)
 {
-	flushinp();
 
 	// -1 is default value for delay
 	// getch() will be blocking by default
@@ -226,10 +225,13 @@ int UI::input(int delay)
 	if (key == KEY_RESIZE)
 		resize_terminal();
 
+	if (key != -1)
+		Log::debug() << "Key pressed: " << key;
+	flushinp();
 	return key;
 }
 
-Vec2 UI::get_direction(const int key)
+Vec2<int> UI::get_direction(const int key)
 {
 	switch (key)
 	{
@@ -245,16 +247,16 @@ Vec2 UI::get_direction(const int key)
 	}
 }
 
-Vec2 UI::get_window_dimensions(const WINDOW* const window) const
+Vec2<int> UI::get_window_dimensions(const WINDOW* const window) const
 {
-	Vec2 dimensions;
+	Vec2<int> dimensions;
 	getmaxyx(window, dimensions.y, dimensions.x);
 	return dimensions;
 }
 
-Vec2 UI::get_window_start(const WINDOW* const window) const
+Vec2<int> UI::get_window_start(const WINDOW* const window) const
 {
-	Vec2 start;
+	Vec2<int> start;
 	getbegyx(window, start.y, start.x);
 	return start;
 }
@@ -267,14 +269,14 @@ Position UI::get_clicked_position(const entt::registry& registry)
 	const auto& player_position = registry.get<Position>(player);
 	const auto& cave = ECS::get_cave(registry, player_position.cave_idx);
 
-	const Vec2 window_dimensions = get_window_dimensions(window);
-	const Vec2 window_start = get_window_start(window);
-	const Vec2 mouse_position = get_mouse_position();
-	const Vec2 mouse_relative = mouse_position - window_start;
-	const Vec2 window_center = window_dimensions / 2;
-	const Vec2 offset = mouse_relative - window_center;
-	const Vec2 player_coords(player_position.cell_idx, cave.get_size());
-	const Vec2 click_coords = player_coords + offset;
+	const Vec2<int> window_dimensions = get_window_dimensions(window);
+	const Vec2<int> window_start = get_window_start(window);
+	const Vec2<int> mouse_position = get_mouse_position();
+	const Vec2<int> mouse_relative = mouse_position - window_start;
+	const Vec2<int> window_center = window_dimensions / 2;
+	const Vec2<int> offset = mouse_relative - window_center;
+	const Vec2<int> player_coords = Vec2<int>::from_idx(player_position.cell_idx, cave.get_size());
+	const Vec2<int> click_coords = player_coords + offset;
 	if (click_coords.y < 0 ||
 		click_coords.x < 0 ||
 		click_coords.y >= static_cast<int>(cave.get_size()) ||
@@ -320,7 +322,7 @@ Position UI::get_selected_position(entt::registry& registry)
 		ECS::get_cell(registry, selected).set_attr(A_NORMAL);
 
 		// Get the new position and check bounds
-		Vec2 selected_coords(selected.cell_idx, cave.get_size());
+		Vec2<int> selected_coords = Vec2<int>::from_idx(selected.cell_idx, cave.get_size());
 		selected_coords += direction;
 		if (selected_coords.out_of_bounds(0, cave.get_size() - 1))
 		{

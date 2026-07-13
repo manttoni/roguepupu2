@@ -72,11 +72,11 @@ class Menu
 		};
 
 	public:
-		Menu(const Vec2& position = Screen::middle());
+		Menu(const Vec2<int>& position = Screen::middle());
 		~Menu();
 
 	private:
-		Vec2 position;
+		Vec2<int> position;
 		PANEL* panel;
 		std::vector<Element> elements;
 		size_t height, width;
@@ -85,7 +85,6 @@ class Menu
 		void set_panel();
 		size_t get_unselectable_count() const;
 		int get_mouse_selection() const;
-		void show_elements(const size_t selected) const;
 		size_t select_element(const size_t selected, const int key) const;
 		void change_value(Element& e, const int key);
 		void input_text(Element& e, const int key);
@@ -95,6 +94,7 @@ class Menu
 		bool selection_confirmed(const Element& e, const int key) const;
 
 	public:
+		void show_elements(const size_t selected = SIZE_MAX);
 		void add_element(Element element);
 		Selection get_selection(const size_t default_selected = 0);
 		void set_blocking(const bool value) { blocking = value; }

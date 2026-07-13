@@ -3,6 +3,7 @@
 #include <cassert>
 #include <climits>
 #include <cstdint>
+#include <sstream>
 #include <ostream>
 
 struct Position
@@ -36,9 +37,16 @@ struct Position
 		return cell_idx != invalid_idx && cave_idx != invalid_idx;
 	}
 
+	std::string to_string() const
+	{
+		std::ostringstream os;
+		os << "(Cell: " << std::to_string(cell_idx) << ", Cave: " << std::to_string(cave_idx) << ")";
+		return os.str();
+	}
+
 	friend std::ostream& operator<<(std::ostream& os, const Position& pos)
 	{
-		os << "(Cell: " << std::to_string(pos.cell_idx) << ", Cave: " << std::to_string(pos.cave_idx) << ")";
+		os << pos.to_string();
 		return os;
 	}
 };

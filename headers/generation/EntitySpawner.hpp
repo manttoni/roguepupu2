@@ -7,5 +7,5 @@ namespace EntitySpawner
 {
 	/* Entities that have defined spawn conditions in .json can spawn here
 	 * */
-	void spawn_entities(entt::registry& registry, const size_t cave_idx);
+	void spawn_natural_entities(entt::registry& registry, const size_t cave_idx);
 }

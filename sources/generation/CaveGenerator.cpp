@@ -34,8 +34,8 @@
 
 namespace CaveGenerator
 {
-
-	bool is_on_edge(const Data& data, const Vec2& coords)
+	// Make map edges unpassable
+	bool is_on_edge(const Data& data, const Vec2<int>& coords)
 	{
 		const auto margin_size = static_cast<int>(data.margin.size);
 		const auto cave_size = static_cast<int>(data.cave.get_size());
@@ -51,11 +51,12 @@ namespace CaveGenerator
 	 * */
 	void set_rock_densities(Data& data)
 	{
+		Log::info() << "Setting rock densities";
 		auto& cells = data.cave.get_cells();
-		const size_t seed = Random::rand<size_t>(0, 99999);
+		const size_t seed = Random::rand<size_t>(0, 999999);
 		for (auto& cell : cells)
 		{
-			const Vec2 coords(cell.get_idx(), data.cave.get_size());
+			const Vec2<int> coords = Vec2<int>::from_idx(cell.get_idx(), data.cave.get_size());
 			const double perlin = Random::noise2D(
 					coords.y,
 					coords.x,
@@ -74,8 +75,9 @@ namespace CaveGenerator
 	/* Set -inf for sinks because LiquidSystem will then flow any amount into it
 	 * Set +inf for sources
 	 * Divide cave like a pizza, each slice gets one feature.
+	 * This is a bit crazy, if it breaks just make a simpler one.
 	 * */
-	void set_water_features(Data& data)
+	void set_erosion_points(Data& data)
 	{
 		const size_t total_features = data.features.sources + data.features.sinks;
 		std::map<Cell::Type, size_t> spawning_features =
@@ -83,7 +85,7 @@ namespace CaveGenerator
 			{ Cell::Type::Source, data.features.sources },
 			{ Cell::Type::Sink, data.features.sinks }
 		};
-		const Vec2 center(static_cast<int>(data.cave.get_size()) / 2, static_cast<int>(data.cave.get_size()) / 2);
+		const Vec2<int> center(static_cast<int>(data.cave.get_size()) / 2, static_cast<int>(data.cave.get_size()) / 2);
 		const double max_radius =
 			static_cast<double>(data.cave.get_size()) / 2 -
 			static_cast<double>(data.margin.size);
@@ -98,7 +100,7 @@ namespace CaveGenerator
 			const double angle = Random::rand<double>(angle_min, angle_max);
 			const double radius = Random::rand<double>(max_radius / 1.5, max_radius);
 
-			const Vec2 coords = Math::polar_to_cartesian(center, radius, angle);
+			const Vec2<int> coords = Math::polar_to_cartesian(center, radius, angle);
 			const size_t cell_idx = coords.to_idx(data.cave.get_size());
 			const Position pos(cell_idx, data.cave.get_idx());
 			auto& cell = data.cave.get_cell(pos);
@@ -117,13 +119,6 @@ namespace CaveGenerator
 			it->second--;
 			if (it->second == 0)
 				spawning_features.erase(it);
-
-			// Make some sources spawn liquids, testing with 100% chance to spawn 1l per frame
-			if (cell.get_type() == Cell::Type::Source)
-			{
-				const LiquidMixture liquid_source(Liquid::Type::Water, 1);
-				cell.set_liquid_source(liquid_source);
-			}
 		}
 
 		// If this is the first level, or idx == 0,
@@ -133,6 +128,7 @@ namespace CaveGenerator
 			auto middle_pos = data.cave.middle_position();
 			data.cave.get_cell(middle_pos).set_type(Cell::Type::Source); // this position will now be a part of the tunnels
 		}
+		Log::info() << "Set erosion points: " << total_features;
 
 		assert(spawning_features.empty());
 	}
@@ -154,36 +150,59 @@ namespace CaveGenerator
 
 	void form_tunnels(Data& data)
 	{
+		const bool test_run = data.registry.ctx().get<GameState>().test_run;
 		const auto& sources = data.cave.get_positions_with_type(Cell::Type::Source);
 		const auto& sinks = data.cave.get_positions_with_type(Cell::Type::Sink);
 
 		bool flag = false;
+		std::vector<std::pair<Position, Position>> connections;
+		const auto max_connections = sources.size() * sinks.size();
 		while (flag == false)
 		{
-			flag = true;
+			render(data);
+			if (!test_run)
+				Dialog::message(std::to_string(connections.size()) + "/" + std::to_string(max_connections));
+			flag = true; // If this will not get set to false, then everything is connected
 			for (const auto& source : sources)
 			{
 				for (const auto& sink : sinks)
 				{
-					erosion_simulation(data, source, sink);
-					smooth_terrain(data);
+					// The coordinates are connected with a tunnel, if pathfinder found it and it was recorded into 'connections'
+					const auto is_connected = std::find(connections.begin(), connections.end(), std::pair<Position, Position>(source, sink)) != connections.end();
+					if (is_connected)
+						continue;
+
+					// Try to connect, erode rock during it
+					if (erosion_simulation(data, source, sink) == 0) // 0 obstacles left
+					{
+						connections.push_back({source, sink});
+						continue;
+					}
+
+					// smooth
+					// smooth_terrain(data);
+
+					// Let water flow naturally
+					// A more efficient alternative would be to set a water level height once in the end
 					simulate_environment(data);
-					if (MovementSystem::find_path(data.registry, source, sink, false).empty())
-						flag = false;
+
+					flag = false; // not ready yet
 				}
 			}
 		}
 
 		// Disable sources and sinks
-		// This will stop water from spawning at sources, should result in nicer water bodies
 		for (const auto& source : sources)
 			ECS::get_cell(data.registry, source).set_type(Cell::Type::Floor);
 		for (const auto& sink : sinks)
 			ECS::get_cell(data.registry, sink).set_type(Cell::Type::Floor);
+
+		Log::info() << "Form tunnels. Connections: " << connections.size() << "/" << max_connections;
 	}
 
 	// A* to find path of least resistance through solid rock
-	void erosion_simulation(Data& data, const Position& start, const Position& end)
+	// return 0 if ready
+	size_t erosion_simulation(Data& data, const Position& start, const Position& end)
 	{
 		auto& cave = data.cave;
 
@@ -192,6 +211,7 @@ namespace CaveGenerator
 		std::map<Position, double> f_score;
 		g_score[start] = 0;
 		f_score[start] = cave.distance(start, end);
+		size_t obstacles = 0; // count how many times have to pass solid rock
 		while (!open_set.empty())
 		{
 			auto current_pos = open_set[0];
@@ -201,8 +221,20 @@ namespace CaveGenerator
 					current_pos = cell_pos;
 			}
 
+			assert(current_pos.is_valid() && "Position is not valid");
+
+			const auto current_density = cave.get_cell(current_pos).get_density();
+
+			if (current_density > 0 && current_density <= CELL_DENSITY_MAX)
+			{
+				// Render blockages with more red
+				auto& color = cave.get_cell(current_pos).get_bgcolor();
+				color += Color(1, 0, 0);
+				//Log::debug() << color;
+				obstacles++;
+			}
 			if (current_pos == end)
-				return;
+				return obstacles;
 
 			cave.get_cell(current_pos).reduce_density(data.erosion.primary);
 
@@ -231,71 +263,36 @@ namespace CaveGenerator
 				}
 			}
 		}
-	}
-	void smooth_terrain(Data& data)
-	{
-		// Set each density to the average within a radius
-		const auto radius = 1;
-		const auto intensity = data.smooth.intensity;
-		const auto iterations = data.smooth.iterations;
-
-		for (size_t i = 0; i < iterations; ++i)
-		{
-			std::vector<double> densities;
-			densities.reserve(data.cave.get_area());
-
-			for (const auto& pos : data.cave.get_positions())
-			{	// calculate average of surrounding cells density
-				double avg = data.cave.get_cell(pos).get_density();
-				const auto nearby_positions = data.cave.get_nearby_positions(pos, radius, Cell::Type::Floor);
-				for (const auto& position : nearby_positions)
-					avg += data.cave.get_cell(position).get_density();
-				avg /= 1 + nearby_positions.size();
-				densities.push_back(avg);
-			}
-
-			for (size_t j = 0; j < data.cave.get_area(); ++j)
-			{
-				auto& cell = data.cave.get_cell({j, data.cave.get_idx()});
-				if (data.smooth.rock == false && cell.get_type() == Cell::Type::Rock)
-					continue;
-				if (cell.get_type() == Cell::Type::Source || cell.get_type() == Cell::Type::Sink)
-					continue;
-				const double density = cell.get_density();
-				const double diff = densities[j] - density;
-				cell.set_density(density + diff * intensity);
-			}
-		}
+		return obstacles;
 	}
 
-	void generate(entt::registry& registry, const size_t cave_idx, const bool prompt) // Extra parameter is for manual testing, also rendering of generation is for manual testing
+
+	void generate(entt::registry& registry, const size_t cave_idx)
 	{
-		Data data(registry, ECS::get_cave(registry, cave_idx));
-		const bool test_run = data.registry.ctx().get<GameState>().test_run;
-		if (!test_run)
-			UI::instance().set_current_panel(UI::Panel::Game, true);
-		set_rock_densities(data);
-		set_water_features(data);
-		form_tunnels(data);
-		EntitySpawner::spawn_entities(data.registry, data.cave.get_idx());
+		Log::info() << "Generating cave " << cave_idx;
+		auto& cave = ECS::get_cave(registry, cave_idx); // Cave must exist in the World object
+		const bool testing = registry.ctx().get<GameState>().test_run;
+		if (!testing)
+			UI::instance().set_current_panel(UI::Panel::Game, true); // true = render panel on top
+
+		Data data(registry, cave); // Parses conf from data/generation/cave.json
+
+		/* Put cave forming stuff here, "geology"
+		 * */
+		set_rock_densities(data); // Give each cell a value [1, CELL_MAX_DENSITY] randomized by Perlin noise
+		set_erosion_points(data); // Give some cells an "erosion entity", at least one source and one sink
+		form_tunnels(data); // Connect erosion points with a special pathfinding algorithm
+
+		/* Spawn entities
+		 * */
+		EntitySpawner::spawn_natural_entities(registry, cave_idx);
+
+		/* Rendering the cave while generating or after is preferred when testing manually
+		 * RenderingSystem has a function for rendering the cave in a simple way
+		 * */
 		render(data);
 
-		data.registry.ctx().get<EventQueue>().queue.clear();
-		if (test_run)
-			return;
-		while (prompt)
-		{
-			const auto selection = Dialog::get_selection("Cave ready", {"OK", "Simulate liquids"});
-			if (selection.cancelled || selection.element->label == "OK")
-				break;
-			if (selection.element->label == "Simulate liquids")
-			{
-				for (size_t i = 0; i < 100; ++i)
-				{
-					LiquidSystem::simulate_liquids(data.registry, data.cave.get_idx());
-					RenderingSystem::render_generation(data.registry, data.cave.get_idx());
-				}
-			}
-		}
+		if (!testing)
+			Dialog::alert("Cave ready");
 	}
 }

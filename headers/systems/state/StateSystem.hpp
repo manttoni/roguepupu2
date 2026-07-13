@@ -49,10 +49,7 @@ namespace StateSystem
 				return 0;
 			}
 			if (!registry.all_of<T>(entity))
-			{
-				Log::warning() << "Entity doesnt have T" << Debug::entity_details(registry, entity);
 				return 0;
-			}
 
 			int stat = registry.get<T>(entity).value;
 			/*if (registry.all_of<EquipmentSlots>(entity))

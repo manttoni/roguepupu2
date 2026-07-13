@@ -15,6 +15,7 @@ namespace AISystem
 {
 	bool will_engage_enemy(const entt::registry& registry, Intent& intent)
 	{
+		// Future idea is to add to visible entities the entities it can remember
 		auto visible_entities = VisionSystem::get_visible_entities(registry, intent.actor.entity);
 		std::sort(visible_entities.begin(), visible_entities.end(),
 				[&](const auto a, const auto b)
@@ -28,26 +29,14 @@ namespace AISystem
 				continue;
 			if (AlignmentSystem::is_hostile(registry, intent.actor.entity, entity))
 			{
-				if (CombatSystem::can_attack<MeleeWeapon>(registry, intent.actor.entity, entity))
+				if (CombatSystem::can_attack(registry, intent.actor.entity, entity))
 				{
 					intent.target.entity = entity;
-					intent.type = Intent::Type::MeleeAttack;
-					return true;
-				}
-				else if (CombatSystem::can_attack<RangedWeapon>(registry, intent.actor.entity, entity))
-				{
-					intent.target.entity = entity;
-					intent.type = Intent::Type::RangedAttack;
-					return true;
-				}
-				else if (CombatSystem::can_attack<ThrowingWeapon>(registry, intent.actor.entity, entity))
-				{
-					intent.target.entity = entity;
-					intent.type = Intent::Type::ThrowingAttack;
-					return true;
+					intent.type = Intent::Type::Attack; // ActionSystem will expand this to a specific attack type
 				}
 				else
 				{	// Could maybe move this to some other function like will_approach_enemy/entity
+					//
 					intent.target.position = MovementSystem::get_first_step(registry,
 							intent.actor.position,
 							registry.get<Position>(entity));

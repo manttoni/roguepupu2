@@ -7,6 +7,7 @@
 #include <cassert>
 #include "LiquidMixture.hpp"
 #include "Color.hpp"  // for Color
+#include "utils/Math.hpp"
 
 class Cell
 {
@@ -61,6 +62,8 @@ class Cell
 	public:
 		Color get_fgcolor() const { return fgcolor; }
 		Color get_bgcolor() const { return bgcolor; }
+		Color& get_fgcolor() { return fgcolor; }
+		Color& get_bgcolor() { return bgcolor; }
 
 	private:
 		wchar_t glyph;
@@ -74,6 +77,11 @@ class Cell
 	public:
 		void set_density(const double d) { this->density = d; set_glyph(); }
 		double get_density() const { return density; }
+		double get_effective_density() const
+		{
+			const double limit = 1000;
+			return Math::clamp(density, -limit, limit);
+		}
 		void reduce_density(const double amount);
 
 	private:
@@ -82,22 +90,6 @@ class Cell
 		auto get_lights() const { return lights; }
 		void add_light(const Color& color) { lights[color]++; }
 		void clear_lights() { lights.clear(); }
-
-	private:
-		// what liquids are flowing into the cave from this source
-		// not used for non-source cells unless some condensation effect is implemented
-		LiquidMixture liquid_source;
-	public:
-		void set_liquid_source(const LiquidMixture& liquid_source)
-		{
-			assert(get_type() == Type::Source);
-			this->liquid_source = liquid_source;
-		}
-		LiquidMixture get_liquid_source() const
-		{
-			assert(get_type() == Type::Source);
-			return liquid_source;
-		}
 
 	private:
 		// what liquids are now in this cell

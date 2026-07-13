@@ -36,7 +36,7 @@ namespace Random
 		return perlin.octave2D_01(y * frequency, x * frequency, octaves);
 	}
 
-	inline double noise2D(const Perlin& p, const Vec2& c)
+	inline double noise2D(const Perlin& p, const Vec2<size_t>& c)
 	{
 		return noise2D(c.y, c.x, p.frequency, p.octaves, p.seed);
 	}
@@ -68,7 +68,7 @@ namespace Random
 		return chance >= rand<double>(0.0, 1.0);
 	}
 
-	inline bool roll(const Perlin& p, const Vec2 c)
+	inline bool roll(const Perlin& p, const Vec2<size_t> c)
 	{
 		return p.treshold >= noise2D(p, c);
 	}

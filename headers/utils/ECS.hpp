@@ -26,39 +26,34 @@
 
 namespace ECS
 {
-	template<typename... Components>
-		std::vector<entt::entity> get_entities(const entt::registry& registry, const Components&... values)
+	/* These two functions return all entities either in a whole cave, or just in one cell in a cave
+	 * */
+	template <typename T = Position> std::vector<entt::entity> get_entities(const entt::registry& registry, const size_t cave_idx)
+	{
+		std::vector<entt::entity> entities;
+		for (const auto e : registry.view<T>())
+			if (registry.all_of<Position>(e) && registry.get<Position>(e).cave_idx == cave_idx)
+				entities.push_back(e);
+		return entities;
+	}
+	template <typename T = Position> std::vector<entt::entity> get_entities(const entt::registry& registry, const Position& pos)
+	{
+		std::vector<entt::entity> entities;
+		for (const auto e : registry.view<T>())
+			if (registry.all_of<Position>(e) && registry.get<Position>(e) == pos)
+				entities.push_back(e);
+		return entities;
+	}
+	template<typename T>
+		T get_setting_value(const entt::registry& registry, GameSettings::Type type)
 		{
-			std::vector<entt::entity> result;
-			auto view = registry.view<std::decay_t<Components>...>();
-
-			for (const auto entity : view)
-			{
-				bool match = ((registry.get<std::decay_t<Components>>(entity) == values) && ...);
-				if (match)
-					result.push_back(entity);
-			}
-
-			return result;
+			return std::get<T>(
+					registry.ctx()
+					.get<GameSettings>()
+					.settings.at(type)
+					.value
+					);
 		}
-	template<typename... Components>
-		std::vector<entt::entity> get_entities_in_cave(const entt::registry& registry, const size_t cave_idx, const Components&... values)
-		{
-			std::vector<entt::entity> result;
-			auto view = registry.view<std::decay_t<Components>...>();
-
-			for (const auto entity : view)
-			{
-				if (!registry.all_of<Position>(entity) || registry.get<Position>(entity).cave_idx != cave_idx)
-					continue;
-				bool match = ((registry.get<std::decay_t<Components>>(entity) == values) && ...);
-				if (match)
-					result.push_back(entity);
-			}
-
-			return result;
-		}
-
 	inline std::vector<entt::entity> get_creatures(const entt::registry& registry, const size_t cave_idx)
 	{
 		std::vector<entt::entity> creatures;
@@ -183,9 +178,8 @@ namespace ECS
 
 	inline entt::entity get_unlinked_passage(const entt::registry& registry, const size_t cave_idx)
 	{
-		const auto unlinked_passages = get_entities_in_cave(registry, cave_idx, Transition{.destination = entt::null});
-		assert(!unlinked_passages.empty());
-		return unlinked_passages[Random::rand<size_t>(0, unlinked_passages.size() - 1)];
+		(void) registry; (void) cave_idx;
+		return entt::null; // function might get removed
 	}
 
 	inline size_t get_turn_number(const entt::registry& registry)
@@ -223,13 +217,15 @@ namespace ECS
 
 	inline double get_liquid_level(const entt::registry& registry, const Position& pos)
 	{
-		double liquid_level = get_cell(registry, pos).get_liquid_level();
-		for (const auto entity : get_entities(registry, pos))
-		{
-			if (registry.all_of<Mass>(entity))
-				liquid_level += registry.get<Mass>(entity).value;
-		}
-		return liquid_level;
+		const auto& cell = get_cell(registry, pos);
+		assert(!cell.get_liquid_mixture().empty());
+		const auto depth = cell.get_effective_density();
+		const auto liquid_volume = cell.get_liquid_mixture().get_volume();
+		double entity_mass = 0.0;
+		for (const auto e : get_entities<Mass>(registry, pos))
+			entity_mass += registry.get<Mass>(e).value;
+
+		return depth + liquid_volume + entity_mass;
 	}
 
 	inline void init_registry(entt::registry& registry)

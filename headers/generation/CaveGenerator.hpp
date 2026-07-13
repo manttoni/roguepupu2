@@ -87,7 +87,8 @@ namespace CaveGenerator
 	void form_tunnels(Data& data);
 
 	// Create a path of least resistance through the rock, while reducing density
-	void erosion_simulation(Data& data, const Position& start, const Position& end);
+	// return 0 if nothing stops creature from walking through
+	size_t erosion_simulation(Data& data, const Position& start, const Position& end);
 
 	// Smooth terrain without changing liquid sinks so it will drain properly/as intended
 	void smooth_terrain(Data& data);
@@ -112,5 +113,5 @@ namespace CaveGenerator
 	// Generate a cave in a blank Cave object
 	// Has to be indexed in World.
 	// prompt is temporarily for inspecting result
-	void generate(entt::registry& registry, const size_t cave_idx, const bool prompt = false);
+	void generate(entt::registry& registry, const size_t cave_idx);
 };

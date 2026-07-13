@@ -17,16 +17,17 @@ namespace Dialog
 	Menu::Selection get_selection(
 			const std::vector<std::string>& text,
 			const std::vector<std::string>& buttons = {},
-			const Vec2& position = Screen::middle(),
+			const Vec2<int>& position = Screen::middle(),
 			const size_t default_selected = 0
 			);
 	Menu::Selection get_selection(
 			const std::string& text,
 			const std::vector<std::string>& buttons = {},
-			const Vec2& position = Screen::middle(),
+			const Vec2<int>& position = Screen::middle(),
 			const size_t default_selected = 0
 			);
-	void show_message(const std::string& message);
+	void message(const std::string& message, const Vec2<int>& position = Screen::middle());
+	void message(const std::vector<std::string>& messages, const Vec2<int>& position = Screen::middle());
 	bool confirm(const std::string& message);
 	void alert(const std::string& message);
 	Menu::Selection get_input(const std::string& label, std::string* input);

@@ -22,7 +22,7 @@ namespace VisionSystem
 	{
 		if (ECS::get_cell(registry, position).get_type() == Cell::Type::Rock)
 			return 1.0;
-		double opaqueness = 0.01; // Try to add some global difficulty of seeing really far
+		double opaqueness = 0.1; // Try to add some global difficulty of seeing really far
 		for (const auto entity : ECS::get_entities(registry, position))
 		{
 			if (registry.all_of<Opaque>(entity))

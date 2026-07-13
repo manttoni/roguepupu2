@@ -7,11 +7,13 @@
 #include <map>
 #include "domain/Color.hpp"
 #include "domain/Liquid.hpp"
+#include "utils/Vec2.hpp"
 
 class LiquidMixture
 {
 	private:
 		std::map<Liquid::Type, double> mixture;
+		Vec2<double> momentum;
 
 	public:
 		LiquidMixture() = default;
@@ -24,7 +26,9 @@ class LiquidMixture
 		double remove_liquid(const Liquid::Type type, const double volume);
 		void add_liquid(const Liquid::Type type, const double volume);
 		double get_volume(const Liquid::Type type = Liquid::Type::None) const;
+		Vec2<double> get_momentum() const;
 		double get_viscosity() const;
 		Color get_color() const;
 		std::string to_string() const;
+		bool empty() const;
 };

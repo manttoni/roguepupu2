@@ -19,7 +19,7 @@
 #include "utils/Math.hpp"
 #include "utils/Parser.hpp"
 
-Menu::Menu(const Vec2& position) : position(position), panel(nullptr), height(0), width(0) {}
+Menu::Menu(const Vec2<int>& position) : position(position), panel(nullptr), height(0), width(0) {}
 Menu::~Menu()
 {
 	if (panel != nullptr)
@@ -306,7 +306,7 @@ void Menu::set_panel()
 	}
 
 	const Vec2 size(static_cast<int>(height), static_cast<int>(width));
-	Vec2 start = position - size / 2;
+	Vec2<int> start = position - size / 2;
 	start.y = std::max(0, std::min(start.y, Screen::height() - static_cast<int>(height)));
 	start.x = std::max(0, std::min(start.x, Screen::width() - static_cast<int>(width)));
 	if (!panel)
@@ -351,11 +351,11 @@ size_t Menu::get_unselectable_count() const
 int Menu::get_mouse_selection() const
 {
 	WINDOW* window = panel_window(panel);
-	Vec2 start, size;
+	Vec2<int> start, size;
 	getbegyx(window, start.y, start.x);
 	getmaxyx(window, size.y, size.x);
-	const Vec2 end = start + size;
-	const Vec2 mouse = UI::instance().get_mouse_position();
+	const Vec2<int> end = start + size;
+	const Vec2<int> mouse = UI::instance().get_mouse_position();
 
 	// Not inside menu, borders excluded
 	if (mouse.x <= start.x || mouse.x >= end.x
@@ -372,8 +372,10 @@ int Menu::get_mouse_selection() const
 /* Print menu elements, and highlight the selected with ncurses A_REVERSE,
  * it will invert bg and fg colors.
  * */
-void Menu::show_elements(const size_t selected) const
+void Menu::show_elements(const size_t selected)
 {
+	if (panel == nullptr)
+		set_panel();
 	wmove(panel_window(panel), 1, 0); // because of box() start at y = 1
 	for (size_t i = 0; i < elements.size(); ++i)
 	{

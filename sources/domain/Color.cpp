@@ -4,6 +4,7 @@
 #include <string>     // for operator+, allocator, char_traits, to_string
 #include <regex>
 #include <stdexcept>
+#include <sstream>
 
 #include "domain/Color.hpp"  // for Color
 #include "UI/UI.hpp"     // for UI
@@ -34,11 +35,30 @@ bool Color::operator<(const Color& other) const
 		return g < other.g;
 	return b < other.b;
 }
+Color Color::operator+(const Color& other)
+{
+	Color result;
+	result.r = std::min(r + other.r, 1000);
+	result.g = std::min(g + other.g, 1000);
+	result.b = std::min(b + other.b, 1000);
+	return result;
+}
+Color Color::operator-(const Color& other)
+{
+	Color result;
+	result.r = std::max(r - other.r, 0);
+	result.g = std::max(g - other.g, 0);
+	result.b = std::max(b - other.b, 0);
+	return result;
+}
 Color& Color::operator+=(const Color& other)
 {
-	r = std::min(r + other.r, 1000);
-	g = std::min(g + other.g, 1000);
-	b = std::min(b + other.b, 1000);
+	*this = *this + other;
+	return *this;
+}
+Color& Color::operator-=(const Color& other)
+{
+	*this = *this - other;
 	return *this;
 }
 Color Color::operator*(const int scalar) const
@@ -142,3 +162,9 @@ Color Color::from_markup(const std::string& str, const size_t idx)
 	return Color(r, g, b);
 }
 
+std::string Color::to_string() const
+{
+	std::ostringstream ss;
+	ss << r << ", " << g << ", " << b;
+	return ss.str();
+}

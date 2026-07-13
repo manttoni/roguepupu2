@@ -40,8 +40,8 @@ namespace MovementSystem
 			return false;
 
 		const auto cave_size = cave.get_size();
-		const Vec2 from(from_pos.cell_idx, cave_size);
-		const Vec2 to(to_pos.cell_idx, cave_size);
+		const Vec2<int> from = Vec2<int>::from_idx(from_pos.cell_idx, cave_size);
+		const Vec2<int> to = Vec2<int>::from_idx(to_pos.cell_idx, cave_size);
 
 		if (abs(from.y - to.y) > 1 || abs(from.x - to.x) > 1) // is not a neighbor
 			return false;
@@ -138,10 +138,10 @@ namespace MovementSystem
 	void move(entt::registry& registry, const entt::entity entity, const Position& position)
 	{
 		registry.emplace_or_replace<Position>(entity, position);
-
 		Event event(Event::Type::Move);
 		event.actor.entity = entity;
 		event.target.position = position;
+
 		ECS::queue_event(registry, event);
 	}
 

@@ -51,11 +51,14 @@ namespace ActionSystem
 			case Intent::Type::Move:
 				MovementSystem::move(registry, intent.actor.entity, intent.target.position);
 				break;
-			case Intent::Type::MeleeAttack:
+			case Intent::Type::AttackMelee:
 				CombatSystem::melee_attack(registry, intent.actor.entity, intent.target.entity);
 				break;
-			case Intent::Type::RangedAttack:
+			case Intent::Type::AttackRanged:
 				CombatSystem::ranged_attack(registry, intent.actor.entity, intent.target.entity);
+				break;
+			case Intent::Type::AttackThrowing:
+				CombatSystem::throwing_attack(registry, intent.actor.entity, intent.target.entity);
 				break;
 			case Intent::Type::UseAbility:
 				AbilitySystem::use_ability(registry, intent.actor, intent.ability_id, intent.target);
@@ -89,7 +92,7 @@ namespace ActionSystem
 	 *
 	 * This is used only for player
 	 * */
-	Intent get_direction_intent(const entt::registry& registry, const Vec2 direction)
+	Intent get_direction_intent(const entt::registry& registry, const Vec2<int> direction)
 	{
 		const auto player = ECS::get_player(registry);
 		Intent intent;
@@ -97,11 +100,11 @@ namespace ActionSystem
 		const auto& cave = ECS::get_cave(registry, intent.actor.position);
 		const auto cave_size = cave.get_size();
 
-		const Vec2 current(intent.actor.position.cell_idx, cave_size);
-		const Vec2 destination = current + direction;
+		const Vec2<int> current = Vec2<int>::from_idx(intent.actor.position.cell_idx, cave_size);
+		const Vec2<int> destination = current + direction;
 
 		if (destination.out_of_bounds(0, cave_size - 1))
-			Error::fatal("Destination position out of bounds");
+			Error::fatal("Destination position out of bounds: " + destination.to_string());
 
 		const Position destination_pos(destination.to_idx(cave_size), cave.get_idx());
 		intent.target.position = destination_pos;
@@ -110,15 +113,18 @@ namespace ActionSystem
 
 		for (const auto entity : ECS::get_entities(registry, destination_pos))
 		{
-			if (intent.type != Intent::Type::None) break;
-			if (registry.all_of<Alignment, HitPoints>(entity) &&
-				!registry.all_of<Dead>(entity) &&
-				AlignmentSystem::is_hostile(registry, player, entity) &&
-				AlignmentSystem::is_hostile(registry, entity, player))
+			// When trying to move into another entitys Position,
+			// Find out what should happen
+
+			// Hostile creature or you are hostile
+			if (AlignmentSystem::is_hostile(registry, entity, player) || AlignmentSystem::is_hostile(registry, player, entity))
 			{
-				intent.type = Intent::Type::Attack;
-				intent.target.entity = entity;
-				break;
+				if (CombatSystem::can_attack(registry, player, entity) && registry.all_of<Solid>(entity))
+				{
+					intent.type = Intent::Type::Attack; // Attack will be expanded to specific type
+					intent.target.entity = entity;
+					break;
+				}
 			}
 		}
 
@@ -192,7 +198,7 @@ namespace ActionSystem
 					return {.type = Intent::Type::ShowPlayer};
 				case KEY_ESCAPE:
 					{
-						Menu::Selection selection = Dialog::get_selection(std::vector<std::string>{}, {"Continue", "Controls", "Settings", "Main Menu"}, Screen::middle(), selection.index);
+						Menu::Selection selection = Dialog::get_selection(std::vector<std::string>{}, {"Continue", "Controls", "Settings", "Main Menu"}, Screen::middle());
 						if (selection.cancelled) // ESC will not exit
 							continue;
 						assert(selection.element.has_value());
@@ -222,15 +228,32 @@ namespace ActionSystem
 		return {.type = Intent::Type::None};
 	}
 
+	void expand_intent(const entt::registry& registry, Intent& intent)
+	{
+		const auto actor = intent.actor.entity;
+		const auto target = intent.target.entity;
+		if (intent.type == Intent::Type::Attack) // Not specified what kind of attack
+		{
+			if (CombatSystem::can_attack<MeleeWeapon>(registry, actor, target))
+				intent.type = Intent::Type::AttackMelee;
+			else if (CombatSystem::can_attack<RangedWeapon>(registry, actor, target))
+				intent.type = Intent::Type::AttackRanged;
+			else if (CombatSystem::can_attack<ThrowingWeapon>(registry, actor, target))
+				intent.type = Intent::Type::AttackThrowing;
+			else
+				Log::error() << "Could not expand Intent::Type::Attack";
+		}
+	}
+
 	void act_round(entt::registry& registry, const size_t cave_idx)
 	{
 		std::vector<entt::entity> entities = ECS::get_creatures(registry, cave_idx);
 		assert(!entities.empty());
-		std::sort(entities.begin(), entities.end(),
-				[&](const auto a, const auto b)
-				{
-				return StateSystem::get_initiative(registry, a) > StateSystem::get_initiative(registry, b);
-				});
+		//std::sort(entities.begin(), entities.end(),
+		//		[&](const auto a, const auto b)
+		//		{
+		//		return StateSystem::get_initiative(registry, a) > StateSystem::get_initiative(registry, b);
+		//		});
 		const auto player = ECS::get_player(registry); // if no player, this is entt::null
 		for (const auto entity : entities)
 		{
@@ -248,6 +271,9 @@ namespace ActionSystem
 			// This information has to be valid
 			intent.actor.entity = entity;
 			intent.actor.position = registry.get<Position>(entity);
+
+			// In case intent is not specific enough yet
+			expand_intent(registry, intent);
 
 			// Intent has been validated and will now be executed
 			resolve_intent(registry, intent);

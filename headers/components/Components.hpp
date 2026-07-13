@@ -12,6 +12,7 @@
 #include "domain/Color.hpp"
 #include "domain/Intent.hpp"
 #include "domain/Ability.hpp"
+#include "domain/LiquidMixture.hpp"
 #include "external/entt/fwd.hpp"
 
 /* Core components */
@@ -184,6 +185,11 @@ struct AttackRange
 struct LiquidContainer
 {
 	double capacity = 0.0;
+};
+struct LiquidSource // This can be anything that spawns liquids
+{
+	LiquidMixture liquid_mixture;
+	double flow_rate = 0;
 };
 
 /* This is probably going to change, but exist

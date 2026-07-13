@@ -2,6 +2,8 @@
 
 #include <cmath>
 #include "Vec2.hpp"
+#include "nlohmann/json.hpp"
+#include "Range.hpp"
 
 namespace Math
 {
@@ -24,6 +26,10 @@ namespace Math
 		}
 		else
 			return value;
+	}
+	template <typename T> static inline T clamp(const T& value, const Range<T> range)
+	{
+		return clamp(value, range.min, range.max);
 	}
 	inline double map(double x, double a, double b, double c, double d)
 	{
@@ -49,7 +55,7 @@ namespace Math
 		return precision;
 	}
 
-	inline Vec2 polar_to_cartesian(const Vec2 center, const double radius, const double angle)
+	inline Vec2<int> polar_to_cartesian(const Vec2<int> center, const double radius, const double angle)
 	{
 		const int y = static_cast<int>(std::round(center.y - radius * std::sin(angle)));
 		const int x = static_cast<int>(std::round(center.x + radius * std::cos(angle)));

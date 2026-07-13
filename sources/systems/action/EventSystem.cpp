@@ -223,9 +223,13 @@ namespace EventSystem
 				stream << "doesn't hit ";
 				break;
 			case Event::Type::AttackHit:
+				stream << "hits ";
 				break;
+			case Event::Type::Spawn:
+			case Event::Type::Move:
+				return;
 			default:
-				Log::warning() << "Unsupported event.type in event handler log_event";
+				Log::warning() << "Unsupported event.type in event handler log_event: " << static_cast<size_t>(event.type);
 				return;
 		}
 		if (event.target.entity != entt::null)

@@ -32,8 +32,11 @@ Game::Game()
 		game_over = true;
 	else
 	{
-		CaveGenerator::generate(registry, 0, true);
-		registry.emplace<Position>(player, ECS::get_cave(registry, 0).middle_position());
+		CaveGenerator::generate(registry, 0);
+		const auto middle = ECS::get_cave(registry, 0).middle_position();
+		assert(middle.is_valid());
+		Log::debug() << "Middle position in game start: " << middle;
+		registry.emplace<Position>(player, middle);
 	}
 }
 
@@ -62,9 +65,7 @@ void Game::loop()
 		LiquidSystem::simulate_liquids(registry);
 		registry.ctx().get<GameState>().turn_number++;
 	}
-	if (registry.all_of<Dead>(player))
-		game_over = true;
-	if (game_over)
+	if (registry.all_of<Dead>(player) || game_over)
 		Dialog::get_selection("Game over", {"OK"});
 }
 

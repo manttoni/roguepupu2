@@ -5,8 +5,7 @@
 #include "UI/Dialog.hpp"
 #include "UI/Menu.hpp"
 #include "utils/Screen.hpp"
-
-struct Vec2;
+#include "utils/Vec2.hpp"
 
 namespace Dialog
 {
@@ -16,7 +15,7 @@ namespace Dialog
 	Menu::Selection get_selection(
 			const std::vector<std::string>& text,
 			const std::vector<std::string>& buttons,
-			const Vec2& position,
+			const Vec2<int>& position,
 			const size_t default_selected)
 	{
 		Menu dialog_box(position);
@@ -42,7 +41,7 @@ namespace Dialog
 	Menu::Selection get_selection(
 			const std::string& text,
 			const std::vector<std::string>& buttons,
-			const Vec2& position,
+			const Vec2<int>& position,
 			const size_t default_selected
 			)
 	{
@@ -69,5 +68,20 @@ namespace Dialog
 		Menu menu(Screen::middle());
 		menu.add_element(Element(Type::TextField, label, input));
 		return menu.get_selection();
+	}
+
+	void message(const std::string& message, const Vec2<int>& position)
+	{
+		Menu msg_menu(position);
+		msg_menu.add_element(Element(Type::Text, message));
+		msg_menu.show_elements();
+	}
+
+	void message(const std::vector<std::string>& messages, const Vec2<int>& position)
+	{
+		Menu msg_menu(position);
+		for (const auto& message : messages)
+			msg_menu.add_element(Element(Type::Text, message));
+		msg_menu.show_elements();
 	}
 };

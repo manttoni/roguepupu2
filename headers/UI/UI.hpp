@@ -69,10 +69,10 @@ class UI
 		const std::map<ColorPair, short>& get_initialized_color_pairs() const { return initialized_color_pairs; }
 
 	private:
-		Vec2 mouse_position;
+		Vec2<int> mouse_position;
 	public:
-		Vec2 get_mouse_position() const { return mouse_position; }
-		void set_mouse_position(const Vec2& mouse_position) { this->mouse_position = mouse_position; }
+		Vec2<int> get_mouse_position() const { return mouse_position; }
+		void set_mouse_position(const Vec2<int>& mouse_position) { this->mouse_position = mouse_position; }
 
 	private:
 		PANEL* current_panel;
@@ -110,7 +110,7 @@ class UI
 
 
 		int input(int delay = -1); // wrapper for getch
-		Vec2 get_direction(const int key);
+		Vec2<int> get_direction(const int key);
 		Position get_clicked_position(const entt::registry& registry);
 		Position get_selected_position(entt::registry& registry);
 		size_t get_curs_y() const;
@@ -126,8 +126,8 @@ class UI
 		void init();
 		void end();
 		void resize_terminal();
-		Vec2 get_window_dimensions(const WINDOW* const window) const;
-		Vec2 get_window_start(const WINDOW* const window) const;
+		Vec2<int> get_window_dimensions(const WINDOW* const window) const;
+		Vec2<int> get_window_start(const WINDOW* const window) const;
 		void set_color_theme() { enable_color_pair(ColorPair(Color::bright_white(), Color::black())); }
 };
 
