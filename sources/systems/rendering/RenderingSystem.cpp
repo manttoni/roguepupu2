@@ -38,6 +38,7 @@ namespace RenderingSystem
 {
 	wchar_t get_glyph(const entt::registry& registry, const Position& position)
 	{
+		const auto& cave = ECS::get_cave(registry, position);
 		const auto& cell = ECS::get_cell(registry, position);
 
 		const auto& lm = cell.get_liquid_mixture();
@@ -48,7 +49,22 @@ namespace RenderingSystem
 		if (lm.get_volume() > 0)
 			return Unicode::LiquidShallow;
 
-		return cell.get_glyph();
+		if (cell.get_type() == Cell::Type::Rock)
+			return Unicode::FullBlock;
+
+		const std::string floors = ".,\'\":;";
+		const auto density = cell.get_effective_density();
+		if (density > -1)
+			return L'.';
+		if (density > -10)
+			return L',';
+		if (density > -100)
+			return L'\'';
+		if (density > -1000)
+			return L'\"';
+		if (density > -10000)
+			return L':';
+		return L';';
 	}
 
 	Color get_fgcolor(const entt::registry& registry, const Position& position)
@@ -65,7 +81,7 @@ namespace RenderingSystem
 		{
 			case Cell::Type::Rock:
 				// Set color gradient by density in some range
-				return Color(25, 30, 20) * static_cast<int>(std::round(std::min(
+				return Color(50, 60, 40) * static_cast<int>(std::round(std::min(
 								static_cast<double>(CELL_DENSITY_MAX),
 								cell.get_density() / 2.0 + 2.0
 								)));

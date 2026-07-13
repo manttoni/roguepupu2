@@ -72,6 +72,7 @@ class Cave
 		std::vector<Position> get_positions_with_type(const Cell::Type type) const;
 
 		Position middle_position() const { return Position((size / 2) * size + (size / 2), idx); }
+		Position deepest_position() const;
 
 	public:
 		Cave(const size_t idx, const size_t size, const size_t depth, const Cell::Type fill = Cell::Type::Rock);

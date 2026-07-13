@@ -176,3 +176,19 @@ Vec2<double> Cave::get_direction(const size_t from, const size_t to) const
 	//return normal; no reason to normalize maybe?
 	return diff;
 }
+
+Position Cave::deepest_position() const
+{
+	double deepest = 0;
+	size_t cell_idx = 0;
+	for (size_t i = 0; i < get_area(); ++i)
+	{
+		const auto ed = cells[i].get_effective_density();
+		if (ed < deepest)
+		{
+			deepest = ed;
+			cell_idx = i;
+		}
+	}
+	return Position{cell_idx, idx};
+}
