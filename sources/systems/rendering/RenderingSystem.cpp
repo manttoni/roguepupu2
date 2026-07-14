@@ -186,6 +186,8 @@ namespace RenderingSystem
 			render_cell(registry, position);
 	}
 
+	/* This works, no problems found
+	 * */
 	void print_log(const entt::registry& registry)
 	{
 		if (registry.ctx().get<RenderData>().print_log == false)
@@ -214,10 +216,13 @@ namespace RenderingSystem
 		const auto text = Debug::debug_text(registry);
 		size_t y = 0;
 		const auto screen_width = Screen::width();
+		PANEL* panel = UI::instance().get_panel(UI::Panel::Game); // Just render everythin on same panel...
+		WINDOW* window = panel_window(panel);
 		for (const auto& line : text)
 		{
 			const auto size = line.size();
-			UI::instance().print(y, screen_width - size, line);
+			wmove(window, y, screen_width - size);
+			UI::instance().print(line);
 			y++;
 		}
 	}
