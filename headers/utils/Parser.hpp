@@ -3,6 +3,7 @@
 #include <charconv>
 #include <utility>
 #include <filesystem>
+#include "components/Value.hpp"
 #include "domain/Color.hpp"
 #include "domain/Conditions.hpp"
 #include "domain/Damage.hpp"
@@ -13,7 +14,6 @@
 #include "utils/Random.hpp"
 #include "utils/Range.hpp"
 #include "utils/JsonUtils.hpp"
-#include "components/Components.hpp"
 
 namespace CaveGenerator { struct Data; };
 namespace Parser
@@ -30,8 +30,7 @@ namespace Parser
 	Damage::Roll parse_damage_roll(const Json& data);
 	Random::Perlin parse_perlin(const Json& data);
 
-	ToolType parse_tool_type(const Json& data);
-	AmmoType parse_ammo_type(const Json& data);
+	Value::AmmoType parse_ammo_type(const Json& data);
 
 	template<typename T>
 		Range<T> parse_range(const Json& data)

@@ -14,12 +14,12 @@
 
 namespace DamageSystem
 {
-	void perish(entt::registry& registry, const entt::entity entity)
+	void die(entt::registry& registry, const entt::entity entity)
 	{
 		if (!registry.all_of<Dead>(entity))
 			registry.emplace<Dead>(entity);
-		if (registry.all_of<Solid>(entity))
-			registry.erase<Solid>(entity);
+		if (registry.all_of<Collision>(entity))
+			registry.replace<Collision>(entity); // replace with default (false...false)
 		if (entity == ECS::get_player(registry))
 			registry.ctx().get<GameState>().game_running = false;
 
@@ -28,7 +28,7 @@ namespace DamageSystem
 		ECS::queue_event(registry, event);
 	}
 
-	void take_damage(entt::registry& registry, const entt::entity entity, const Damage::Roll& damage_roll)
+	void take_damage(entt::registry& registry, const entt::entity entity, const size_t amount, const DamageType dt)
 	{
 		if (!registry.all_of<HitPoints>(entity))
 		{
@@ -36,34 +36,17 @@ namespace DamageSystem
 			return;
 		}
 
-		if (!damage_roll.is_rolled)
-			Error::fatal("Dice have not rolled");
-
 		auto& hp = registry.get<HitPoints>(entity).value;
-		hp -= damage_roll.result;
+		hp -= amount;
 
-		// This needs its own system, some AnimationSystem with queued animations
-		if (registry.ctx().get<GameState>().test_run == false)
-		{
-			VisualEffectSystem::damage_flash(registry, entity);
-		}
-
-		// Creatures should have blood component
-		if (registry.all_of<Position>(entity))
-		{
-			ECS::spawn_liquid(
-					registry,
-					registry.get<Position>(entity),
-					LiquidMixture(Liquid::Type::Blood, damage_roll.result)
-					);
-		}
+		VisualEffectSystem::damage_flash(registry, entity);
 
 		Event event(Event::Type::TakeDamage);
 		event.actor.entity = entity;
-		event.damage_roll = damage_roll;
+		event.damage_roll = {.amount = amount, .damage_type = dt};
 		ECS::queue_event(registry, event);
 
 		if (hp <= 0)
-			perish(registry, entity);
+			die(registry, entity);
 	}
 };

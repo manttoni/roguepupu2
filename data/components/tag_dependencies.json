@@ -1,85 +1,66 @@
 {
 	"core": {
-		"components": [ "tags", "name", "glyph", "color", "solid", "opaque", "mass" ]
+		"components": [ "tags", "name", "color" ]
 	},
-	"creature": {
-		"components": [ "attributes", "alignment", "inventory", "equipment_slots", "unarmed_weapons" ]
+	"world_object": { "tags": [ "core" ],
+		"components": [ "glyph", "collision", "weight", "spawn_conditions" ]
 	},
-	"has_glow": {
-		"components": [ "glow", "color" ]
+	"destructible": { "tags": [ "world_object" ],
+		"components": [ "hitpoints", "on_destroy", "on_damage" ]
 	},
-	"fragile": {
-		"components": [ "destroy_when_stacked" ]
+	"creature": { "tags": [ "destructible" ],
+		"components": [ "attributes", "alignment", "inventory", "bodyparts", "on_death", "player", "ai_behaviors" ]
 	},
-	"spawns_naturally": {
-		"components": [ "spawn_chance", "environment_sensitive", "spawn_position" ]
+	"item": { "tags": [ "world_object" ],
+		"components": [ "gold_value", "rarity" ]
 	},
-	"equipment": {
-		"components": [ "equipment_slots_used" ],
-		"tags": [ "item" ]
+	"equipment": { "tags": [ "item" ],
+		"components": [ "equipped_in" ]
 	},
-	"weapon": {
-		"components": [ "damage", "attack_range" ],
-		"tags": [ "item", "equipment" ]
+	"ammo": { "tags": [ "equipment" ],
+		"components": [ "ammo_type" ]
 	},
-	"player": {
-		"components": [],
-		"tags": [ "creature" ]
+	"armor": { "tags": [ "equipment" ],
+		"components": [ "armor_proficiency", "max_dex_mod" ]
 	},
-	"npc": {
-		"components": [ "ai" ],
-		"tags": [ "creature" ]
+	"weapon": { "tags": [ "equipment" ],
+		"components": [ "damage_rolls", "attack_range", "weapon_properties", "on_hit" ]
 	},
-	"item": {
-		"components": [ "stackable" ]
+	"mushroom": { "tags": [ "world_object" ]
 	},
-	"mechanical_weapon": {
-		"tags": [ "weapon" ]
+	"plant": { "tags": [ "world_object" ]
 	},
-	"versatile_weapon": {
-		"tags": [ "weapon" ]
+	"bodypart": { "tags": [ "world_object" ],
+		"components": [ "bodyparts", "damage_rolls", "equipped_items" ]
 	},
-	"finesse_weapon": {
-		"tags": [ "weapon" ]
+	"spawn_condition": {
+		"components": [ "environment_sensitive", "random_chance" ]
 	},
-	"throwing_weapon": {
-		"components": [ "range" ],
-		"tags": [ "weapon" ]
+	"ai_behavior": {
+		"components": [ "ai_behavior_type", "condition" ]
 	},
-	"ranged_weapon": {
-		"components": [ "range", "requires_ammo" ],
-		"tags": [ "weapon" ]
+	"damage_roll": {
+		"components": [ "damage_type", "dice" ]
 	},
-	"improvised_weapon": {
-		"tags": [ "weapon" ]
+	"effect": {
+		"components": [ "target" ]
 	},
-	"ammo": {
-		"components": [ "ammo_type" ],
-		"tags": [ "equipment" ]
+	"duration_effect": { "tags": [ "effect" ],
+		"components": [ "duration" ]
 	},
-	"melee_weapon": {
-		"tags": [ "weapon" ]
+	"area_effect": { "tags": [ "effect" ],
+		"components": [ "radius", "angle" ]
 	},
-	"unarmed_weapon": {
-		"tags": [ "weapon" ]
+	"heal_effect": { "tags": [ "effect" ],
+		"components": [ "dice" ]
 	},
-	"tool": {
-		"components": [ "tool_type" ],
-		"tags": [ "item" ]
+	"damage_effect": { "tags": [ "effect" ],
+		"components": [ "damage_rolls" ]
 	},
-	"gatherable": {
-		"components": [ "gather_effect", "loot_table_ref", "requires_tool" ]
+	"spawn_effect": { "tags": [ "effect" ],
+		"components": [ "world_objects" ]
 	},
-	"mushroom": {
-		"tags": [ "spawns_naturally" ]
-	},
-	"plant": {
-		"tags": [ "spawns_naturally" ]
-	},
-	"container": {
-		"components": [ "inventory" ]
-	},
-	"door": {
-		"components": [ "closed" ]
+	"glow_effect": { "tags": [ "effect" ],
+		"components": [ "brightness" ]
 	}
 }

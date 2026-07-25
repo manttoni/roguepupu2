@@ -8,7 +8,6 @@
 
 #include "external/entt/entt.hpp"
 #include "components/Components.hpp"
-#include "domain/Attribute.hpp"
 #include "utils/Debug.hpp"
 
 namespace StateSystem
@@ -66,11 +65,7 @@ namespace StateSystem
 	template<typename T>
 		int get_attribute_modifier(const entt::registry& registry, const entt::entity entity)
 		{
-			if (!registry.all_of<T>(entity))
-			{
-				Log::warning() << registry.get<Name>(entity).name << " doesn't have attribute T";
-				return 0;
-			}
+			assert(registry.all_of<T>(entity) && "Entity needs T component");
 			const int stat = get_stat<T>(registry, entity);
 			return get_attribute_modifier(stat);
 		}

@@ -1,10 +1,10 @@
 #pragma once
 
 #include <optional>
-#include "components/Components.hpp"
+#include "components/Value.hpp"
+#include "components/Tag.hpp"
 #include "database/AbilityDatabase.hpp"
 #include "database/LootTableDatabase.hpp"
-#include "domain/Attribute.hpp"
 #include "domain/Cave.hpp"
 #include "domain/Color.hpp"
 #include "domain/Event.hpp"
@@ -23,6 +23,9 @@
 #include "utils/Parser.hpp"
 #include "utils/Random.hpp"
 #include "utils/Utils.hpp"
+
+using namespace Value;
+using namespace Tag;
 
 namespace ECS
 {
@@ -81,7 +84,7 @@ namespace ECS
 
 	inline std::string get_name(const entt::registry& registry, const entt::entity entity)
 	{
-		const std::string& name = Utils::capitalize(registry.get<Name>(entity).name);
+		const std::string& name = Utils::capitalize(registry.get<Name>(entity).value);
 		return name;
 	}
 
@@ -211,10 +214,14 @@ namespace ECS
 	inline wchar_t get_glyph(const entt::registry& registry, const entt::entity entity)
 	{
 		if (registry.all_of<Glyph>(entity))
-			return registry.get<Glyph>(entity).glyph;
-		return registry.get<Name>(entity).name[0];
+			return registry.get<Glyph>(entity).value;
+		return registry.get<Name>(entity).value[0];
 	}
 
+	/* Cell should be able to produce info about water level. Liquid system is ongoing some difficult phase,
+	 * so this could change a lot in the future. One possible direction would be to make it return [ "none",
+	 * "shallow", "deep"] or something similar, DnD maybe has some rules already.
+	 * */
 	inline double get_liquid_level(const entt::registry& registry, const Position& pos)
 	{
 		const auto& cell = get_cell(registry, pos);
@@ -241,20 +248,6 @@ namespace ECS
 		registry.ctx().emplace<GameSettings>();
 	}
 
-	inline Attributes get_attributes(const entt::registry& registry, const entt::entity entity)
-	{
-		using namespace StateSystem;
-		Attributes attributes = {
-			.strength = get_stat<Strength>(registry, entity),
-			.dexterity = get_stat<Dexterity>(registry, entity),
-			.constitution = get_stat<Constitution>(registry, entity),
-			.intelligence = get_stat<Intelligence>(registry, entity),
-			.wisdom = get_stat<Wisdom>(registry, entity),
-			.charisma = get_stat<Charisma>(registry, entity)
-		};
-		return attributes;
-	}
-
 	inline void spawn_liquid(entt::registry& registry, const Position& position, const LiquidMixture& lm)
 	{
 		assert(position.is_valid());
@@ -277,19 +270,6 @@ namespace ECS
 		assert(position.is_valid());
 		const auto& cell = get_cell(registry, position);
 		return cell.get_liquid_mixture().get_volume(type);
-	}
-
-	inline bool is_solid(const entt::registry& registry, const Position& position)
-	{
-		const auto& cell = get_cell(registry, position);
-		if (cell.get_type() == Cell::Type::Rock)
-			return true;
-		for (const auto& entity : get_entities(registry, position))
-		{
-			if (registry.all_of<Solid>(entity))
-				return true;
-		}
-		return false;
 	}
 
 	inline bool player_can_see_entity(const entt::registry& registry, const entt::entity e)

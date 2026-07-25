@@ -1,43 +1,48 @@
 {
 	"tags": ["core"],
-	"name": { "template_min_length": 3 },
-	"glyph": "",
-	"color": {
-		"red": { "template_min": 0, "template_max": 1000, "template_delta": 10, "template_default": 500 },
-		"green": { "template_min": 0, "template_max": 1000, "template_delta": 10, "template_default": 500 },
-		"blue": { "template_min": 0, "template_max": 1000, "template_delta": 10, "template_default": 500 }
+	"name":		{ "template_min_length": 2 },
+	"glyph":	{ "template_min_length": 1 },
+	"closed": true,
+	"locked": false,
+	"collision": {
+		"movement": false,
+		"vision": false
 	},
-	"solid": false,
-	"opaque": { "template_min": 0.0, "template_max": 1.0, "template_delta": 0.1, "template_default": 0.0 },
-	"mass": { "template_min": 0.0, "template_max": 20000.0, "template_delta": 0.1, "template_default": 0.0 },
+	"weapon_properties": {
+		"ammunition": false, "finesse": false, "heavy": false, "light": false, "loading": false, "range": false,
+		"reach": false, "special": false, "thrown": false, "two_handed": false, "versatile":false
+	},
+	"brightness":	{ "template_min": 0.0, "template_max": 100.0, "template_delta": 0.1, "template_default": 0.5 },
+	"radius":		{ "template_min": 0.0, "template_max": 999999.0, "template_delta": 1.0, "template_default": 0.0 },
+	"angle":		{ "template_min": 0, "template_max": 360, "template_delta": 1, "template_default": 360 },
+	"duration":		{ "template_min": 0, "template_max": 999999, "template_delta": 1, "template_default": 0 },
+	"weight":		{ "template_min": 0.0, "template_max": 999999.0, "template_delta": 0.1, "template_default": 0.0 },
+	"hitpoints":	{ "template_min": 1, "template_max": 999999, "template_delta": 1, "template_default": 1 },
+	"gold_value":	{ "template_min": 0, "template_max": 999999, "template_delta": 1, "template_default": 0 },
+	"attack_range":	{ "template_min": 0.0, "template_max": 100.0, "template_delta": 0.1, "template_default": 1.5 },
+	"color": {
+		"red":		{ "template_min": 0, "template_max": 1000, "template_delta": 10, "template_default": 500 },
+		"green":	{ "template_min": 0, "template_max": 1000, "template_delta": 10, "template_default": 500 },
+		"blue":		{ "template_min": 0, "template_max": 1000, "template_delta": 10, "template_default": 500 }
+	},
 	"attributes": {
-		"strength": { "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8 },
-		"dexterity": { "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8},
-		"constitution": { "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8},
-		"intelligence": { "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8},
-		"wisdom": { "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8},
-		"charisma": { "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8}
+		"strength":		{ "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8},
+		"dexterity":	{ "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8},
+		"constitution":	{ "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8},
+		"intelligence":	{ "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8},
+		"wisdom":		{ "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8},
+		"charisma":		{ "template_min": 1, "template_max": 100, "template_delta": 1, "template_default": 8}
 	},
 	"alignment": {
 		"chaos_law": { "template_min": -1.0, "template_max": 1.0, "template_delta": 0.01, "template_default": 0.0 },
 		"evil_good": { "template_min": -1.0, "template_max": 1.0, "template_delta": 0.01, "template_default": 0.0 },
 		"tolerance": { "template_min": -10.0, "template_max": 10.0, "template_delta": 0.1, "template_default": 0.0 }
 	},
-	"inventory": {
-	},
-	"unarmed_weapons": {
-	},
-	"equipment_slots": true,
-	"damage": {
-		"type": { "template_multi_choice": ["bludgeoning", "piercing", "slashing"] },
-		"amount": { "template_regex": "dice_roll" }
-	},
 	"glow": {
-		"radius": { "template_min": 0.0, "template_max": 100.0, "template_default": 0.0, "template_delta": 0.5 },
-		"intensity": { "template_min": 0.0, "template_max": 100.0, "template_default": 0.1, "template_delta": 0.01 }
+		"radius":		{ "template_min": 0.0, "template_max": 100.0, "template_default": 0.0, "template_delta": 0.5 },
+		"intensity":	{ "template_min": 0.0, "template_max": 100.0, "template_default": 0.1, "template_delta": 0.01 }
 	},
-	"destroy_when_stacked": false,
-	"spawn_chance": {
+	"random_chance": {
 		"perlin": {
 			"enabled": false,
 			"frequency": { "template_min": 0.0, "template_max": 1.0, "template_delta": 0.01, "template_default": 0.5 },
@@ -51,27 +56,43 @@
 		"hydro": { "template_multi_choice": [ "phobia", "neutral", "philia" ] },
 		"agora": { "template_multi_choice": [ "phobia", "neutral", "philia" ] }
 	},
+	"dice": { "template_regex": "dice_roll" },
 	"spawn_position": {
 		"solid_neighbors": { "template_range": [0, 8], "template_delta": 1, "template_default": [0, 8] },
 		"rock_neighbors": { "template_range": [0, 8], "template_delta": 1, "template_default": [0, 8] }
 	},
-	"equipment_slots_used": {
-		"slot_usage": { "template_multi_choice": [ "use_one", "use_all" ] },
-		"off_hand": false,
-		"main_hand": false,
-		"ammo": false,
-		"body": false
+	"tool_type":		{ "template_multi_choice": [ "cutting", "felling", "mining" ] },
+	"ammo_type":		{ "template_multi_choice": [ "arrow", "bolt", "bullet" ] },
+	"ai_behavior_type":	{ "template_multi_choice": [ "manage_equipment", "aggressive", "wander" ] },
+	"damage_type": {
+		"template_multi_choice": [
+			"bludgeoning", "piercing", "slashing",
+			"fire", "cold", "lightning", "thunder", "force",
+			"radiant", "necrotic", "psychic", "poison", "acid"
+		]
 	},
-	"ai": {
-		"aggressive": false,
-		"idle_wander": false,
-		"follow_player": false
-	},
-	"gather_effect": { "template_multi_choice": [ "dim", "destroy", "none" ] },
-	"requires_tool": { "template_multi_choice": [ "cutting", "felling", "mining" ] },
-	"tool_type": { "template_multi_choice": [ "cutting", "felling", "mining" ] },
-	"requires_ammo": { "template_multi_choice": [ "arrow", "bolt", "bullet" ] },
-	"ammo_type": { "template_multi_choice": [ "arrow", "bolt", "bullet" ] },
-	"closed": true,
-	"attack_range": { "template_min": 0.0, "template_max": 100.0, "template_delta": 0.1, "template_default": 1.5 }
+	"armor_proficiency_type": { "template_multi_choice": [ "light", "medium", "heavy" ] },
+	"rarity": { "template_multi_choice": [ "common", "uncommon", "rare", "very rare", "legendary" ] },
+	"on_damage":		{ "template_entity_links": ["effect"] },
+	"on_death":			{ "template_entity_links": ["effect"] },
+	"on_destroy":		{ "template_entity_links": ["effect"] },
+	"on_gather":		{ "template_entity_links": ["effect"] },
+	"on_move":			{ "template_entity_links": ["effect"] },
+	"on_enter":			{ "template_entity_links": ["effect"] },
+	"on_tick":			{ "template_entity_links": ["effect"] },
+	"on_hit":			{ "template_entity_links": ["effect"] },
+	"on_open":			{ "template_entity_links": ["effect"] },
+	"on_use":			{ "template_entity_links": ["effect"] },
+	"on_cast":			{ "template_entity_links": ["effect"] },
+	"on_upcast":		{ "template_entity_links": ["effect"] },
+	"constant_effects":	{ "template_entity_links": ["effect"] },
+	"inventory":		{ "template_entity_links": ["item"] },
+	"equipped_items":	{ "template_entity_links": ["equipment"] },
+	"bodyparts":		{ "template_entity_links": ["bodypart"] },
+	"equipped_in":		{ "template_entity_links": ["bodypart"] },
+	"ai_behaviors":		{ "template_entity_links": ["ai_behavior"] },
+	"spawn_conditions":	{ "template_entity_links": ["spawn_condition"] },
+	"damage_rolls":		{ "template_entity_links": ["damage_roll"] },
+	"world_objects":	{ "template_entity_links": ["world_object"] },
+	"projectiles":		{ "template_entity_links": ["projectile"] }
 }

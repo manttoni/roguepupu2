@@ -16,24 +16,23 @@
 
 namespace LightingSystem
 {
+	void apply_light(entt::registry& registry, const entt::entity light)
+	{
+		const auto& [color, radius] = registry.get<Color, Radius>(light);
+		const auto& position = ECS::get_position(registry, light);
+		auto& cave = ECS::get_cave(registry, position);
+		const auto& lit_positions = cave.get_nearby_positions(registry, position, radius);
+		for (const auto& lp : lit_positions)
+			cave.get_cell(lp).add_light(color);
+	}
+
 	void apply_lights(entt::registry& registry, const size_t cave_idx)
 	{
-		auto& cave = ECS::get_cave(registry, cave_idx);
-		for (const auto entity : registry.view<Glow, Position, Color>())
+		const auto light_sources = get_entities<Lights>(registry, cave_idx);
+		for (const auto ls : light_sources)
 		{
-			const auto& [glow, position, color] = registry.get<Glow, Position, Color>(entity);
-			if (position.cave_idx != cave_idx)
-				continue;
-			Color glow_color = color * glow.intensity;
-
-			cave.get_cell(position).add_light(glow_color);
-			for (const auto affected_pos : cave.get_nearby_positions(position, glow.radius))
-			{
-				if (!VisionSystem::has_line_of_sight(registry, affected_pos, position))
-					continue;
-
-				cave.get_cell(affected_pos).add_light(glow_color);
-			}
+			for (const auto light : registry.get<Lights>(ls).entities)
+				apply_light(registry, light);
 		}
 	}
 
