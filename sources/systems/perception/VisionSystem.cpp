@@ -4,10 +4,11 @@
 #include <algorithm>
 #include <vector>
 
+#include "systems/perception/VisionSystem.hpp"
 #include "external/entt/entt.hpp"
 #include "utils/ECS.hpp"
 #include "systems/state/StateSystem.hpp"
-#include "components/Components.hpp"
+#include "components/Component.hpp"
 #include "domain/Cell.hpp"
 #include "domain/Cave.hpp"
 #include "domain/Position.hpp"
@@ -15,27 +16,6 @@
 
 namespace VisionSystem
 {
-	/* Return amount of blocked vision
-	 * Opaqueness is opposite of transparency
-	 * */
-	double get_opaqueness(const entt::registry& registry, const Position& position)
-	{
-		if (ECS::get_cell(registry, position).get_type() == Cell::Type::Rock)
-			return 1.0;
-		double opaqueness = 0.1; // Try to add some global difficulty of seeing really far
-		for (const auto entity : ECS::get_entities(registry, position))
-		{
-			if (registry.all_of<Opaque>(entity))
-				opaqueness += registry.get<Opaque>(entity).value;
-		}
-		return opaqueness;
-	}
-
-	/* Return true if opaqueness reaches 1.0
-	 * Some obstacles can be transparent
-	 * This is used also for light rays
-	 * Digital Differential Analyzer
-	 * */
 	bool has_line_of_sight(const entt::registry& registry, const Position& a, const Position& b)
 	{
 		if (a.cave_idx != b.cave_idx)
@@ -63,8 +43,6 @@ namespace VisionSystem
 		double x = x0;
 		double y = y0;
 
-		double opaqueness = 0.0;
-
 		for (int i = 0; i <= steps; ++i)
 		{
 			int ix = static_cast<int>(x);
@@ -73,85 +51,93 @@ namespace VisionSystem
 
 			// If endpoint is rock, it should be visible. Same with start, to be symmetrical
 			if (idx != a.cell_idx && idx != b.cell_idx)
-				opaqueness += VisionSystem::get_opaqueness(registry, Position(idx, a.cave_idx));
+				return false;
 
 			x += x_inc;
 			y += y_inc;
 		}
 
-		return opaqueness < 1.0;
-	}
-
-	/* Return true if entity can see position
-	 * */
-	bool has_vision(const entt::registry& registry, const entt::entity entity, const Position& target_pos)
-	{
-		if (!registry.all_of<Position>(entity))
-			return false;
-		const Position& entity_pos = registry.get<Position>(entity);
-		if (entity_pos.cave_idx != target_pos.cave_idx)
-			return false;
-
-		/*const auto vision_range = StateSystem::get_vision_range(registry, entity);
-		if (vision_range < ECS::distance(registry, entity_pos, target_pos))
-			return false;*/
-		if (!has_line_of_sight(registry, entity_pos, target_pos))
-			return false;
 		return true;
 	}
 
-	bool has_vision(const entt::registry& registry, const entt::entity seer, const entt::entity target)
+	bool has_vision(const entt::registry& registry, const Position& a, const Position& b, const double distance)
 	{
-		if (!registry.all_of<Position>(target))
-			return false; // Target is nowhere. Can happen if it is in an inventory
-		const auto position = registry.get<Position>(target);
-		return has_vision(registry, seer, position);
+		return has_line_of_sight(registry, a, b) && distance <= ECS::distance(registry, a, b);
+	}
+	bool has_vision(const entt::registry& registry, const entt::entity a, const Position& b)
+	{
+		return has_vision(registry, registry.get<Position>(a), b, registry.get<Component::Value::VisionRange>(a).value);
+	}
+	bool has_vision(const entt::registry& registry, const Position& a, const entt::entity b)
+	{
+		return has_vision(registry, a, registry.get<Position>(b));
+	}
+	bool has_vision(const entt::registry& registry, const entt::entity a, const entt::entity b)
+	{
+		// TODO: b can be invisible etc...
+		return has_vision(registry, a, registry.get<Position>(b));
 	}
 
-	/* Get all positions entity can see
-	 * */
-	std::vector<Position> get_visible_positions(const entt::registry& registry, const entt::entity entity)
+	std::vector<Position> get_visible_positions(
+			const entt::registry& registry,
+			const Position& position,
+			const double distance)
 	{
-		if (!registry.all_of<Position>(entity))
-			return {};
-
-		const auto& entity_pos = registry.get<Position>(entity);
-		assert(entity_pos.is_valid());
-		std::vector<Position> visible_positions;
-		const auto& cave = ECS::get_cave(registry, entity_pos);
-		for (const auto pos : cave.get_positions())
+		std::vector<Position> visible;
+		const auto& cave = ECS::get_cave(registry, position.cave_idx);
+		for (const auto& n : cave.get_nearby_positions(position, distance))
 		{
-			if (has_vision(registry, entity, pos))
-				visible_positions.push_back(pos);
+			if (has_vision(registry, position, n, distance))
+				visible.push_back(n);
 		}
-		return visible_positions;
+		return visible;
+	}
+	std::vector<Position> get_visible_positions(
+			const entt::registry& registry,
+			const entt::entity entity,
+			const double distance)
+	{
+		return get_visible_positions(registry, registry.get<Position>(entity), distance);
+	}
+	std::vector<Position> get_visible_positions(
+			const entt::registry& registry,
+			const entt::entity entity)
+	{
+		return get_visible_positions(registry, entity, registry.get<Component::Value::VisionRange>(entity).value);
+	}
+	std::vector<entt::entity> get_visible_entities(const entt::registry& registry, const Position& position)
+	{
+		return ECS::get_entities(registry, position);
+	}
+	std::vector<entt::entity> get_visible_entities(const entt::registry& registry, const Position& position, const Position& position2)
+	{
+		if (has_vision(registry, position, position2))
+			return get_visible_entities(registry, position2);
+		return {};
+	}
+	std::vector<entt::entity> get_visible_entities(const entt::registry& registry, const entt::entity entity, const Position& position)
+	{
+		return get_visible_entities(registry, registry.get<Position>(entity), position);
+	}
+	std::vector<entt::entity> get_visible_entities(const entt::registry& registry, const Position& position, const double distance);
+	{
+		std::vector<entt::entity> entities;
+		for (const auto& p : get_visible_positions(registry, position, distance))
+		{
+			const auto ep = get_visible_entities(registry, p);
+			entities.insert(entities.end(), ep.begin(), ep.end());
+		}
+		return entities;
+	}
+	std::vector<entt::entity> get_visible_entities(const entt::registry& registry, const entt::entity entity, const double distance)
+	{
+		return get_visible_entities(registry, registry.get<Position>(entity), distance);
+	}
+	std::vector<entt::entity> get_visible_entities(const entt::registry& registry, const entt::entity entity)
+	{
+		return get_visible_entities(registry, entity, registry.get<Component::Value::VisionRange>(entity).value);
 	}
 
-	/* Get list of entities "seer" can see in a position
-	 * */
-	std::vector<entt::entity> get_visible_entities_in_position(const entt::registry& registry, const entt::entity seer, const Position& position)
-	{
-		std::vector<entt::entity> visible_entities;
-		for (const auto entity : ECS::get_entities(registry, position))
-		{
-			// Skip adding if it's not visible, unless it's seer. (Always see yourself)
-			if (registry.any_of<Hidden, Invisible>(entity) && entity != seer)
-				continue;
-			visible_entities.push_back(entity);
-		}
-		return visible_entities;
-	}
 
-	/* Get list of entities "seer" can see
-	 * */
-	std::vector<entt::entity> get_visible_entities(const entt::registry& registry, const entt::entity seer)
-	{
-		std::vector<entt::entity> visible_entities;
-		for (const auto position : get_visible_positions(registry, seer))
-		{
-			const auto& in_position = get_visible_entities_in_position(registry, seer, position);
-			visible_entities.insert(visible_entities.end(), in_position.begin(), in_position.end());
-		}
-		return visible_entities;
-	}
-};
+
+}

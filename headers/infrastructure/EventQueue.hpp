@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+#include <deque>
 #include "domain/Event.hpp"
 
 /* A queue where Events are created when Effect has happened.
@@ -11,5 +11,5 @@
 
 struct EventQueue
 {
-	std::vector<Event> queue;
+	std::deque<Event> queue;
 };

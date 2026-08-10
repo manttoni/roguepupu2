@@ -7,9 +7,12 @@
 #include <optional>
 #include <vector>
 #include <cstddef>
+#include <string_view>
 #include "domain/Position.hpp"
 #include "external/entt/fwd.hpp"
 #include "domain/LiquidMixture.hpp"
+
+using Json = nlohmann::json;
 
 class EntityFactory
 {
@@ -24,6 +27,8 @@ class EntityFactory
 		}
 		EntityFactory() { if (LUT.empty()) init(); }
 		const std::unordered_map<std::string, nlohmann::json>& get_LUT() const { return LUT; }
+		bool ignored_component(const std::string_view component_name) const;
+		void emplace_component(entt::registry& registry, const entt::entity entity, const std::string_view component_name, const Json& component_json) const;
 		entt::entity create_entity(entt::registry& registry, const std::string& name, const std::optional<Position>& position = std::nullopt) const;
 		std::vector<entt::entity> create_entities(entt::registry& registry, const nlohmann::json& filters) const;
 		std::vector<entt::entity> create_entities(entt::registry& registry, const std::vector<std::string>& entity_ids) const;

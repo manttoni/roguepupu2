@@ -1,6 +1,9 @@
+#pragma once
+
 #include <unordered_map>
 #include <string>
 #include <cmath>
+#include "external/entt/fwd.hpp"
 
 struct Alignment
 {

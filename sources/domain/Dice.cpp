@@ -17,6 +17,6 @@ int Dice::roll(const int advantage) const
 			result = other_result;
 	}
 
-	return result;
+	return result + bonus;
 }
 

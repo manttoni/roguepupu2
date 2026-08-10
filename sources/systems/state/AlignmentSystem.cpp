@@ -1,8 +1,9 @@
 #include <assert.h>
 #include <vector>
 
-#include "components/Components.hpp"
+#include "components/Component.hpp"
 #include "domain/Event.hpp"
+#include "domain/Alignment.hpp"
 #include "external/entt/entity/fwd.hpp"
 #include "external/entt/entt.hpp"
 #include "systems/state/AlignmentSystem.hpp"
@@ -23,8 +24,8 @@ namespace AlignmentSystem
 		const auto& bA = registry.get<Alignment>(b);
 		double opinion = aA.tolerance - aA.distance(bA);
 		opinion += hypot(2, 2) / 2; // if alignment in center, everything else is neutral. Same alignment will be > 0. Should work
-		if (registry.all_of<Charisma>(b))
-			opinion += StateSystem::get_stat<Charisma>(registry, b) / 10;
+		if (registry.all_of<Component::Value::Charisma>(b))
+			opinion += StateSystem::get_stat<Component::Value::Charisma>(registry, b) / 10;
 
 		// if a has personal opinions of b
 		if (aA.personal_opinions.contains(b))
@@ -37,7 +38,7 @@ namespace AlignmentSystem
 	 * */
 	void lose_opinion(entt::registry& registry, const entt::entity a, const entt::entity b, const double amount)
 	{
-		if (registry.all_of<Dead>(a) || !registry.all_of<Alignment>(a))
+		if (registry.all_of<Component::Tag::Dead>(a) || !registry.all_of<Alignment>(a))
 			return;
 		const bool hostility_before = is_hostile(registry, a, b);
 		auto& aA = registry.get<Alignment>(a);
@@ -47,11 +48,12 @@ namespace AlignmentSystem
 		if (hostility_before == hostility_after)
 			return;
 
-		Event event;
-		event.type = Event::Type::BecomeHostile;
-		event.actor.entity = a;
-		event.target.entity = b;
-		ECS::queue_event(registry, event);
+		ECS::queue_event(
+				registry,
+				BecomeHostileEvent{
+				.entity = a,
+				.target = b
+				});
 	}
 
 	/* Is a hostile towards b?

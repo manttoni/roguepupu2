@@ -3,12 +3,8 @@
 #include <charconv>
 #include <utility>
 #include <filesystem>
-#include "components/Value.hpp"
 #include "domain/Color.hpp"
-#include "domain/Conditions.hpp"
-#include "domain/Damage.hpp"
-#include "domain/Effect.hpp"
-#include "domain/LootTable.hpp"
+#include "domain/Dice.hpp"
 #include "nlohmann/json.hpp"
 #include "utils/Error.hpp"
 #include "utils/Random.hpp"
@@ -21,16 +17,11 @@ namespace Parser
 	using Json = nlohmann::json;
 
 	Color parse_color(const Json& data);
-	Effect parse_effect(const Json& data);
-	Conditions parse_conditions(const Json& data);
 	Json read_json_file(const std::filesystem::path& path);
 	void parse_cave_generation_conf(const std::string& conf_id, CaveGenerator::Data& data);
 	void parse_cave_generation_conf(const Json& conf, CaveGenerator::Data& data);
-	LootTable parse_loot_table(const Json& data);
-	Damage::Roll parse_damage_roll(const Json& data);
 	Random::Perlin parse_perlin(const Json& data);
-
-	Value::AmmoType parse_ammo_type(const Json& data);
+	Dice parse_dice(const Json& data);
 
 	template<typename T>
 		Range<T> parse_range(const Json& data)

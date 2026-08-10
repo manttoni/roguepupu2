@@ -10,7 +10,7 @@
 
 #include "utils/Parser.hpp"
 #include "systems/rendering/LightingSystem.hpp"
-#include "components/Components.hpp"
+#include "components/Component.hpp"
 #include "domain/Cave.hpp"
 #include "nlohmann/json.hpp"
 #include "database/EntityFactory.hpp"
@@ -72,7 +72,7 @@ namespace EntitySpawner
 				/* Hydro means it spawns depending on surrounding water
 				 * */
 				const auto hydro = environment_sensitive["hydro"].get<std::string>();
-				const bool has_water = ECS::get_liquid_amount(registry, spawn_pos, Liquid::Type::Water) > 0;
+				const bool has_water = false; // Liquid system is not working atm
 				if (hydro == "philia" && !has_water) continue;
 				if (hydro == "phobia" && has_water) continue;
 
@@ -90,8 +90,6 @@ namespace EntitySpawner
 				size_t rock_neighbors = 0;
 				for (const auto& pos : cave.get_nearby_positions(spawn_pos, 1.5))
 				{
-					if (ECS::is_solid(registry, pos))
-						solid_neighbors++;
 					if (ECS::get_cell(registry, pos).get_type() == Cell::Type::Rock)
 						rock_neighbors++;
 				}

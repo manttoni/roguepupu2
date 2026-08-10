@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <vector>
 
-#include "components/Components.hpp"
+#include "components/Component.hpp"
 #include "database/EntityFactory.hpp"
 #include "external/entt/entt.hpp"
 #include "helpers.hpp"

@@ -1,0 +1,4 @@
+X(ActionPoints, int)
+X(BonusActionPoints, int)
+X(HitPoints, int)
+X(MovementPoints, double)

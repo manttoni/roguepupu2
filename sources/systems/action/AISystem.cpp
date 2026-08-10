@@ -1,5 +1,4 @@
-#include "components/Components.hpp"
-#include "domain/Intent.hpp"
+#include "domain/Action.hpp"
 #include "domain/Position.hpp"
 #include "external/entt/entt.hpp"
 #include "systems/action/AISystem.hpp"
@@ -11,90 +10,26 @@
 #include "utils/ECS.hpp"
 #include "utils/Random.hpp"
 
+using namespace Component::Tag;
+using namespace Component::List;
+using namespace Component::Value;
+
 namespace AISystem
 {
-	bool will_engage_enemy(const entt::registry& registry, Intent& intent)
+	std::vector<Action> get_actions(const entt::registry& registry, const entt::entity npc)
 	{
-		// Future idea is to add to visible entities the entities it can remember
-		auto visible_entities = VisionSystem::get_visible_entities(registry, intent.actor.entity);
-		std::sort(visible_entities.begin(), visible_entities.end(),
-				[&](const auto a, const auto b)
-				{
-				return ECS::distance(registry, a, intent.actor.entity) < ECS::distance(registry, b, intent.actor.entity);
-				});
+		assert((registry.all_of<Position, AIBehaviors, Actor>(npc)));
+		const auto& ai_behaviors = registry.get<AIBehaviors>(npc);
+		Log::debug() << "Getting AI Action of: " << registry.get<Name>(npc);
 
-		for (const auto entity : visible_entities)
+		for (const auto behavior : ai_behaviors)
 		{
-			if (entity == intent.actor.entity)
-				continue;
-			if (AlignmentSystem::is_hostile(registry, intent.actor.entity, entity))
-			{
-				if (CombatSystem::can_attack(registry, intent.actor.entity, entity))
-				{
-					intent.target.entity = entity;
-					intent.type = Intent::Type::Attack; // ActionSystem will expand this to a specific attack type
-				}
-				else
-				{	// Could maybe move this to some other function like will_approach_enemy/entity
-					//
-					intent.target.position = MovementSystem::get_first_step(registry,
-							intent.actor.position,
-							registry.get<Position>(entity));
-					intent.type = Intent::Type::Move;
-					return true;
-				}
-			}
+			// behaviors are entities in a vector
+			// they have Tags related to AI
+			// for example <AIBehaviorAggressive, AIBehaviorMushroomPicker>
+			if (registry.all_of<Component::Tag::AIBehavior>(behavior)) // every 'behavior' entity should have this tag
+				Log::debug() << "I have a behavior: " << registry.get<Name>(behavior);
 		}
-
-		return false;
-	}
-
-	bool will_wander(const entt::registry& registry, Intent& intent)
-	{
-		if (!intent.actor.position.is_valid())
-			return false;
-
-		const auto& cave = ECS::get_cave(registry, intent.actor.position);
-		auto nearby_positions = cave.get_nearby_positions(intent.actor.position, 1.5);
-		if (nearby_positions.empty())
-			return false;
-
-		std::shuffle(nearby_positions.begin(), nearby_positions.end(), Random::rng());
-		for (const auto position : nearby_positions)
-		{
-			if (MovementSystem::can_move(registry, intent.actor.position, position))
-			{
-				intent.target.position = position;
-				intent.type = Intent::Type::Move;
-				return true;
-			}
-		}
-		return false;
-	}
-
-	Intent get_npc_intent(const entt::registry& registry, const entt::entity npc)
-	{
-		if (!registry.all_of<AI>(npc))
-			return {.type = Intent::Type::DoNothing};
-
-		const auto& ai = registry.get<AI>(npc);
-		Intent intent;
-		intent.actor.entity = npc;
-		if (registry.all_of<Position>(npc))
-			intent.actor.position = registry.get<Position>(npc);
-
-		if (ai.aggressive == true && will_engage_enemy(registry, intent) == true)
-			return intent;
-
-		if (ai.idle_wander == true && will_wander(registry, intent) == true)
-			return intent;
-
-		// Future plans
-		// Swapping equipment
-		// Drink potions
-		// Flee
-
-		intent.type = Intent::Type::DoNothing;
-		return intent;
+		return {};
 	}
 };

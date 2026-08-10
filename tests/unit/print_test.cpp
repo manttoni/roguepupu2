@@ -3,7 +3,7 @@
 #include <string>
 
 #include "domain/Color.hpp"
-#include "components/Components.hpp"
+#include "components/Component.hpp"
 #include "gtest/gtest.h"
 #include "domain/NcursesAttr.hpp"
 

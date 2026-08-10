@@ -10,7 +10,7 @@
 #include "external/entt/entt.hpp"
 #include "infrastructure/EventLogger.hpp"
 #include "systems/action/EventSystem.hpp"
-#include "components/Components.hpp"
+#include "components/Component.hpp"
 #include "gtest/gtest.h"
 #include "utils/ECS.hpp"
 #include "utils/Utils.hpp"

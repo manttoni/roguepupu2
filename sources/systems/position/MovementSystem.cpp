@@ -20,7 +20,7 @@ namespace MovementSystem
 			return true;
 		for (const auto entity : ECS::get_entities(registry, position))
 		{
-			if (registry.any_of<Solid>(entity))
+			if (registry.get<Component::Value::CollisionMovement>(entity).value)
 				return true;
 		}
 		return false;
@@ -56,6 +56,12 @@ namespace MovementSystem
 		if (blocks_movement(registry, corner1) || blocks_movement(registry, corner2))
 			return false;
 		return true;
+	}
+
+	bool can_move(const entt::registry& registry, const entt::entity entity, const Position& to)
+	{
+		const auto& position = ECS::get_position(registry, entity);
+		return can_move(registry, position, to);
 	}
 
 	/* A* algorithm to find path from start position to end position.
@@ -137,12 +143,18 @@ namespace MovementSystem
 	 * */
 	void move(entt::registry& registry, const entt::entity entity, const Position& position)
 	{
+		const auto previous = registry.all_of<Position>(entity) ?
+			registry.get<Position>(entity) :
+			Position::invalid_position();
 		registry.emplace_or_replace<Position>(entity, position);
-		Event event(Event::Type::Move);
-		event.actor.entity = entity;
-		event.target.position = position;
 
-		ECS::queue_event(registry, event);
+		ECS::queue_event(
+				registry,
+				MoveEvent{
+				.entity = entity,
+				.from = previous,
+				.to = position
+				});
 	}
 
 };

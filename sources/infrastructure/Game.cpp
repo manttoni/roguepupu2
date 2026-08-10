@@ -4,24 +4,22 @@
 #include <ncurses.h>
 #include <panel.h>
 
+#include "UI/Dialog.hpp"
 #include "UI/UI.hpp"
 #include "database/EntityFactory.hpp"           // for EntityFactory
 #include "domain/Cave.hpp"
+#include "domain/Cell.hpp"
+#include "domain/Position.hpp"
+#include "domain/World.hpp"
 #include "external/entt/entt.hpp"
 #include "generation/CaveGenerator.hpp"
 #include "infrastructure/Game.hpp"
+#include "infrastructure/GameState.hpp"
 #include "systems/action/ActionSystem.hpp"
 #include "systems/environment/LiquidSystem.hpp"
 #include "utils/ECS.hpp"
 #include "utils/Log.hpp"
 #include "utils/Parser.hpp"
-#include "UI/Dialog.hpp"
-#include "domain/Cell.hpp"
-#include "domain/Position.hpp"
-#include "domain/World.hpp"
-#include "infrastructure/GameState.hpp"
-
-struct Dead;
 
 Game::Game()
 {
@@ -65,7 +63,7 @@ void Game::loop()
 		LiquidSystem::simulate_liquids(registry);
 		registry.ctx().get<GameState>().turn_number++;
 	}
-	if (registry.all_of<Dead>(player) || game_over)
+	if (registry.all_of<Component::Tag::Dead>(player) || game_over)
 		Dialog::get_selection("Game over", {"OK"});
 }
 

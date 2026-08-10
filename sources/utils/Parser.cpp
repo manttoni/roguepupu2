@@ -9,9 +9,6 @@
 #include <string>
 
 #include "domain/Color.hpp"
-#include "domain/Conditions.hpp"
-#include "domain/Damage.hpp"
-#include "domain/Effect.hpp"
 #include "generation/CaveGenerator.hpp"
 #include "utils/Error.hpp"
 #include "utils/Log.hpp"
@@ -50,25 +47,6 @@ namespace Parser
 		Error::fatal("Color format is wrong: " + data.dump(4));
 	}
 
-	Effect parse_effect(const Json& data)
-	{
-		Effect effect;
-		if (data.contains("type"))
-		{
-			const auto& type = data["type"].get<std::string>();
-			if (type == "create_entity")
-				effect.type = Effect::Type::CreateEntity;
-			else if (type == "destroy_entity")
-				effect.type = Effect::Type::DestroyEntity;
-			else if (type == "self_destruct")
-				effect.type = Effect::Type::SelfDestruct;
-			else Error::fatal("Unknown effect type: " + type);
-		}
-		if (data.contains("entity_id"))
-			effect.entity_id = data["entity_id"].get<std::string>();
-		return effect;
-	}
-
 	Json read_json_file(const std::filesystem::path& path)
 	{
 		std::ifstream file(path);
@@ -91,83 +69,6 @@ namespace Parser
 		return data;
 	}
 
-	Damage::Roll parse_damage_roll(const Json& data)
-	{
 
-		assert(data.contains("type"));
-		assert(data["type"].is_string());
-		assert(data.contains("amount"));
-		assert(data["amount"].is_string());
-		const auto type_str = data["type"].get<std::string>();
-		const auto dice_str = data["amount"].get<std::string>();
 
-		std::regex diceroll_regex(R"(^(\d*)d(\d+)(?:([+\-])(\d+))?$)");
-		std::smatch matches;
-
-		if (!std::regex_match(dice_str, matches, diceroll_regex))
-			Error::fatal("Invalid dice string");
-
-		const size_t amount = matches[1].str().empty()
-			? 1
-			: std::stoul(matches[1].str());
-
-		const size_t sides = std::stoul(matches[2].str());
-
-		int sign = 1;
-		if (matches[3].matched)
-			sign = (matches[3].str() == "-") ? -1 : 1;
-
-		const int modifier = matches[4].matched
-			? std::stoi(matches[4].str())
-			: 0;
-
-		Damage::Roll roll(
-				Damage::string_to_type(type_str),
-				Dice(amount, sides),
-				sign * modifier
-				);
-
-		return roll;
-	}
-
-	Random::Perlin parse_perlin(const Json& data)
-	{
-		Random::Perlin perlin;
-		perlin.enabled = data["enabled"].get<bool>();
-		perlin.frequency = data["frequency"].get<double>();
-		perlin.treshold = data["treshold"].get<double>();
-		perlin.octaves = data["octaves"].get<size_t>();
-		return perlin;
-	}
-
-	ToolType parse_tool_type(const Json& data)
-	{
-		if (!data.is_string())
-			Error::fatal("Tool type is not string: " + data.dump(4));
-		const auto str = data.get<std::string>();
-		if (str == "none")
-			return ToolType::None;
-		if (str == "cutting")
-			return ToolType::Cutting;
-		if (str == "felling")
-			return ToolType::Felling;
-		if (str == "mining")
-			return ToolType::Mining;
-		Error::fatal("Unhandled tool type: " + data.dump(4));
-	}
-	AmmoType parse_ammo_type(const Json& data)
-	{
-		if (!data.is_string())
-			Error::fatal("Ammo type is not string: " + data.dump(4));
-		const auto str = data.get<std::string>();
-		if (str == "none")
-			return AmmoType::None;
-		if (str == "arrow")
-			return AmmoType::Arrow;
-		if (str == "bolt")
-			return AmmoType::Bolt;
-		if (str == "bullet")
-			return AmmoType::Bullet;
-		Error::fatal("Unhandled ammo type: " + data.dump(4));
-	}
 };

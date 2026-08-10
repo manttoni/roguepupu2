@@ -4,7 +4,7 @@
 #include "helpers.hpp"
 #include "external/entt/entt.hpp"
 #include "database/EntityFactory.hpp"
-#include "components/Components.hpp"
+#include "components/Component.hpp"
 #include "systems/state/AlignmentSystem.hpp"
 #include "gtest/gtest.h"
 

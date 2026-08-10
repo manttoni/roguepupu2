@@ -12,7 +12,14 @@ struct Vec2
 	Vec2() : y{}, x{} {}
 	Vec2(const T y, const T x) : y(y), x(x) {}
 	Vec2(const Vec2& other) = default;
-
+	template <typename U>
+		explicit operator Vec2<U>() const
+		{
+			return {
+				static_cast<U>(y),
+					static_cast<U>(x)
+			};
+		}
 	double length() const
 	{
 		return std::hypot(y, x);
@@ -66,15 +73,12 @@ struct Vec2
 		};
 	}
 
-	bool out_of_bounds(const T min, const T max) const
-	{
-		return y < min || x < min || y > max || x > max;
-	}
-
-	// Convert this to a cell_idx
+	// Convert 'this' to a cell_idx
 	size_t to_idx(const size_t cave_size) const
 	{
-		assert(!out_of_bounds(size_t{}, cave_size - 1));
+		assert(y >= 0 && x >= 0 &&
+				static_cast<size_t>(y) < cave_size &&
+				static_cast<size_t>(x) < cave_size);
 		return static_cast<size_t>(y) * cave_size + static_cast<size_t>(x);
 	}
 

@@ -8,7 +8,7 @@
 
 #include "editor/CaveEditor.hpp"
 #include "editor/EntityEditor.hpp"
-#include "components/Components.hpp"
+#include "components/Component.hpp"
 #include "UI/Dialog.hpp"
 #include "UI/Menu.hpp"
 #include "UI/UI.hpp"

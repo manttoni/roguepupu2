@@ -6,7 +6,7 @@
 #include "systems/items/LootSystem.hpp"
 #include "external/entt/entt.hpp"
 #include "database/EntityFactory.hpp"
-#include "components/Components.hpp"
+#include "components/Component.hpp"
 
 TEST_F(RegistryTest, NPCCanHaveIntent)
 {

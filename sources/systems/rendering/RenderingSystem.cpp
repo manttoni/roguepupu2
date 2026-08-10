@@ -9,19 +9,18 @@
 #include <utility>
 
 #include "UI/UI.hpp"
-#include "components/Components.hpp"
+#include "components/Component.hpp"
 #include "domain/Cell.hpp"
 #include "domain/Color.hpp"
 #include "domain/ColorPair.hpp"
 #include "domain/LiquidMixture.hpp"
 #include "external/entt/entt.hpp"
 #include "systems/perception/VisionSystem.hpp"
-#include "systems/rendering/RenderData.hpp"
 #include "systems/rendering/RenderingSystem.hpp"
 #include "utils/ECS.hpp"
 #include "utils/Unicode.hpp"
 #include "utils/Screen.hpp"
-#include "infrastructure/EventLogger.hpp"
+#include "infrastructure/GameLogger.hpp"
 #include "utils/Math.hpp"
 #include "infrastructure/DevSettings.hpp"
 #include "systems/environment/LiquidSystem.hpp"
@@ -38,7 +37,6 @@ namespace RenderingSystem
 {
 	wchar_t get_glyph(const entt::registry& registry, const Position& position)
 	{
-		const auto& cave = ECS::get_cave(registry, position);
 		const auto& cell = ECS::get_cell(registry, position);
 
 		const auto& lm = cell.get_liquid_mixture();
@@ -119,9 +117,9 @@ namespace RenderingSystem
 
 	Visual get_visual(const entt::registry& registry, const Position& position)
 	{
-		const size_t render_frame = registry.ctx().get<RenderData>().render_frame;
+		const size_t render_frame = ECS::get_render_frame(registry);
 		std::vector<entt::entity> visible_entities =
-			VisionSystem::get_visible_entities_in_position(registry, ECS::get_player(registry), position);
+			VisionSystem::get_visible_entities(registry, ECS::get_player(registry), position);
 		const auto visible_entity =
 			!visible_entities.empty() ?
 			visible_entities[render_frame % visible_entities.size()] :
@@ -192,7 +190,7 @@ namespace RenderingSystem
 	{
 		if (registry.ctx().get<RenderData>().print_log == false)
 			return;
-		const auto logger = registry.ctx().get<EventLogger>();
+		const auto logger = registry.ctx().get<GameLogger>();
 		const int log_length = std::get<int>(registry.ctx().get<GameSettings>().settings.at(GameSettings::Type::LogLength).value);
 		const auto& messages = logger.get_last_messages(std::min(Screen::height(), std::max(0, log_length)));
 		ColorPair log_pair = ColorPair(Color(500, 500, 500), Color{});

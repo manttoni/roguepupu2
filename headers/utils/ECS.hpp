@@ -1,10 +1,9 @@
 #pragma once
 
+#include "systems/rendering/RenderingSystem.hpp"
+#include "systems/rendering/LightingSystem.hpp"
 #include <optional>
-#include "components/Value.hpp"
-#include "components/Tag.hpp"
-#include "database/AbilityDatabase.hpp"
-#include "database/LootTableDatabase.hpp"
+#include "components/Component.hpp"
 #include "domain/Cave.hpp"
 #include "domain/Color.hpp"
 #include "domain/Event.hpp"
@@ -13,19 +12,15 @@
 #include "generation/CaveGenerator.hpp"
 #include "infrastructure/DevSettings.hpp"
 #include "infrastructure/EventQueue.hpp"
-#include "infrastructure/EventLogger.hpp"
+#include "infrastructure/GameLogger.hpp"
 #include "infrastructure/GameSettings.hpp"
 #include "infrastructure/GameState.hpp"
 #include "systems/perception/VisionSystem.hpp"
 #include "systems/position/TransitionSystem.hpp"
-#include "systems/rendering/RenderData.hpp"
 #include "systems/state/StateSystem.hpp"
 #include "utils/Parser.hpp"
 #include "utils/Random.hpp"
 #include "utils/Utils.hpp"
-
-using namespace Value;
-using namespace Tag;
 
 namespace ECS
 {
@@ -57,15 +52,17 @@ namespace ECS
 					.value
 					);
 		}
-	inline std::vector<entt::entity> get_creatures(const entt::registry& registry, const size_t cave_idx)
+
+	inline Position get_position(const entt::registry& registry, const entt::entity entity)
 	{
-		std::vector<entt::entity> creatures;
-		for (const auto creature : registry.view<Creature, Position>())
-		{
-			if (registry.get<Position>(creature).cave_idx == cave_idx)
-				creatures.push_back(creature);
-		}
-		return creatures;
+		if (registry.all_of<Position>(entity))
+			return registry.get<Position>(entity);
+
+		// Figure out a way to locate entity if it is carried.
+		//if (registry.all_of<CarriedBy>(entity))
+		//	return get_position(registry, registry.get<CarriedBy>(entity).value);
+
+		return Position::invalid_position();
 	}
 
 	inline entt::entity get_player(const entt::registry& registry)
@@ -73,19 +70,16 @@ namespace ECS
 		return registry.ctx().get<GameState>().player;
 	}
 
-
-
-	inline Color get_fgcolor(const entt::registry& registry, const entt::entity entity)
+	inline ::Color get_fgcolor(const entt::registry& registry, const entt::entity entity)
 	{
 		if (!registry.all_of<Color>(entity))
-			return Color::white();
+			return ::Color::white();
 		return registry.get<Color>(entity);
 	}
 
 	inline std::string get_name(const entt::registry& registry, const entt::entity entity)
 	{
-		const std::string& name = Utils::capitalize(registry.get<Name>(entity).value);
-		return name;
+		return registry.get<Component::Value::Name>(entity).value;
 	}
 
 	inline NcursesAttr get_ncurses_attr(const entt::registry& registry, const entt::entity entity)
@@ -116,9 +110,9 @@ namespace ECS
 		return colored_names;
 	}
 
-	inline void queue_event(entt::registry& registry, const Event& event)
+	inline void queue_event(entt::registry& registry, Event event)
 	{
-		registry.ctx().get<EventQueue>().queue.push_back(event);
+		registry.ctx().get<EventQueue>().queue.push_back(std::move(event));
 	}
 
 	inline World& get_world(entt::registry& registry)
@@ -179,12 +173,6 @@ namespace ECS
 		return get_cave(registry, pos);
 	}
 
-	inline entt::entity get_unlinked_passage(const entt::registry& registry, const size_t cave_idx)
-	{
-		(void) registry; (void) cave_idx;
-		return entt::null; // function might get removed
-	}
-
 	inline size_t get_turn_number(const entt::registry& registry)
 	{
 		return registry.ctx().get<GameState>().turn_number;
@@ -192,11 +180,13 @@ namespace ECS
 
 	inline void destroy_entity(entt::registry& registry, const entt::entity entity)
 	{
-		registry.emplace<Destroyed>(entity);
+		registry.emplace<Component::Tag::Destroyed>(entity);
 
-		Event destroy_event(Event::Type::Destroy);
-		destroy_event.target.entity = entity;
-		queue_event(registry, destroy_event);
+		queue_event(
+				registry,
+				DestroyEvent{
+				.entity = entity
+				});
 	}
 
 	inline double distance(const entt::registry& registry, const Position& a, const Position& b)
@@ -211,48 +201,33 @@ namespace ECS
 		return distance(registry, registry.get<Position>(a), registry.get<Position>(b));
 	}
 
-	inline wchar_t get_glyph(const entt::registry& registry, const entt::entity entity)
+	inline double distance(const entt::registry& registry, const entt::entity a, const Position& b)
 	{
-		if (registry.all_of<Glyph>(entity))
-			return registry.get<Glyph>(entity).value;
-		return registry.get<Name>(entity).value[0];
+		return distance(registry, registry.get<Position>(a), b);
 	}
 
-	/* Cell should be able to produce info about water level. Liquid system is ongoing some difficult phase,
-	 * so this could change a lot in the future. One possible direction would be to make it return [ "none",
-	 * "shallow", "deep"] or something similar, DnD maybe has some rules already.
-	 * */
-	inline double get_liquid_level(const entt::registry& registry, const Position& pos)
+	inline double distance(const entt::registry& registry, const Position& a, const entt::entity b)
 	{
-		const auto& cell = get_cell(registry, pos);
-		assert(!cell.get_liquid_mixture().empty());
-		const auto depth = cell.get_effective_density();
-		const auto liquid_volume = cell.get_liquid_mixture().get_volume();
-		double entity_mass = 0.0;
-		for (const auto e : get_entities<Mass>(registry, pos))
-			entity_mass += registry.get<Mass>(e).value;
+		return distance(registry, a, registry.get<Position>(b));
+	}
 
-		return depth + liquid_volume + entity_mass;
+	inline wchar_t get_glyph(const entt::registry& registry, const entt::entity entity)
+	{
+		if (registry.all_of<Component::Value::Glyph>(entity))
+			return registry.get<Component::Value::Glyph>(entity).value;
+		return registry.get<Component::Value::Name>(entity).value[0];
 	}
 
 	inline void init_registry(entt::registry& registry)
 	{
 		registry.ctx().emplace<GameState>();
-		registry.ctx().emplace<EventLogger>();
-		registry.ctx().emplace<AbilityDatabase>();
+		registry.ctx().emplace<GameLogger>();
 		registry.ctx().emplace<World>();
-		registry.ctx().emplace<RenderData>();
+		registry.ctx().emplace<RenderingSystem::Data>(); // render frame, all visuals of frame
+		registry.ctx().emplace<LightingSystem::Data>(); // lightmap to be added to RenderingSystem::Visual before rendering
 		registry.ctx().emplace<EventQueue>();
 		registry.ctx().emplace<DevSettings>();
-		registry.ctx().emplace<LootTableDatabase>();
 		registry.ctx().emplace<GameSettings>();
-	}
-
-	inline void spawn_liquid(entt::registry& registry, const Position& position, const LiquidMixture& lm)
-	{
-		assert(position.is_valid());
-		auto& cell = get_cell(registry, position);
-		cell.get_liquid_mixture() += lm;
 	}
 
 	inline double get_light_amount(const entt::registry& registry, const Position& position)
@@ -263,13 +238,6 @@ namespace ECS
 		for (const auto& [color, stacks] : cell.get_lights())
 			amount += static_cast<double>(stacks) * static_cast<double>(color.get_channels_sum());
 		return amount;
-	}
-
-	inline double get_liquid_amount(const entt::registry& registry, const Position& position, const Liquid::Type type)
-	{
-		assert(position.is_valid());
-		const auto& cell = get_cell(registry, position);
-		return cell.get_liquid_mixture().get_volume(type);
 	}
 
 	inline bool player_can_see_entity(const entt::registry& registry, const entt::entity e)
@@ -284,5 +252,35 @@ namespace ECS
 		const auto player = get_player(registry);
 		const auto can_see = VisionSystem::has_vision(registry, player, position);
 		return can_see;
+	}
+
+	inline bool game_running(const entt::registry& registry)
+	{
+		return registry.ctx().get<GameState>().game_running;
+	}
+
+	inline GameLogger::Stream game_log(entt::registry& registry)
+	{
+		return registry.ctx()
+			.get<GameLogger>()
+			.stream(registry);
+	}
+
+	inline bool weapon_has_property(const entt::registry& registry, const entt::entity weapon, const Enum::WeaponProperty property)
+	{
+		for (const auto p : registry.get<Component::List::WeaponProperties>(weapon))
+			if (p == property)
+				return true;
+		return false;
+	}
+
+	inline RenderingSystem::Data get_render_data(const entt::registry& registry)
+	{
+		return registry.ctx().get<RenderingSystem::Data>();
+	}
+
+	inline size_t get_render_frame(const entt::registry& registry)
+	{
+		return get_render_data(registry).render_frame;
 	}
 };

@@ -7,7 +7,6 @@
 #include "utils/ECS.hpp"
 #include "systems/perception/VisionSystem.hpp"
 #include "systems/rendering/LightingSystem.hpp"
-#include "components/Components.hpp"
 #include "domain/Color.hpp"
 #include "domain/Cave.hpp"
 #include "domain/Cell.hpp"
@@ -16,46 +15,47 @@
 
 namespace LightingSystem
 {
-	void apply_light(entt::registry& registry, const entt::entity light)
+	void clear_lights(entt::registry& registry)
 	{
-		const auto& [color, radius] = registry.get<Color, Radius>(light);
-		const auto& position = ECS::get_position(registry, light);
-		auto& cave = ECS::get_cave(registry, position);
-		const auto& lit_positions = cave.get_nearby_positions(registry, position, radius);
-		for (const auto& lp : lit_positions)
-			cave.get_cell(lp).add_light(color);
+		auto& lightmap = registry.ctx().get<LightingSystem::Data>().lightmap;
+		std::ranges::fill(lightmap, Color{});
 	}
-
 	void apply_lights(entt::registry& registry, const size_t cave_idx)
 	{
-		const auto light_sources = get_entities<Lights>(registry, cave_idx);
-		for (const auto ls : light_sources)
+		auto& cave = ECS::get_cave(registry, cave_idx);
+		auto& data = registry.ctx().get<LightingSystem::Data>();
+		if (data.cave_idx != cave_idx)
 		{
-			for (const auto light : registry.get<Lights>(ls).entities)
-				apply_light(registry, light);
+			data.cave_idx = cave_idx;
+			data.lightmap.resize(cave.get_size());
+			clear_lights(registry);
+		}
+		auto& lightmap = data.lightmap;
+		const auto light_entities = ECS::get_entities<Component::Tag::LightSource>(registry, cave_idx);
+		for (const auto light_entity : light_entities)
+		{
+			const auto& position = registry.get<Position>(light_entity);
+			const auto& entity_lights = registry.get<Component::List::Lights>(light_entity);
+			for (const auto light : entity_lights.values)
+			{
+				const Color applied = registry.get<Color>(light) * registry.get<Component::Value::Intensity>(light).value;
+				const auto illuminated_positions =
+					VisionSystem::get_visible_positions(
+							registry,
+							position,
+							registry.get<Component::Value::Radius>(light).value
+							);
+				for (const auto pos : illuminated_positions)
+					lightmap[pos.cell_idx] += applied;
+			}
 		}
 	}
 
-	void clear_lights(entt::registry& registry, const size_t cave_idx)
-	{
-		for (const auto pos : ECS::get_cave(registry, cave_idx).get_positions())
-			ECS::get_cell(registry, pos).clear_lights();
-	}
+
 
 	void reset_lights(entt::registry& registry, const size_t cave_idx)
 	{
-		clear_lights(registry, cave_idx);
+		clear_lights(registry);
 		apply_lights(registry, cave_idx);
-	}
-
-	double get_illumination(const Cell& cell)
-	{
-		const auto& lights = cell.get_lights();
-		double illumination = 0;
-		for (const auto& [color, stacks] : lights)
-		{
-			illumination += color.get_illumination() * static_cast<double>(stacks);
-		}
-		return illumination;
 	}
 };

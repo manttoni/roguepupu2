@@ -16,19 +16,13 @@
 #include <utility>
 #include <vector>
 
-#include "components/Components.hpp"                                 // for Resources
 #include "core/paths.hpp"
 #include "database/EntityFactory.hpp"                              // for EntityFactory
-#include "domain/Ability.hpp"
 #include "domain/Alignment.hpp"
 #include "domain/Color.hpp"                                      // for Color
-#include "domain/Effect.hpp"
 #include "domain/Event.hpp"
 #include "domain/Position.hpp"
-#include "domain/Target.hpp"
-#include "external/entt/entity/fwd.hpp"
 #include "external/entt/entt.hpp"
-#include "systems/items/LootSystem.hpp"
 #include "systems/state/StateSystem.hpp"
 #include "utils/ECS.hpp"
 #include "utils/Error.hpp"
@@ -36,12 +30,26 @@
 #include "utils/Log.hpp"
 #include "utils/Parser.hpp"
 #include "utils/Random.hpp"
+#include "components/Component.hpp"
 
-using Json = nlohmann::json;
 using ComplexParser = std::function<void(entt::registry&, entt::entity, const Json&)>;
 using ValueParser = std::function<void(entt::registry&, entt::entity, const Json&)>;
 using TagParser = std::function<void(entt::registry&, entt::entity)>;
+using ListParser = ValueParser;
 
+void EntityFactory::init()
+{
+	const std::filesystem::path file = "data/entities.json";
+	nlohmann::json definitions = Parser::read_json_file(file);
+	add_entities(definitions);
+	Log::info() << "Entities parsed";
+}
+
+void EntityFactory::add_entities(nlohmann::json& entities)
+{
+	for (const auto& entity : entities)
+		LUT[entity["name"].get<std::string>()] = entity;
+}
 std::unordered_map<std::string_view, ComplexParser> complex_parsers =
 {
 	{ "color", [](auto& reg, auto e, const nlohmann::json& data)
@@ -75,7 +83,7 @@ std::unordered_map<std::string_view, ListParser> list_parsers =
 			if constexpr (std::same_as<type, entt::entity>) \
 			{ \
 				reg.template emplace<Component::List::name>(e, \
-						create_entities(reg, data.get<std::vector<std::string>>()) \
+						EntityFactory::instance().create_entities(reg, data.get<std::vector<std::string>>()) \
 						); \
 			} \
 			reg.template emplace<Component::List::name>(e, \
@@ -83,8 +91,7 @@ std::unordered_map<std::string_view, ListParser> list_parsers =
 					); \
 		} \
 	},
-
-	LIST_COMPONENTS(X)
+#include "components/List.def"
 #undef X
 };
 
@@ -96,8 +103,7 @@ std::unordered_map<std::string_view, ValueParser> value_parsers =
 			reg.template emplace<Component::Value::name>(e, data.get<type>()); \
 		} \
 	},
-
-	VALUE_COMPONENTS(X)
+#include "components/Value.def"
 #undef X
 };
 
@@ -107,54 +113,44 @@ std::unordered_map<std::string_view, TagParser> tag_parsers =
 	{ #name, [](auto& reg, auto e) \
 		{ reg.template emplace<Component::Tag::name>(e); } \
 	},
-
-	TAG_COMPONENTS(X)
+#include "components/Tag.def"
 #undef X
 };
 
-
-
-void EntityFactory::init()
-{
-	const std::filesystem::path file = "data/entities.json";
-	nlohmann::json definitions = Parser::read_json_file(file);
-	add_entities(definitions);
-	Log::info() << "Entities parsed";
-}
-
-void EntityFactory::add_entities(nlohmann::json& entities)
-{
-	for (const auto& entity : entities)
-		LUT[entity["name"].get<std::string>()] = entity;
-}
-
-void EntityFactory::emplace_component(entt::registry& registry, const entt::entity entity, const std::string_view component_name, const Json& component_json)
+void EntityFactory::emplace_component(
+		entt::registry& registry,
+		const entt::entity entity,
+		const std::string_view component_name,
+		const Json& component_json) const
 {
 	if (ignored_component(component_name))
 		return;
 
-	auto it = complex_parsers.find(component_name);
-	if (it != complex_parsers.end())
+	if (const auto it = complex_parsers.find(component_name);
+			it != complex_parsers.end())
 	{
-		it->second(registry, entity, component_data);
+		it->second(registry, entity, component_json);
 		return;
 	}
 
-	it = value_parsers.find(component_name);
-	if (it != value_parsers.end())
+	if (const auto it = value_parsers.find(component_name);
+			it != value_parsers.end())
 	{
-		it->second(registry, entity, component_data);
+		it->second(registry, entity, component_json);
 		return;
 	}
 
-	it = tag_parsers.find(component_name);
-	if (it != tag_parsers.end())
+	if (const auto it = tag_parsers.find(component_name);
+			it != tag_parsers.end())
 	{
-		it->second(registry, entity, component_data);
+		it->second(registry, entity);
 		return;
 	}
 
-	Error::fatal("No parser exists for component \"" + component_name + "\"");
+	Error::fatal(
+			"No parser exists for component \"" +
+			std::string(component_name) +
+			"\"");
 }
 
 entt::entity EntityFactory::create_entity(entt::registry& registry, const std::string& name, const std::optional<Position>& position) const
@@ -170,11 +166,12 @@ entt::entity EntityFactory::create_entity(entt::registry& registry, const std::s
 	if (position.has_value())
 	{
 		registry.emplace<Position>(entity, *position);
-		Event spawn_event;
-		spawn_event.type = Event::Type::Spawn;
-		spawn_event.target.entity = entity;
-		spawn_event.target.position = *position;
-		ECS::queue_event(registry, spawn_event);
+		ECS::queue_event(
+				registry,
+				SpawnEvent{
+				.entity = entity,
+				.position = *position
+				});
 	}
 
 	return entity;

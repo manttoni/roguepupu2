@@ -2,9 +2,10 @@
 #include <cmath>
 #include <vector>
 
+#include "utils/Log.hpp"
 #include "systems/state/StateSystem.hpp"
 #include "systems/state/EquipmentSystem.hpp"
-#include "components/Components.hpp"
+#include "components/Component.hpp"
 #include "external/entt/entity/fwd.hpp"
 
 namespace StateSystem
@@ -21,14 +22,7 @@ namespace StateSystem
 		return xp / 1000;
 	}
 
-	int get_initiative(const entt::registry& registry, const entt::entity entity)
-	{
-		const auto roll = Dice(1, 20).roll();
-		const auto dexmod = get_attribute_modifier<Dexterity>(registry, entity);
-		const auto initiative_mod = 0;//get_stat<Initiative>(registry, entity);
 
-		return roll + dexmod + initiative_mod;
-	}
 	int get_attribute_modifier(const int attribute)
 	{
 		return (attribute - 10) / 2;
@@ -38,18 +32,7 @@ namespace StateSystem
 	 * */
 	int get_armor_class(const entt::registry& registry, const entt::entity entity)
 	{
-		const auto dex_modifier = get_attribute_modifier<Dexterity>(registry, entity);
-		const auto body_armor = EquipmentSystem::get_equipment_at(registry, entity, EquipmentSlot::Body);
-
-		int AC = get_stat<ArmorClass>(registry, entity); // get AC from equipment and buffs
-
-		if (body_armor == entt::null)
-			AC += 10 + dex_modifier;
-		else if (registry.all_of<MaxDexMod>(body_armor))
-			AC += std::min(dex_modifier, registry.get<MaxDexMod>(body_armor).value);
-		else
-			AC += dex_modifier;
-
-		return AC;
+		(void) registry; (void) entity;
+		return 10;
 	}
 };

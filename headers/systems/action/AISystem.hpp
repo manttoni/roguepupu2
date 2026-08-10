@@ -1,9 +1,11 @@
 #pragma once
 
+#include <vector>
+
 #include "external/entt/fwd.hpp"
-#include "domain/Intent.hpp"
+#include "domain/Action.hpp"
 
 namespace AISystem
 {
-	Intent get_npc_intent(const entt::registry& registry, const entt::entity npc);
+	std::vector<Action> get_actions(const entt::registry& registry, const entt::entity npc);
 };

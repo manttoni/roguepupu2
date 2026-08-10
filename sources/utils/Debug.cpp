@@ -2,7 +2,7 @@
 #include "utils/Debug.hpp"
 #include "utils/ECS.hpp"
 #include "external/entt/entt.hpp"
-#include "components/Components.hpp"
+#include "components/Component.hpp"
 #include "database/EntityFactory.hpp"
 #include "nlohmann/json.hpp"
 #include "systems/environment/LiquidSystem.hpp"
@@ -11,10 +11,7 @@ namespace Debug
 {
 	std::string entity_details(const entt::registry& registry, const entt::entity entity)
 	{
-		if (!registry.all_of<Name>(entity))
-			return "non-named entity";
-
-		const auto name = registry.get<Name>(entity).name;
+		const auto name = registry.get<Component::Value::Name>(entity).value;
 		const auto LUT = EntityFactory::instance().get_LUT();
 		return LUT.at(name).dump(4);
 	}
@@ -39,7 +36,6 @@ namespace Debug
 
 		ss << "Number of Entities: " << entities.size() << std::endl;
 
-		ss << "Liquids volume: " << LiquidSystem::get_liquids_volume(registry, cave.get_idx()) << std::endl;
 
 		std::string line;
 		while (std::getline(ss, line))

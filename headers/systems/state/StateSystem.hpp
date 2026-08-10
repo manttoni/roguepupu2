@@ -7,8 +7,9 @@
  * */
 
 #include "external/entt/entt.hpp"
-#include "components/Components.hpp"
+#include "components/Component.hpp"
 #include "utils/Debug.hpp"
+#include "utils/Log.hpp"
 
 namespace StateSystem
 {

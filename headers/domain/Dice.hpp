@@ -8,8 +8,9 @@ struct Dice
 {
 	size_t amount = 0;
 	size_t sides = 0;
+	size_t bonus = 0;
 
-	Dice(const size_t amount = 0, const size_t sides = 0) : amount(amount), sides(sides) {}
+	Dice(const size_t amount = 0, const size_t sides = 0, const size_t bonus = 0) : amount(amount), sides(sides), bonus(bonus) {}
 
 	int roll(const int advantage = 0) const;
 	inline bool is_valid() const { return amount > 0 && sides > 0; }

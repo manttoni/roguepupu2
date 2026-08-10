@@ -6,7 +6,7 @@
 #include "systems/perception/VisionSystem.hpp"
 #include "systems/rendering/VisualEffectSystem.hpp"
 #include "systems/rendering/RenderingSystem.hpp"
-#include "components/Components.hpp"
+#include "components/Component.hpp"
 #include "utils/ECS.hpp"
 #include "domain/Color.hpp"
 #include "domain/Position.hpp"

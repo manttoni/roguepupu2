@@ -1,97 +1,171 @@
 cmake_minimum_required(VERSION 3.25)
-project(roguepupu2 LANGUAGES CXX)
 
-# ========================
-# C++ Standard
-# ========================
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-# ========================
-# Options
-# ========================
-option(ENABLE_TESTS "Build unit tests" ON)
-option(ENABLE_ASAN "Enable AddressSanitizer" ON)
-
-# Disable tests automatically in Release unless explicitly enabled
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    set(ENABLE_TESTS OFF CACHE BOOL "Build unit tests" FORCE)
-endif()
-
-# ========================
-# Compiler warnings
-# ========================
-if(MSVC)
-    add_compile_options(/W4 /WX)
-else()
-    add_compile_options(-Wall -Wextra)
-endif()
-
-# ========================
-# Sanitizers
-# ========================
-if(ENABLE_ASAN AND NOT MSVC)
-    add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
-    add_link_options(-fsanitize=address)
-endif()
-
-# ========================
-# Includes
-# ========================
-include_directories(headers)
-
-# ========================
-# Sources
-# ========================
-file(GLOB_RECURSE SRCS "sources/*.cpp")
-list(FILTER SRCS EXCLUDE REGEX ".*/main\\.cpp$")
-
-# ========================
-# Core library
-# ========================
-add_library(roguepupu2_lib STATIC ${SRCS})
-target_include_directories(roguepupu2_lib PUBLIC headers)
-target_compile_features(roguepupu2_lib PUBLIC cxx_std_20)
-
-# ========================
-# Game executable
-# ========================
-add_executable(${PROJECT_NAME} sources/main.cpp)
-target_link_libraries(${PROJECT_NAME} PRIVATE roguepupu2_lib ncursesw panelw m)
-
-# Ensure logs directory exists
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/logs
+project(
+    roguepupu2
+    VERSION 0.1.0
+    DESCRIPTION "A data-driven C++ roguelike"
+    LANGUAGES CXX
 )
 
-# ========================
-# Tests (ONLY if enabled)
-# ========================
-if(ENABLE_TESTS)
+# Generate compile_commands.json for clangd and other tooling.
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-    find_package(GTest REQUIRED)
+option(ROGUEPUPU_BUILD_TESTS "Build unit tests" ON)
+option(ROGUEPUPU_ENABLE_ASAN "Enable AddressSanitizer" OFF)
+option(ROGUEPUPU_WARNINGS_AS_ERRORS "Treat compiler warnings as errors" OFF)
+
+# ---------------------------------------------------------------------------
+# Project settings
+# ---------------------------------------------------------------------------
+
+add_library(roguepupu_project_options INTERFACE)
+target_compile_features(roguepupu_project_options INTERFACE cxx_std_20)
+
+add_library(roguepupu_project_warnings INTERFACE)
+
+if(MSVC)
+    target_compile_options(roguepupu_project_warnings INTERFACE
+        /W4
+        $<$<BOOL:${ROGUEPUPU_WARNINGS_AS_ERRORS}>:/WX>
+    )
+else()
+    target_compile_options(roguepupu_project_warnings INTERFACE
+        -Wall
+        -Wextra
+        -Wpedantic
+        -fdiagnostics-color=always
+        -ftemplate-backtrace-limit=2
+
+        $<$<CXX_COMPILER_ID:Clang>:-ferror-limit=1>
+        $<$<CXX_COMPILER_ID:GNU>:-fmax-errors=3>
+
+        $<$<BOOL:${ROGUEPUPU_WARNINGS_AS_ERRORS}>:-Werror>
+    )
+endif()
+
+if(ROGUEPUPU_ENABLE_ASAN)
+    if(MSVC)
+        message(FATAL_ERROR
+            "ROGUEPUPU_ENABLE_ASAN is not configured for MSVC"
+        )
+    endif()
+
+    target_compile_options(roguepupu_project_options INTERFACE
+        -fsanitize=address
+        -fno-omit-frame-pointer
+    )
+
+    target_link_options(roguepupu_project_options INTERFACE
+        -fsanitize=address
+    )
+endif()
+# ---------------------------------------------------------------------------
+# Dependencies
+# ---------------------------------------------------------------------------
+
+find_library(NCURSESW_LIBRARY NAMES ncursesw REQUIRED)
+find_library(PANELW_LIBRARY NAMES panelw REQUIRED)
+
+set(ROGUEPUPU_PLATFORM_LIBRARIES
+    ${NCURSESW_LIBRARY}
+    ${PANELW_LIBRARY}
+)
+
+if(UNIX AND NOT APPLE)
+    list(APPEND ROGUEPUPU_PLATFORM_LIBRARIES m)
+endif()
+
+# ---------------------------------------------------------------------------
+# Core library
+# ---------------------------------------------------------------------------
+
+# CONFIGURE_DEPENDS is convenient for this project while it is being heavily
+# rewritten. An explicit source list would be stricter for a larger project.
+file(GLOB_RECURSE ROGUEPUPU_CORE_SOURCES CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/sources/*.cpp"
+)
+list(FILTER ROGUEPUPU_CORE_SOURCES EXCLUDE REGEX "/main\\.cpp$")
+
+add_library(roguepupu2_lib STATIC)
+target_sources(roguepupu2_lib PRIVATE ${ROGUEPUPU_CORE_SOURCES})
+
+target_include_directories(roguepupu2_lib
+    PUBLIC
+        "${CMAKE_CURRENT_SOURCE_DIR}/headers"
+)
+
+target_link_libraries(roguepupu2_lib
+    PUBLIC
+        roguepupu_project_options
+    PRIVATE
+        roguepupu_project_warnings
+        ${ROGUEPUPU_PLATFORM_LIBRARIES}
+)
+
+# ---------------------------------------------------------------------------
+# Game executable
+# ---------------------------------------------------------------------------
+
+add_executable(roguepupu2 sources/main.cpp)
+
+target_link_libraries(roguepupu2
+    PRIVATE
+        roguepupu2_lib
+        roguepupu_project_warnings
+)
+
+set_target_properties(roguepupu2 PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+)
+
+add_custom_command(
+    TARGET roguepupu2
+    POST_BUILD
+    COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_BINARY_DIR}/logs"
+)
+
+# ---------------------------------------------------------------------------
+# Tests
+# ---------------------------------------------------------------------------
+
+if(ROGUEPUPU_BUILD_TESTS)
+    include(CTest)
     enable_testing()
 
-    file(GLOB_RECURSE TEST_SRCS "tests/*.cpp")
-
-    add_executable(${PROJECT_NAME}_tests ${TEST_SRCS})
-
-    target_compile_definitions(${PROJECT_NAME}_tests PRIVATE RUNNING_TESTS)
-
-    target_include_directories(${PROJECT_NAME}_tests PRIVATE
-        headers
-        tests
-        tests/helpers
-    )
-
-    target_link_libraries(${PROJECT_NAME}_tests
-        PRIVATE roguepupu2_lib
-        PRIVATE GTest::gtest
-        PRIVATE GTest::gtest_main
-        PRIVATE ncursesw panelw m
-    )
-
+    find_package(GTest REQUIRED)
     include(GoogleTest)
-    gtest_discover_tests(${PROJECT_NAME}_tests)
 
+    file(GLOB_RECURSE ROGUEPUPU_TEST_SOURCES CONFIGURE_DEPENDS
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp"
+    )
+
+    add_executable(roguepupu2_tests)
+    target_sources(roguepupu2_tests PRIVATE ${ROGUEPUPU_TEST_SOURCES})
+
+    target_compile_definitions(roguepupu2_tests PRIVATE RUNNING_TESTS)
+
+    target_include_directories(roguepupu2_tests
+        PRIVATE
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests"
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests/helpers"
+    )
+
+    target_link_libraries(roguepupu2_tests
+        PRIVATE
+            roguepupu2_lib
+            roguepupu_project_warnings
+            GTest::gtest
+            GTest::gtest_main
+    )
+
+    set_target_properties(roguepupu2_tests PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+    )
+
+    gtest_discover_tests(
+        roguepupu2_tests
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+        DISCOVERY_TIMEOUT 30
+    )
 endif()
+
