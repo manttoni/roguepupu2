@@ -240,18 +240,17 @@ namespace ECS
 		return amount;
 	}
 
+	inline bool player_can_see_position(const entt::registry& registry, const Position& position)
+	{
+		const auto player = get_player(registry);
+		return VisionSystem::has_vision(registry, player, position);
+	}
+
 	inline bool player_can_see_entity(const entt::registry& registry, const entt::entity e)
 	{
 		if (get_player(registry) == entt::null || e == entt::null)
 			return false;
-		return VisionSystem::has_vision(registry, ECS::get_player(registry), e);
-	}
-
-	inline bool player_can_see_position(const entt::registry& registry, const Position& position)
-	{
-		const auto player = get_player(registry);
-		const auto can_see = VisionSystem::has_vision(registry, player, position);
-		return can_see;
+		return VisionSystem::has_vision(registry, get_player(registry), e);
 	}
 
 	inline bool game_running(const entt::registry& registry)
@@ -283,4 +282,55 @@ namespace ECS
 	{
 		return get_render_data(registry).render_frame;
 	}
+
+	inline bool blocks_vision(const entt::registry& registry, const Position& position)
+	{
+		const auto& cell = get_cell(registry, position);
+		if (cell.get_type() == Cell::Type::Rock)
+			return true;
+		for (const auto e : get_entities<Component::Value::CollisionVision>(registry, position))
+		{
+			if (registry.get<Component::Value::CollisionVision>(e).value == true)
+				return true;
+		}
+		return false;
+	}
+
+	template<typename C>
+		inline size_t count(const entt::registry& registry, const std::vector<entt::entity>& values)
+		{
+			size_t c = 0;
+			for (const auto e : values)
+			{
+				if (registry.all_of<C>(e))
+					c++;
+			}
+			return c;
+		}
+
+	template<typename C>
+		inline size_t count(const entt::registry& registry, const Component::List::Base<entt::entity>& list)
+		{
+			return count<C>(registry, list.values);
+		}
+
+	template<typename C>
+		inline std::vector<entt::entity> get(const entt::registry& registry, const std::vector<entt::entity>& values)
+		{
+			std::vector<entt::entity> entities;
+			for (const auto e : values)
+			{
+				if (registry.all_of<C>(e))
+					entities.push_back(e);
+			}
+			return entities;
+		}
+
+	/* Return a vector of entities with component C
+	 * */
+	template<typename C>
+		inline std::vector<entt::entity> get(const entt::registry& registry, const Component::List::Base<entt::entity>& list)
+		{
+			return get<C>(registry, list.values);
+		}
 };

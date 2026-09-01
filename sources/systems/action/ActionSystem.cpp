@@ -21,7 +21,6 @@
 #include "systems/state/ContextSystem.hpp"
 #include "systems/state/EquipmentSystem.hpp"
 #include "UI/menus/DevMenu.hpp"
-#include "systems/state/AlignmentSystem.hpp"
 #include "utils/ECS.hpp"
 #include "utils/Error.hpp"
 #include "domain/Action.hpp"
@@ -29,7 +28,6 @@
 #include "external/entt/entity/fwd.hpp"
 #include "utils/Debug.hpp"
 #include "utils/Vec2.hpp"
-#include "domain/Alignment.hpp"
 
 /* ActionPoints, BonusActionPoints are components
  * Action is struct that answers questions like who does to who, with what and where

@@ -138,9 +138,6 @@ namespace MovementSystem
 		return path[1];
 	}
 
-	/* Does not require entity to have existing Position
-	 * Use this when summoning so they will immediately trigger EnterCell Triggers
-	 * */
 	void move(entt::registry& registry, const entt::entity entity, const Position& position)
 	{
 		const auto previous = registry.all_of<Position>(entity) ?

@@ -80,6 +80,10 @@ namespace EventSystem
 	{
 		ECS::game_log(registry) << event.entity << " becomes hostile toward " << event.target;
 	}
+	void handle(entt::registry& registry, const ReceiveItemEvent& event)
+	{
+		ECS::game_log(registry) << event.entity << " receives " << event.item;
+	}
 
 	void resolve_events(entt::registry& registry)
 	{

@@ -93,7 +93,11 @@ struct BecomeHostileEvent
 	entt::entity entity = entt::null;
 	entt::entity target = entt::null;
 };
-
+struct ReceiveItemEvent
+{
+	entt::entity entity = entt::null;
+	entt::entity item = entt::null;
+};
 using Event = std::variant<
 	NullEvent,
 	MoveEvent,
@@ -109,5 +113,6 @@ using Event = std::variant<
 	UnequipEvent,
 	DiceRollEvent,
 	DeathEvent,
-	BecomeHostileEvent
+	BecomeHostileEvent,
+	ReceiveItemEvent
 >;

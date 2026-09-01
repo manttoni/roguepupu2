@@ -4,7 +4,6 @@
 #include "systems/action/AISystem.hpp"
 #include "systems/perception/VisionSystem.hpp"
 #include "systems/position/MovementSystem.hpp"
-#include "systems/state/AlignmentSystem.hpp"
 #include "systems/state/EquipmentSystem.hpp"
 #include "systems/combat/CombatSystem.hpp"
 #include "utils/ECS.hpp"

@@ -71,6 +71,9 @@ namespace Enum
 #define NATURALGROWTH_TYPES(X) \
 	X(Mushroom) X(Plant) X(Moss)
 
+#define FACTIONS(X) \
+	X(Player) X(Goblins)
+
 #define ENUMS(X) \
 	X(AmmoType,  AMMO_TYPES) \
 	X(ArmorType,  ARMOR_TYPES) \
@@ -84,7 +87,8 @@ namespace Enum
 	X(CreatureType, CREATURE_TYPES) \
 	X(Race, RACES) \
 	X(Rarity, RARITIES) \
-	X(NaturalGrowthType, NATURALGROWTH_TYPES)
+	X(NaturalGrowthType, NATURALGROWTH_TYPES) \
+	X(Faction, FACTIONS)
 
 #define ENUM_VALUE(name) name,
 
@@ -146,4 +150,5 @@ namespace Enum
 #undef RACES
 #undef RARITIES
 #undef NATURALGROWTH_TYPES
+#undef FACTIONS
 }

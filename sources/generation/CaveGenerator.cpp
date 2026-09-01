@@ -144,8 +144,9 @@ namespace CaveGenerator
 
 	void simulate_environment(Data& data)
 	{
-		for (size_t i = 0; i < 32; ++i)
-			LiquidSystem::simulate_liquids(data.registry, data.cave.get_idx());
+		(void) data;
+		//for (size_t i = 0; i < 32; ++i)
+			//LiquidSystem::simulate_liquids(data.registry, data.cave.get_idx());
 	}
 
 	void form_tunnels(Data& data)
@@ -285,7 +286,7 @@ namespace CaveGenerator
 
 		/* Spawn entities
 		 * */
-		EntitySpawner::spawn_natural_entities(registry, cave_idx);
+		//EntitySpawner::spawn_natural_entities(registry, cave_idx);
 
 		/* Rendering the cave while generating or after is preferred when testing manually
 		 * RenderingSystem has a function for rendering the cave in a simple way

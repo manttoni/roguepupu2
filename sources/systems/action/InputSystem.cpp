@@ -3,10 +3,10 @@
 #include "utils/Vec2.hpp"
 #include "UI/UI.hpp"
 #include "systems/action/InputSystem.hpp"
+#include "systems/state/AttitudeSystem.hpp"
 #include "domain/Action.hpp"
 #include "external/entt/entt.hpp"
 #include "utils/ECS.hpp"
-#include "systems/state/AlignmentSystem.hpp"
 
 /* This is for getting player input and turning it into game actions like movement, attacks...
  * Even if the action is impossible, it is no problem because execution will return back here after aborting it
@@ -35,7 +35,7 @@ namespace InputSystem
 		}
 
 		const auto target_entity = target_entities.front();
-		if (AlignmentSystem::is_enemy(registry, player, target_entity))
+		if (AttitudeSystem::is_enemy(registry, player, target_entity))
 		{
 			return { AttackAction{.attacker = player, .defender = target_entity}};
 		}

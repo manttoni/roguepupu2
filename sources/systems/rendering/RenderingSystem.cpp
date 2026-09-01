@@ -188,8 +188,6 @@ namespace RenderingSystem
 	 * */
 	void print_log(const entt::registry& registry)
 	{
-		if (registry.ctx().get<RenderData>().print_log == false)
-			return;
 		const auto logger = registry.ctx().get<GameLogger>();
 		const int log_length = std::get<int>(registry.ctx().get<GameSettings>().settings.at(GameSettings::Type::LogLength).value);
 		const auto& messages = logger.get_last_messages(std::min(Screen::height(), std::max(0, log_length)));
@@ -238,7 +236,7 @@ namespace RenderingSystem
 		//	show_player_status(registry);
 		show_debug(registry);
 		UI::instance().update();
-		registry.ctx().get<RenderData>().render_frame++;
+		registry.ctx().get<RenderingSystem::Data>().render_frame++;
 		//UI::instance().enable_attr(A_NORMAL);
 	}
 

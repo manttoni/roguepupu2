@@ -50,7 +50,8 @@ namespace VisionSystem
 			size_t idx = iy * size + ix;
 
 			// If endpoint is rock, it should be visible. Same with start, to be symmetrical
-			if (idx != a.cell_idx && idx != b.cell_idx)
+			if (idx != a.cell_idx && idx != b.cell_idx
+					&& ECS::blocks_vision(registry, Position(idx, a.cave_idx)))
 				return false;
 
 			x += x_inc;
@@ -62,7 +63,7 @@ namespace VisionSystem
 
 	bool has_vision(const entt::registry& registry, const Position& a, const Position& b, const double distance)
 	{
-		return has_line_of_sight(registry, a, b) && distance <= ECS::distance(registry, a, b);
+		return has_line_of_sight(registry, a, b) && distance >= ECS::distance(registry, a, b);
 	}
 	bool has_vision(const entt::registry& registry, const entt::entity a, const Position& b)
 	{
@@ -119,7 +120,7 @@ namespace VisionSystem
 	{
 		return get_visible_entities(registry, registry.get<Position>(entity), position);
 	}
-	std::vector<entt::entity> get_visible_entities(const entt::registry& registry, const Position& position, const double distance);
+	std::vector<entt::entity> get_visible_entities(const entt::registry& registry, const Position& position, const double distance)
 	{
 		std::vector<entt::entity> entities;
 		for (const auto& p : get_visible_positions(registry, position, distance))

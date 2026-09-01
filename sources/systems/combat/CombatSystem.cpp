@@ -2,11 +2,9 @@
 #include "external/entt/entt.hpp"
 #include "systems/combat/DamageSystem.hpp"
 #include "systems/perception/VisionSystem.hpp"
-#include "systems/state/AlignmentSystem.hpp"
 #include "systems/state/EquipmentSystem.hpp"
 #include "systems/state/InventorySystem.hpp"
 #include "utils/ECS.hpp"
-#include "domain/Alignment.hpp"
 
 using namespace Component;
 using namespace Tag;
@@ -89,7 +87,7 @@ namespace CombatSystem
 		for (const auto damage_roll : damage_rolls)
 		{
 			const auto dice = registry.get<Dice>(damage_roll);
-			const auto type = registry.get<Component::Type::Damage>(damage_roll).value;
+			const auto type = registry.get<Component::Value::DamageType>(damage_roll).value;
 			// TODO: damage resistances
 			DamageSystem::take_damage(registry, defender, dice.roll(), type);
 		}

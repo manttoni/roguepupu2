@@ -1,12 +1,14 @@
 #pragma once
+
 #include <concepts>
 #include <cstddef>
 #include <ostream>
 #include <string_view>
+#include <type_traits>
 #include <vector>
 #include "domain/Color.hpp"
-#include "domain/Alignment.hpp"
 #include "domain/Enum.hpp"
+#include "external/entt/fwd.hpp"
 
 namespace Component
 {
@@ -56,6 +58,22 @@ namespace Component::List
 			{
 				return values.size();
 			}
+
+			[[nodiscard]] bool contains(const T& element) const
+			{
+				auto it = std::find(values.begin(), values.end(), element);
+				return it != values.end();
+			}
+
+			void remove(const T& element)
+			{
+				auto it = std::find(values.begin(), values.end(), element);
+				if (it == values.end())
+					return;
+				values.erase(it);
+			}
+
+			void push_back(const T& element) { values.push_back(element); }
 		};
 #define X(name, type) \
 	struct name : Base<type> \
@@ -66,28 +84,47 @@ namespace Component::List
 #undef X
 }
 
+
+
 namespace Component::Value
 {
+	template<typename T>
+		std::ostream& print_component_value(
+				std::ostream& os,
+				const T& value)
+		{
+			if constexpr (std::is_enum_v<T>)
+				return os << Enum::to_string(value);
+			else
+				return print_value(os, value);
+		}
+
 	template<typename T>
 		struct Base
 		{
 			using value_type = T;
-			T value = T{};
+
+			T value{};
+
 			Base() = default;
 			explicit Base(const T& value) : value(value) {}
 		};
-#define X(name, type) \
-	struct name : Base<type> \
-	{ \
-		using Base<type>::Base; \
-		static constexpr std::string_view string = #name; \
+
+#define X(name, type)                                                   \
+	struct name : Base<type>                                        \
+	{                                                               \
+		using Base<type>::Base;                                  \
+		static constexpr std::string_view string = #name;         \
 		friend std::ostream& operator<<(std::ostream& os, const name& component) \
-		{ \
-			os << name::string << ": "; \
-			return print_value(os, component.value); \
-		} \
+		{                                                       \
+			os << name::string << ": ";                       \
+			return print_component_value(                    \
+					os, component.value);             \
+		}                                                       \
 	};
+
 #include "Value.def"
+
 #undef X
 }
 
@@ -101,7 +138,7 @@ namespace Component::Resource
 			T maximum = T{};
 
 			void reset() { current = maximum; }
-			Base(const T& value) : maximum(value), current(value) {}
+			Base(const T& value) : current(value), maximum(value) {}
 			Base() = default;
 		};
 
@@ -119,30 +156,6 @@ namespace Component::Resource
 		__VA_OPT__(name() : Resource::Base<type>(__VA_ARGS__) {}) \
 	};
 #include "Resource.def"
-#undef X
-}
-
-namespace Component::Type
-{
-	template<typename T>
-		struct Base
-		{
-			using value_type = T;
-			T value = T{};
-			Base() = default;
-			explicit Base(const T& value) : value(value) {}
-		};
-#define X(name, type) \
-	struct name : Base<type> \
-	{ \
-		using Base<type>::Base; \
-		static constexpr std::string_view string = #name; \
-		friend std::ostream& operator<<(std::ostream& os, const name& component) \
-		{ \
-			return os << name::string << ": " << Enum::to_string(component.value); \
-		} \
-	};
-#include "Type.def"
 #undef X
 }
 

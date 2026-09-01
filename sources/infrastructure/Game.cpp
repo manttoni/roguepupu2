@@ -16,7 +16,6 @@
 #include "infrastructure/Game.hpp"
 #include "infrastructure/GameState.hpp"
 #include "systems/action/ActionSystem.hpp"
-#include "systems/environment/LiquidSystem.hpp"
 #include "utils/ECS.hpp"
 #include "utils/Log.hpp"
 #include "utils/Parser.hpp"
@@ -60,7 +59,6 @@ void Game::loop()
 	{
 		Log::info() << "Round " << registry.ctx().get<GameState>().turn_number;
 		ActionSystem::act_round(registry, ECS::get_cave(registry, registry.get<Position>(player)).get_idx());
-		LiquidSystem::simulate_liquids(registry);
 		registry.ctx().get<GameState>().turn_number++;
 	}
 	if (registry.all_of<Component::Tag::Dead>(player) || game_over)

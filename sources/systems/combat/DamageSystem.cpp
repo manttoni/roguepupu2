@@ -14,7 +14,6 @@ namespace DamageSystem
 	void die(entt::registry& registry, const entt::entity entity)
 	{
 		registry.emplace_or_replace<Dead>(entity);
-		registry.emplace_or_replace<Component::Type::Death>(entity, Enum::DeathType::Dead);
 		registry.emplace_or_replace<CollisionMovement>(entity, false);
 		registry.emplace_or_replace<CollisionVision>(entity, false);
 		if (entity == ECS::get_player(registry))

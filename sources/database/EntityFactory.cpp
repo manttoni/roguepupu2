@@ -18,7 +18,6 @@
 
 #include "core/paths.hpp"
 #include "database/EntityFactory.hpp"                              // for EntityFactory
-#include "domain/Alignment.hpp"
 #include "domain/Color.hpp"                                      // for Color
 #include "domain/Event.hpp"
 #include "domain/Position.hpp"
@@ -56,21 +55,6 @@ std::unordered_map<std::string_view, ComplexParser> complex_parsers =
 		{
 			Color color = Parser::parse_color(data);
 			reg.template emplace<Color>(e, color);
-		}
-	},
-	{ "alignment", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			Alignment alignment;
-			alignment.tolerance = data["tolerance"].get<double>();
-			alignment.chaos_law = data["chaos_law"].get<double>();
-			alignment.evil_good = data["evil_good"].get<double>();
-			reg.template emplace<Alignment>(e, alignment);
-		}
-	},
-	{ "dice", [](auto& reg, auto e, const nlohmann::json& data)
-		{
-			Dice dice = Parser::parse_dice(data);
-			reg.template emplace<Dice>(e, dice);
 		}
 	}
 };
@@ -123,9 +107,6 @@ void EntityFactory::emplace_component(
 		const std::string_view component_name,
 		const Json& component_json) const
 {
-	if (ignored_component(component_name))
-		return;
-
 	if (const auto it = complex_parsers.find(component_name);
 			it != complex_parsers.end())
 	{

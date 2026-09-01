@@ -21,7 +21,8 @@ TEST_F(RegistryTest, BasicMove)
 	const auto cave_idx = TestHelpers::get_cave_idx(registry, cave_size, TestHelpers::CaveType::Floor);
 	const auto& cave = ECS::get_cave(registry, cave_idx);
 	const auto mid_pos = cave.middle_position();
-	const auto entity = EntityFactory::instance().create_entity(registry, "test_creature", mid_pos);
+	const auto entity = registry.create();
+	registry.emplace<Position>(entity, mid_pos);
 	const auto neighbors = cave.get_nearby_positions(mid_pos, 1.5);
 	for (const auto neighbor : neighbors)
 	{
