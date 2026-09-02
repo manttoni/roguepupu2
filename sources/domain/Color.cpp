@@ -9,6 +9,12 @@
 #include "domain/Color.hpp"  // for Color
 #include "UI/UI.hpp"     // for UI
 
+Color::Color(const std::array<int, 3>& rgb) :
+	r(std::min<short>(1000, std::max<short>(rgb[0], 0))),
+	g(std::min<short>(1000, std::max<short>(rgb[1], 0))),
+	b(std::min<short>(1000, std::max<short>(rgb[2], 0)))
+{}
+
 Color::Color(const short r, const short g, const short b) :
 	r(std::min<short>(1000, std::max<short>(r, 0))),
 	g(std::min<short>(1000, std::max<short>(g, 0))),

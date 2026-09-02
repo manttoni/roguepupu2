@@ -14,7 +14,6 @@
 #include "UI/Menu.hpp"
 #include "UI/menus/DevMenu.hpp"
 #include "components/Component.hpp"
-#include "database/EntityFactory.hpp"
 #include "domain/Liquid.hpp"
 #include "domain/Position.hpp"
 #include "external/entt/entity/fwd.hpp"

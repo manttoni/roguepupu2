@@ -1,5 +1,6 @@
 #pragma once
 
+#include "database/EntityDatabase.hpp"
 #include "systems/rendering/RenderingSystem.hpp"
 #include "systems/rendering/LightingSystem.hpp"
 #include <optional>
@@ -228,6 +229,7 @@ namespace ECS
 		registry.ctx().emplace<EventQueue>();
 		registry.ctx().emplace<DevSettings>();
 		registry.ctx().emplace<GameSettings>();
+		registry.ctx().emplace<EntityDatabase>();
 	}
 
 	inline double get_light_amount(const entt::registry& registry, const Position& position)
@@ -333,4 +335,147 @@ namespace ECS
 		{
 			return get<C>(registry, list.values);
 		}
+
+	inline EntityDatabase get_entity_db(const entt::registry& registry)
+	{
+		return registry.ctx().get<EntityDatabase>();
+	}
+
+	template <typename C>
+		inline std::vector<std::string> get_entity_ids(const entt::registry& registry)
+		{
+			std::vector<std::string> ids;
+			const auto& database = get_entity_db(registry);
+			for (const auto& [id, data] : database.definitions)
+			{
+				if (data.contains(C::string))
+				{
+					ids.push_back(id);
+					continue;
+				}
+
+				const auto tags = data["Tags"].get<std::vector<std::string>>();
+				if (std::ranges::find(tags, C::string) != tags.end())
+					ids.push_back(id);
+			}
+			return ids;
+		}
+
+	inline std::vector<std::string> get_entity_ids(const entt::registry& registry)
+	{
+		std::vector<std::string> ids;
+		const auto& database = get_entity_db(registry);
+		for (const auto& [id, unused] : database.definitions)
+			ids.push_back(id);
+		return ids;
+	}
+
+	template<typename T>
+		struct is_vector : std::false_type {};
+
+	template<typename T, typename Allocator>
+		struct is_vector<std::vector<T, Allocator>> : std::true_type {};
+
+	template<typename T>
+		inline constexpr bool is_vector_v = is_vector<T>::value;
+
+	template<typename T>
+		T parse_value(const Json& data)
+		{
+			if constexpr (Enum::GameEnum<T>)
+			{
+				return Enum::from_string<T>(data.get<std::string>());
+			}
+			else if constexpr (is_vector_v<T>)
+			{
+				T values;
+				values.reserve(data.size());
+
+				for (const auto& element : data)
+					values.push_back(parse_value<typename T::value_type>(element));
+
+				return values;
+			}
+			else
+			{
+				return data.get<T>();
+			}
+		}
+
+	inline bool emplace_component(
+			entt::registry& registry,
+			const entt::entity entity,
+			const std::string& component_str,
+			const Json& data)
+	{
+		if (component_str == "Color")
+			registry.emplace<Color>(entity, data.get<std::array<int, 3>>());
+		else if (component_str == "Dice")
+			registry.emplace<Dice>(entity, data.get<std::string>());
+#define X(name, type) \
+		else if (component_str == #name) \
+		registry.emplace<Component::Value::name>(entity, parse_value<type>(data));
+#include "components/Value.def"
+#undef X
+#define X(name, type) \
+		else if (component_str == #name) \
+		registry.emplace<Component::List::name>(entity, parse_value<std::vector<type>>(data));
+#include "components/List.def"
+#undef X
+#define X(name, type) \
+		else if (component_str == #name) \
+		registry.emplace<Component::Resource::name>(entity, parse_value<type>(data));
+#include "components/Resource.def"
+#undef X
+		else
+		{
+			Log::warning() << "No component called \"" << component_str << "\" exists";
+			return false; // There is no matching component
+		}
+		return true;
+	}
+
+	inline bool emplace_tags(
+			entt::registry& registry,
+			const entt::entity entity,
+			const std::vector<std::string>& tags
+			)
+	{
+		for (const auto& tag : tags)
+		{
+			if (tag.empty())
+				return false;
+#define X(name) \
+			else if (tag == #name) \
+				registry.emplace<Component::Tag::name>(entity);
+#include "components/Tag.def"
+#undef X
+			else
+			{
+				Log::warning() << "No tag called \"" << tag << "\" exists";
+				return false;
+			}
+		}
+		return true;
+	}
+
+	inline entt::entity create_entity(entt::registry& registry, const Json& definition)
+	{
+		const auto entity = registry.create();
+		for (const auto& [component_str, data] : definition.items())
+		{
+			if (component_str == "tags")
+				emplace_tags(registry, entity, data.get<std::vector<std::string>>());
+			else
+				emplace_component(registry, entity, component_str, data);
+		}
+		return entity;
+	}
+
+	inline entt::entity create_entity(entt::registry& registry, const std::string& id)
+	{
+		const auto& database = get_entity_db(registry);
+		const auto& definition = database.definitions.at(id);
+		return create_entity(registry, definition);
+	}
 };

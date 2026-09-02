@@ -4,7 +4,6 @@
 #include <vector>
 
 #include "helpers.hpp"
-#include "database/EntityFactory.hpp"
 #include "systems/position/MovementSystem.hpp"
 #include "utils/ECS.hpp"
 #include "external/entt/entt.hpp"

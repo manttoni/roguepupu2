@@ -2,7 +2,6 @@
 
 #include <sstream>
 #include <algorithm>
-#include "database/EntityFactory.hpp"
 #include "domain/Cave.hpp"
 #include "domain/Cell.hpp"
 #include "domain/Position.hpp"

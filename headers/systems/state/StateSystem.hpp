@@ -45,7 +45,6 @@ namespace StateSystem
 		{
 			if (!registry.valid(entity))
 			{
-				Log::warning() << "Invalid entity" << Debug::entity_details(registry, entity);
 				return 0;
 			}
 			if (!registry.all_of<T>(entity))

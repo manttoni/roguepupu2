@@ -6,7 +6,6 @@
 
 #include "UI/Dialog.hpp"
 #include "UI/UI.hpp"
-#include "database/EntityFactory.hpp"           // for EntityFactory
 #include "domain/Cave.hpp"
 #include "domain/Cell.hpp"
 #include "domain/Position.hpp"
@@ -39,15 +38,12 @@ Game::Game()
 
 void Game::select_character(entt::registry& registry)
 {
-	const nlohmann::json player_filter = {
-		{ "contains_all", {{ "tags", {"player"}}}} // must include 'tags' and it must include 'player'
-	};
-	const auto players = EntityFactory::instance().filter_entity_ids(player_filter);
+	const auto players = ECS::get_entity_ids<Component::Tag::Player>(registry);
 	assert(!players.empty());
 	const auto selection = Dialog::get_selection("Select character", players);
 	if (selection.cancelled || !selection.element) return;
 
-	registry.ctx().get<GameState>().player = EntityFactory::instance().create_entity(registry, selection.element->label);
+	registry.ctx().get<GameState>().player = ECS::create_entity(registry, selection.element->label);
 }
 
 void Game::loop()

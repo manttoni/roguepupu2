@@ -14,6 +14,7 @@ class Color
 
 	public:
 		Color() : r(0), g(0), b(0) {}
+		Color(const std::array<int, 3>& rgb);
 		Color(const short r, const short g, const short b);
 		Color(const Color& other) = default;
 		Color& operator=(const Color& other) = default;

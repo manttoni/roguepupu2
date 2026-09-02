@@ -3,19 +3,11 @@
 #include "utils/ECS.hpp"
 #include "external/entt/entt.hpp"
 #include "components/Component.hpp"
-#include "database/EntityFactory.hpp"
 #include "nlohmann/json.hpp"
 #include "systems/environment/LiquidSystem.hpp"
 
 namespace Debug
 {
-	std::string entity_details(const entt::registry& registry, const entt::entity entity)
-	{
-		const auto name = registry.get<Component::Value::Name>(entity).value;
-		const auto LUT = EntityFactory::instance().get_LUT();
-		return LUT.at(name).dump(4);
-	}
-
 	/* Return a text vector that will be displayed on the screen during debugging
 	 * */
 	std::vector<std::string> debug_text(const entt::registry& registry)
