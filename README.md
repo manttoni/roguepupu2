@@ -20,7 +20,7 @@ C++ roguelike cave exploration game and engine focused on ECS architecture, data
 ### Play
 ```bash
 ./scripts/build.sh release
-./build-release/roguepupu2
+./build-release/bin/roguepupu2
 ```
 
 ### Test
