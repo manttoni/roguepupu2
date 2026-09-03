@@ -1,5 +1,27 @@
 {
-	"rabdin": {
-
+	"player_default": {
+		"Name": "Rabdin",
+		"Tags": ["Player", "Creature", "Actor", "Destructible", "Renderable", "WorldObject"],
+		"Glyph": "@",
+		"Color": [123,456,789],
+		"ActionPoints": 1,
+		"BonusActionPoints": 1,
+		"MovementPoints": 1,
+		"Faction": "None",
+		"OnDeath": [],
+		"Charisma": 8,
+		"Constitution": 8,
+		"CreatureType": "Humanoid",
+		"Dexterity": 8,
+		"Intelligence": 8,
+		"Strength": 8,
+		"Wisdom": 8,
+		"OnDamage": [],
+		"OnDestroy": [],
+		"OnSpawn": [],
+		"SpawnConditions": [],
+		"CollisionMovement": true,
+		"CollisionVision": false,
+		"VisionRange": 10
 	}
 }

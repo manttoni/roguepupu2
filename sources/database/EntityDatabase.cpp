@@ -1,5 +1,6 @@
 #include "database/EntityDatabase.hpp"
 #include "utils/Parser.hpp"
+#include "entities/Entity.hpp"
 
 #include <stdexcept>
 
@@ -19,8 +20,16 @@ EntityDatabase::EntityDatabase(const std::filesystem::path& path)
 
 	for (const auto& [id, definition] : root.items())
 	{
-		if (!definition.is_object())
-			throw std::runtime_error("Invalid entity definition: " + id);
+		if (!Entity::valid_id(id))
+		{
+			Log::warning() << "Invalid entity id: " << id << " ignored";
+			continue;
+		}
+		if (!Entity::valid_definition(definition))
+		{
+			Log::warning() << "Invalid entity(" << id << ") definition: " << std::endl << definition.dump(4);
+			continue;
+		}
 
 		definitions.emplace(id, definition);
 	}

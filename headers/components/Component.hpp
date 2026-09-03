@@ -161,8 +161,9 @@ namespace Component::Resource
 
 namespace Component::Tag
 {
+	struct Base {};
 #define X(name) \
-	struct name \
+	struct name : Component::Tag::Base \
 	{ \
 		static constexpr std::string_view string = #name; \
 		friend std::ostream& operator<<(std::ostream& os, const name&) \

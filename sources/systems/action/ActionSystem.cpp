@@ -124,6 +124,7 @@ namespace ActionSystem
 
 			resolve_actions(registry, actions);
 			EventSystem::resolve_events(registry);
+			RenderingSystem::render(registry);
 		}
 	}
 
@@ -141,10 +142,7 @@ namespace ActionSystem
 	{
 		auto actors = ECS::get_entities<Component::Tag::Actor>(registry, cave_idx);
 		if (actors.empty())
-		{
-			Log::warning() << "act_round has no actors";
-			return;
-		}
+			Error::fatal("act_round has no actors");
 
 		const auto player = ECS::get_player(registry); // optional, for example tests or simulations might not have this
 		for (const auto actor : actors)

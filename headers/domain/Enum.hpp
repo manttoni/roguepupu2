@@ -166,29 +166,29 @@ namespace Enum
 		Net
 	};
 
-enum class SkillType
-{
-    None,
+	enum class SkillType
+	{
+		None,
 
-    Acrobatics,
-    AnimalHandling,
-    Arcana,
-    Athletics,
-    Deception,
-    History,
-    Insight,
-    Intimidation,
-    Investigation,
-    Medicine,
-    Nature,
-    Perception,
-    Performance,
-    Persuasion,
-    Religion,
-    SleightOfHand,
-    Stealth,
-    Survival
-};
+		Acrobatics,
+		AnimalHandling,
+		Arcana,
+		Athletics,
+		Deception,
+		History,
+		Insight,
+		Intimidation,
+		Investigation,
+		Medicine,
+		Nature,
+		Perception,
+		Performance,
+		Persuasion,
+		Religion,
+		SleightOfHand,
+		Stealth,
+		Survival
+	};
 
 	template<typename E>
 		concept GameEnum =

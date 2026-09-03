@@ -354,7 +354,13 @@ namespace ECS
 					continue;
 				}
 
-				const auto tags = data["Tags"].get<std::vector<std::string>>();
+				if (!data.contains("Tags"))
+				{
+					Log::error() << "Entity doesn't have Tags. Ignored.";
+					continue;
+				}
+
+				const auto tags = data.at("Tags").get<std::vector<std::string>>();
 				if (std::ranges::find(tags, C::string) != tags.end())
 					ids.push_back(id);
 			}
@@ -396,6 +402,10 @@ namespace ECS
 
 				return values;
 			}
+			else if constexpr (std::same_as<T, wchar_t>)
+			{
+				return Utils::parse_wchar_t(data.get<std::string>());
+			}
 			else
 			{
 				return data.get<T>();
@@ -414,17 +424,23 @@ namespace ECS
 			registry.emplace<Dice>(entity, data.get<std::string>());
 #define X(name, type) \
 		else if (component_str == #name) \
-		registry.emplace<Component::Value::name>(entity, parse_value<type>(data));
+		{ \
+			registry.emplace<Component::Value::name>(entity, parse_value<type>(data)); \
+		}
 #include "components/Value.def"
 #undef X
 #define X(name, type) \
 		else if (component_str == #name) \
-		registry.emplace<Component::List::name>(entity, parse_value<std::vector<type>>(data));
+		{ \
+			registry.emplace<Component::List::name>(entity, parse_value<std::vector<type>>(data)); \
+		}
 #include "components/List.def"
 #undef X
 #define X(name, type) \
 		else if (component_str == #name) \
-		registry.emplace<Component::Resource::name>(entity, parse_value<type>(data));
+		{ \
+			registry.emplace<Component::Resource::name>(entity, parse_value<type>(data)); \
+		}
 #include "components/Resource.def"
 #undef X
 		else
@@ -432,6 +448,7 @@ namespace ECS
 			Log::warning() << "No component called \"" << component_str << "\" exists";
 			return false; // There is no matching component
 		}
+		Log::debug() << "Emplaced component: " << component_str;
 		return true;
 	}
 
@@ -455,6 +472,7 @@ namespace ECS
 				Log::warning() << "No tag called \"" << tag << "\" exists";
 				return false;
 			}
+			Log::debug() << "Emplaced tag: " << tag;
 		}
 		return true;
 	}
@@ -464,7 +482,7 @@ namespace ECS
 		const auto entity = registry.create();
 		for (const auto& [component_str, data] : definition.items())
 		{
-			if (component_str == "tags")
+			if (component_str == "Tags")
 				emplace_tags(registry, entity, data.get<std::vector<std::string>>());
 			else
 				emplace_component(registry, entity, component_str, data);

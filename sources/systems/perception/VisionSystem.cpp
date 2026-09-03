@@ -91,6 +91,7 @@ namespace VisionSystem
 			if (has_vision(registry, position, n, distance))
 				visible.push_back(n);
 		}
+		visible.push_back(position); // Position of observer is visible to the observer
 		return visible;
 	}
 	std::vector<Position> get_visible_positions(
@@ -118,6 +119,8 @@ namespace VisionSystem
 	}
 	std::vector<entt::entity> get_visible_entities(const entt::registry& registry, const entt::entity entity, const Position& position)
 	{
+		if (!registry.all_of<Position>(entity))
+			return {};
 		return get_visible_entities(registry, registry.get<Position>(entity), position);
 	}
 	std::vector<entt::entity> get_visible_entities(const entt::registry& registry, const Position& position, const double distance)

@@ -31,7 +31,6 @@ Game::Game()
 		CaveGenerator::generate(registry, 0);
 		const auto middle = ECS::get_cave(registry, 0).middle_position();
 		assert(middle.is_valid());
-		Log::debug() << "Middle position in game start: " << middle;
 		registry.emplace<Position>(player, middle);
 	}
 }
@@ -39,7 +38,11 @@ Game::Game()
 void Game::select_character(entt::registry& registry)
 {
 	const auto players = ECS::get_entity_ids<Component::Tag::Player>(registry);
-	assert(!players.empty());
+	if (players.empty())
+	{
+		Dialog::alert("No player characters found.");
+		return;
+	}
 	const auto selection = Dialog::get_selection("Select character", players);
 	if (selection.cancelled || !selection.element) return;
 
@@ -50,7 +53,6 @@ void Game::loop()
 {
 	registry.ctx().get<GameState>().game_running = true;
 	const auto player = ECS::get_player(registry);
-	assert(player != entt::null);
 	while (registry.ctx().get<GameState>().game_running && game_over == false)
 	{
 		Log::info() << "Round " << registry.ctx().get<GameState>().turn_number;

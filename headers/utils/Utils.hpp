@@ -1,11 +1,13 @@
 #pragma once
-
-#include <cctype>           // for toupper
-#include <string>           // for basic_string, string, operator+, operator<<
-#include <regex>
-#include <codecvt>
-#include <locale>
 #include "domain/NcursesAttr.hpp"
+#include <cctype>           // for toupper
+#include <codecvt>
+#include <cwchar>
+#include <locale>
+#include <regex>
+#include <stdexcept>
+#include <string>           // for basic_string, string, operator+, operator<<
+#include <string_view>
 
 namespace Utils
 {
@@ -48,6 +50,46 @@ namespace Utils
 		return conv.to_bytes(ws);
 	}
 
+	inline wchar_t parse_wchar_t(const std::string_view text)
+	{
+		if (text.empty())
+			throw std::invalid_argument{"Glyph cannot be empty"};
+
+		std::mbstate_t state{};
+		wchar_t result{};
+
+		const auto converted = std::mbrtowc(
+				&result,
+				text.data(),
+				text.size(),
+				&state);
+
+		if (converted == static_cast<std::size_t>(-1))
+		{
+			throw std::invalid_argument{
+				"Glyph is not valid UTF-8: " +
+					std::string{text}};
+		}
+
+		if (converted == static_cast<std::size_t>(-2))
+		{
+			throw std::invalid_argument{
+				"Glyph contains incomplete UTF-8: " +
+					std::string{text}};
+		}
+
+		if (converted == 0)
+			throw std::invalid_argument{"Null glyph is not allowed"};
+
+		if (converted != text.size())
+		{
+			throw std::invalid_argument{
+				"Glyph must contain exactly one Unicode code point: " +
+					std::string{text}};
+		}
+
+		return result;
+	}
 	// Remove {color} and [ncurses] attribute markups
 	inline std::string without_markups(const std::string& str)
 	{

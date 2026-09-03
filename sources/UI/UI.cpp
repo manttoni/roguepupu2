@@ -225,8 +225,8 @@ int UI::input(int delay)
 	if (key == KEY_RESIZE)
 		resize_terminal();
 
-	if (key != -1)
-		Log::debug() << "Key pressed: " << key;
+	//if (key != -1)
+	//	Log::debug() << "Key pressed: " << key;
 	flushinp();
 	return key;
 }
