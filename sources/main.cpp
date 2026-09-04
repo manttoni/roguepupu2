@@ -9,7 +9,7 @@
 #include "UI/UI.hpp"             // for UI
 #include "utils/Log.hpp"          // for log
 #include "UI/Dialog.hpp"
-#include "editor/Editor.hpp"
+#include "editor/EntityEditor.hpp"
 #include "UI/Menu.hpp"
 
 /* Capture this from ncurses so it will print */
@@ -38,7 +38,7 @@ void run()
 		if (game != nullptr)
 			options.push_back("Continue");
 		options.push_back("New Game");
-		options.push_back("Editor");
+		options.push_back("Entity Editor");
 		options.push_back("Controls");
 		options.push_back("Quit");
 		selection = Dialog::get_selection("*** Roguepupu 2 ***", options, Screen::middle(), selection.index);
@@ -54,8 +54,8 @@ void run()
 			game = new Game();
 			game->loop();
 		}
-		else if (label == "Editor")
-			Editor::start();
+		else if (label == "Entity Editor")
+			EntityEditor::start();
 		else if (label == "Controls") // this will get moved in near future
 			Dialog::get_selection("Controls", {
 					"Movement:     numpad (lock off)",

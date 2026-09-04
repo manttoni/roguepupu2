@@ -2,5 +2,6 @@
 
 namespace EntityEditor
 {
-	void entity_editor();
-};
+	void create_new_entity();
+	void start();
+}
