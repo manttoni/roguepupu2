@@ -8,15 +8,12 @@
 #include "domain/Position.hpp"
 #include "utils/Vec2.hpp"
 
+namespace Domain
+{
 class Cave
 {
 	public:
-		Cave(
-				size_t idx,
-				size_t size,
-				size_t depth,
-				Cell::Type fill = Cell::Type::Rock
-			);
+		Cave(size_t idx, size_t size, size_t depth, Cell::Type fill = Cell::Type::Rock);
 
 		Cave(const Cave&) = default;
 		Cave& operator=(const Cave&) = default;
@@ -38,38 +35,38 @@ class Cave
 		[[nodiscard]] const Cell& get_cell(size_t cell_idx) const;
 		[[nodiscard]] Cell& get_cell(size_t cell_idx);
 
-		[[nodiscard]] const Cell& get_cell(const Position& position) const;
-		[[nodiscard]] Cell& get_cell(const Position& position);
+		[[nodiscard]] const Cell& get_cell(const Domain::Position& position) const;
+		[[nodiscard]] Cell& get_cell(const Domain::Position& position);
 
-		[[nodiscard]] std::vector<Position> get_positions() const;
+		[[nodiscard]] std::vector<Domain::Position> get_positions() const;
 
-		[[nodiscard]] std::vector<Position> get_nearby_positions(
+		[[nodiscard]] std::vector<Domain::Position> get_nearby_positions(
 				size_t middle,
 				double radius = 1.5,
 				Cell::Type type = Cell::Type::None
 				) const;
 
-		[[nodiscard]] std::vector<Position> get_nearby_positions(
-				const Position& middle,
+		[[nodiscard]] std::vector<Domain::Position> get_nearby_positions(
+				const Domain::Position& middle,
 				double radius = 1.5,
 				Cell::Type type = Cell::Type::None
 				) const;
 
-		[[nodiscard]] std::vector<Position> get_positions_with_type(
+		[[nodiscard]] std::vector<Domain::Position> get_positions_with_type(
 				Cell::Type type
 				) const;
 
-		[[nodiscard]] Position middle_position() const;
-		[[nodiscard]] Position deepest_position() const;
+		[[nodiscard]] Domain::Position middle_position() const;
+		[[nodiscard]] Domain::Position deepest_position() const;
 
 		[[nodiscard]] double distance(
-				const Position& a,
-				const Position& b
+				const Domain::Position& a,
+				const Domain::Position& b
 				) const;
 
 		[[nodiscard]] double distance(size_t a, size_t b) const;
 
-		[[nodiscard]] bool contains(const Position& position) const;
+		[[nodiscard]] bool contains(const Domain::Position& position) const;
 		[[nodiscard]] bool contains(const Vec2<int>& vec) const;
 		[[nodiscard]] bool contains(const size_t idx) const;
 
@@ -78,10 +75,10 @@ class Cave
 				size_t to
 				) const;
 
-		[[nodiscard]] Position offset_position(const Position& position, const Vec2<int>& offset) const;
+		[[nodiscard]] Domain::Position offset_position(const Domain::Position& position, const Vec2<int>& offset) const;
 
 	private:
-		void validate_position(const Position& position) const;
+		void validate_position(const Domain::Position& position) const;
 
 		size_t idx{};
 		size_t size{};
@@ -92,3 +89,5 @@ class Cave
 };
 
 std::ostream& operator<<(std::ostream& os, const Cave& cave);
+
+} // namespace Domain

@@ -6,6 +6,9 @@
 #include <sstream>
 #include <ostream>
 
+namespace Domain
+{
+
 struct Position
 {
 	static constexpr size_t invalid_idx = SIZE_MAX;
@@ -16,16 +19,16 @@ struct Position
 			const size_t cave_idx = invalid_idx) :
 		cell_idx(cell_idx), cave_idx(cave_idx) {}
 
-	static Position invalid_position()
+	static Domain::Position invalid()
 	{
-		Position position{};
+		Domain::Position position{};
 		assert(!position.is_valid());
 		return position;
 	}
 
-	bool operator==(const Position& other) const = default;
-	bool operator!=(const Position& other) const = default;
-	bool operator<(const Position& other) const
+	bool operator==(const Domain::Position& other) const = default;
+	bool operator!=(const Domain::Position& other) const = default;
+	bool operator<(const Domain::Position& other) const
 	{
 		if (cell_idx != other.cell_idx)
 			return cell_idx < other.cell_idx;
@@ -44,9 +47,10 @@ struct Position
 		return os.str();
 	}
 
-	friend std::ostream& operator<<(std::ostream& os, const Position& pos)
+	friend std::ostream& operator<<(std::ostream& os, const Domain::Position& pos)
 	{
 		os << pos.to_string();
 		return os;
 	}
 };
+}

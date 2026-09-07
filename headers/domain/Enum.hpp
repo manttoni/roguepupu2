@@ -8,7 +8,7 @@
 #include <string_view>
 #include <type_traits>
 
-namespace Enum
+namespace Domain::Enum
 {
 	enum class AIBehaviorType
 	{

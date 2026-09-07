@@ -11,5 +11,5 @@
 
 struct EventQueue
 {
-	std::deque<Event> queue;
+	std::deque<Domain::Event::Any> queue;
 };

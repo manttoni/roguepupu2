@@ -3,7 +3,7 @@
 		"Name": "Rabdin",
 		"Tags": ["Player", "Creature", "Actor", "Destructible", "Renderable", "WorldObject"],
 		"Glyph": "@",
-		"Color": [123,456,789],
+		"Ncurses::Color": [1,2,4],
 		"ActionPoints": 1,
 		"BonusActionPoints": 1,
 		"MovementPoints": 1,

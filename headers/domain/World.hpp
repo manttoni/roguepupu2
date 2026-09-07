@@ -4,6 +4,8 @@
 #include "domain/Cave.hpp"
 #include "domain/Cell.hpp"
 
+namespace Domain
+{
 class World
 {
 	private:
@@ -21,4 +23,4 @@ class World
 
 		size_t new_cave(const size_t size, const Cell::Type fill);
 };
-
+} // namespace Domain

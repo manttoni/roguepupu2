@@ -306,7 +306,7 @@ inline namespace literals {
  * @param str The literal without its suffix.
  * @return A properly initialized hashed wstring.
  */
-[[nodiscard]] ENTT_CONSTEVAL hashed_wstring operator""_hws(const wchar_t *str, std::size_t) noexcept {
+[[nodiscard]] ENTT_CONSTEVAL hashed_wstring operator""_hws(const char *str, std::size_t) noexcept {
     return hashed_wstring{str};
 }
 

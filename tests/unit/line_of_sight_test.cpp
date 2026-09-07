@@ -1,5 +1,5 @@
 /* This tests ensures that
- * VisionSystem::has_line_of_sight(const entt::registry&, const Position&, const Position&)
+ * System::Vision::has_line_of_sight(const entt::registry&, const Position&, const Position&)
  * works properly.
  *
  * It has to check that parameters are interchangeable, and some simple cases.
@@ -17,7 +17,7 @@
 #include "helpers.hpp"
 #include "domain/Cave.hpp"
 #include "utils/ECS.hpp"
-#include "systems/perception/VisionSystem.hpp"
+#include "systems/Vision.hpp"
 #include "gtest/gtest.h"
 
 TEST_F(RegistryTest, LOSSymmetricalNoWalls)
@@ -31,10 +31,10 @@ TEST_F(RegistryTest, LOSSymmetricalNoWalls)
 		for (size_t j = i + 1; j < positions.size(); ++j)
 		{
 			const auto los_ij =
-				VisionSystem::has_line_of_sight(registry, positions[i], positions[j]);
+				System::Vision::has_line_of_sight(registry, positions[i], positions[j]);
 			const auto los_ji =
-				VisionSystem::has_line_of_sight(registry, positions[j], positions[i]);
-			EXPECT_EQ(los_ij, los_ji) << TestHelpers::dump_cave(registry, cave_idx, {positions[i], positions[j]});
+				System::Vision::has_line_of_sight(registry, positions[j], positions[i]);
+			EXPECT_EQ(los_ij, los_ji);
 		}
 	}
 }
@@ -50,10 +50,10 @@ TEST_F(RegistryTest, LOSSymmetricalWalls)
 		for (size_t j = i + 1; j < positions.size(); ++j)
 		{
 			const auto los_ij =
-				VisionSystem::has_line_of_sight(registry, positions[i], positions[j]);
+				System::Vision::has_line_of_sight(registry, positions[i], positions[j]);
 			const auto los_ji =
-				VisionSystem::has_line_of_sight(registry, positions[j], positions[i]);
-			EXPECT_EQ(los_ij, los_ji) << TestHelpers::dump_cave(registry, cave_idx, {positions[i], positions[j]});
+				System::Vision::has_line_of_sight(registry, positions[j], positions[i]);
+			EXPECT_EQ(los_ij, los_ji);
 		}
 	}
 }

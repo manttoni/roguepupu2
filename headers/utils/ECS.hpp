@@ -1,12 +1,13 @@
 #pragma once
 
 #include "database/EntityDatabase.hpp"
-#include "systems/rendering/RenderingSystem.hpp"
-#include "systems/rendering/LightingSystem.hpp"
+
+
 #include <optional>
+#include "rendering/Renderer.hpp"
 #include "components/Component.hpp"
 #include "domain/Cave.hpp"
-#include "domain/Color.hpp"
+#include "ncurses/Color.hpp"
 #include "domain/Event.hpp"
 #include "domain/World.hpp"
 #include "external/entt/entt.hpp"
@@ -16,9 +17,9 @@
 #include "infrastructure/GameLogger.hpp"
 #include "infrastructure/GameSettings.hpp"
 #include "infrastructure/GameState.hpp"
-#include "systems/perception/VisionSystem.hpp"
-#include "systems/position/TransitionSystem.hpp"
-#include "systems/state/StateSystem.hpp"
+#include "systems/Vision.hpp"
+#include "systems/Transition.hpp"
+#include "systems/State.hpp"
 #include "utils/Parser.hpp"
 #include "utils/Random.hpp"
 #include "utils/Utils.hpp"
@@ -27,19 +28,19 @@ namespace ECS
 {
 	/* These two functions return all entities either in a whole cave, or just in one cell in a cave
 	 * */
-	template <typename T = Position> std::vector<entt::entity> get_entities(const entt::registry& registry, const size_t cave_idx)
+	template <typename T = Domain::Position> std::vector<entt::entity> get_entities(const entt::registry& registry, const size_t cave_idx)
 	{
 		std::vector<entt::entity> entities;
 		for (const auto e : registry.view<T>())
-			if (registry.all_of<Position>(e) && registry.get<Position>(e).cave_idx == cave_idx)
+			if (registry.all_of<Domain::Position>(e) && registry.get<Domain::Position>(e).cave_idx == cave_idx)
 				entities.push_back(e);
 		return entities;
 	}
-	template <typename T = Position> std::vector<entt::entity> get_entities(const entt::registry& registry, const Position& pos)
+	template <typename T = Domain::Position> std::vector<entt::entity> get_entities(const entt::registry& registry, const Domain::Position& pos)
 	{
 		std::vector<entt::entity> entities;
 		for (const auto e : registry.view<T>())
-			if (registry.all_of<Position>(e) && registry.get<Position>(e) == pos)
+			if (registry.all_of<Domain::Position>(e) && registry.get<Domain::Position>(e) == pos)
 				entities.push_back(e);
 		return entities;
 	}
@@ -54,16 +55,16 @@ namespace ECS
 					);
 		}
 
-	inline Position get_position(const entt::registry& registry, const entt::entity entity)
+	inline Domain::Position get_position(const entt::registry& registry, const entt::entity entity)
 	{
-		if (registry.all_of<Position>(entity))
-			return registry.get<Position>(entity);
+		if (registry.all_of<Domain::Position>(entity))
+			return registry.get<Domain::Position>(entity);
 
 		// Figure out a way to locate entity if it is carried.
 		//if (registry.all_of<CarriedBy>(entity))
 		//	return get_position(registry, registry.get<CarriedBy>(entity).value);
 
-		return Position::invalid_position();
+		return Domain::Position::invalid();
 	}
 
 	inline entt::entity get_player(const entt::registry& registry)
@@ -71,11 +72,16 @@ namespace ECS
 		return registry.ctx().get<GameState>().player;
 	}
 
-	inline ::Color get_fgcolor(const entt::registry& registry, const entt::entity entity)
+	inline Domain::Position get_player_position(const entt::registry& registry)
 	{
-		if (!registry.all_of<Color>(entity))
-			return ::Color::white();
-		return registry.get<Color>(entity);
+		return registry.get<Domain::Position>(get_player(registry));
+	}
+
+	inline Ncurses::Color get_fgcolor(const entt::registry& registry, const entt::entity entity)
+	{
+		if (!registry.all_of<Ncurses::Color>(entity))
+			return Ncurses::Color{3,3,3};
+		return registry.get<Ncurses::Color>(entity);
 	}
 
 	inline std::string get_name(const entt::registry& registry, const entt::entity entity)
@@ -83,17 +89,17 @@ namespace ECS
 		return registry.get<Component::Value::Name>(entity).value;
 	}
 
-	inline NcursesAttr get_ncurses_attr(const entt::registry& registry, const entt::entity entity)
+	inline Ncurses::Attribute get_ncurses_attr(const entt::registry& registry, const entt::entity entity)
 	{
-		if (registry.all_of<NcursesAttr>(entity))
-			return registry.get<NcursesAttr>(entity);
-		return NcursesAttr(A_NORMAL);
+		if (registry.all_of<Ncurses::Attribute>(entity))
+			return registry.get<Ncurses::Attribute>(entity);
+		return Ncurses::Attribute(A_NORMAL);
 	}
 
 	inline std::string get_colored_name(const entt::registry& registry, const entt::entity entity)
 	{
-		const Color& fgcolor = get_fgcolor(registry, entity);
-		const NcursesAttr& attr = get_ncurses_attr(registry, entity);
+		const Ncurses::Color& fgcolor = get_fgcolor(registry, entity);
+		const Ncurses::Attribute& attr = get_ncurses_attr(registry, entity);
 		std::string name = fgcolor.markup() + get_name(registry, entity) + "{reset}";
 		if (attr != A_NORMAL)
 		{
@@ -111,66 +117,66 @@ namespace ECS
 		return colored_names;
 	}
 
-	inline void queue_event(entt::registry& registry, Event event)
+	inline void queue_event(entt::registry& registry, Domain::Event::Any event)
 	{
 		registry.ctx().get<EventQueue>().queue.push_back(std::move(event));
 	}
 
-	inline World& get_world(entt::registry& registry)
+	inline Domain::World& get_world(entt::registry& registry)
 	{
-		return registry.ctx().get<World>();
+		return registry.ctx().get<Domain::World>();
 	}
 
-	inline Cave& get_cave(entt::registry& registry, const Position& position)
-	{
-		return get_world(registry).get_cave(position.cave_idx);
-	}
-
-	inline Cell& get_cell(entt::registry& registry, const Position& position)
-	{
-		return get_cave(registry, position).get_cell(position);
-	}
-
-	inline const World& get_world(const entt::registry& registry)
-	{
-		return registry.ctx().get<World>();
-	}
-
-	inline const Cave& get_cave(const entt::registry& registry, const Position& position)
+	inline Domain::Cave& get_cave(entt::registry& registry, const Domain::Position& position)
 	{
 		return get_world(registry).get_cave(position.cave_idx);
 	}
 
-	inline const Cell& get_cell(const entt::registry& registry, const Position& position)
+	inline Domain::Cell& get_cell(entt::registry& registry, const Domain::Position& position)
 	{
 		return get_cave(registry, position).get_cell(position);
 	}
 
-	inline const Cave& get_cave(const entt::registry& registry, const size_t cave_idx)
+	inline const Domain::World& get_world(const entt::registry& registry)
 	{
-		return registry.ctx().get<World>().get_cave(cave_idx);
+		return registry.ctx().get<Domain::World>();
 	}
 
-	inline Cave& get_cave(entt::registry& registry, const size_t cave_idx)
+	inline const Domain::Cave& get_cave(const entt::registry& registry, const Domain::Position& position)
 	{
-		return registry.ctx().get<World>().get_cave(cave_idx);
+		return get_world(registry).get_cave(position.cave_idx);
 	}
 
-	inline Cave& get_active_cave(entt::registry& registry)
+	inline const Domain::Cell& get_cell(const entt::registry& registry, const Domain::Position& position)
+	{
+		return get_cave(registry, position).get_cell(position);
+	}
+
+	inline const Domain::Cave& get_cave(const entt::registry& registry, const size_t cave_idx)
+	{
+		return registry.ctx().get<Domain::World>().get_cave(cave_idx);
+	}
+
+	inline Domain::Cave& get_cave(entt::registry& registry, const size_t cave_idx)
+	{
+		return registry.ctx().get<Domain::World>().get_cave(cave_idx);
+	}
+
+	inline Domain::Cave& get_active_cave(entt::registry& registry)
 	{
 		const auto player = get_player(registry);
 		assert(player != entt::null);
-		assert(registry.all_of<Position>(player));
-		const auto& pos = registry.get<Position>(player);
+		assert(registry.all_of<Domain::Position>(player));
+		const auto& pos = registry.get<Domain::Position>(player);
 		return get_cave(registry, pos);
 	}
 
-	inline const Cave& get_active_cave(const entt::registry& registry)
+	inline const Domain::Cave& get_active_cave(const entt::registry& registry)
 	{
 		const auto player = get_player(registry);
 		assert(player != entt::null);
-		assert(registry.all_of<Position>(player));
-		const auto& pos = registry.get<Position>(player);
+		assert(registry.all_of<Domain::Position>(player));
+		const auto& pos = registry.get<Domain::Position>(player);
 		return get_cave(registry, pos);
 	}
 
@@ -185,12 +191,12 @@ namespace ECS
 
 		queue_event(
 				registry,
-				DestroyEvent{
+				Domain::Event::Destroy{
 				.entity = entity
 				});
 	}
 
-	inline double distance(const entt::registry& registry, const Position& a, const Position& b)
+	inline double distance(const entt::registry& registry, const Domain::Position& a, const Domain::Position& b)
 	{
 		assert(a.cave_idx == b.cave_idx);
 		return get_cave(registry, a).distance(a, b);
@@ -198,21 +204,21 @@ namespace ECS
 
 	inline double distance(const entt::registry& registry, const entt::entity a, const entt::entity b)
 	{
-		assert(registry.all_of<Position>(a) && registry.all_of<Position>(b));
-		return distance(registry, registry.get<Position>(a), registry.get<Position>(b));
+		assert(registry.all_of<Domain::Position>(a) && registry.all_of<Domain::Position>(b));
+		return distance(registry, registry.get<Domain::Position>(a), registry.get<Domain::Position>(b));
 	}
 
-	inline double distance(const entt::registry& registry, const entt::entity a, const Position& b)
+	inline double distance(const entt::registry& registry, const entt::entity a, const Domain::Position& b)
 	{
-		return distance(registry, registry.get<Position>(a), b);
+		return distance(registry, registry.get<Domain::Position>(a), b);
 	}
 
-	inline double distance(const entt::registry& registry, const Position& a, const entt::entity b)
+	inline double distance(const entt::registry& registry, const Domain::Position& a, const entt::entity b)
 	{
-		return distance(registry, a, registry.get<Position>(b));
+		return distance(registry, a, registry.get<Domain::Position>(b));
 	}
 
-	inline wchar_t get_glyph(const entt::registry& registry, const entt::entity entity)
+	inline char get_glyph(const entt::registry& registry, const entt::entity entity)
 	{
 		if (registry.all_of<Component::Value::Glyph>(entity))
 			return registry.get<Component::Value::Glyph>(entity).value;
@@ -223,36 +229,24 @@ namespace ECS
 	{
 		registry.ctx().emplace<GameState>();
 		registry.ctx().emplace<GameLogger>();
-		registry.ctx().emplace<World>();
-		registry.ctx().emplace<RenderingSystem::Data>(); // render frame, all visuals of frame
-		registry.ctx().emplace<LightingSystem::Data>(); // lightmap to be added to RenderingSystem::Visual before rendering
+		registry.ctx().emplace<Domain::World>();
 		registry.ctx().emplace<EventQueue>();
-		registry.ctx().emplace<DevSettings>();
 		registry.ctx().emplace<GameSettings>();
 		registry.ctx().emplace<EntityDatabase>();
+		registry.ctx().emplace<Renderer>();
 	}
 
-	inline double get_light_amount(const entt::registry& registry, const Position& position)
-	{
-		assert(position.is_valid());
-		const auto& cell = get_cell(registry, position);
-		double amount = 0;
-		for (const auto& [color, stacks] : cell.get_lights())
-			amount += static_cast<double>(stacks) * static_cast<double>(color.get_channels_sum());
-		return amount;
-	}
-
-	inline bool player_can_see_position(const entt::registry& registry, const Position& position)
+	inline bool player_can_see_position(const entt::registry& registry, const Domain::Position& position)
 	{
 		const auto player = get_player(registry);
-		return VisionSystem::has_vision(registry, player, position);
+		return System::Vision::has_vision(registry, player, position);
 	}
 
 	inline bool player_can_see_entity(const entt::registry& registry, const entt::entity e)
 	{
 		if (get_player(registry) == entt::null || e == entt::null)
 			return false;
-		return VisionSystem::has_vision(registry, get_player(registry), e);
+		return System::Vision::has_vision(registry, get_player(registry), e);
 	}
 
 	inline bool game_running(const entt::registry& registry)
@@ -267,7 +261,7 @@ namespace ECS
 			.stream(registry);
 	}
 
-	inline bool weapon_has_property(const entt::registry& registry, const entt::entity weapon, const Enum::WeaponProperty property)
+	inline bool weapon_has_property(const entt::registry& registry, const entt::entity weapon, const Domain::Enum::WeaponProperty property)
 	{
 		for (const auto p : registry.get<Component::List::WeaponProperties>(weapon))
 			if (p == property)
@@ -275,20 +269,10 @@ namespace ECS
 		return false;
 	}
 
-	inline RenderingSystem::Data get_render_data(const entt::registry& registry)
-	{
-		return registry.ctx().get<RenderingSystem::Data>();
-	}
-
-	inline size_t get_render_frame(const entt::registry& registry)
-	{
-		return get_render_data(registry).render_frame;
-	}
-
-	inline bool blocks_vision(const entt::registry& registry, const Position& position)
+	inline bool blocks_vision(const entt::registry& registry, const Domain::Position& position)
 	{
 		const auto& cell = get_cell(registry, position);
-		if (cell.get_type() == Cell::Type::Rock)
+		if (cell.get_type() == Domain::Cell::Type::Rock)
 			return true;
 		for (const auto e : get_entities<Component::Value::CollisionVision>(registry, position))
 		{
@@ -388,9 +372,9 @@ namespace ECS
 	template<typename T>
 		T parse_value(const Json& data)
 		{
-			if constexpr (Enum::GameEnum<T>)
+			if constexpr (Domain::Enum::GameEnum<T>)
 			{
-				return Enum::from_string<T>(data.get<std::string>());
+				return Domain::Enum::from_string<T>(data.get<std::string>());
 			}
 			else if constexpr (is_vector_v<T>)
 			{
@@ -402,9 +386,9 @@ namespace ECS
 
 				return values;
 			}
-			else if constexpr (std::same_as<T, wchar_t>)
+			else if constexpr (std::same_as<T, char>)
 			{
-				return Utils::parse_wchar_t(data.get<std::string>());
+				return data.get<std::string>()[0];
 			}
 			else
 			{
@@ -418,10 +402,13 @@ namespace ECS
 			const std::string& component_str,
 			const Json& data)
 	{
-		if (component_str == "Color")
-			registry.emplace<Color>(entity, data.get<std::array<int, 3>>());
-		else if (component_str == "Dice")
-			registry.emplace<Dice>(entity, data.get<std::string>());
+		if (component_str == "Ncurses::Color")
+		{
+			const auto channels = data.get<std::array<int, 3>>();
+			registry.emplace<Ncurses::Color>(entity, channels[0], channels[1], channels[2]);
+		}
+		else if (component_str == "Domain::Dice")
+			registry.emplace<Domain::Dice>(entity, data.get<std::string>());
 #define X(name, type) \
 		else if (component_str == #name) \
 		{ \

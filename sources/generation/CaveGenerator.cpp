@@ -11,26 +11,18 @@
 #include <string>
 #include <utility>
 
-#include "infrastructure/EventQueue.hpp"
-#include "UI/Dialog.hpp"
-#include "UI/UI.hpp"
 #include "domain/Cave.hpp"
 #include "domain/Cell.hpp"
-#include "domain/Liquid.hpp"
-#include "domain/LiquidMixture.hpp"
 #include "domain/Position.hpp"
 #include "generation/CaveGenerator.hpp"
 #include "generation/EntitySpawner.hpp"
-#include "infrastructure/GameState.hpp"
-#include "systems/environment/LiquidSystem.hpp"
-#include "systems/position/MovementSystem.hpp"
-#include "systems/rendering/LightingSystem.hpp"
-#include "systems/rendering/RenderingSystem.hpp"
+#include "systems/Movement.hpp"
 #include "utils/Log.hpp"
 #include "utils/Math.hpp"
 #include "utils/Random.hpp"
 #include "utils/Vec2.hpp"
 #include "utils/ECS.hpp"
+#include "ui/Dialog.hpp"
 
 namespace CaveGenerator
 {
@@ -52,11 +44,11 @@ namespace CaveGenerator
 	void set_rock_densities(Data& data)
 	{
 		Log::info() << "Setting rock densities";
-		auto& cells = data.cave.get_cells();
+		const auto positions = data.cave.get_positions();
 		const size_t seed = Random::rand<size_t>(0, 999999);
-		for (auto& cell : cells)
+		for (const auto& position : positions)
 		{
-			const Vec2<int> coords = Vec2<int>::from_idx(cell.get_idx(), data.cave.get_size());
+			const Vec2<int> coords = Vec2<int>::from_idx(position.cell_idx, data.cave.get_size());
 			const double perlin = Random::noise2D(
 					coords.y,
 					coords.x,
@@ -64,7 +56,7 @@ namespace CaveGenerator
 					data.density.octaves,
 					seed);
 			const double density = Math::map(perlin, 0, 1, 1, CELL_DENSITY_MAX);
-			cell.set_density(density * (
+			data.cave.get_cell(position).set_density(density * (
 						is_on_edge(data, coords) ?
 						data.margin.multiplier :
 						1
@@ -80,10 +72,10 @@ namespace CaveGenerator
 	void set_erosion_points(Data& data)
 	{
 		const size_t total_features = data.features.sources + data.features.sinks;
-		std::map<Cell::Type, size_t> spawning_features =
+		std::map<Domain::Cell::Type, size_t> spawning_features =
 		{
-			{ Cell::Type::Source, data.features.sources },
-			{ Cell::Type::Sink, data.features.sinks }
+			{ Domain::Cell::Type::Source, data.features.sources },
+			{ Domain::Cell::Type::Sink, data.features.sinks }
 		};
 		const Vec2<int> center(static_cast<int>(data.cave.get_size()) / 2, static_cast<int>(data.cave.get_size()) / 2);
 		const double max_radius =
@@ -102,9 +94,9 @@ namespace CaveGenerator
 
 			const Vec2<int> coords = Math::polar_to_cartesian(center, radius, angle);
 			const size_t cell_idx = coords.to_idx(data.cave.get_size());
-			const Position pos(cell_idx, data.cave.get_idx());
+			const Domain::Position pos(cell_idx, data.cave.get_idx());
 			auto& cell = data.cave.get_cell(pos);
-			if (cell.get_type() != Cell::Type::Rock)
+			if (cell.get_type() != Domain::Cell::Type::Rock)
 			{
 				i--; // Try again to find suitable cell. Probably won't reach this.
 				continue;
@@ -126,50 +118,31 @@ namespace CaveGenerator
 		if (data.cave.get_idx() == 0)
 		{
 			auto middle_pos = data.cave.middle_position();
-			data.cave.get_cell(middle_pos).set_type(Cell::Type::Source); // this position will now be a part of the tunnels
+			data.cave.get_cell(middle_pos).set_type(Domain::Cell::Type::Source); // this position will now be a part of the tunnels
 		}
 		Log::info() << "Set erosion points: " << total_features;
 
 		assert(spawning_features.empty());
 	}
 
-	// This is for inspecting the result during generation
-	void render(Data& data)
-	{
-		if (data.registry.ctx().get<GameState>().test_run)
-			return;
-		LightingSystem::reset_lights(data.registry, data.cave.get_idx());
-		RenderingSystem::render_generation(data.registry, data.cave.get_idx());
-	}
-
-	void simulate_environment(Data& data)
-	{
-		(void) data;
-		//for (size_t i = 0; i < 32; ++i)
-			//LiquidSystem::simulate_liquids(data.registry, data.cave.get_idx());
-	}
-
 	void form_tunnels(Data& data)
 	{
-		const bool test_run = data.registry.ctx().get<GameState>().test_run;
-		const auto& sources = data.cave.get_positions_with_type(Cell::Type::Source);
-		const auto& sinks = data.cave.get_positions_with_type(Cell::Type::Sink);
+		//const bool test_run = data.registry.ctx().get<GameState>().test_run;
+		const auto& sources = data.cave.get_positions_with_type(Domain::Cell::Type::Source);
+		const auto& sinks = data.cave.get_positions_with_type(Domain::Cell::Type::Sink);
 
 		bool flag = false;
-		std::vector<std::pair<Position, Position>> connections;
+		std::vector<std::pair<Domain::Position, Domain::Position>> connections;
 		const auto max_connections = sources.size() * sinks.size();
 		while (flag == false)
 		{
-			render(data);
-			if (!test_run)
-				Dialog::message(std::to_string(connections.size()) + "/" + std::to_string(max_connections));
 			flag = true; // If this will not get set to false, then everything is connected
 			for (const auto& source : sources)
 			{
 				for (const auto& sink : sinks)
 				{
 					// The coordinates are connected with a tunnel, if pathfinder found it and it was recorded into 'connections'
-					const auto is_connected = std::find(connections.begin(), connections.end(), std::pair<Position, Position>(source, sink)) != connections.end();
+					const auto is_connected = std::find(connections.begin(), connections.end(), std::pair<Domain::Position, Domain::Position>(source, sink)) != connections.end();
 					if (is_connected)
 						continue;
 
@@ -183,9 +156,6 @@ namespace CaveGenerator
 					// smooth
 					// smooth_terrain(data);
 
-					// Let water flow naturally
-					// A more efficient alternative would be to set a water level height once in the end
-					simulate_environment(data);
 
 					flag = false; // not ready yet
 				}
@@ -194,22 +164,22 @@ namespace CaveGenerator
 
 		// Disable sources and sinks
 		for (const auto& source : sources)
-			ECS::get_cell(data.registry, source).set_type(Cell::Type::Floor);
+			ECS::get_cell(data.registry, source).set_type(Domain::Cell::Type::Floor);
 		for (const auto& sink : sinks)
-			ECS::get_cell(data.registry, sink).set_type(Cell::Type::Floor);
+			ECS::get_cell(data.registry, sink).set_type(Domain::Cell::Type::Floor);
 
 		Log::info() << "Form tunnels. Connections: " << connections.size() << "/" << max_connections;
 	}
 
 	// A* to find path of least resistance through solid rock
 	// return 0 if ready
-	size_t erosion_simulation(Data& data, const Position& start, const Position& end)
+	size_t erosion_simulation(Data& data, const Domain::Position& start, const Domain::Position& end)
 	{
 		auto& cave = data.cave;
 
-		std::vector<Position> open_set = { start };
-		std::map<Position, double> g_score;
-		std::map<Position, double> f_score;
+		std::vector<Domain::Position> open_set = { start };
+		std::map<Domain::Position, double> g_score;
+		std::map<Domain::Position, double> f_score;
 		g_score[start] = 0;
 		f_score[start] = cave.distance(start, end);
 		size_t obstacles = 0; // count how many times have to pass solid rock
@@ -222,16 +192,12 @@ namespace CaveGenerator
 					current_pos = cell_pos;
 			}
 
-			assert(current_pos.is_valid() && "Position is not valid");
+			assert(current_pos.is_valid() && "Domain::Position is not valid");
 
 			const auto current_density = cave.get_cell(current_pos).get_density();
 
 			if (current_density > 0 && current_density <= CELL_DENSITY_MAX)
 			{
-				// Render blockages with more red
-				auto& color = cave.get_cell(current_pos).get_bgcolor();
-				color += Color(1, 0, 0);
-				//Log::debug() << color;
 				obstacles++;
 			}
 			if (current_pos == end)
@@ -272,9 +238,6 @@ namespace CaveGenerator
 	{
 		Log::info() << "Generating cave " << cave_idx;
 		auto& cave = ECS::get_cave(registry, cave_idx); // Cave must exist in the World object
-		const bool testing = registry.ctx().get<GameState>().test_run;
-		if (!testing)
-			UI::instance().set_current_panel(UI::Panel::Game, true); // true = render panel on top
 
 		Data data(registry, cave); // Parses conf from data/generation/cave.json
 
@@ -288,12 +251,5 @@ namespace CaveGenerator
 		 * */
 		//EntitySpawner::spawn_natural_entities(registry, cave_idx);
 
-		/* Rendering the cave while generating or after is preferred when testing manually
-		 * RenderingSystem has a function for rendering the cave in a simple way
-		 * */
-		render(data);
-
-		if (!testing)
-			Dialog::alert("Cave ready");
 	}
 }

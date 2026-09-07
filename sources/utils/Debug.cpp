@@ -4,7 +4,7 @@
 #include "external/entt/entt.hpp"
 #include "components/Component.hpp"
 #include "nlohmann/json.hpp"
-#include "systems/environment/LiquidSystem.hpp"
+
 
 namespace Debug
 {
@@ -16,7 +16,7 @@ namespace Debug
 		std::stringstream ss;
 
 		const auto player = ECS::get_player(registry);
-		const auto& player_position = registry.get<Position>(player);
+		const auto& player_position = registry.get<Domain::Position>(player);
 		const auto& cave = ECS::get_cave(registry, player_position);
 		const auto& player_vector = Vec2<int>::from_idx(player_position.cell_idx, cave.get_size());
 		ss << "Player position: " << player_position << std::endl;

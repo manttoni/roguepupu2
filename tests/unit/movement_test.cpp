@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "helpers.hpp"
-#include "systems/position/MovementSystem.hpp"
+#include "systems/Movement.hpp"
 #include "utils/ECS.hpp"
 #include "external/entt/entt.hpp"
 #include "domain/Cave.hpp"
@@ -21,15 +21,15 @@ TEST_F(RegistryTest, BasicMove)
 	const auto& cave = ECS::get_cave(registry, cave_idx);
 	const auto mid_pos = cave.middle_position();
 	const auto entity = registry.create();
-	registry.emplace<Position>(entity, mid_pos);
+	registry.emplace<Domain::Position>(entity, mid_pos);
 	const auto neighbors = cave.get_nearby_positions(mid_pos, 1.5);
 	for (const auto neighbor : neighbors)
 	{
-		EXPECT_TRUE(registry.get<Position>(entity) == mid_pos);
-		EXPECT_TRUE(MovementSystem::can_move(registry, mid_pos, neighbor));
-		MovementSystem::move(registry, entity, neighbor);
-		EXPECT_TRUE(registry.get<Position>(entity) == neighbor);
-		MovementSystem::move(registry, entity, mid_pos);
+		EXPECT_TRUE(registry.get<Domain::Position>(entity) == mid_pos);
+		EXPECT_TRUE(System::Movement::can_move(registry, mid_pos, neighbor));
+		System::Movement::move(registry, entity, neighbor);
+		EXPECT_TRUE(registry.get<Domain::Position>(entity) == neighbor);
+		System::Movement::move(registry, entity, mid_pos);
 	}
 }
 
@@ -41,17 +41,17 @@ TEST_F(RegistryTest, CornerMove)
 	const auto cave_idx = TestHelpers::get_cave_idx(registry, cave_size, TestHelpers::CaveType::Floor);
 	const auto& cave = ECS::get_cave(registry, cave_idx);
 	const auto mid_pos = cave.middle_position();
-	ECS::get_cell(registry, mid_pos).set_type(Cell::Type::Rock);
+	ECS::get_cell(registry, mid_pos).set_type(Domain::Cell::Type::Rock);
 
-	const auto left_pos = Position(mid_pos.cell_idx - 1, cave_idx); // one to the left
+	const auto left_pos = Domain::Position(mid_pos.cell_idx - 1, cave_idx); // one to the left
 
-	const auto north = Position(mid_pos.cell_idx - cave.get_size(), cave_idx); // one step north
-	const auto south = Position(mid_pos.cell_idx + cave.get_size(), cave_idx); // one step south
+	const auto north = Domain::Position(mid_pos.cell_idx - cave.get_size(), cave_idx); // one step north
+	const auto south = Domain::Position(mid_pos.cell_idx + cave.get_size(), cave_idx); // one step south
 
 	// moving to either one should not be possible, because has to go around rock
 
-	EXPECT_FALSE(MovementSystem::can_move(registry, left_pos, north)) << TestHelpers::dump_cave(registry, cave_idx, {left_pos, north});;
-	EXPECT_FALSE(MovementSystem::can_move(registry, left_pos, south)) << TestHelpers::dump_cave(registry, cave_idx, {left_pos, south});
+	EXPECT_FALSE(System::Movement::can_move(registry, left_pos, north));
+	EXPECT_FALSE(System::Movement::can_move(registry, left_pos, south));
 }
 
 /* Moving is not possible if target cell has cell type rock
@@ -62,10 +62,10 @@ TEST_F(RegistryTest, RockMove)
 	const auto cave_idx = TestHelpers::get_cave_idx(registry, cave_size, TestHelpers::CaveType::Rock);
 	auto& cave = ECS::get_cave(registry, cave_idx);
 	const auto mid_pos = cave.middle_position();
-	ECS::get_cell(registry, mid_pos).set_type(Cell::Type::Floor);
+	ECS::get_cell(registry, mid_pos).set_type(Domain::Cell::Type::Floor);
 	for (const auto neighbor : cave.get_nearby_positions(mid_pos, 1.5))
 	{
 		// All neighbors are solid rock, should not be able to move anywhere
-		EXPECT_FALSE(MovementSystem::can_move(registry, mid_pos, neighbor)) << TestHelpers::dump_cave(registry, cave_idx, {mid_pos, neighbor});
+		EXPECT_FALSE(System::Movement::can_move(registry, mid_pos, neighbor));
 	}
 }

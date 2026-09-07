@@ -12,6 +12,8 @@
 #include "utils/Math.hpp"
 #include "utils/Vec2.hpp"
 
+namespace Domain
+{
 Cave::Cave(
 	const size_t idx,
 	const size_t size,
@@ -26,12 +28,7 @@ Cave::Cave(
 
 	for (size_t i = 0; i < get_area(); ++i)
 	{
-		cells.emplace_back(i, fill);
-
-		auto& cell = cells.back();
-
-		if (cell.get_type() == Cell::Type::Floor)
-			cell.set_glyph('.');
+		cells.emplace_back(fill);
 	}
 }
 
@@ -95,19 +92,19 @@ Cell& Cave::get_cell(const size_t cell_idx)
 	return cells.at(cell_idx);
 }
 
-const Cell& Cave::get_cell(const Position& position) const
+const Cell& Cave::get_cell(const Domain::Position& position) const
 {
 	validate_position(position);
 	return cells[position.cell_idx];
 }
 
-Cell& Cave::get_cell(const Position& position)
+Cell& Cave::get_cell(const Domain::Position& position)
 {
 	validate_position(position);
 	return cells[position.cell_idx];
 }
 
-void Cave::validate_position(const Position& position) const
+void Cave::validate_position(const Domain::Position& position) const
 {
 	if (!position.is_valid())
 		Log::debug() << position << " is not valid";
@@ -123,9 +120,9 @@ void Cave::validate_position(const Position& position) const
 	assert(position.cell_idx < get_area());
 }
 
-std::vector<Position> Cave::get_positions() const
+std::vector<Domain::Position> Cave::get_positions() const
 {
-	std::vector<Position> positions;
+	std::vector<Domain::Position> positions;
 	positions.reserve(get_area());
 
 	for (size_t cell_idx = 0; cell_idx < get_area(); ++cell_idx)
@@ -134,7 +131,7 @@ std::vector<Position> Cave::get_positions() const
 	return positions;
 }
 
-std::vector<Position> Cave::get_nearby_positions(
+std::vector<Domain::Position> Cave::get_nearby_positions(
 	const size_t middle,
 	const double radius,
 	const Cell::Type type
@@ -143,15 +140,15 @@ std::vector<Position> Cave::get_nearby_positions(
 	return get_nearby_positions(Position{middle, idx}, radius, type);
 }
 
-std::vector<Position> Cave::get_nearby_positions(
-	const Position& middle_position,
+std::vector<Domain::Position> Cave::get_nearby_positions(
+	const Domain::Position& middle_position,
 	const double radius,
 	const Cell::Type type
 ) const
 {
 	validate_position(middle_position);
 
-	std::vector<Position> neighbors;
+	std::vector<Domain::Position> neighbors;
 
 	const auto middle =
 		Vec2<int>::from_idx(middle_position.cell_idx, size);
@@ -183,7 +180,7 @@ std::vector<Position> Cave::get_nearby_positions(
 				static_cast<size_t>(y) * size +
 				static_cast<size_t>(x);
 
-			const Position neighbor_position{
+			const Domain::Position neighbor_position{
 				neighbor_idx,
 				idx
 			};
@@ -206,22 +203,20 @@ std::vector<Position> Cave::get_nearby_positions(
 	return neighbors;
 }
 
-std::vector<Position> Cave::get_positions_with_type(
+std::vector<Domain::Position> Cave::get_positions_with_type(
 	const Cell::Type type
 ) const
 {
-	std::vector<Position> positions;
-
-	for (const auto& cell : cells)
+	std::vector<Domain::Position> positions;
+	for (size_t i = 0; i < get_area(); ++i)
 	{
-		if (cell.get_type() == type)
-			positions.emplace_back(cell.get_idx(), idx);
+		if (cells[i].get_type() == type)
+			positions.emplace_back(i, idx);
 	}
-
 	return positions;
 }
 
-Position Cave::middle_position() const
+Domain::Position Cave::middle_position() const
 {
 	const size_t middle = size / 2;
 
@@ -231,7 +226,7 @@ Position Cave::middle_position() const
 	};
 }
 
-Position Cave::deepest_position() const
+Domain::Position Cave::deepest_position() const
 {
 	if (cells.empty())
 		return Position{};
@@ -259,8 +254,8 @@ Position Cave::deepest_position() const
 }
 
 double Cave::distance(
-	const Position& a,
-	const Position& b
+	const Domain::Position& a,
+	const Domain::Position& b
 ) const
 {
 	validate_position(a);
@@ -286,7 +281,7 @@ double Cave::distance(
 	);
 }
 
-bool Cave::contains(const Position& position) const
+bool Cave::contains(const Domain::Position& position) const
 {
 	return contains(position.cell_idx);
 }
@@ -299,7 +294,7 @@ bool Cave::contains(const Vec2<int>& vec) const
 
 bool Cave::contains(const size_t idx) const
 {
-	return idx < size;
+	return idx < get_area();
 }
 
 Vec2<double> Cave::get_direction(
@@ -339,11 +334,12 @@ std::ostream& operator<<(
 		<< cave.get_connections().size();
 }
 
-Position Cave::offset_position(const Position& position, const Vec2<int>& offset) const
+Domain::Position Cave::offset_position(const Domain::Position& position, const Vec2<int>& offset) const
 {
 	const auto pv2 = Vec2<int>::from_idx(position.cell_idx, size);
 	const auto tv2 = pv2 + offset;
 	if (tv2.x < 0 || tv2.y < 0 || tv2.x >= static_cast<int>(size) || tv2.y >= static_cast<int>(size))
-		return Position::invalid_position();
+		return Domain::Position::invalid();
 	return Position(tv2.to_idx(size), idx);
 }
+} // namespace Domain

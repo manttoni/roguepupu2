@@ -4,8 +4,8 @@
 
 TEST(DensityTest, ReduceDensity)
 {
-	World world;
-	const auto idx = world.new_cave(10, Cell::Type::Rock);
+	Domain::World world;
+	const auto idx = world.new_cave(10, Domain::Cell::Type::Rock);
 	auto& cave = world.get_cave(idx);
 	const auto middle = cave.middle_position();
 	auto& cell = cave.get_cell(middle);

@@ -5,12 +5,12 @@
 #include <string>             // for allocator, basic_string
 #include <vector>
 
+#include "ncurses/Ncurses.hpp"
 #include "infrastructure/Game.hpp"
-#include "UI/UI.hpp"             // for UI
 #include "utils/Log.hpp"          // for log
-#include "UI/Dialog.hpp"
+#include "ui/Dialog.hpp"
 #include "editor/EntityEditor.hpp"
-#include "UI/Menu.hpp"
+#include "ui/Menu.hpp"
 
 /* Capture this from ncurses so it will print */
 extern "C" void __assert_fail(
@@ -31,7 +31,7 @@ extern "C" void __assert_fail(
 void run()
 {
 	Game* game = nullptr;
-	Menu::Selection selection;
+	UI::Selection selection;
 	while (true)
 	{
 		std::vector<std::string> options;
@@ -41,11 +41,10 @@ void run()
 		options.push_back("Entity Editor");
 		options.push_back("Controls");
 		options.push_back("Quit");
-		selection = Dialog::get_selection("*** Roguepupu 2 ***", options, Screen::middle(), selection.index);
-		if (selection.cancelled)
+		selection = UI::Dialog::get_selection("*** Roguepupu 2 ***", options, Ncurses::Screen::middle(), selection.index);
+		if (selection.cancelled())
 			break;
-		assert(selection.element.has_value());
-		const auto label = selection.element->label;
+		const auto label = options[selection.index];
 		if (label == "Continue" && game != nullptr)
 			game->loop();
 		else if (label == "New Game")
@@ -56,8 +55,8 @@ void run()
 		}
 		else if (label == "Entity Editor")
 			EntityEditor::start();
-		else if (label == "Controls") // this will get moved in near future
-			Dialog::get_selection("Controls", {
+		else if (label == "Controls")
+			UI::Dialog::get_selection("Controls", {
 					"Movement:     numpad (lock off)",
 					"Zoom:         ctrl[+/-] (terminal)",
 					"Interact:     left click/enter",
@@ -83,8 +82,9 @@ int main()
 {
 	Log::info() << "--- Run started ---";
 
-	UI::instance().init();
+	Ncurses::init();
+	Ncurses::Color::init();
 	run();
-	UI::instance().end();
+	Ncurses::end();
 }
 

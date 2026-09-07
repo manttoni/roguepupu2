@@ -7,7 +7,6 @@
 #include "domain/Position.hpp"
 #include "domain/World.hpp"
 #include "external/entt/entt.hpp"
-#include "systems/rendering/RenderingSystem.hpp"
 #include "utils/ECS.hpp"
 #include "utils/Error.hpp"
 #include "utils/Utils.hpp"
@@ -39,48 +38,33 @@ namespace TestHelpers
 	{
 		if (type == CaveType::Rock)
 		{
-			const auto cave_idx = ECS::get_world(registry).new_cave(size, Cell::Type::Rock);
+			const auto cave_idx = ECS::get_world(registry).new_cave(size, Domain::Cell::Type::Rock);
 			return cave_idx;
 		}
 		else if (type == CaveType::Room)
 		{
-			const auto cave_idx = ECS::get_world(registry).new_cave(size, Cell::Type::Rock);
+			const auto cave_idx = ECS::get_world(registry).new_cave(size, Domain::Cell::Type::Rock);
 
-			Cave& cave = ECS::get_cave(registry, cave_idx);
+			Domain::Cave& cave = ECS::get_cave(registry, cave_idx);
 			for (const auto pos : cave.get_positions())
 			{
 				const Vec2 coords(pos.cell_idx, cave.get_size());
 				if (coords.y == 0 || static_cast<size_t>(coords.y) == cave.get_size() - 1 ||
 						coords.x == 0 || static_cast<size_t>(coords.x) == cave.get_size() - 1)
 					continue;
-				cave.get_cell(pos).set_type(Cell::Type::Floor);
+				cave.get_cell(pos).set_type(Domain::Cell::Type::Floor);
 			}
 
 			return cave_idx;
 		}
 		else if (type == CaveType::Floor)
 		{
-			const auto cave_idx = ECS::get_world(registry).new_cave(size, Cell::Type::Floor);
+			const auto cave_idx = ECS::get_world(registry).new_cave(size, Domain::Cell::Type::Floor);
 			return cave_idx;
 		}
 		else
 			Error::fatal("Uknown TestCaveType");
 	}
 
-	inline std::string dump_cave(const entt::registry& registry, const size_t cave_idx, std::vector<Position> highlight = {})
-	{
-		std::ostringstream out;
-		const auto& cave = ECS::get_cave(registry, cave_idx);
-		for (const auto position : cave.get_positions())
-		{
-			const RenderingSystem::Visual visual = RenderingSystem::get_visual(registry, position);
-			auto it = std::find(highlight.begin(), highlight.end(), position);
-			if (it != highlight.end()) out << "\x1b[31m";
-			if (position.cell_idx % cave.get_size() == 0)
-				out << std::endl;
-			out << Utils::to_utf8(visual.glyph);
-			if (it != highlight.end()) out << "\x1b[0m";
-		}
-		return out.str();
-	}
+
 };

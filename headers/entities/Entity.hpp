@@ -68,9 +68,9 @@ namespace Entity
 						C::string;
 						});
 			}
-			else if constexpr (std::same_as<C, ::Color>)
+			else if constexpr (std::same_as<C, Ncurses::Color>)
 			{
-				return definition.contains("Color");
+				return definition.contains("Ncurses::Color");
 			}
 			else
 			{

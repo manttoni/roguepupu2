@@ -13,6 +13,9 @@
 #include "utils/Error.hpp"
 #include "domain/Cell.hpp"
 
+namespace Domain
+{
+
 nlohmann::json World::load_conf()
 {
 	return Parser::read_json_file("data/generation/world.json");
@@ -59,3 +62,4 @@ size_t World::new_cave(const size_t size, const Cell::Type fill)
 	caves.emplace_back(idx, size, 0, fill);
 	return idx;
 }
+} // namespace Domain

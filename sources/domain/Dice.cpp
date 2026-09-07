@@ -52,6 +52,9 @@ namespace
 
 } // namespace
 
+namespace Domain
+{
+
 Dice::Dice(const std::string& expression)
 {
 	std::string text;
@@ -139,3 +142,4 @@ int Dice::roll(const int advantage) const
 
 	return result + bonus;
 }
+} // namespace Domain

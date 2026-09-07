@@ -40,7 +40,7 @@ namespace CaveGenerator
 		};
 
 		entt::registry& registry;
-		Cave& cave;
+		Domain::Cave& cave;
 
 		Density density;
 		Erosion erosion;
@@ -48,7 +48,7 @@ namespace CaveGenerator
 		Features features;
 		Margin margin;
 
-		Data(entt::registry& registry, Cave& cave)
+		Data(entt::registry& registry, Domain::Cave& cave)
 			: registry(registry), cave(cave)
 		{
 			auto conf = Parser::read_json_file("data/generation/cave.json");
@@ -88,7 +88,7 @@ namespace CaveGenerator
 
 	// Create a path of least resistance through the rock, while reducing density
 	// return 0 if nothing stops creature from walking through
-	size_t erosion_simulation(Data& data, const Position& start, const Position& end);
+	size_t erosion_simulation(Data& data, const Domain::Position& start, const Domain::Position& end);
 
 	// Smooth terrain without changing liquid sinks so it will drain properly/as intended
 	void smooth_terrain(Data& data);
@@ -103,9 +103,6 @@ namespace CaveGenerator
 	// Elevation means negative density which results in erosion_simulation
 	// Probably not good to use this... Better to keep cave elevation as is
 	//void normalize_negative_density(Cave& cave) const;
-
-	// Pass time until liquid has equilibrium
-	void stabilize_liquids(Data& data);
 
 	// Evaluate all entities with spawn data in json
 	void spawn_entities(Data& data);

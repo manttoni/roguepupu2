@@ -5,17 +5,14 @@
 #include <ncurses.h>
 #include <limits>
 #include <cassert>
-#include "LiquidMixture.hpp"
-#include "Color.hpp"  // for Color
+#include "ncurses/Color.hpp"  // for Ncurses::Color
 #include "utils/Math.hpp"
+
+namespace Domain
+{
 
 class Cell
 {
-	private:
-		size_t idx;
-	public:
-		size_t get_idx() const { return idx; }
-		void set_idx(const size_t idx) { this->idx = idx; }
 
 	public:
 		enum class Type
@@ -26,56 +23,16 @@ class Cell
 			Source,
 			Sink
 		};
-	public:
-		Type get_type() const
-		{
-			if (density == std::numeric_limits<double>::infinity())
-				return Type::Source;
-			if (density == -std::numeric_limits<double>::infinity())
-				return Type::Sink;
-			return density > 0 ? Type::Rock : Type::Floor;
-		}
-		void set_type(const Cell::Type type)
-		{
-			switch (type)
-			{
-				case Cell::Type::Rock:
-					density = CELL_DENSITY_MAX;
-					break;
-				case Cell::Type::Floor:
-					density = 0;
-					break;
-				case Cell::Type::Source:
-					density = std::numeric_limits<double>::infinity();
-					break;
-				case Cell::Type::Sink:
-					density = -std::numeric_limits<double>::infinity();
-					break;
-				default:
-					break;
-			}
-			set_glyph();
-		}
+		Type get_type() const { return type; }
+		void set_type(const Cell::Type type) { this->type = type; }
 
 	private:
-		Color fgcolor, bgcolor;
-	public:
-		Color get_fgcolor() const { return fgcolor; }
-		Color get_bgcolor() const { return bgcolor; }
-		Color& get_fgcolor() { return fgcolor; }
-		Color& get_bgcolor() { return bgcolor; }
-
-	private:
-		wchar_t glyph;
-	public:
-		wchar_t get_glyph() const;
-		void set_glyph(const wchar_t glyph) { this->glyph = glyph; }
-		void set_glyph(); // update type based glyph
+		Type type = Type::None;
 
 	private:
 		double density;
 	public:
-		void set_density(const double d) { this->density = d; set_glyph(); }
+		void set_density(const double d) { this->density = d; }
 		double get_density() const { return density; }
 		double get_effective_density() const
 		{
@@ -84,37 +41,14 @@ class Cell
 		}
 		void reduce_density(const double amount);
 
-	private:
-		std::map<Color, size_t> lights;
-	public:
-		auto get_lights() const { return lights; }
-		void add_light(const Color& color) { lights[color]++; }
-		void clear_lights() { lights.clear(); }
-
-	private:
-		// what liquids are now in this cell
-		LiquidMixture liquid_mixture;
-	public:
-		double get_liquid_level() const;
-		void clear_liquids() { liquid_mixture = LiquidMixture{}; }
-		LiquidMixture& get_liquid_mixture() { return liquid_mixture; }
-		const LiquidMixture& get_liquid_mixture() const { return liquid_mixture; }
-
-	private:
-		chtype attr = A_NORMAL; // ncurses attr
-	public:
-		chtype get_attr() const { return attr; }
-		void set_attr(const chtype attr) { this->attr = attr; }
-
-	public:
-		Cell(const size_t idx, const Cell::Type type = Cell::Type::Rock);
+		Cell(const Cell::Type type = Cell::Type::Rock);
 
 		std::string to_string() const;
 
-		//
 		bool operator==(const Cell &other) const { return this == &other; }
 		bool operator!=(const Cell &other) const { return this != &other; }
 		Cell& operator=(const Cell& other) = default;
 		Cell(const Cell& other) = default;
 
 };
+} // namespace Domain

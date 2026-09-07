@@ -5,6 +5,9 @@
 #include <vector>
 #include "utils/Random.hpp"
 
+namespace Domain
+{
+
 struct Dice
 {
 	size_t amount = 0;
@@ -26,3 +29,4 @@ inline std::ostream& operator<<(std::ostream& os, const Dice& dice)
 	os << dice.amount << "d" << dice.sides << "+" << dice.bonus;
 	return os;
 }
+} // namespace Domain

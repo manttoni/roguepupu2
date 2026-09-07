@@ -6,18 +6,18 @@
 #include <string_view>
 #include <type_traits>
 #include <vector>
-#include "domain/Color.hpp"
+#include "ncurses/Color.hpp"
 #include "domain/Enum.hpp"
 #include "external/entt/fwd.hpp"
 
 namespace Component
 {
-	/* operator<< of wchar_t is deleted
+	/* operator<< of char is deleted
 	 * */
 	template<typename T>
 		std::ostream& print_value(std::ostream& os, const T& value)
 		{
-			if constexpr (std::same_as<T, wchar_t>)
+			if constexpr (std::same_as<T, char>)
 			{
 				return os << "U+" << static_cast<std::uint32_t>(value);
 			}
@@ -94,7 +94,7 @@ namespace Component::Value
 				const T& value)
 		{
 			if constexpr (std::is_enum_v<T>)
-				return os << Enum::to_string(value);
+				return os << Domain::Enum::to_string(value);
 			else
 				return print_value(os, value);
 		}

@@ -7,112 +7,115 @@
 #include "domain/Enum.hpp"
 #include "domain/Dice.hpp"
 
-struct NullEvent
+namespace Domain::Event
 {
-};
-struct MoveEvent
-{
-	entt::entity entity = entt::null;
-	Position from{};
-	Position to{};
-};
-struct AttackEvent
-{
-	entt::entity attacker = entt::null;
-	entt::entity defender = entt::null;
-	entt::entity weapon = entt::null;
-	entt::entity ammunition = entt::null;
-	int advantage = 0;
-};
-struct AttackHitEvent
-{
-	entt::entity attacker = entt::null;
-	entt::entity defender = entt::null;
-	entt::entity weapon = entt::null;
-	entt::entity ammo = entt::null;
-	int advantage = 0;
-};
-struct AttackMissEvent
-{
-	entt::entity attacker = entt::null;
-	entt::entity defender = entt::null;
-	entt::entity weapon = entt::null;
-	entt::entity ammo = entt::null;
-	int advantage = 0;
-};
-struct TakeDamageEvent
-{
-	entt::entity target = entt::null;
-	entt::entity source = entt::null;
-	Enum::DamageType damage_type = Enum::DamageType::None;
-	size_t amount = 0;
-};
-struct SpawnEvent
-{
-	entt::entity entity = entt::null;
-	Position position{};
-};
-struct DestroyEvent
-{
-	entt::entity entity = entt::null;
-};
-struct DropEvent
-{
-	entt::entity entity = entt::null;
-	entt::entity item = entt::null;
-	Position position{};
-};
-struct TakeEvent
-{
-	entt::entity entity = entt::null;
-	entt::entity item = entt::null;
-	Position position{};
-};
-struct EquipEvent
-{
-	entt::entity entity = entt::null;
-	entt::entity equipment = entt::null;
-};
-struct UnequipEvent
-{
-	entt::entity entity = entt::null;
-	entt::entity equipment = entt::null;
-};
-struct DiceRollEvent
-{
-	Dice dice{};
-	int result = 0;
-	int difficulty = 0;
-};
-struct DeathEvent
-{
-	entt::entity entity = entt::null;
-};
-struct BecomeHostileEvent
-{
-	entt::entity entity = entt::null;
-	entt::entity target = entt::null;
-};
-struct ReceiveItemEvent
-{
-	entt::entity entity = entt::null;
-	entt::entity item = entt::null;
-};
-using Event = std::variant<
-	NullEvent,
-	MoveEvent,
-	AttackEvent,
-	AttackHitEvent,
-	AttackMissEvent,
-	TakeDamageEvent,
-	SpawnEvent,
-	DestroyEvent,
-	DropEvent,
-	TakeEvent,
-	EquipEvent,
-	UnequipEvent,
-	DiceRollEvent,
-	DeathEvent,
-	BecomeHostileEvent,
-	ReceiveItemEvent
->;
+	struct Null
+	{
+	};
+	struct Move
+	{
+		entt::entity entity = entt::null;
+		Domain::Position from{};
+		Domain::Position to{};
+	};
+	struct Attack
+	{
+		entt::entity attacker = entt::null;
+		entt::entity defender = entt::null;
+		entt::entity weapon = entt::null;
+		entt::entity ammunition = entt::null;
+		int advantage = 0;
+	};
+	struct AttackHit
+	{
+		entt::entity attacker = entt::null;
+		entt::entity defender = entt::null;
+		entt::entity weapon = entt::null;
+		entt::entity ammo = entt::null;
+		int advantage = 0;
+	};
+	struct AttackMiss
+	{
+		entt::entity attacker = entt::null;
+		entt::entity defender = entt::null;
+		entt::entity weapon = entt::null;
+		entt::entity ammo = entt::null;
+		int advantage = 0;
+	};
+	struct TakeDamage
+	{
+		entt::entity target = entt::null;
+		entt::entity source = entt::null;
+		Enum::DamageType damage_type = Enum::DamageType::None;
+		size_t amount = 0;
+	};
+	struct Spawn
+	{
+		entt::entity entity = entt::null;
+		Domain::Position position{};
+	};
+	struct Destroy
+	{
+		entt::entity entity = entt::null;
+	};
+	struct Drop
+	{
+		entt::entity entity = entt::null;
+		entt::entity item = entt::null;
+		Domain::Position position{};
+	};
+	struct Take
+	{
+		entt::entity entity = entt::null;
+		entt::entity item = entt::null;
+		Domain::Position position{};
+	};
+	struct Equip
+	{
+		entt::entity entity = entt::null;
+		entt::entity equipment = entt::null;
+	};
+	struct Unequip
+	{
+		entt::entity entity = entt::null;
+		entt::entity equipment = entt::null;
+	};
+	struct DiceRoll
+	{
+		Dice dice{};
+		int result = 0;
+		int difficulty = 0;
+	};
+	struct Death
+	{
+		entt::entity entity = entt::null;
+	};
+	struct BecomeHostile
+	{
+		entt::entity entity = entt::null;
+		entt::entity target = entt::null;
+	};
+	struct ReceiveItem
+	{
+		entt::entity entity = entt::null;
+		entt::entity item = entt::null;
+	};
+	using Any = std::variant<
+		Null,
+		Move,
+		Attack,
+		AttackHit,
+		AttackMiss,
+		TakeDamage,
+		Spawn,
+		Destroy,
+		Drop,
+		Take,
+		Equip,
+		Unequip,
+		DiceRoll,
+		Death,
+		BecomeHostile,
+		ReceiveItem
+			>;
+} // namespace Domain::Event
