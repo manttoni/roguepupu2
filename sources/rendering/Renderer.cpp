@@ -42,8 +42,6 @@ void Renderer::render(const entt::registry& registry, Domain::Position center)
 	if (!center.is_valid())
 		center = ECS::get_player_position(registry);
 
-	Log::debug() << "Rendering cave, center: " << center;
-
 	const auto& cave = ECS::get_cave(registry, center);
 	const int cave_size = static_cast<int>(cave.get_size());
 
@@ -53,7 +51,6 @@ void Renderer::render(const entt::registry& registry, Domain::Position center)
 	auto& surface = panel.get_window();
 	const Vec2<int> screen_size = surface.dimensions();
 
-	// Vec2 uses {y, x}.
 	const Vec2<int> viewport_origin{
 		center_coords.y - screen_size.y / 2,
 			center_coords.x - screen_size.x / 2
@@ -61,7 +58,6 @@ void Renderer::render(const entt::registry& registry, Domain::Position center)
 
 	surface.clear();
 
-	surface.enable_attribute(A_DIM);
 	for (int screen_y = 0; screen_y < screen_size.y; ++screen_y)
 	{
 		for (int screen_x = 0; screen_x < screen_size.x; ++screen_x)
@@ -96,6 +92,8 @@ void Renderer::render(const entt::registry& registry, Domain::Position center)
 	}
 
 	surface.refresh();
+	update_panels();
+	doupdate();
 	++frame;
 }
 

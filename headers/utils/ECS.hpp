@@ -351,6 +351,20 @@ namespace ECS
 			return ids;
 		}
 
+	template<typename C> inline std::vector<std::string> get_entity_names(const entt::registry& registry)
+	{
+		std::vector<std::string> names;
+		const auto ids = get_entity_ids<C>(registry);
+		const auto& definitions = ECS::get_entity_db(registry).definitions;
+		for (const auto id : ids)
+		{
+			const auto definition = definitions.at(id);
+			const auto name = definition.at("Name").template get<std::string>();
+			names.push_back(name);
+		}
+		return names;
+	}
+
 	inline std::vector<std::string> get_entity_ids(const entt::registry& registry)
 	{
 		std::vector<std::string> ids;

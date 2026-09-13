@@ -6,24 +6,26 @@
 #include "ui/Element.hpp"
 #include "ncurses/Screen.hpp"
 #include "utils/Vec2.hpp"
+#include "ui/Theme.hpp"
 
 namespace UI
 {
 	class Menu
 	{
 		private:
+			Vec2<int> position;
 			std::string title;
 			std::vector<Element::Any> elements;
 			Ncurses::Panel panel;
-			int timeout = -1;
-			Vec2<int> position;
+			int timeout = -1; // -1 is default and blocking
 			void reset_panel();
 			void print_elements(const size_t selected);
 			Selection handle_input(const std::size_t selected, const Ncurses::Input::Event& event);
+			UI::Theme theme = UI::load_theme();
 
 		public:
 			// Center the menu as close to position as possible.
-			explicit Menu(const Vec2<int>& position = Ncurses::Screen::middle());
+			explicit Menu(const Vec2<int>& position = Ncurses::Screen::middle(), const std::string& title = "");
 
 			~Menu() = default;
 

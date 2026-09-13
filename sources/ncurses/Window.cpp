@@ -80,13 +80,11 @@ namespace Ncurses
 	{
 		wmove(ptr, y, x);
 		waddch(ptr, static_cast<unsigned char>(character));
-		Log::debug() << "Printed char: \'" << character << "\'";
 	}
 
 	void Window::put(const char character)
 	{
 		waddch(ptr, static_cast<unsigned char>(character));
-		Log::debug() << "Printed char: \'" << character << "\'";
 	}
 
 	void Window::write(
@@ -111,7 +109,7 @@ namespace Ncurses
 	void Window::draw_border()
 	{
 		box(ptr, 0, 0);
-		write(0, 2, title);
+		write(0, 2, " " + title + " ");
 	}
 
 	void Window::refresh()

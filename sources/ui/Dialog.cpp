@@ -10,43 +10,44 @@
 namespace UI::Dialog
 {
 	Selection get_selection(
-			const std::vector<std::string>& text,
+			const std::string& title,
 			const std::vector<std::string>& buttons,
 			const Vec2<int>& position,
-			const size_t default_selected)
+			const std::size_t default_selected)
 	{
-		Menu dialog_box(position);
-		for (const auto& label : text)
-			dialog_box.add(UI::Element::Text{
-					.text = label
-					});
-
-		if (!text.empty() && !buttons.empty())
-			dialog_box.add(UI::Element::Separator{});
+		Menu dialog_box(position, title);
 
 		for (const auto& label : buttons)
 		{
-			UI::Element::Button e{.label = label};
-			if (label == "Back" || label == "Cancel" || label == "Quit")
-				e.role = UI::Element::Button::Role::Cancel;
-			if (label == "Confirm" || label == "OK" || label == "Ok")
-				e.role = UI::Element::Button::Role::Confirm;
-			dialog_box.add(e);
+			UI::Element::Button button{.label = label};
+
+			if (label == "Back" || label == "Cancel")
+				button.role = UI::Element::Button::Role::Cancel;
+			else if (
+					label == "Confirm" ||
+					label == "OK" ||
+					label == "Ok" ||
+					label == "Continue")
+			{
+				button.role = UI::Element::Button::Role::Confirm;
+			}
+
+			dialog_box.add(button);
 		}
 
-		auto selection = dialog_box.get_selection(default_selected);
-		selection.index -= text.size() + 1;
-		return selection;
-	}
+		UI::Selection selection;
+		selection.index = default_selected;
 
-	Selection get_selection(
-			const std::string& text,
-			const std::vector<std::string>& buttons,
-			const Vec2<int>& position,
-			const size_t default_selected
-			)
-	{
-		return get_selection(std::vector<std::string>{text}, buttons, position, default_selected);
+		do
+		{
+			selection = dialog_box.get_selection(selection.index);
+		}
+		while (
+				selection.state != Selection::State::Selected &&
+				selection.state != Selection::State::Cancelled
+			  );
+
+		return selection;
 	}
 
 	bool confirm(const std::string& message)

@@ -12,7 +12,7 @@
 #include "editor/EntityEditor.hpp"
 #include "ui/Menu.hpp"
 
-/* Capture this from ncurses so it will print */
+/* Capture this from ncurses so it will print
 extern "C" void __assert_fail(
 		const char* expr,
 		const char* file,
@@ -26,7 +26,7 @@ extern "C" void __assert_fail(
 
 	Log::error() << "Assertion failed: " << expr << " in file: " << file << ":" << line << " in function: " << func;
 	abort();
-}
+} */
 
 void run()
 {
@@ -41,10 +41,11 @@ void run()
 		options.push_back("Entity Editor");
 		options.push_back("Controls");
 		options.push_back("Quit");
-		selection = UI::Dialog::get_selection("*** Roguepupu 2 ***", options, Ncurses::Screen::middle(), selection.index);
+		selection = UI::Dialog::get_selection("Roguepupu 2", options, Ncurses::Screen::middle(), selection.index);
 		if (selection.cancelled())
 			break;
 		const auto label = options[selection.index];
+		Log::debug() << "Label: " << label;
 		if (label == "Continue" && game != nullptr)
 			game->loop();
 		else if (label == "New Game")
@@ -68,6 +69,8 @@ void run()
 					"DevTools:     `",
 					"Swap loadout: w"
 					});
+		else if (label == "Quit")
+			break;
 
 		if (game != nullptr && game->is_over())
 		{
@@ -84,7 +87,13 @@ int main()
 
 	Ncurses::init();
 	Ncurses::Color::init();
+
 	run();
+
+	Log::debug() << "Calling Ncurses::end()";
 	Ncurses::end();
+
+	Log::debug() << "--- Run ended ---";
+	return 0;
 }
 

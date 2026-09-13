@@ -21,7 +21,7 @@
 
 namespace UI
 {
-	Menu::Menu(const Vec2<int>& position) : position(position)
+	Menu::Menu(const Vec2<int>& position, const std::string& title) : position(position), title(title)
 	{}
 
 	void Menu::reset_panel()
@@ -41,10 +41,13 @@ namespace UI
 			? 0
 			: Element::to_string(*longest).size();
 
-		const std::size_t height = 2 + elements.size();
-		const std::size_t width  = 4 + longest_length;
+		const int height = 2 + elements.size();
+		const int width  = 4 + std::max(longest_length, title.size() + 2);
+		const int start_y = std::max(0, position.y - height / 2);
+		const int start_x = std::max(0, position.x - width / 2);
 
-		panel = Ncurses::Panel(height, width, position.y, position.x);
+		panel = Ncurses::Panel(height, width, start_y, start_x);
+		panel.get_window().set_title(title);
 		assert(panel.valid());
 	}
 
@@ -64,14 +67,20 @@ namespace UI
 	{
 		Ncurses::Window& surface = panel.get_window();
 		surface.clear();
+		surface.enable_color(theme.text);
 		for (size_t i = 0; i < elements.size(); ++i)
 		{
 			if (selected == i) surface.enable_attribute(A_REVERSE);
 			std::visit( [&surface, i](const auto& e) { surface.write(i + 1, 2, Element::to_string(e)); }, elements[i] );
 			if (selected == i) surface.disable_attribute(A_REVERSE);
 		}
+		surface.disable_color(theme.text);
+		surface.enable_color(theme.border);
 		surface.draw_border();
+		surface.disable_color(theme.border);
 		surface.refresh();
+		update_panels();
+		doupdate();
 	}
 
 	Selection Menu::handle_input(const std::size_t selected, const Ncurses::Input::Event& event)

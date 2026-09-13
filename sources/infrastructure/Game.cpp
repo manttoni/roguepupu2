@@ -36,22 +36,25 @@ Game::Game()
 
 void Game::select_character(entt::registry& registry)
 {
-	const auto players = ECS::get_entity_ids<Component::Tag::Player>(registry);
-	if (players.empty())
+	const auto player_names = ECS::get_entity_names<Component::Tag::Player>(registry);
+	const auto player_ids = ECS::get_entity_ids<Component::Tag::Player>(registry);
+	assert(player_names.size() == player_ids.size());
+	if (player_names.empty())
 	{
 		UI::Dialog::alert("No player characters found.");
 		return;
 	}
-	const auto selection = UI::Dialog::get_selection("Select character", players);
+	const auto selection = UI::Dialog::get_selection("Select character", player_names);
 	if (selection.cancelled()) return;
 
-	registry.ctx().get<GameState>().player = ECS::create_entity(registry, players[selection.index]);
+	registry.ctx().get<GameState>().player = ECS::create_entity(registry, player_ids[selection.index]);
 }
 
 void Game::loop()
 {
 	registry.ctx().get<GameState>().game_running = true;
 	const auto player = ECS::get_player(registry);
+	registry.ctx().get<Renderer>().render(registry, registry.get<Domain::Position>(player));
 	while (registry.ctx().get<GameState>().game_running && game_over == false)
 	{
 		Log::info() << "Round " << registry.ctx().get<GameState>().turn_number;

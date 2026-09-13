@@ -140,8 +140,6 @@ namespace Ncurses::Input
 		if (raw_key == ERR)
 			return Event{};
 
-		Log::debug() << "Key pressed: " << raw_key;
-
 		return Event{
 			.key = translate_key(raw_key),
 				.ch = translate_character(raw_key),
