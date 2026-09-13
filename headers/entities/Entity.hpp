@@ -1,12 +1,20 @@
 #pragma once
 
 #include <string_view>
+#include <nlohmann/json.hpp>
 
 #include "components/Component.hpp"
 #include "external/entt/entt.hpp"
+#include "utils/Log.hpp"
 
 namespace Entity
 {
+	using Json = nlohmann::json;
+	struct Definition
+	{
+		std::string id;
+		Json data;
+	};
 
 	inline constexpr bool valid_id(
 			const std::string_view id) noexcept

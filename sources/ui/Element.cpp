@@ -1,4 +1,5 @@
 #include <string>
+#include "utils/Log.hpp"
 #include "utils/Math.hpp"
 #include "ui/Element.hpp"
 
@@ -20,7 +21,7 @@ namespace UI::Element
 	std::string to_string(const TextIn& element)
 	{
 		const auto* text = element.text;
-		return element.label + " : " + (text ? *text : "nullptr") + "[A_BLINK]_[RESET]";
+		return element.label + " : " + (text ? *text : "nullptr") + (text->size() < element.length.max ? "|" + std::string(element.length.max - (text->size() + 1), ' ') : "");
 	}
 
 	std::string to_string(const Button& element)
@@ -44,6 +45,11 @@ namespace UI::Element
 	{
 		using Key = Ncurses::Input::Key;
 		auto& text = *(element.text);
+		Log::debug()
+			<< "key=" << static_cast<int>(event.key)
+			<< ", ch=" << static_cast<int>(static_cast<unsigned char>(event.ch))
+			<< ", size=" << text.size()
+			<< ", max=" << element.length.max;
 		if (event.key == Key::Backspace && text.size() > 0)
 		{
 			text.pop_back();
@@ -53,7 +59,10 @@ namespace UI::Element
 			text += event.ch;
 		}
 		else
+		{
+			Log::debug() << "Ignored";
 			return Selection::State::Ignored;
+		}
 		return Selection::State::Changed;
 	}
 

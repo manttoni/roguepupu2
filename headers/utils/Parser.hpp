@@ -17,11 +17,8 @@ namespace Parser
 	using Json = nlohmann::json;
 
 	Ncurses::Color parse_color(const Json& data);
-	Json read_json_file(const std::filesystem::path& path);
 	void parse_cave_generation_conf(const std::string& conf_id, CaveGenerator::Data& data);
 	void parse_cave_generation_conf(const Json& conf, CaveGenerator::Data& data);
-	Random::Perlin parse_perlin(const Json& data);
-	Domain::Dice parse_dice(const Json& data);
 
 	template<typename T>
 		Range<T> parse_range(const Json& data)

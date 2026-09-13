@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "domain/World.hpp"
+#include "utils/IO.hpp"
 #include "domain/Cave.hpp"
 #include "utils/Parser.hpp"
 #include "utils/Error.hpp"
@@ -18,7 +19,7 @@ namespace Domain
 
 nlohmann::json World::load_conf()
 {
-	return Parser::read_json_file("data/generation/world.json");
+	return IO::read_json("data/generation/world.json");
 }
 
 World::World()

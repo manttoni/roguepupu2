@@ -44,5 +44,11 @@ namespace UI
 			{
 				timeout = value;
 			}
+
+			void set_title(const std::string& title)
+			{
+				this->title = title;
+			}
+			std::string get_label(std::size_t index) const;
 	};
 }

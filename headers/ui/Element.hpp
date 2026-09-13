@@ -155,5 +155,5 @@ namespace UI::Element
 	std::string to_string(const Any& element);
 	std::string get_label(const Any& element);
 	static inline Button confirm() { return Button{.label = "Confirm", .role = Button::Role::Confirm}; }
-	static inline Button cancel() { return Button{.label = "Cancel", .role = Button::Role::Confirm}; }
+	static inline Button cancel() { return Button{.label = "Cancel", .role = Button::Role::Cancel}; }
 }

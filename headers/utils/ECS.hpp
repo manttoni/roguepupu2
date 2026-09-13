@@ -98,15 +98,8 @@ namespace ECS
 
 	inline std::string get_colored_name(const entt::registry& registry, const entt::entity entity)
 	{
-		const Ncurses::Color& fgcolor = get_fgcolor(registry, entity);
-		const Ncurses::Attribute& attr = get_ncurses_attr(registry, entity);
-		std::string name = fgcolor.markup() + get_name(registry, entity) + "{reset}";
-		if (attr != A_NORMAL)
-		{
-			name.insert(0, attr.markup());
-			name += "[reset]";
-		}
-		return name;
+		const Ncurses::Color& color = registry.get<Ncurses::Color>(entity);
+		return color.markup() + registry.get<Component::Value::Name>(entity).value + "{reset}";
 	}
 
 	inline std::vector<std::string> get_colored_names(const entt::registry& registry, const std::vector<entt::entity> entities)

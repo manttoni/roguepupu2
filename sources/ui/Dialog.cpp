@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include "utils/Log.hpp"
 #include <vector>
 #include <string>
 
@@ -44,6 +45,7 @@ namespace UI::Dialog
 		}
 		while (
 				selection.state != Selection::State::Selected &&
+				selection.state != Selection::State::Confirmed &&
 				selection.state != Selection::State::Cancelled
 			  );
 
@@ -65,11 +67,14 @@ namespace UI::Dialog
 		get_selection(message, {"Ok"});
 	}
 
-	Selection get_input(const std::string& label, std::string* input)
+	void get_input(const std::string& label, std::string* input)
 	{
-		Menu menu(Ncurses::Screen::middle());
+		Menu menu;
 		menu.add(UI::Element::TextIn{.label = label, .text = input});
-		return menu.get_selection();
+		menu.add(UI::Element::confirm());
+		menu.set_timeout(-1);
+		const auto s = menu.get_selection();
+		Log::debug() << "input: " << *input;
 	}
 
 	void message(const std::string& message, const Vec2<int>& position)

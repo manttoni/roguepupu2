@@ -1,27 +1,38 @@
 {
-	"player_default": {
-		"Name": "Rabdin",
-		"Tags": ["Player", "Creature", "Actor", "Destructible", "Renderable", "WorldObject"],
-		"Glyph": "@",
-		"Ncurses::Color": [1,2,4],
-		"ActionPoints": 1,
-		"BonusActionPoints": 1,
-		"MovementPoints": 1,
-		"Faction": "None",
-		"OnDeath": [],
-		"Charisma": 8,
-		"Constitution": 8,
-		"CreatureType": "Humanoid",
-		"Dexterity": 8,
-		"Intelligence": 8,
-		"Strength": 8,
-		"Wisdom": 8,
-		"OnDamage": [],
-		"OnDestroy": [],
-		"OnSpawn": [],
-		"SpawnConditions": [],
-		"CollisionMovement": true,
-		"CollisionVision": false,
-		"VisionRange": 10
-	}
+    "player_default": {
+        "ActionPoints": 1,
+        "BonusActionPoints": 1,
+        "Charisma": 8,
+        "CollisionMovement": true,
+        "CollisionVision": false,
+        "Constitution": 8,
+        "CreatureType": "Humanoid",
+        "Dexterity": 8,
+        "Faction": "None",
+        "Glyph": "@",
+        "Intelligence": 8,
+        "MovementPoints": 1,
+        "Name": "Rabdin",
+        "Ncurses::Color": [
+            1,
+            2,
+            4
+        ],
+        "OnDamage": [],
+        "OnDeath": [],
+        "OnDestroy": [],
+        "OnSpawn": [],
+        "SpawnConditions": [],
+        "Strength": 8,
+        "Tags": [
+            "Player",
+            "Creature",
+            "Actor",
+            "Destructible",
+            "Renderable",
+            "WorldObject"
+        ],
+        "VisionRange": 10,
+        "Wisdom": 8
+    }
 }

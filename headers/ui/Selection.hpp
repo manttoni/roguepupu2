@@ -22,11 +22,12 @@ namespace UI
 		};
 		State state = State::Pending;
 		size_t index = 0; // index of Element that was selected
+		std::string label = "";
 
-		inline bool cancelled() const { return state == State::Cancelled; }
-		inline bool confirmed() const { return state == State::Confirmed; }
-		inline bool timed_out() const { return state == State::TimedOut; }
-		inline bool selected() const { return state == State::Selected; }
 		inline bool pending() const { return state == State::Pending; }
+		inline bool selected() const { return state == State::Selected; }
+		inline bool confirmed() const { return state == State::Confirmed; }
+		inline bool cancelled() const { return state == State::Cancelled; }
+		inline bool timed_out() const { return state == State::TimedOut; }
 	};
 }

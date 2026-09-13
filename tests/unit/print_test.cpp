@@ -57,6 +57,6 @@ TEST(PrintTest, IsAttrMarkupWorks)
 TEST(PrintTest, FromAttrMarkupWorks)
 {
 	const std::string markup = "[A_DIM]";
-	const chtype attr = Ncurses::Attribute::from_markup(markup, 0);
+	const chtype attr = Ncurses::Attribute::from_markup(markup, 0).type;
 	EXPECT_EQ(attr, A_DIM);
 }

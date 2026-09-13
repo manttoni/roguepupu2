@@ -1,5 +1,6 @@
 #pragma once
 
+#include "utils/IO.hpp"
 #include "external/entt/entt.hpp"
 #include "domain/Cave.hpp"
 #include "utils/Parser.hpp"
@@ -51,7 +52,7 @@ namespace CaveGenerator
 		Data(entt::registry& registry, Domain::Cave& cave)
 			: registry(registry), cave(cave)
 		{
-			auto conf = Parser::read_json_file("data/generation/cave.json");
+			auto conf = IO::read_json("data/generation/cave.json");
 
 			density.frequency = conf["density"]["frequency"].get<double>();
 			density.octaves   = conf["density"]["octaves"].get<size_t>();

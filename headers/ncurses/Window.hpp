@@ -7,6 +7,7 @@
 
 #include "utils/Vec2.hpp"
 #include "ncurses/Color.hpp"
+#include "ncurses/Attribute.hpp"
 
 namespace Ncurses
 {
@@ -50,8 +51,8 @@ namespace Ncurses
 			void refresh();
 			void stage_refresh();
 
-			void enable_attribute(const chtype attribute);
-			void disable_attribute(const chtype attribute);
+			void enable_attribute(const Ncurses::Attribute& attribute);
+			void disable_attribute(const Ncurses::Attribute& attribute);
 
 			void enable_color(const Color& color);
 			void disable_color(const Color& color);

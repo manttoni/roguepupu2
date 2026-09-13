@@ -1,4 +1,6 @@
 #include "ncurses/Window.hpp"
+#include "ncurses/Attribute.hpp"
+#include "ncurses/Color.hpp"
 
 #include <limits>
 #include <stdexcept>
@@ -6,32 +8,18 @@
 
 #include "utils/Log.hpp"
 
-namespace
-{
-	int ncurses_length(const std::size_t size)
-	{
-		const auto max = static_cast<std::size_t>(
-			std::numeric_limits<int>::max());
-
-		if (size > max)
-			throw std::length_error("Text is too long for ncurses");
-
-		return static_cast<int>(size);
-	}
-}
-
 namespace Ncurses
 {
 	Window::Window(
-		const std::size_t height,
-		const std::size_t width,
-		const std::size_t y,
-		const std::size_t x)
+			const std::size_t height,
+			const std::size_t width,
+			const std::size_t y,
+			const std::size_t x)
 		: ptr(newwin(
-			static_cast<int>(height),
-			static_cast<int>(width),
-			static_cast<int>(y),
-			static_cast<int>(x)))
+					static_cast<int>(height),
+					static_cast<int>(width),
+					static_cast<int>(y),
+					static_cast<int>(x)))
 	{
 		if (ptr == nullptr)
 			throw std::runtime_error("Failed to create ncurses window");
@@ -47,8 +35,8 @@ namespace Ncurses
 
 	Window::Window(Window&& other) noexcept
 		: ptr(std::exchange(other.ptr, nullptr))
-	{
-	}
+		{
+		}
 
 	Window& Window::operator=(Window&& other) noexcept
 	{
@@ -74,9 +62,9 @@ namespace Ncurses
 	}
 
 	void Window::put(
-		const int y,
-		const int x,
-		const char character)
+			const int y,
+			const int x,
+			const char character)
 	{
 		wmove(ptr, y, x);
 		waddch(ptr, static_cast<unsigned char>(character));
@@ -88,17 +76,84 @@ namespace Ncurses
 	}
 
 	void Window::write(
-		const int y,
-		const int x,
-		const std::string& text)
+			const int y,
+			const int x,
+			const std::string& str)
 	{
 		wmove(ptr, y, x);
-		waddnstr(ptr, text.data(), ncurses_length(text.size()));
+		write(str);
 	}
 
-	void Window::write(const std::string& text)
+	void Window::write(const std::string& str)
 	{
-		waddnstr(ptr, text.data(), ncurses_length(text.size()));
+		Ncurses::Color color{};
+		Ncurses::Attribute attribute{};
+
+		bool color_enabled = false;
+		bool attribute_enabled = false;
+
+		for (std::size_t i = 0; i < str.size();)
+		{
+			const std::string_view remaining{
+				str.data() + i,
+					str.size() - i
+			};
+
+			if (remaining.starts_with("{reset}"))
+			{
+				if (color_enabled)
+				{
+					disable_color(color);
+					color_enabled = false;
+				}
+
+				i += std::string_view{"{reset}"}.size();
+				continue;
+			}
+
+			if (remaining.starts_with("[reset]"))
+			{
+				if (attribute_enabled)
+				{
+					disable_attribute(attribute);
+					attribute_enabled = false;
+				}
+
+				i += std::string_view{"[reset]"}.size();
+				continue;
+			}
+
+			if (Ncurses::Color::is_markup(str, i))
+			{
+				if (color_enabled)
+					disable_color(color);
+
+				color = Ncurses::Color::from_markup(str, i);
+				enable_color(color);
+				color_enabled = true;
+
+				const auto end = str.find('}', i);
+				i = end + 1;
+				continue;
+			}
+
+			if (Ncurses::Attribute::is_markup(str, i))
+			{
+				if (attribute_enabled)
+					disable_attribute(attribute);
+
+				attribute = Ncurses::Attribute::from_markup(str, i);
+				enable_attribute(attribute);
+				attribute_enabled = true;
+
+				const auto end = str.find(']', i);
+				i = end + 1;
+				continue;
+			}
+
+			put(str[i]);
+			++i;
+		}
 	}
 
 	void Window::clear()
@@ -122,14 +177,14 @@ namespace Ncurses
 		wnoutrefresh(ptr);
 	}
 
-	void Window::enable_attribute(const chtype attribute)
+	void Window::enable_attribute(const Ncurses::Attribute& attribute)
 	{
-		wattron(ptr, attribute);
+		wattron(ptr, attribute.type);
 	}
 
-	void Window::disable_attribute(const chtype attribute)
+	void Window::disable_attribute(const Ncurses::Attribute& attribute)
 	{
-		wattroff(ptr, attribute);
+		wattroff(ptr, attribute.type);
 	}
 
 	void Window::enable_color(const Color& color)

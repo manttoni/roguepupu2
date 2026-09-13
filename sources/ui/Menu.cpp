@@ -54,7 +54,6 @@ namespace UI
 	void Menu::add(const Element::Any& element)
 	{
 		elements.push_back(element);
-		Log::debug() << "Element: " << Element::get_label(element) << " added to Menu: " << title;
 	}
 
 	void Menu::add(const std::vector<Element::Any>& elements)
@@ -70,9 +69,9 @@ namespace UI
 		surface.enable_color(theme.text);
 		for (size_t i = 0; i < elements.size(); ++i)
 		{
-			if (selected == i) surface.enable_attribute(A_REVERSE);
+			if (selected == i) surface.enable_attribute(Ncurses::Attribute(A_REVERSE));
 			std::visit( [&surface, i](const auto& e) { surface.write(i + 1, 2, Element::to_string(e)); }, elements[i] );
-			if (selected == i) surface.disable_attribute(A_REVERSE);
+			if (selected == i) surface.disable_attribute(Ncurses::Attribute(A_REVERSE));
 		}
 		surface.disable_color(theme.text);
 		surface.enable_color(theme.border);
@@ -83,15 +82,39 @@ namespace UI
 		doupdate();
 	}
 
+	std::string Menu::get_label(const std::size_t index) const
+	{
+		if (index >= elements.size())
+			return "";
+
+		return std::visit(
+				[](const auto& element) -> std::string
+				{
+				if constexpr (requires { element.label; })
+				return element.label;
+				else
+				return "";
+				},
+				elements[index]
+				);
+	}
+
 	Selection Menu::handle_input(const std::size_t selected, const Ncurses::Input::Event& event)
 	{
+		Log::debug()
+			<< "Dispatching element index " << selected
+			<< ", variant index " << elements[selected].index();
 		const auto state = std::visit([&event](auto& element) {
+				Log::debug()
+				<< "Visitor reached for: "
+				<< element.label;
 				return Element::handle_input(element, event);
 				}, elements.at(selected));
 
 		return Selection{
 			.state = state,
-				.index = selected
+				.index = selected,
+				.label = get_label(selected)
 		};
 	}
 
@@ -102,6 +125,11 @@ namespace UI
 		{
 			print_elements(selected);
 			const Ncurses::Input::Event event = Ncurses::Input::get_event(timeout);
+			Log::debug()
+				<< "Menu event: key=" << static_cast<int>(event.key)
+				<< ", ch=" << static_cast<int>(
+						static_cast<unsigned char>(event.ch)
+						);
 			using Key = Ncurses::Input::Key;
 			switch (event.key)
 			{
@@ -123,8 +151,10 @@ namespace UI
 				default:
 					{
 						const Selection selection = handle_input(selected, event);
-						if (selection.state != Selection::State::Pending)
+						if (selection.selected() || selection.confirmed() || selection.cancelled())
 							return selection;
+						else
+							Log::debug() << "Handle input result was not selected, confirmed or cancelled";
 					}
 					break;
 			}

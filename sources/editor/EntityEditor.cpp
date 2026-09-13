@@ -1,16 +1,208 @@
 #include "editor/EntityEditor.hpp"
+#include "utils/Error.hpp"
+#include "utils/IO.hpp"
+#include "ui/Dialog.hpp"
+#include "ui/Menu.hpp"
+#include "ui/Element.hpp"
 
 namespace EntityEditor
 {
-	/* Create an entity and add the definition into data/entities.json
-	 * */
-	void create_new_entity()
+	bool erase_definition(Json& all_definitions, const Definition& definition)
 	{
-		/*
-		entt::registry registry;
-		entt::entity entity = registry.create();
-		Json definition = Json::object();
-		*/
+		if (!all_definitions.contains(definition.id))
+			return false;
+		all_definitions.erase(definition.id);
+		return true;
 	}
-	void start() {}
+
+	bool add_definition(Json& all_definitions, const Definition& definition)
+	{
+		all_definitions[definition.id] = definition.data;
+		return true;
+	}
+
+	std::vector<Definition> filter_definitions(const Json& all_definitions, const std::string& filter)
+	{
+		std::vector<Definition> filtered;
+
+		for (const auto& [id, data] : all_definitions.items())
+		{
+			bool matches = filter.empty() || id.find(filter) != std::string::npos;
+
+			if (!matches)
+			{
+				for (const auto& [component_id, component_data] : data.items())
+				{
+					if (component_data.is_string() && component_data.get<std::string>().find(filter) != std::string::npos)
+					{
+						matches = true;
+						break;
+					}
+					if (component_id.find(filter) != std::string::npos)
+					{
+						matches = true;
+						break;
+					}
+				}
+			}
+
+			if (matches)
+				filtered.push_back({.id = id, .data = data});
+		}
+
+		return filtered;
+	}
+
+	std::optional<Definition> search_definition(const Json& all_definitions)
+	{
+		std::string filter = "";
+		UI::Selection selection;
+		while (true)
+		{
+			const auto filtered_definitions = filter_definitions(all_definitions, filter);
+			UI::Menu search;
+			search.set_title("Seach definition");
+			search.set_timeout(100);
+			search.add(UI::Element::TextIn("Filter", &filter));
+			for (const auto& def : filtered_definitions)
+			{
+				search.add(UI::Element::Button(def.id));
+			}
+			search.add(UI::Element::cancel());
+
+			selection = search.get_selection(selection.index);
+			if (selection.selected())
+				return Definition{.id = selection.label, .data = all_definitions.at(selection.label)};
+			if (selection.cancelled())
+				break;
+		}
+		return std::nullopt;
+	}
+
+	std::optional<Definition> load_definition(const Json& all_definitions)
+	{
+		const auto definition = search_definition(all_definitions);
+		if (!definition.has_value())
+			return std::nullopt;
+		return definition;
+	}
+
+	std::optional<Definition> new_definition(const Json& all_definitions)
+	{
+		std::string id = "";
+		UI::Menu new_entity;
+		new_entity.set_title("New entity");
+		new_entity.add(UI::Element::TextIn("Entity id", &id));
+		new_entity.add(UI::Element::confirm());
+		new_entity.get_selection();
+
+		if (!Entity::valid_id(id))
+			return std::nullopt;
+		if (all_definitions.contains(id))
+		{
+			UI::Dialog::alert("Id already in use!");
+			return std::nullopt;
+		}
+		return Definition{.id = id, .data = Json::object()};
+	}
+
+	/* Return true if 'definition' is already completely the same as one in 'all_definitions'
+	 * */
+	bool definition_matches(const Json& all_definitions, const Definition& definition)
+	{
+		return all_definitions.contains(definition.id) && all_definitions.at(definition.id) == definition.data;
+	}
+
+	/* Remove "active status" from active definition by giving it to 'definition' instead
+	 * Save 'active' into 'all_definitions' if user confirms
+	 * */
+	void activate_definition(Json& all_definitions, Definition& active, const std::optional<Definition>& definition)
+	{
+		if (!definition.has_value())
+			return;
+		if (!definition_matches(all_definitions, active) && !active.id.empty())
+		{
+			if (UI::Dialog::get_selection("Save/overwrite \"" + active.id + "\"?", {"Yes", "No"}).label == "Yes")
+				add_definition(all_definitions, active);
+		}
+		active = *definition;
+	}
+
+	void edit_definition(Definition& definition)
+	{
+		(void) definition;
+		// unimplemented
+	}
+
+	void start()
+	{
+		Definition active;
+		Json all_definitions = IO::read_json(IO::Paths::entities_file);
+		UI::Selection selection;
+		while (true)
+		{
+			const auto active_id = active.id.empty() ? "none" : active.id;
+			UI::Menu editor;
+			editor.set_title("Active entity: " + active_id);
+			editor.add(UI::Element::Button("New"));		// Create a blank definition with a valid id, and set it active
+			editor.add(UI::Element::Button("Load"));	// Load a definition from Json object, and set it active
+			editor.add(UI::Element::Button("Edit"));	// Change values of active definition
+			editor.add(UI::Element::Button("Add"));		// Add active definition to Json object
+			editor.add(UI::Element::Button("Erase"));	// Erase active definition from Json object
+			editor.add(UI::Element::Button("Read"));	// Read json object from file
+			editor.add(UI::Element::Button("Write"));	// Write Json object to file
+			editor.add(UI::Element::Button("Help"));	// Show help
+			editor.add(UI::Element::Button("Quit"));	// Quit to main menu
+			selection = editor.get_selection(selection.index);
+			if (selection.cancelled())
+				break;
+			const auto& label = editor.get_label(selection.index);
+
+			if (label == "New")
+			{
+				activate_definition(all_definitions, active, new_definition(all_definitions));
+			}
+			else if (label == "Load")
+			{
+				activate_definition(all_definitions, active, load_definition(all_definitions));
+			}
+			else if (label == "Edit")
+			{
+				edit_definition(active);
+			}
+			else if (label == "Add")
+			{
+				add_definition(all_definitions, active);
+				UI::Dialog::alert("Definition added to json");
+			}
+			else if (label == "Erase")
+			{
+				erase_definition(all_definitions, active);
+				active = Definition{};
+				UI::Dialog::alert("Active definition erased from json");
+			}
+			else if (label == "Read")
+			{
+				all_definitions = IO::read_json(IO::Paths::entities_file);
+				UI::Dialog::alert("Definitions read, size: " + std::to_string(all_definitions.size()));
+			}
+			else if (label == "Write")
+			{
+				if (IO::write_json(IO::Paths::entities_file, all_definitions) == true)
+					UI::Dialog::alert("Write succesful");
+				else
+					UI::Dialog::alert("Write unsuccesful");
+			}
+			else if (label == "Help")
+			{
+				UI::Dialog::alert("Activate entity with new/load. Then edit/add/erase. Write/Read to/from file.");
+			}
+			else if (label == "Quit")
+			{
+				break;
+			}
+			else
+				Error::fatal("Unexpected label: " + label);
+		}
+	}
 }
