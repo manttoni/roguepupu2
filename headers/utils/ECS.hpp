@@ -225,7 +225,7 @@ namespace ECS
 		return registry.get<Component::Value::Name>(entity).value[0];
 	}
 
-	inline void init_registry(entt::registry& registry)
+	inline void init_registry(entt::registry& registry, const bool testing = false)
 	{
 		registry.ctx().emplace<GameState>();
 		registry.ctx().emplace<GameLogger>();
@@ -233,6 +233,10 @@ namespace ECS
 		registry.ctx().emplace<EventQueue>();
 		registry.ctx().emplace<GameSettings>();
 		registry.ctx().emplace<EntityDatabase>();
+
+		if (testing)
+			return;
+
 		registry.ctx().emplace<Renderer>();
 	}
 

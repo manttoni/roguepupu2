@@ -20,7 +20,7 @@ class RegistryTest : public ::testing::Test
 
 		void SetUp() override
 		{
-			ECS::init_registry(registry);
+			ECS::init_registry(registry, true); // true = testing mode
 			registry.ctx().get<GameState>().test_run = true;
 		}
 };
