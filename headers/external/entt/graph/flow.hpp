@@ -202,7 +202,7 @@ public:
 
     /**
      * @brief Returns the identifier at specified location.
-     * @param pos Domain::Position of the identifier to return.
+     * @param pos Position of the identifier to return.
      * @return The requested identifier.
      */
     [[nodiscard]] id_type operator[](const size_type pos) const {

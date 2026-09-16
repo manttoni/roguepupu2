@@ -233,4 +233,17 @@ namespace Domain::Enum
 			return output << to_string(value);
 		}
 
+	template<GameEnum E>
+	[[nodiscard]] std::vector<std::string> get_value_strings()
+	{
+		const auto names = magic_enum::enum_names<E>();
+
+		std::vector<std::string> result;
+		result.reserve(names.size());
+
+		for (const std::string_view name : names)
+			result.emplace_back(name);
+
+		return result;
+	}
 } // namespace Enum

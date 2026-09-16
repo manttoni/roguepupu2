@@ -105,9 +105,6 @@ namespace UI
 			<< "Dispatching element index " << selected
 			<< ", variant index " << elements[selected].index();
 		const auto state = std::visit([&event](auto& element) {
-				Log::debug()
-				<< "Visitor reached for: "
-				<< element.label;
 				return Element::handle_input(element, event);
 				}, elements.at(selected));
 

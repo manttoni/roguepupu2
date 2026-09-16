@@ -82,7 +82,7 @@ namespace System::Combat
 				});
 
 		const auto damage_rolls = registry.get<Component::List::DamageRolls>(weapon);
-		for (const auto damage_roll : damage_rolls)
+		for (const auto damage_roll : damage_rolls.values)
 		{
 			const auto dice = registry.get<Domain::Dice>(damage_roll);
 			const auto type = registry.get<Component::Value::DamageType>(damage_roll).value;

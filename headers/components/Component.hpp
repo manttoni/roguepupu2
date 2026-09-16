@@ -12,74 +12,108 @@
 
 namespace Component
 {
-	/* operator<< of char is deleted
-	 * */
 	template<typename T>
 		std::ostream& print_value(std::ostream& os, const T& value)
 		{
-			if constexpr (std::same_as<T, char>)
+			return os << value;
+		}
+
+	template<typename T>
+		struct Base
+		{
+			using value_type = T;
+		};
+
+	template<typename T>
+		std::vector<std::string> enum_value_strings()
+		{
+			if constexpr (Domain::Enum::GameEnum<T>)
 			{
-				return os << "U+" << static_cast<std::uint32_t>(value);
+				return Domain::Enum::get_value_strings<T>();
 			}
 			else
 			{
-				return os << value;
+				return {};
 			}
 		}
+
+	inline std::vector<std::string> get_enum_value_strings(const std::string_view component_id)
+	{
+
+#define X(name, type) \
+		if (component_id == #name) \
+		{ \
+			return enum_value_strings<type>(); \
+		}
+
+#include "List.def"
+#include "Value.def"
+#include "Resource.def"
+
+#undef X
+
+		return {};
+	}
+
+	static inline bool value_is_enum(const std::string_view& component_id)
+	{
+		if (component_id.empty())
+			return false;
+
+#define X(name, type) \
+		else if (component_id == #name) \
+		{ \
+			return Domain::Enum::GameEnum<type>; \
+		}
+
+#include "List.def"
+#include "Value.def"
+#include "Resource.def"
+
+#undef X
+		return false; // Could still be some other enum than GameEnum
+	}
 }
 
 namespace Component::List
 {
 	template<typename T>
-		struct Base
+		struct Base : Component::Base<T>
+	{
+		std::vector<T> values;
+
+		Base() = default;
+
+		explicit Base(std::vector<T> values)
+			: values(std::move(values))
+		{}
+
+		[[nodiscard]] bool contains(const T& element) const
 		{
-			using value_type = T;
-			using container_type = std::vector<T>;
-			using iterator = container_type::iterator;
-			using const_iterator = container_type::const_iterator;
+			return std::find(
+					values.begin(),
+					values.end(),
+					element
+					) != values.end();
+		}
 
-			container_type values;
+		void remove(const T& element)
+		{
+			const auto it =
+				std::find(values.begin(), values.end(), element);
 
-			iterator begin() noexcept { return values.begin(); }
-			iterator end() noexcept { return values.end(); }
-
-			const_iterator begin() const noexcept { return values.begin(); }
-			const_iterator end() const noexcept { return values.end(); }
-
-			const_iterator cbegin() const noexcept { return values.cbegin(); }
-			const_iterator cend() const noexcept { return values.cend(); }
-
-			[[nodiscard]] bool empty() const noexcept
-			{
-				return values.empty();
-			}
-
-			[[nodiscard]] std::size_t size() const noexcept
-			{
-				return values.size();
-			}
-
-			[[nodiscard]] bool contains(const T& element) const
-			{
-				auto it = std::find(values.begin(), values.end(), element);
-				return it != values.end();
-			}
-
-			void remove(const T& element)
-			{
-				auto it = std::find(values.begin(), values.end(), element);
-				if (it == values.end())
-					return;
+			if (it != values.end())
 				values.erase(it);
-			}
-
-			void push_back(const T& element) { values.push_back(element); }
-		};
-#define X(name, type) \
-	struct name : Base<type> \
-	{ \
-		static constexpr std::string_view string = #name; \
+		}
 	};
+
+#define X(name, type)                                      \
+	struct name : Component::List::Base<type>              \
+	{                                                       \
+		using Component::List::Base<type>::Base;            \
+		static constexpr std::string_view string = #name;   \
+	};
+
 #include "List.def"
 #undef X
 }
@@ -93,34 +127,32 @@ namespace Component::Value
 				std::ostream& os,
 				const T& value)
 		{
-			if constexpr (std::is_enum_v<T>)
+			if constexpr (Domain::Enum::GameEnum<T>)
 				return os << Domain::Enum::to_string(value);
 			else
 				return print_value(os, value);
 		}
 
 	template<typename T>
-		struct Base
-		{
-			using value_type = T;
+		struct Base : Component::Base<T>
+	{
+		T value{};
 
-			T value{};
+		Base() = default;
+		explicit Base(const T& value) : value(value) {}
+	};
 
-			Base() = default;
-			explicit Base(const T& value) : value(value) {}
-		};
-
-#define X(name, type)                                                   \
-	struct name : Base<type>                                        \
-	{                                                               \
-		using Base<type>::Base;                                  \
-		static constexpr std::string_view string = #name;         \
+#define X(name, type) \
+	struct name : Component::Value::Base<type> \
+	{ \
+		using Base<type>::Base; \
+		static constexpr std::string_view string = #name; \
 		friend std::ostream& operator<<(std::ostream& os, const name& component) \
-		{                                                       \
-			os << name::string << ": ";                       \
-			return print_component_value(                    \
-					os, component.value);             \
-		}                                                       \
+		{ \
+			os << name::string << ": "; \
+			return print_component_value( \
+					os, component.value); \
+		} \
 	};
 
 #include "Value.def"
@@ -131,18 +163,17 @@ namespace Component::Value
 namespace Component::Resource
 {
 	template<typename T>
-		struct Base
-		{
-			using value_type = T;
-			T current = T{};
-			T maximum = T{};
+		struct Base : Component::Base<T>
+	{
+		T current = T{};
+		T maximum = T{};
 
-			void reset() { current = maximum; }
-			Base(const T& value) : current(value), maximum(value) {}
-			Base() = default;
-		};
+		void reset() { current = maximum; }
+		Base(const T& value) : current(value), maximum(value) {}
+		Base() = default;
+	};
 
-#define X(name, type, ...) \
+#define X(name, type) \
 	struct name : Component::Resource::Base<type> \
 	{ \
 		static constexpr std::string_view string = #name; \
@@ -153,7 +184,6 @@ namespace Component::Resource
 			os << "/"; \
 			return print_value(os, component.maximum); \
 		} \
-		__VA_OPT__(name() : Resource::Base<type>(__VA_ARGS__) {}) \
 	};
 #include "Resource.def"
 #undef X
@@ -177,16 +207,46 @@ namespace Component::Tag
 
 namespace Component::Dependency
 {
-	template<typename C, typename D>
-		constexpr bool is_dependent()
-		{
-			return false
+	template<typename C, typename D> constexpr bool is_dependent()
+	{
+		return false
 
 #define X(component, dependency) \
-				|| (std::same_as<C, component> && std::same_as<D, dependency>)
+			|| (std::same_as<C, component> && std::same_as<D, dependency>)
 #include "Dependency.def"
 #undef X
 
-				;
+			;
+	}
+
+	// get ids of components that are dependent on C
+	inline std::vector<std::string>
+		get_directly_dependent_tag_ids(
+				const std::string_view dependency_id)
+		{
+			static constexpr std::string_view prefix =
+				"Component::Tag::";
+
+			std::vector<std::string> tag_ids;
+
+#define X(component, dependency) \
+			{ \
+				constexpr std::string_view component_id{#component};\
+				constexpr std::string_view required_id{#dependency};\
+				if (component_id.starts_with(prefix) && \
+						required_id.starts_with(prefix) && \
+						required_id.substr(prefix.size()) == \
+						dependency_id) \
+				{ \
+					tag_ids.emplace_back( \
+							component_id.substr(prefix.size())); \
+				} \
+			}
+
+#include "Dependency.def"
+
+#undef X
+
+			return tag_ids;
 		}
 }

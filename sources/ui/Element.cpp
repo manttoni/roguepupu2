@@ -110,9 +110,12 @@ namespace UI::Element
 	std::string get_label(const Any& element)
 	{
 		return std::visit(
-				[](const auto& value) -> const std::string&
+				[](const auto& value) -> std::string
 				{
+				if constexpr (requires { value.label; })
 				return value.label;
+				else
+				return "";
 				},
 				element
 				);

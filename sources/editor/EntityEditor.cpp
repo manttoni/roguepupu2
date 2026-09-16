@@ -1,4 +1,5 @@
 #include "editor/EntityEditor.hpp"
+#include "ui/Theme.hpp"
 #include "utils/Error.hpp"
 #include "utils/IO.hpp"
 #include "ui/Dialog.hpp"
@@ -103,7 +104,11 @@ namespace EntityEditor
 			UI::Dialog::alert("Id already in use!");
 			return std::nullopt;
 		}
-		return Definition{.id = id, .data = Json::object()};
+		Definition d{.id = id, .data = Json::object()};
+		d.data["Tags"] = Json::array();
+
+
+		return d;
 	}
 
 	/* Return true if 'definition' is already completely the same as one in 'all_definitions'
@@ -128,10 +133,136 @@ namespace EntityEditor
 		active = *definition;
 	}
 
+	void check_tags(Definition& definition)
+	{
+		const auto tags = definition.data["Tags"].get<std::vector<std::string>>();
+
+	}
+
+	void print_definition(Ncurses::Window& surface, const Definition& definition)
+	{
+		surface.clear();
+		const std::string str = "\"" + definition.id + "\": " + definition.data.dump(4);
+		surface.write(0, 0, str);
+		surface.refresh();
+	}
+
 	void edit_definition(Definition& definition)
 	{
-		(void) definition;
-		// unimplemented
+		const auto original = definition;
+		Ncurses::Panel edit_panel;
+		edit_panel.get_window().enable_color(UI::load_theme().text);
+		UI::Selection selection;
+		while (true)
+		{
+			print_definition(edit_panel.get_window(), definition);
+			UI::Menu editor;
+			editor.set_title(definition.id +
+					(Entity::valid_definition(definition.data) ? "" : "*")
+					);
+			editor.set_timeout(500);
+			//editor.add(UI::Element::MultiChoice("Tags", &tags));
+
+			for (auto& [component_id, component_data] : definition.data.items())
+			{
+				if (component_data.is_boolean())
+				{
+					editor.add(UI::Element::Checkbox(
+								component_id,
+								component_data.get_ptr<bool*>()
+								));
+				}
+				else if (component_data.is_string())
+				{
+					if (Component::value_is_enum(component_id))
+					{
+						editor.add(UI::Element::SingleChoice(
+									component_id,
+									component_data.get_ptr<std::string*>(),
+									Component::get_enum_value_strings(component_id)
+									));
+						continue;
+					}
+					editor.add(UI::Element::TextIn(
+								component_id,
+								component_data.get_ptr<std::string*>()
+								));
+				}
+				else if (component_data.is_number_unsigned())
+				{
+					using T = Json::number_unsigned_t;
+
+					editor.add(UI::Element::ValueSelector<T>{
+							component_id,
+							component_data.get_ptr<T*>(),
+							{0, 100}
+							});
+				}
+				else if (component_data.is_number_integer())
+				{
+					using T = Json::number_integer_t;
+
+					editor.add(UI::Element::ValueSelector<T>{
+							component_id,
+							component_data.get_ptr<T*>(),
+							{-100, 100}
+							});
+				}
+				else if (component_data.is_number_float())
+				{
+					using T = Json::number_float_t;
+
+					editor.add(UI::Element::ValueSelector<T>{
+							component_id,
+							component_data.get_ptr<T*>(),
+							{-100, 100}
+							});
+				}
+				/*else if (component_data.is_array())
+				  {
+				  editor.add(UI::Element::MultiChoice<std::string>(
+				  component_id,
+				  component_data.get_ptr<std::vector<std::string>*>()
+				  ));
+				  }*/
+			}
+
+			editor.add(UI::Element::confirm());	// apply changes
+			editor.add(UI::Element::cancel());	// revert changes
+
+			selection = editor.get_selection(selection.index);
+			using State = UI::Selection::State;
+			switch (selection.state)
+			{
+				case State::Pending:
+					continue;
+				case State::Selected:
+					// should not happen, this is for buttons which are not confirm or cancel
+					break;
+				case State::Confirmed:
+					return;
+				case State::Cancelled:
+					definition = original;
+					return;
+				case State::TimedOut:
+					continue;
+				case State::Error:
+					Log::error() << "Error in edit_definition";
+					continue;
+				case State::SingleChoice:
+					// shouldnt happen, or even exist, because Menu already handles editing SingleChoice
+					continue;
+				case State::MultiChoice:
+					// opens another menu, where user can choose many, because Menu doesnt do that itself
+					continue;
+				case State::Ignored:
+					// should not happen
+					continue;
+				case State::Changed:
+					// should not happen
+					continue;
+			}
+		}
 	}
 
 	void start()
@@ -139,9 +270,12 @@ namespace EntityEditor
 		Definition active;
 		Json all_definitions = IO::read_json(IO::Paths::entities_file);
 		UI::Selection selection;
+		Ncurses::Panel back_panel;
+		back_panel.get_window().enable_color(UI::load_theme().text);
 		while (true)
 		{
-			const auto active_id = active.id.empty() ? "none" : active.id;
+			print_definition(back_panel.get_window(), active);
+			const auto active_id = (active.id.empty() ? "none" : active.id) + (definition_matches(all_definitions, active) ? "" : "*");
 			UI::Menu editor;
 			editor.set_title("Active entity: " + active_id);
 			editor.add(UI::Element::Button("New"));		// Create a blank definition with a valid id, and set it active
@@ -195,7 +329,14 @@ namespace EntityEditor
 			}
 			else if (label == "Help")
 			{
-				UI::Dialog::alert("Activate entity with new/load. Then edit/add/erase. Write/Read to/from file.");
+				UI::Menu help;
+				help.set_title("Help");
+				help.add(UI::Element::Text("Activate entity with new/load."));
+				help.add(UI::Element::Text("Then edit/add/erase."));
+				help.add(UI::Element::Text("Write/Read to/from file."));
+				help.add(UI::Element::Text("Title has '*' if does not match definition in file"));
+				help.add(UI::Element::confirm());
+				help.get_selection();
 			}
 			else if (label == "Quit")
 			{

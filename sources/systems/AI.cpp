@@ -19,7 +19,7 @@ namespace System::AI
 		const auto& ai_behaviors = registry.get<Component::List::AIBehaviors>(npc);
 		Log::debug() << "Getting AI Action of: " << registry.get<Component::Value::Name>(npc);
 
-		for (const auto behavior : ai_behaviors)
+		for (const auto behavior : ai_behaviors.values)
 		{
 			// behaviors are entities in a vector
 			// they have Tags related to AI

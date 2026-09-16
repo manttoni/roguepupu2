@@ -76,7 +76,7 @@ namespace System::Equipment
 	bool can_equip(const entt::registry& registry, const entt::entity entity, const entt::entity item)
 	{
 		auto copy = registry.get<Component::List::EquippedItems>(entity);
-		copy.push_back(item);
+		copy.values.push_back(item);
 		return valid_loadout(registry, copy);
 	}
 
@@ -93,7 +93,7 @@ namespace System::Equipment
 		if (!can_equip(registry, entity, item))
 			return;
 
-		registry.get<Component::List::EquippedItems>(entity).push_back(item);
+		registry.get<Component::List::EquippedItems>(entity).values.push_back(item);
 		ECS::queue_event(
 				registry,
 				Domain::Event::Equip{

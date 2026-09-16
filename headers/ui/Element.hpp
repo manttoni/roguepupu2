@@ -1,5 +1,6 @@
 #pragma once
 
+#include <nlohmann/json.hpp>
 #include <variant>
 #include <vector>
 #include "utils/Range.hpp"
@@ -9,6 +10,8 @@
 
 namespace UI::Element
 {
+	using Json = nlohmann::json;
+
 	struct Null
 	{
 		std::string label = "Null";
@@ -18,7 +21,6 @@ namespace UI::Element
 
 	struct Text // uses whole width
 	{
-		std::string label = "Text"; // unused
 		std::string text;
 	};
 	std::string to_string(const Text& element);
@@ -55,23 +57,53 @@ namespace UI::Element
 		const auto right = *(element.value) == element.range.max ? "  " : " >";
 		return element.label + " : " + left + middle + right;
 	}
-	template<typename T> Selection::State handle_input(ValueSelector<T>& element, const Ncurses::Input::Event& event)
-	{
-		using Key = Ncurses::Input::Key;
+	template<typename T>
+		Selection::State handle_input(
+				ValueSelector<T>& element,
+				const Ncurses::Input::Event& event)
+		{
+			using Key = Ncurses::Input::Key;
 
-		if (event.key != Key::Left && event.key != Key::Right)
-			return Selection::State::Ignored;
+			if (event.key != Key::Left && event.key != Key::Right)
+				return Selection::State::Ignored;
 
-		const auto dir = event.key == Key::Left ? T{-1} : T{1};
-		const auto mul = event.shift ? T{10} : T{1};
-		const auto next = Math::clamp(
-				dir * mul * element.step,
-				element.range);
-		if (*(element.value) == next)
-			return Selection::State::Ignored;
-		*(element.value) = next;
-		return Selection::State::Changed;
-	}
+			const T multiplier = event.shift ? T{10} : T{1};
+			const T amount = element.step * multiplier;
+
+			const T current = *element.value;
+			T next = current;
+
+			if (event.key == Key::Left)
+			{
+				if (current <= element.range.min ||
+						amount >= current - element.range.min)
+				{
+					next = element.range.min;
+				}
+				else
+				{
+					next = current - amount;
+				}
+			}
+			else
+			{
+				if (current >= element.range.max ||
+						amount >= element.range.max - current)
+				{
+					next = element.range.max;
+				}
+				else
+				{
+					next = current + amount;
+				}
+			}
+
+			if (current == next)
+				return Selection::State::Ignored;
+
+			*element.value = next;
+			return Selection::State::Changed;
+		}
 
 	struct Button
 	{
@@ -100,15 +132,44 @@ namespace UI::Element
 	{
 		return element.label + " : " + "[" + *(element.chosen) + "]";
 	}
-	template<typename T> Selection::State handle_input(SingleChoice<T>&, const Ncurses::Input::Event& event)
-	{
-		using Key = Ncurses::Input::Key;
+	template<typename T>
+		Selection::State handle_input(
+				SingleChoice<T>& element,
+				const Ncurses::Input::Event& event)
+		{
+			using Key = Ncurses::Input::Key;
 
-		if (event.key != Key::Enter)
-			return Selection::State::Ignored;
+			if (element.chosen == nullptr || element.choices.empty())
+				return Selection::State::Error;
 
-		return Selection::State::SingleChoice;
-	}
+			const auto it = std::find(
+					element.choices.begin(),
+					element.choices.end(),
+					*element.chosen
+					);
+
+			if (it == element.choices.end())
+				return Selection::State::Error;
+
+			const std::size_t size = element.choices.size();
+			const std::size_t index =
+				std::distance(element.choices.begin(), it);
+
+			std::size_t new_index;
+
+			if (event.key == Key::Left)
+				new_index = (index + size - 1) % size;
+			else if (event.key == Key::Right)
+				new_index = (index + 1) % size;
+			else
+				return Selection::State::Ignored;
+
+			if (new_index == index)
+				return Selection::State::Ignored;
+
+			*element.chosen = element.choices[new_index];
+			return Selection::State::Changed;
+		}
 
 	template<typename T> struct MultiChoice // choose any
 	{
@@ -146,6 +207,8 @@ namespace UI::Element
 		TextIn,
 		ValueSelector<int>,
 		ValueSelector<double>,
+		ValueSelector<Json::number_integer_t>,
+		ValueSelector<Json::number_unsigned_t>,
 		Button,
 		Checkbox,
 		SingleChoice<std::string>,

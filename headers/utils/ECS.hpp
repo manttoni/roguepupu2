@@ -260,7 +260,7 @@ namespace ECS
 
 	inline bool weapon_has_property(const entt::registry& registry, const entt::entity weapon, const Domain::Enum::WeaponProperty property)
 	{
-		for (const auto p : registry.get<Component::List::WeaponProperties>(weapon))
+		for (const auto p : registry.get<Component::List::WeaponProperties>(weapon).values)
 			if (p == property)
 				return true;
 		return false;

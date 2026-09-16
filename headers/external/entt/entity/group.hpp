@@ -463,7 +463,7 @@ public:
 
     /**
      * @brief Returns the identifier that occupies the given position.
-     * @param pos Domain::Position of the element to return.
+     * @param pos Position of the element to return.
      * @return The identifier that occupies the given position.
      */
     [[nodiscard]] entity_type operator[](const size_type pos) const {
@@ -864,7 +864,7 @@ public:
 
     /**
      * @brief Returns the identifier that occupies the given position.
-     * @param pos Domain::Position of the element to return.
+     * @param pos Position of the element to return.
      * @return The identifier that occupies the given position.
      */
     [[nodiscard]] entity_type operator[](const size_type pos) const {
