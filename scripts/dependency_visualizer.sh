@@ -4,49 +4,66 @@ set -euo pipefail
 
 dependency_file="${1:-headers/components/Dependency.def}"
 output_file="${2:-dependencies.svg}"
+tags_output_file="${3:-dependencies_tags.svg}"
 
-awk '
-BEGIN {
-print "digraph Dependencies {"
-print "    rankdir=TB;"
-print "    node [shape=box, style=filled];"
-}
+generate_graph()
+{
+	local tags_only="$1"
+	local destination="$2"
 
-function color(name) {
-if (name ~ /^Tag::/)   return "lightblue"
-	if (name ~ /^Value::/) return "lightgreen"
-		if (name ~ /^List::/)  return "lightyellow"
-			if (name ~ /^Type::/)  return "lightpink"
-				return "white"
-			}
+	awk -v tags_only="$tags_only" '
+	BEGIN {
+		print "digraph Dependencies {"
+		print "    rankdir=TB;"
+		print "    node [shape=box, style=filled];"
+	}
 
-			/^[[:space:]]*X\(/ {
-			line = $0
+	function color(name) {
+		if (name ~ /^Component::Tag::/)   return "lightblue"
+		if (name ~ /^Component::Value::/) return "lightgreen"
+		if (name ~ /^Component::List::/)  return "lightyellow"
+		if (name ~ /^Component::Type::/)  return "lightpink"
+		return "white"
+	}
 
-			sub(/^[[:space:]]*X\(/, "", line)
-			sub(/\)[[:space:]]*$/, "", line)
+	function is_tag(name) {
+		return name ~ /^Component::Tag::/
+	}
 
-			split(line, parts, ",")
+	/^[[:space:]]*X\(/ {
+		line = $0
 
-			parent = parts[1]
-			child = parts[2]
+		sub(/^[[:space:]]*X\(/, "", line)
+		sub(/\)[[:space:]]*$/, "", line)
 
-			gsub(/^[[:space:]]+|[[:space:]]+$/, "", parent)
-			gsub(/^[[:space:]]+|[[:space:]]+$/, "", child)
+		split(line, parts, ",")
 
-			printf "    \"%s\" [fillcolor=\"%s\"];\n", parent, color(parent)
-			printf "    \"%s\" [fillcolor=\"%s\"];\n", child, color(child)
-			printf "    \"%s\" -> \"%s\";\n", parent, child
-		}
+		parent = parts[1]
+		child = parts[2]
+
+		gsub(/^[[:space:]]+|[[:space:]]+$/, "", parent)
+		gsub(/^[[:space:]]+|[[:space:]]+$/, "", child)
+
+		if (tags_only && (!is_tag(parent) || !is_tag(child)))
+			next
+
+		printf "    \"%s\" [fillcolor=\"%s\"];\n", parent, color(parent)
+		printf "    \"%s\" [fillcolor=\"%s\"];\n", child, color(child)
+		printf "    \"%s\" -> \"%s\";\n", parent, child
+	}
 
 	END {
-	print "}"
-}
-' "$dependency_file" |
-	dot -Tsvg -o "$output_file"
+		print "}"
+	}
+	' "$dependency_file" | dot -Tsvg -o "$destination"
 
-printf "Generated %s\n" "$output_file"
+	printf "Generated %s\n" "$destination"
+}
+
+generate_graph false "$output_file"
+generate_graph true "$tags_output_file"
 
 if command -v explorer.exe >/dev/null 2>&1; then
 	explorer.exe "$(wslpath -w "$output_file")"
+	explorer.exe "$(wslpath -w "$tags_output_file")"
 fi
