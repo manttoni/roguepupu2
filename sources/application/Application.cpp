@@ -70,7 +70,7 @@ void Application::run_game()
 		assert(root.outcome.has_value());
 
 		history.add(root);
-		messages.add(Game::Event::Describer::describe(*simulation, root));
+		messages.add(EventDescriber::describe(*simulation, root));
 
 		renderer.render(*simulation);
 		//renderer.render(messages);
