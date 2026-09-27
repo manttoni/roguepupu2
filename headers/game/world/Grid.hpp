@@ -41,7 +41,16 @@ namespace Game::World
 			const std::string seed;
 			ChunkMap generated_chunks;
 
+			Cell generate_cell(const GlobalPosition& position);
 			Chunk generate_chunk(const ChunkPosition& position);
 			Chunk& get_chunk(const ChunkPosition& position);
+
+			static constexpr std::size_t to_index(const LocalPosition& position)
+			{
+				return position.y * Chunk::width + position.x;
+			}
 	};
 }
+
+/* Grid > Chunk > Cell
+ * */

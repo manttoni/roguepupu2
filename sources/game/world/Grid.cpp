@@ -16,7 +16,7 @@ namespace
 
 		return {
 			floor_div(position.y, size.y),
-				floor_div(position.x, size.x)
+			floor_div(position.x, size.x)
 		};
 	}
 
@@ -28,7 +28,7 @@ namespace
 
 		return {
 			position.y - chunk.y * size.y,
-				position.x - chunk.x * size.x
+			position.x - chunk.x * size.x
 		};
 	}
 }
@@ -60,9 +60,43 @@ namespace Game::World
 		if (it == generated_chunks.end())
 			return nullptr;
 
-		const auto local_position =
-			to_local_position(position, chunk_position);
+		const auto local_position = to_local_position(position, chunk_position);
 
 		return &it->second.get_cell(local_position);
+	}
+
+	Cell Grid::generate_cell(const GlobalPosition& position)
+	{
+		(void) position;
+		return Cell(Game::Enum::Terrain::Ground);
+	}
+
+	Chunk Grid::generate_chunk(const ChunkPosition& chunk_position)
+	{
+		const int height = static_cast<int>(Chunk::height);
+		const int width = static_cast<int>(Chunk::width);
+
+		const GlobalPosition begin{
+			chunk_position.y * height,
+			chunk_position.x * width
+		};
+
+		const GlobalPosition end{
+			begin.y + height,
+			begin.x + width
+		};
+
+		Chunk::CellsArray cells;
+
+		for (int y = begin.y; y < end.y; ++y)
+		{
+			for (int x = begin.x; x < end.x; ++x)
+			{
+				const GlobalPosition global_position{y, x};
+				const LocalPosition local_position = to_local_position(global_position, chunk_position);
+				cells[to_index(local_position)] = generate_cell(global_position);
+			}
+		}
+		return Chunk{cells};
 	}
 }

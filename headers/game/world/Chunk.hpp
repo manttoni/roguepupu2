@@ -22,13 +22,14 @@ namespace Game::World
 			static constexpr int width = 100;
 			static constexpr int height = 100;
 			static inline Vec2<int> dimensions() { return Vec2<int>{height, width}; }
-
+			using CellsArray = std::array<Cell, width * height>;
+			Chunk(const CellsArray& cells);
 			const Cell& get_cell(const LocalPosition& position) const;
 			Cell& get_cell(const LocalPosition& position);
 
+
 		private:
-			std::array<Cell, width * height> cells;
-			std::vector<SpawnRequest> spawn_requests;
+			CellsArray cells;
 
 			static constexpr std::size_t to_index(const LocalPosition& position)
 			{
