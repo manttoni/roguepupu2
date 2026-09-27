@@ -9,12 +9,12 @@
 namespace Ncurses
 {
 	Panel::Panel(
-		const int height,
-		const int width,
-		const int y,
-		const int x)
+			const int height,
+			const int width,
+			const int y,
+			const int x)
 		: window(height, width, y, x),
-		  ptr(new_panel(window.get_ptr()))
+		ptr(new_panel(window.get_ptr()))
 	{
 		if (!valid())
 			throw std::runtime_error("Failed to create ncurses panel");
@@ -36,9 +36,9 @@ namespace Ncurses
 
 	Panel::Panel(Panel&& other) noexcept
 		: window(std::move(other.window)),
-		  ptr(std::exchange(other.ptr, nullptr))
-	{
-	}
+		ptr(std::exchange(other.ptr, nullptr))
+		{
+		}
 
 	Panel& Panel::operator=(Panel&& other) noexcept
 	{
@@ -117,5 +117,15 @@ namespace Ncurses
 	Vec2<int> Panel::position() const
 	{
 		return window.position();
+	}
+
+	void Panel::resize(
+			const std::size_t height,
+			const std::size_t width)
+	{
+		window.resize(height, width);
+
+		if (replace_panel(ptr, window.get_ptr()) == ERR)
+			throw std::runtime_error("Failed to update ncurses panel");
 	}
 }

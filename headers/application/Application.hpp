@@ -11,6 +11,7 @@
 #include "ncurses/Session.hpp"
 #include "ncurses/Input.hpp"
 #include "rendering/Renderer.hpp"
+#include "application/Layout.hpp"
 
 struct Settings
 {
@@ -18,10 +19,6 @@ struct Settings
 		Game::Settings game;
 };
 
-struct Layout
-{
-	Ncurses::Panel game_panel;
-};
 
 class History
 {
@@ -81,6 +78,6 @@ class Application
 		Settings load_settings();
 
 	public:
-		Application() : renderer(layout.game_panel.get_window()) {}
+		Application() : renderer(layout.get_game_panel().get_window()) {}
 		void run();
 };

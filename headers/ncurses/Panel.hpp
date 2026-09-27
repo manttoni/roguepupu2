@@ -51,5 +51,7 @@ namespace Ncurses
 			Vec2<int> position() const;
 
 			bool valid() const { return ptr != nullptr && window.get_ptr() != nullptr; }
+
+			void resize(const std::size_t height, const std::size_t width);
 	};
 }

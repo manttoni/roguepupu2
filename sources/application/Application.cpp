@@ -5,7 +5,7 @@
 #include "ui/Dialog.hpp"
 #include "ncurses/Input.hpp"
 #include "game/AI.hpp"
-
+#include "application/Layout.hpp"
 
 Game::Event::Any PlayerController::get_event(
 		const Game::Simulation& simulation,
@@ -39,6 +39,8 @@ bool Application::handle_input(const Ncurses::Input::Event& event)
 {
 	if (event.key == Ncurses::Input::Key::Escape)
 		game_running = false;
+	if (event.key == Ncurses::Input::Key::Resize)
+		layout.reset();
 	else
 		return false;
 	return true;

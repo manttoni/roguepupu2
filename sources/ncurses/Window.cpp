@@ -96,7 +96,7 @@ namespace Ncurses
 		{
 			const std::string_view remaining{
 				str.data() + i,
-				str.size() - i
+					str.size() - i
 			};
 
 			if (remaining.starts_with("{reset}"))
@@ -237,5 +237,30 @@ namespace Ncurses
 		(void)y;
 
 		return x;
+	}
+
+	void Window::resize(
+			const std::size_t height,
+			const std::size_t width)
+	{
+		if (ptr == nullptr)
+			throw std::logic_error("Cannot resize an uninitialized window");
+
+		const auto max_dimension =
+			static_cast<std::size_t>(std::numeric_limits<int>::max());
+
+		if (height == 0 || width == 0 ||
+				height > max_dimension || width > max_dimension)
+		{
+			throw std::invalid_argument("Invalid ncurses window dimensions");
+		}
+
+		if (wresize(
+					ptr,
+					static_cast<int>(height),
+					static_cast<int>(width)) == ERR)
+		{
+			throw std::runtime_error("Failed to resize ncurses window");
+		}
 	}
 }

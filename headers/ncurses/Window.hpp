@@ -62,5 +62,7 @@ namespace Ncurses
 
 			int cursor_y() const;
 			int cursor_x() const;
+
+			void resize(std::size_t height, std::size_t width);
 	};
 }

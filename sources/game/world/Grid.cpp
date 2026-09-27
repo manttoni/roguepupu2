@@ -1,4 +1,6 @@
 #include "game/world/Grid.hpp"
+#include "utils/Log.hpp"
+
 namespace
 {
 	// divisor must be positive
@@ -105,8 +107,12 @@ namespace Game::World
 		const ChunkPosition chunk_position =
 			to_chunk_position(global_position);
 
+		Log::debug() << "Chunk: " << chunk_position;
+
 		if (generated_chunks.contains(chunk_position))
 			return;
+
+		Log::debug() << "Is missing, generating...";
 
 		generated_chunks.emplace(
 				chunk_position,

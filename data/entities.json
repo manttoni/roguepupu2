@@ -11,7 +11,7 @@
 		"Faction": "None",
 		"Glyph": "@",
 		"Intelligence": 8,
-		"MovementPoints": 1,
+		"MovementPoints": 10000,
 		"Name": "Rabdin",
 		"Color": [
 			1,

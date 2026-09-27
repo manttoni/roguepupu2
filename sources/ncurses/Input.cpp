@@ -140,6 +140,7 @@ namespace Ncurses::Input
 		::timeout(timeout_ms);
 
 		const int raw_key = getch();
+		flushinp();
 
 		if (raw_key == ERR)
 			return Event{};
