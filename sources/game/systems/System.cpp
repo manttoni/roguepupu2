@@ -175,6 +175,17 @@ namespace Game::System
 		registry.get<Component::Resource::MovementPoints>(event.entity).reset();
 		registry.get<Component::Resource::ActionPoints>(event.entity).reset();
 		registry.get<Component::Resource::BonusActionPoints>(event.entity).reset();
+
+		if (event.entity == simulation.get_player())
+		{
+			auto& world = simulation.get_world();
+			const auto& player_position = registry.get<Component::Value::Position>(event.entity).value;
+			const auto generated_area = 1000;
+			const auto begin = player_position - Vec2<int>{generated_area, generated_area} / 2;
+			const auto end = player_position + Vec2<int>{generated_area, generated_area} / 2;
+			world.generate_missing(begin, end);
+		}
+
 		return Event::Result::accepted();
 	}
 

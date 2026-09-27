@@ -6,6 +6,7 @@
 
 #include "game/world/Chunk.hpp"
 #include "game/world/Position.hpp"
+#include "game/world/Generator.hpp"
 
 namespace Game::World
 {
@@ -29,18 +30,16 @@ namespace Game::World
 	class Grid
 	{
 		public:
-			Grid(std::string seed) : seed(seed) {}
+			Grid(std::string seed);
 
 			Cell& get_cell(const GlobalPosition& position);
-
-			/* return nullptr if cell hasn't been generated yet in places that cannot mutate World::Grid
-			 * */
 			const Cell* find_cell(const GlobalPosition& position) const;
 
 			void generate_missing(const GlobalPosition& global_position);
+			void generate_missing(const GlobalPosition& begin, const GlobalPosition& end);
 
 		private:
-			const std::string seed;
+			Generator generator;
 			ChunkMap generated_chunks;
 
 			Cell generate_cell(const GlobalPosition& position);

@@ -36,6 +36,8 @@ namespace
 }
 namespace Game::World
 {
+	Grid::Grid(std::string seed) : generator(seed) {}
+
 	Cell& Grid::get_cell(const GlobalPosition& position)
 	{
 		const auto chunk_position = to_chunk_position(position);
@@ -67,12 +69,6 @@ namespace Game::World
 		return &it->second.get_cell(local_position);
 	}
 
-	Cell Grid::generate_cell(const GlobalPosition& position)
-	{
-		(void) position;
-		return Cell(Game::Enum::Terrain::Ground);
-	}
-
 	Chunk Grid::generate_chunk(const ChunkPosition& chunk_position)
 	{
 		const int height = static_cast<int>(Chunk::height);
@@ -96,7 +92,7 @@ namespace Game::World
 			{
 				const GlobalPosition global_position{y, x};
 				const LocalPosition local_position = to_local_position(global_position, chunk_position);
-				cells[to_index(local_position)] = generate_cell(global_position);
+				cells[to_index(local_position)] = generator.generate_cell(global_position);
 			}
 		}
 		return Chunk{cells};
@@ -107,15 +103,24 @@ namespace Game::World
 		const ChunkPosition chunk_position =
 			to_chunk_position(global_position);
 
-		Log::debug() << "Chunk: " << chunk_position;
-
 		if (generated_chunks.contains(chunk_position))
 			return;
 
-		Log::debug() << "Is missing, generating...";
+		Log::debug() << "Generating chunk: " << chunk_position;
 
 		generated_chunks.emplace(
 				chunk_position,
 				generate_chunk(chunk_position));
+	}
+
+	void Grid::generate_missing(const GlobalPosition& begin, const GlobalPosition& end)
+	{
+		for (int y = begin.y; y < end.y; y += Chunk::height)
+		{
+			for (int x = begin.x; x < end.x; x += Chunk::width)
+			{
+				generate_missing(GlobalPosition{y, x});
+			}
+		}
 	}
 }
