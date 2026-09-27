@@ -86,6 +86,7 @@ namespace Ncurses
 
 	void Window::write(const std::string& str)
 	{
+		Log::debug() << "Writing to \'" << title << "\': " << str;
 		Ncurses::Color color{};
 		Ncurses::Attribute attribute{};
 
@@ -96,7 +97,7 @@ namespace Ncurses
 		{
 			const std::string_view remaining{
 				str.data() + i,
-					str.size() - i
+				str.size() - i
 			};
 
 			if (remaining.starts_with("{reset}"))

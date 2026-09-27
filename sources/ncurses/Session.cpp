@@ -5,6 +5,7 @@
 #include <ncurses.h>
 
 #include "utils/Log.hpp"
+#include "ncurses/Color.hpp"
 
 namespace Ncurses
 {
@@ -30,6 +31,8 @@ namespace Ncurses
 		   std::printf("\033[?1003h");
 		   std::fflush(stdout);
 		   */
+
+		Color::init();
 
 		Log::info() << "Ncurses initialized";
 	}

@@ -54,9 +54,7 @@ namespace UI::Dialog
 
 	bool confirm(const std::string& message)
 	{
-		Menu m(Ncurses::Screen::middle());
-		m.add(UI::Element::Text{.text = message});
-		m.add(UI::Element::Separator{});
+		Menu m(message);
 		m.add(UI::Element::confirm());
 		m.add(UI::Element::cancel());
 		return m.get_selection().confirmed();
@@ -71,8 +69,8 @@ namespace UI::Dialog
 	{
 		auto copy = input;
 
-		Menu menu;
-		menu.add(UI::Element::TextIn{.label = label, .text = &copy});
+		Menu menu(label);
+		menu.add(UI::Element::TextIn{.label = "", .text = &copy});
 		menu.add(UI::Element::confirm());
 		menu.set_timeout(-1);
 		const auto s = menu.get_selection();

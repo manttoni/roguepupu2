@@ -34,8 +34,8 @@ namespace UI
 				elements.end(),
 				[](const auto& a, const auto& b)
 				{
-				return Element::to_string(a).size()
-				< Element::to_string(b).size();
+					return Element::to_string(a).size()
+						< Element::to_string(b).size();
 				}
 				);
 
@@ -93,10 +93,10 @@ namespace UI
 		return std::visit(
 				[](const auto& element) -> std::string
 				{
-				if constexpr (requires { element.label; })
-				return element.label;
-				else
-				return "";
+					if constexpr (requires { element.label; })
+						return element.label;
+					else
+						return "";
 				},
 				elements[index]
 				);
@@ -108,13 +108,13 @@ namespace UI
 			<< "Dispatching element index " << selected
 			<< ", variant index " << elements[selected].index();
 		const auto state = std::visit([&event](auto& element) {
-				return Element::handle_input(element, event);
-				}, elements.at(selected));
+			return Element::handle_input(element, event);
+		}, elements.at(selected));
 
 		return Selection{
 			.state = state,
-				.index = selected,
-				.label = get_label(selected)
+			.index = selected,
+			.label = get_label(selected)
 		};
 	}
 
@@ -136,7 +136,7 @@ namespace UI
 				case Key::None: // getting input timed out -> no key was pressed
 					return Selection{
 						.state = Selection::State::TimedOut,
-							.index = selected
+						.index = selected
 					};
 				case Key::Up:
 					selected = (selected == 0) ? 0 : selected - 1;
