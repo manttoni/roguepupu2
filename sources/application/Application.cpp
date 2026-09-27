@@ -23,7 +23,13 @@ Game::Event::Any PlayerController::get_event(
 	{
 		return Game::Event::Bump{
 			.entity = current_actor.entity,
-				.direction = event.to_direction()
+			.direction = event.to_direction()
+		};
+	}
+	else if (event.key == Ncurses::Input::Key::Space)
+	{
+		return Game::Event::EndTurn{
+			.entity = current_actor.entity
 		};
 	}
 	return Game::Event::Null{};
@@ -130,8 +136,8 @@ void Application::main_menu()
 		else if (selection.label == "New Game")
 		{
 			if (
-					simulation.has_value() &&
-					!UI::Dialog::confirm("Lose current game?")
+				simulation.has_value() &&
+				!UI::Dialog::confirm("Lose current game?")
 			   )
 			{
 				continue;

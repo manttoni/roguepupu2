@@ -120,28 +120,38 @@ namespace Game::Event
 		entt::entity entity = entt::null;
 		entt::entity item = entt::null;
 	};
+	struct EndTurn
+	{
+		entt::entity entity = entt::null;
+	};
+	struct BeginTurn
+	{
+		entt::entity entity = entt::null;
+	};
 	using Any = std::variant<
 		Null,
-		Move,
-		LeavePosition,
-		EnterPosition,
-		Bump,
-		Attack,
-		AttackHit,
-		AttackMiss,
-		TakeDamage,
-		Spawn,
-		Destroy,
-		Drop,
-		Take,
-		Equip,
-		Unequip,
-		DiceRoll,
-		Death,
-		BecomeHostile,
-		ReceiveItem,
-		LoseMovementPoints
-			>;
+	Move,
+	LeavePosition,
+	EnterPosition,
+	Bump,
+	Attack,
+	AttackHit,
+	AttackMiss,
+	TakeDamage,
+	Spawn,
+	Destroy,
+	Drop,
+	Take,
+	Equip,
+	Unequip,
+	DiceRoll,
+	Death,
+	BecomeHostile,
+	ReceiveItem,
+	LoseMovementPoints,
+	EndTurn,
+	BeginTurn
+		>;
 	using List = std::vector<Any>;
 	enum class Outcome // was it accepted into the game simulation?
 	{
@@ -157,7 +167,15 @@ namespace Game::Event
 		{
 			return Result{
 				.outcome = Outcome::Rejected,
-					.consequences = {}
+				.consequences = {}
+			};
+		}
+
+		static inline Result accepted()
+		{
+			return Result{
+				.outcome = Outcome::Accepted,
+				.consequences = {}
 			};
 		}
 	};

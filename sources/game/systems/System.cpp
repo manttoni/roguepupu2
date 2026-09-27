@@ -167,6 +167,31 @@ namespace Game::System
 		};
 	}
 
+	Event::Result process(Simulation& simulation, const Game::Event::BeginTurn& event)
+	{
+		auto& registry = simulation.get_registry();
+		registry.get<Component::Resource::MovementPoints>(event.entity).reset();
+		registry.get<Component::Resource::ActionPoints>(event.entity).reset();
+		registry.get<Component::Resource::BonusActionPoints>(event.entity).reset();
+		return Event::Result::accepted();
+	}
+
+	Event::Result process(Simulation& simulation, const Game::Event::EndTurn& event)
+	{
+		auto& scheduler = simulation.get_scheduler();
+		assert(scheduler.current_actor().entity == event.entity);
+		scheduler.advance(); // Scheduler now knows the next Actor is the currently acting one
+
+		Event::Result result;
+		result.outcome = Event::Outcome::Accepted;
+
+		result.consequences.push_back(
+				Game::Event::BeginTurn{
+					.entity = scheduler.current_actor().entity
+				});
+		return result;
+	}
+
 	Game::Event::Result dispatch(Simulation& simulation, const Game::Event::Any& event)
 	{
 		return std::visit(
