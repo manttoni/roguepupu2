@@ -86,7 +86,6 @@ namespace Ncurses
 
 	void Window::write(const std::string& str)
 	{
-		Log::debug() << "Writing to \'" << title << "\': " << str;
 		Ncurses::Color color{};
 		Ncurses::Attribute attribute{};
 

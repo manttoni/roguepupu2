@@ -1,4 +1,5 @@
 #include "databases/EntityDatabase.hpp"
+#include "utils/Log.hpp"
 #include "utils/IO.hpp"
 #include "utils/Parser.hpp"
 #include "game/entities/Entity.hpp"
@@ -14,6 +15,8 @@ EntityDatabase::EntityDatabase(const std::filesystem::path& path)
 				path.string());
 
 	const auto root = IO::read_json(path);
+
+	assert(!root.empty());
 
 	if (!root.is_object())
 		throw std::runtime_error("Entity database root must be an object");
@@ -35,4 +38,6 @@ EntityDatabase::EntityDatabase(const std::filesystem::path& path)
 
 		definitions.emplace(id, definition);
 	}
+
+	Log::debug() << path << " entities parsed. Found " << definitions.size() << " entities";
 }

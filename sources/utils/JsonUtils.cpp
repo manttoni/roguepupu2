@@ -1,5 +1,5 @@
 #include "utils/JsonUtils.hpp"
-#include "utils/Error.hpp"
+
 
 namespace JsonUtils
 {
@@ -72,7 +72,7 @@ namespace JsonUtils
 			return std::to_string(j.get<double>());
 		if (j.is_boolean())
 			return j.get<bool>() ? "true" : "false";
-		Error::fatal("Unhandled json type: " + j.dump(4));
+		throw std::runtime_error("Unhandled json type: " + j.dump(4));
 	}
 
 	/*Json merge(const Json& a, const Json& b, const bool replace)

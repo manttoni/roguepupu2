@@ -6,7 +6,7 @@
 #include "ncurses/Color.hpp"
 #include "game/Dice.hpp"
 #include "nlohmann/json.hpp"
-#include "utils/Error.hpp"
+
 #include "utils/Random.hpp"
 #include "utils/Range.hpp"
 #include "utils/JsonUtils.hpp"
@@ -33,14 +33,14 @@ namespace Parser
 				const auto str = data.get<std::string>();
 				const auto pos = str.find('-');
 				if (pos == std::string::npos)
-					Error::fatal("Invalid range: " + str);
+					throw std::runtime_error("Invalid range: " + str);
 
 				T min{}, max{};
 				auto [p1, ec1] = std::from_chars(str.data(), str.data() + pos, min);
 				auto [p2, ec2] = std::from_chars(str.data() + pos + 1, str.data() + str.size(), max);
 
 				if (ec1 != std::errc{} || ec2 != std::errc{} || min > max)
-					Error::fatal("Invalid range: " + str);
+					throw std::runtime_error("Invalid range: " + str);
 
 				return { min, max };
 			}
@@ -49,12 +49,12 @@ namespace Parser
 				const T min = data[0].get<T>();
 				const T max = data[1].get<T>();
 				if (min > max)
-					Error::fatal("Invalid range: " + data.dump(4));
+					throw std::runtime_error("Invalid range: " + data.dump(4));
 				return { min, max };
 			}
 			else if (data.contains("range"))
 				return parse_range<T>(data["range"]);
-			Error::fatal("Unsupported range format: " + data.dump(4));
+			throw std::runtime_error("Unsupported range format: " + data.dump(4));
 		}
 };
 

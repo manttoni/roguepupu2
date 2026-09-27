@@ -10,7 +10,7 @@
 #include <variant>
 
 #include "ui/Menu.hpp"
-#include "utils/Error.hpp"
+#include "utils/Log.hpp"
 #include "ncurses/Screen.hpp"
 #include "ui/Menu.hpp"
 #include "utils/Vec2.hpp"
@@ -104,9 +104,6 @@ namespace UI
 
 	Selection Menu::handle_input(const std::size_t selected, const Ncurses::Input::Event& event)
 	{
-		Log::debug()
-			<< "Dispatching element index " << selected
-			<< ", variant index " << elements[selected].index();
 		const auto state = std::visit([&event](auto& element) {
 			return Element::handle_input(element, event);
 		}, elements.at(selected));
@@ -125,11 +122,6 @@ namespace UI
 		{
 			print_elements(selected);
 			const Ncurses::Input::Event event = Ncurses::Input::get_event(timeout);
-			Log::debug()
-				<< "Menu event: key=" << static_cast<int>(event.key)
-				<< ", ch=" << static_cast<int>(
-						static_cast<unsigned char>(event.ch)
-						);
 			using Key = Ncurses::Input::Key;
 			switch (event.key)
 			{

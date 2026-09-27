@@ -1,4 +1,5 @@
 #include "game/Simulation.hpp"
+
 #include "game/systems/System.hpp"
 
 #include <deque>
@@ -16,9 +17,14 @@ namespace Game
 		world(seed),
 		player(Entity::create(registry, entity_database, player_definition_id))
 	{
-		registry.emplace<Component::Value::Position>(
-				player,
-				World::GlobalPosition{0, 0});
+		if (player == entt::null)
+			throw std::runtime_error("Player is entt::null");
+
+		simulate(
+				Event::Spawn{
+					player,
+					World::GlobalPosition{0, 0} // TODO: make some spawning logic for player
+				});
 	}
 
 	void Simulation::simulate_node(Event::Node& node)

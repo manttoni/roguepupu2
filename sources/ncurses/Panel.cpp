@@ -1,5 +1,5 @@
 #include "ncurses/Panel.hpp"
-#include "utils/Error.hpp"
+
 #include "ncurses/Screen.hpp"
 
 #include <ncurses.h>
@@ -17,7 +17,7 @@ namespace Ncurses
 		  ptr(new_panel(window.get_ptr()))
 	{
 		if (!valid())
-			Error::fatal("Failed to create ncurses panel");
+			throw std::runtime_error("Failed to create ncurses panel");
 		while (height > Ncurses::Screen::height() || width > Ncurses::Screen::width())
 		{	// Use ctrl + [+/-] (in my terminal). This loop ends when terminal size is big enough.
 			mvaddstr(0, 0, "Resize terminal with ctrl+[+/-]"); // TODO::add menu/panel scrolling

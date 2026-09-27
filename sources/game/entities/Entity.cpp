@@ -1,4 +1,5 @@
 #include "game/entities/Entity.hpp"
+
 #include "utils/Log.hpp"
 
 namespace Game::Entity
@@ -140,6 +141,11 @@ namespace Game::Entity
 
 	entt::entity create(entt::registry& registry, const EntityDatabase& entity_database, const Definition::ID& id)
 	{
+		if (!entity_database.definitions.contains(id))
+		{
+			throw std::runtime_error("Entity Definition ID \'" + id + "\' not found");
+			return entt::null;
+		}
 		const Definition definition{id, entity_database.definitions.at(id)};
 		return create(registry, definition);
 	}

@@ -2,7 +2,7 @@
 
 #include "utils/Log.hpp"
 #include "utils/Vec2.hpp"
-#include "utils/Error.hpp"
+
 #include <climits>
 #include <ncurses.h>
 
@@ -128,7 +128,7 @@ namespace Ncurses::Input
 				return Vec2<int>{0, 1};
 
 			default:
-				Error::fatal("Ncurses::Input::to_direction(key) called for non-directional key");
+				throw std::runtime_error("Ncurses::Input::to_direction(key) called for non-directional key");
 		}
 	}
 	Event get_event(const int timeout_ms)
@@ -146,8 +146,8 @@ namespace Ncurses::Input
 
 		return Event{
 			.key = translate_key(raw_key),
-				.ch = translate_character(raw_key),
-				.shift = is_shift_modified(raw_key),
+			.ch = translate_character(raw_key),
+			.shift = is_shift_modified(raw_key),
 		};
 	}
 }

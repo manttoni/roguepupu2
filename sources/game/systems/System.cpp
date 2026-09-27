@@ -1,22 +1,24 @@
 #include "game/systems/System.hpp"
+#include "game/Simulation.hpp"
 #include "game/systems/Movement.hpp"
 #include "game/components/Component.hpp"
+#include "utils/Log.hpp"
 
 // This is temporary
 namespace Game::System
 {
 	template<typename T>
-	Event::Result process(
-			Simulation&,
-			const T&)
-	{
-		assert(false && "Event has no process() implementation");
+		Event::Result process(
+				Simulation&,
+				const T&)
+		{
+			assert(false && "Event has no process() implementation");
 
-		return {
-			.outcome = Event::Outcome::Rejected,
-			.consequences = {}
-		};
-	}
+			return {
+				.outcome = Event::Outcome::Rejected,
+				.consequences = {}
+			};
+		}
 }
 // Previous is temporary
 /* Rejecting an event means that event makes no changes and produces no consequences.
@@ -27,10 +29,16 @@ namespace Game::System
  * */
 namespace Game::System
 {
+	Event::Result process(Simulation&, const Game::Event::Null&)
+	{
+		return Event::Result::rejected(); // this event has no effect on simulation
+	}
+
 	Event::Result process(Simulation& simulation, const Game::Event::LoseMovementPoints& event)
 	{
-		auto& movement_points = simulation.get_registry().get<Component::Resource::MovementPoints>(event.entity).current;
-		movement_points -= event.amount;
+		auto& movement_points = simulation.get_registry().get<Component::Resource::MovementPoints>(event.entity);
+		movement_points.current -= event.amount;
+		Log::debug() << movement_points;
 		return Event::Result{
 			.outcome = Event::Outcome::Accepted,
 			.consequences = {}
@@ -60,6 +68,7 @@ namespace Game::System
 	Event::Result process(Simulation& simulation, const Game::Event::Move& event)
 	{
 		auto& registry = simulation.get_registry();
+		// auto& world = simulation.get_world();
 
 		if (!Movement::can_move(simulation, event.entity, event.to))
 		{
@@ -86,6 +95,70 @@ namespace Game::System
 				Game::Event::EnterPosition{
 					.entity = event.entity,
 					.position = event.to
+				});
+
+		return Event::Result{
+			.outcome = Event::Outcome::Accepted,
+			.consequences = consequences
+		};
+	}
+
+	Event::Result process(Simulation& simulation, const Game::Event::Bump& event)
+	{
+		auto& registry = simulation.get_registry();
+		const auto& entity_position = registry.get<Component::Value::Position>(event.entity).value;
+		const auto target_position = entity_position + event.direction;
+
+		Event::List consequences;
+
+		if (Movement::can_move(simulation, event.entity, target_position))
+		{
+			consequences.push_back(
+					Game::Event::Move{
+						.entity = event.entity,
+						.from = entity_position,
+						.to = target_position
+					});
+		}
+		else
+		{
+			return Event::Result::rejected(); // TODO: for now, only consequence is moving
+		}
+
+		return Event::Result{
+			.outcome = Event::Outcome::Accepted,
+			.consequences = consequences
+		};
+	}
+
+	Event::Result process(Simulation& simulation, const Game::Event::Spawn& event)
+	{
+		auto& registry = simulation.get_registry();
+		auto& world = simulation.get_world();
+		auto& scheduler = simulation.get_scheduler();
+
+		// TODO: validate position. Extract from System::Movement the blocks_movement() and make a System::Spatial?
+
+		world.generate_missing(event.position);
+		registry.emplace<Component::Value::Position>(event.entity, event.position);
+		if (registry.all_of<Component::Tag::Actor>(event.entity))
+		{
+			scheduler.add(
+					Turn::Actor{
+						event.entity,
+						event.entity == simulation.get_player() ?
+							Turn::Controller::Player :
+							Turn::Controller::AI,
+						1 // TODO: roll initiative calculation
+					});
+		}
+
+		Event::List consequences;
+
+		consequences.push_back(
+				Game::Event::EnterPosition{
+					.entity = event.entity,
+					.position = event.position
 				});
 
 		return Event::Result{

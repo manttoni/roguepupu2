@@ -1,10 +1,11 @@
 #include "application/Application.hpp"
+#include "utils/Log.hpp"
 #include "game/Simulation.hpp"
 #include "application/EventDescriber.hpp"
 #include "ui/Dialog.hpp"
 #include "ncurses/Input.hpp"
 #include "game/AI.hpp"
-#include "utils/Error.hpp"
+
 
 Game::Event::Any PlayerController::get_event(
 		const Game::Simulation& simulation,
@@ -30,8 +31,11 @@ Game::Event::Any PlayerController::get_event(
 
 bool Application::handle_input(const Ncurses::Input::Event& event)
 {
-	(void) event;
-	return false;
+	if (event.key == Ncurses::Input::Key::Escape)
+		game_running = false;
+	else
+		return false;
+	return true;
 }
 
 void Application::editor_menu()
@@ -150,7 +154,7 @@ void Application::main_menu()
 		}
 		else
 		{
-			Error::fatal(
+			throw std::runtime_error(
 					"Unknown main-menu selection: " +
 					selection.label
 					);

@@ -46,11 +46,6 @@ namespace UI::Element
 	{
 		using Key = Ncurses::Input::Key;
 		auto& text = *(element.text);
-		Log::debug()
-			<< "key=" << static_cast<int>(event.key)
-			<< ", ch=" << static_cast<int>(static_cast<unsigned char>(event.ch))
-			<< ", size=" << text.size()
-			<< ", max=" << element.length.max;
 		if (event.key == Key::Backspace && text.size() > 0)
 		{
 			text.pop_back();
@@ -61,7 +56,6 @@ namespace UI::Element
 		}
 		else
 		{
-			Log::debug() << "Ignored";
 			return Selection::State::Ignored;
 		}
 		return Selection::State::Changed;

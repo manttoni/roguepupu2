@@ -1,6 +1,6 @@
 #include "editor/EntityEditor.hpp"
 #include "ui/Theme.hpp"
-#include "utils/Error.hpp"
+#include "utils/Log.hpp"
 #include "utils/IO.hpp"
 #include "ui/Dialog.hpp"
 #include "ui/Menu.hpp"
@@ -343,7 +343,7 @@ namespace EntityEditor
 				break;
 			}
 			else
-				Error::fatal("Unexpected label: " + label);
+				throw std::runtime_error("Unexpected label: " + label);
 		}
 	}
 }

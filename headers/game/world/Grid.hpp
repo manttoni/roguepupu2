@@ -37,6 +37,8 @@ namespace Game::World
 			 * */
 			const Cell* find_cell(const GlobalPosition& position) const;
 
+			void generate_missing(const GlobalPosition& global_position);
+
 		private:
 			const std::string seed;
 			ChunkMap generated_chunks;
