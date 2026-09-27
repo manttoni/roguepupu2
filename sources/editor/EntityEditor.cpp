@@ -97,7 +97,7 @@ namespace EntityEditor
 		new_entity.add(UI::Element::confirm());
 		new_entity.get_selection();
 
-		if (!Entity::valid_id(id))
+		if (!Game::Entity::valid_id(id))
 			return std::nullopt;
 		if (all_definitions.contains(id))
 		{
@@ -158,7 +158,7 @@ namespace EntityEditor
 			print_definition(edit_panel.get_window(), definition);
 			UI::Menu editor;
 			editor.set_title(definition.id +
-					(Entity::valid_definition(definition.data) ? "" : "*")
+					(Game::Entity::valid_definition(definition.data) ? "" : "*")
 					);
 			editor.set_timeout(500);
 			//editor.add(UI::Element::MultiChoice("Tags", &tags));

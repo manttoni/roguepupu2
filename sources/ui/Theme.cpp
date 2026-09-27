@@ -11,10 +11,8 @@ namespace UI
 
 		return Theme{
 			.background{json.at("background").get<std::array<int, 3>>()},
-				.text{json.at("text").get<std::array<int, 3>>()},
-				.border{json.at("border").get<std::array<int, 3>>()},
-				.rock{json.at("rock").get<std::array<int, 3>>()},
-				.floor{json.at("floor").get<std::array<int, 3>>()}
+			.text{json.at("text").get<std::array<int, 3>>()},
+			.border{json.at("border").get<std::array<int, 3>>()}
 		};
 	}
 }

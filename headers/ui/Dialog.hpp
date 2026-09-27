@@ -30,5 +30,6 @@ namespace UI::Dialog
 	void message(const std::vector<std::string>& messages, const Vec2<int>& position = Ncurses::Screen::middle());
 	bool confirm(const std::string& message);
 	void alert(const std::string& message);
-	void get_input(const std::string& label, std::string* input);
+	void get_input(const std::string& label, std::string& input);
+	std::string get_input(const std::string& label);
 };

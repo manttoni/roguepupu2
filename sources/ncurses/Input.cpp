@@ -99,7 +99,7 @@ namespace Ncurses::Input
 			return static_cast<char>(raw_key);
 		}
 	}
-	Vec2<int> to_direction(const Key key)
+	Vec2<int> Event::to_direction() const
 	{
 		switch (key)
 		{

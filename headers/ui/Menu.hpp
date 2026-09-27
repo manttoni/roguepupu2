@@ -26,6 +26,7 @@ namespace UI
 		public:
 			// Center the menu as close to position as possible.
 			explicit Menu(const Vec2<int>& position = Ncurses::Screen::middle(), const std::string& title = "");
+			explicit Menu(const std::string& title);
 
 			~Menu() = default;
 

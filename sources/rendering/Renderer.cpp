@@ -1,99 +1,107 @@
-#include <vector>
 #include "rendering/Renderer.hpp"
-#include "ncurses/Screen.hpp"
-#include "utils/ECS.hpp"
-#include "utils/Log.hpp"
+#include "game/entities/Entity.hpp"
+#include "utils/Vec2.hpp"
+#include "ncurses/Color.hpp"
 
-Renderer::Pixel Renderer::get_pixel(const entt::registry& registry, const Domain::Position& position) const
+namespace
 {
-	if (!ECS::get_cave(registry, position.cave_idx).contains(position))
-		return Pixel{.color = Ncurses::Color{0}, .glyph = ' '};
-
-	Pixel pixel;
-	// Entities
-	const auto entities = ECS::get_entities<Component::Tag::Renderable>(registry, position);
-	if (!entities.empty())
+	constexpr Ncurses::Color cell_color(const Game::World::Cell& cell)
 	{
-		const auto rendered_entity = entities[frame % entities.size()];
-		pixel.glyph = registry.get<Component::Value::Glyph>(rendered_entity).value;
-		pixel.color = registry.get<Ncurses::Color>(rendered_entity);
-		return pixel;
+		using Terrain = Game::Enum::Terrain;
+		const auto& terrain = cell.terrain;
+
+		switch(terrain)
+		{
+			case Terrain::Ground:
+				return Ncurses::Color{1,1,1};
+			case Terrain::Sand:
+				return Ncurses::Color{1,2,2};
+			case Terrain::Rock:
+				return Ncurses::Color{2,2,2};
+			case Terrain::Water:
+				return Ncurses::Color{1,2,3};
+			case Terrain::Grass:
+				return Ncurses::Color{1,3,1};
+		}
 	}
 
-	// Terrain
-	const auto cell_type = ECS::get_cell(registry, position).get_type();
-	using Type = Domain::Cell::Type;
-	switch (cell_type)
+	constexpr char cell_glyph(const Game::World::Cell& cell)
 	{
-		case Type::Rock:
-			pixel.color = theme.rock;
-			pixel.glyph = '#';
-			break;
-		default:
-			pixel.color = theme.floor;
-			pixel.glyph = '.';
-			break;
+		using Terrain = Game::Enum::Terrain;
+		const auto& terrain = cell.terrain;
+
+		switch(terrain)
+		{
+			case Terrain::Ground:
+				return '.';
+			case Terrain::Sand:
+				return ',';
+			case Terrain::Rock:
+				return '#';
+			case Terrain::Water:
+				return '~';
+			case Terrain::Grass:
+				return '\"';
+		}
 	}
-	return pixel;
 }
 
-void Renderer::render(const entt::registry& registry, Domain::Position center)
+void Renderer::render(
+		const Game::Simulation& simulation,
+		const Game::World::GlobalPosition& center)
 {
-	if (!center.is_valid())
-		center = ECS::get_player_position(registry);
-
-	const auto& cave = ECS::get_cave(registry, center);
-	const int cave_size = static_cast<int>(cave.get_size());
-
-	const Vec2<int> center_coords =
-		Vec2<int>::from_idx(center.cell_idx, cave_size);
-
-	auto& surface = panel.get_window();
-	const Vec2<int> screen_size = surface.dimensions();
-
-	const Vec2<int> viewport_origin{
-		center_coords.y - screen_size.y / 2,
-			center_coords.x - screen_size.x / 2
-	};
+	const auto viewport_size = surface.dimensions();
+	const auto top_left = center - viewport_size / 2;
 
 	surface.clear();
 
-	for (int screen_y = 0; screen_y < screen_size.y; ++screen_y)
+	for (int y = 0; y < viewport_size.y; ++y)
 	{
-		for (int screen_x = 0; screen_x < screen_size.x; ++screen_x)
+		for (int x = 0; x < viewport_size.x; ++x)
 		{
-			const Vec2<int> world{
-				viewport_origin.y + screen_y,
-					viewport_origin.x + screen_x
-			};
+			const auto world_position = top_left + Vec2<int>{y, x};
+			const auto* cell =
+				simulation.get_world().find_cell(world_position);
 
-			if (world.y < 0 || world.y >= cave_size ||
-					world.x < 0 || world.x >= cave_size)
+			if (!cell)
+				continue; // Missing chunk; preparation should have loaded it.
+
+			const auto entities =
+				Game::Entity::find_all(
+					simulation.get_registry(),
+					Component::Value::Position{world_position},
+					Component::Tag::Renderable{}
+					);
+			if (entities.size() == 0)
 			{
-				surface.put(screen_y, screen_x, ' ');
+				const auto color = cell_color(*cell);
+
+				surface.enable_color(color);
+				surface.put(y, x, cell_glyph(*cell));
+				surface.disable_color(color);
+
 				continue;
 			}
 
-			const auto cell_idx = static_cast<std::size_t>(
-					world.y * cave_size + world.x
-					);
+			const auto entity = entities[frame % entities.size()]; // when multiple entities in same position, render a different one each frame
+			const auto color = simulation.get_registry().get<Component::Value::Color>(entity).value;
 
-			const Domain::Position position{
-				cell_idx,
-					cave.get_idx()
-			};
-
-			const Pixel pixel = get_pixel(registry, position);
-
-			surface.enable_color(pixel.color);
-			surface.put(screen_y, screen_x, pixel.glyph);
-			surface.disable_color(pixel.color);
+			surface.enable_color(color);
+			surface.put(y, x, simulation.get_registry().get<Component::Value::Glyph>(entity).value);
+			surface.disable_color(color);
 		}
 	}
 
 	surface.refresh();
-	update_panels();
-	doupdate();
-	++frame;
+	frame++;
 }
 
+void Renderer::render(const Game::Simulation& simulation)
+{
+	const auto player = simulation.get_player();
+	const auto& position =
+		simulation.get_registry()
+		.get<Component::Value::Position>(player);
+
+	render(simulation, position.value);
+}

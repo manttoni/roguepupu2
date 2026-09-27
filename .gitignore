@@ -8,4 +8,5 @@ logs/
 roguepupu2
 *.txt
 *.svg
+tmp/
 

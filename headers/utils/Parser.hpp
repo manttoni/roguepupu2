@@ -4,7 +4,7 @@
 #include <utility>
 #include <filesystem>
 #include "ncurses/Color.hpp"
-#include "domain/Dice.hpp"
+#include "game/Dice.hpp"
 #include "nlohmann/json.hpp"
 #include "utils/Error.hpp"
 #include "utils/Random.hpp"
@@ -17,8 +17,8 @@ namespace Parser
 	using Json = nlohmann::json;
 
 	Ncurses::Color parse_color(const Json& data);
-	void parse_cave_generation_conf(const std::string& conf_id, CaveGenerator::Data& data);
-	void parse_cave_generation_conf(const Json& conf, CaveGenerator::Data& data);
+	void parse_area_generation_conf(const std::string& conf_id, CaveGenerator::Data& data);
+	void parse_area_generation_conf(const Json& conf, CaveGenerator::Data& data);
 
 	template<typename T>
 		Range<T> parse_range(const Json& data)

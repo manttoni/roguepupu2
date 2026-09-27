@@ -5,6 +5,7 @@
 
 namespace UI
 {
+	// This only affects the UI colors, game colors are a different thing
 	struct Theme
 	{
 		using Color = Ncurses::Color;
@@ -12,9 +13,8 @@ namespace UI
 		Color background;
 		Color text;
 		Color border;
-		Color rock;
-		Color floor;
 	};
 
 	Theme load_theme(const std::filesystem::path& path = "data/ui/theme.json");
 }
+

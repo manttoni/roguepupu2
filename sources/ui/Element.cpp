@@ -1,4 +1,5 @@
 #include <string>
+#include "ncurses/Input.hpp"
 #include "utils/Log.hpp"
 #include "utils/Math.hpp"
 #include "ui/Element.hpp"
@@ -54,7 +55,7 @@ namespace UI::Element
 		{
 			text.pop_back();
 		}
-		else if (Ncurses::Input::is_ascii(event.key) && text.size() < element.length.max)
+		else if (event.is_ascii() && text.size() < element.length.max)
 		{
 			text += event.ch;
 		}

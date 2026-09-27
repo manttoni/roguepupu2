@@ -4,6 +4,7 @@
 #include <string>
 #include <regex>
 #include <ncurses.h>
+#include <nlohmann/json_fwd.hpp>
 
 namespace Ncurses
 {
@@ -51,8 +52,8 @@ namespace Ncurses
 			const int b = std::stoi(match[3].str());
 
 			if (r < 0 || r > 1000 ||
-					g < 0 || g > 1000 ||
-					b < 0 || b > 1000)
+				g < 0 || g > 1000 ||
+				b < 0 || b > 1000)
 				return false;
 			return true;
 
@@ -84,8 +85,8 @@ namespace Ncurses
 					{
 						Color c{
 							static_cast<int>(r),
-								static_cast<int>(g),
-								static_cast<int>(b)};
+							static_cast<int>(g),
+							static_cast<int>(b)};
 						init_color(c.id(), r * 200, g * 200, b * 200);
 						init_pair(c.id(), c.id(), Color(0).id());
 					}
@@ -93,4 +94,7 @@ namespace Ncurses
 			}
 		}
 	};
+
+	std::ostream& operator<<(std::ostream& os, const Color& color);
+	void from_json(const nlohmann::json& data, Color& color);
 }

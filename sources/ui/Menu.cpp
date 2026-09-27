@@ -24,6 +24,9 @@ namespace UI
 	Menu::Menu(const Vec2<int>& position, const std::string& title) : position(position), title(title)
 	{}
 
+	Menu::Menu(const std::string& title) : position(Ncurses::Screen::middle()), title(title)
+	{}
+
 	void Menu::reset_panel()
 	{
 		const auto longest = std::max_element(

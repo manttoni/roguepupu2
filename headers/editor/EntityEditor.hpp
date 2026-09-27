@@ -1,6 +1,6 @@
 #pragma once
 
-#include "entities/Entity.hpp"
+#include "game/entities/Entity.hpp"
 
 #include <optional>
 #include <string>
@@ -10,7 +10,7 @@
 namespace EntityEditor
 {
 	using Json = nlohmann::json;
-	using Definition = Entity::Definition;
+	using Definition = Game::Entity::Definition;
 
 	bool erase_definition(Json& all_data, const Definition& definition);
 	bool add_definition(Json& all_data, const Definition& definition);

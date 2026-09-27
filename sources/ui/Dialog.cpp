@@ -67,14 +67,25 @@ namespace UI::Dialog
 		get_selection(message, {"Ok"});
 	}
 
-	void get_input(const std::string& label, std::string* input)
+	void get_input(const std::string& label, std::string& input)
 	{
+		auto copy = input;
+
 		Menu menu;
-		menu.add(UI::Element::TextIn{.label = label, .text = input});
+		menu.add(UI::Element::TextIn{.label = label, .text = &copy});
 		menu.add(UI::Element::confirm());
 		menu.set_timeout(-1);
 		const auto s = menu.get_selection();
-		Log::debug() << "input: " << *input;
+		if (s.cancelled())
+			return;
+		input = copy;
+	}
+
+	std::string get_input(const std::string& label)
+	{
+		std::string input;
+		get_input(label, input);
+		return input;
 	}
 
 	void message(const std::string& message, const Vec2<int>& position)
