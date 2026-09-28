@@ -98,6 +98,12 @@ namespace Game::World
 		return Chunk{cells};
 	}
 
+	bool Grid::chunk_generated(const ChunkPosition& chunk_position) const
+	{
+		return generated_chunks.contains(chunk_position);
+	}
+
+
 	void Grid::generate_missing(const GlobalPosition& global_position)
 	{
 		const ChunkPosition chunk_position =

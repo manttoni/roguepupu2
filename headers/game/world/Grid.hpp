@@ -35,8 +35,11 @@ namespace Game::World
 			Cell& get_cell(const GlobalPosition& position);
 			const Cell* find_cell(const GlobalPosition& position) const;
 
+			bool chunk_generated(const ChunkPosition& chunk_position) const;
 			void generate_missing(const GlobalPosition& global_position);
 			void generate_missing(const GlobalPosition& begin, const GlobalPosition& end);
+
+			const ChunkMap& get_generated_chunks() const { return generated_chunks; }
 
 		private:
 			Generator generator;
