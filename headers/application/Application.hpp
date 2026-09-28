@@ -2,7 +2,6 @@
 
 #include <optional>
 
-#include "ui/Settings.hpp"
 #include "ncurses/Panel.hpp"
 #include "game/world/Settings.hpp"
 #include "game/Settings.hpp"
@@ -15,10 +14,8 @@
 
 struct Settings
 {
-		UI::Settings ui;
-		Game::Settings game;
+	Game::Settings game;
 };
-
 
 class History
 {

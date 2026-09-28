@@ -20,7 +20,7 @@ int main()
 		return EXIT_FAILURE;
 	}
 
-	Log::debug() << "--- Run ended ---";
+	Log::info() << "--- Run ended ---";
 	return 0;
 }
 

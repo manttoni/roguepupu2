@@ -16,6 +16,6 @@ namespace Game::World
 		private:
 			Random::Perlin::Generator elevation_noise;
 			static constexpr double sea_level = 0.5;
-			static constexpr Random::Perlin::Settings elevation_settings{};
+			static constexpr Random::Perlin::Settings elevation_settings{0.005, 4, 0.5};
 	};
 }

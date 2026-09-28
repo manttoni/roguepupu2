@@ -164,7 +164,9 @@ namespace Ncurses
 	void Window::draw_border()
 	{
 		box(ptr, 0, 0);
+		enable_attribute(Attribute{A_ITALIC});
 		write(0, 2, " " + title + " ");
+		disable_attribute(Attribute{A_ITALIC});
 	}
 
 	void Window::refresh()

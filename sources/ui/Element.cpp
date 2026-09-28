@@ -22,7 +22,11 @@ namespace UI::Element
 	std::string to_string(const TextIn& element)
 	{
 		const auto* text = element.text;
-		return element.label + " : " + (text ? *text : "nullptr") + (text->size() < element.length.max ? "|" + std::string(element.length.max - (text->size() + 1), ' ') : "");
+		return
+			element.label +
+			(element.label.empty() ? "" : " : ") +
+			(text ? *text : "nullptr") +
+			(text->size() < element.length.max ? "_" + std::string(element.length.max - (text->size() + 1), ' ') : "");
 	}
 
 	std::string to_string(const Button& element)

@@ -115,8 +115,6 @@ void Application::main_menu()
 
 		selection = main.get_selection(selection.index);
 
-		Log::debug() << "Selection from Main Menu: " << selection.label;
-
 		if (selection.cancelled()) // Includes ESC keypress
 		{
 			if (UI::Dialog::confirm("Exit application?"))

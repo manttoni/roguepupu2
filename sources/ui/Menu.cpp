@@ -145,8 +145,6 @@ namespace UI
 						const Selection selection = handle_input(selected, event);
 						if (selection.selected() || selection.confirmed() || selection.cancelled())
 							return selection;
-						else
-							Log::debug() << "Handle input result was not selected, confirmed or cancelled";
 					}
 					break;
 			}

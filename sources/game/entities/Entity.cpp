@@ -99,7 +99,6 @@ namespace Game::Entity
 			Log::warning() << "No component called \"" << component_str << "\" exists";
 			return false; // There is no matching component
 		}
-		Log::debug() << "Emplaced component: " << component_str;
 		return true;
 	}
 	bool emplace_tags(
@@ -122,7 +121,6 @@ namespace Game::Entity
 				Log::warning() << "No tag called \"" << tag << "\" exists";
 				return false;
 			}
-			Log::debug() << "Emplaced tag: " << tag;
 		}
 		return true;
 	}
@@ -136,6 +134,7 @@ namespace Game::Entity
 			else
 				emplace_component(registry, entity, component_str, data);
 		}
+		Log::debug() << "Entity created: " << registry.get<Component::Value::Name>(entity).value;
 		return entity;
 	}
 
