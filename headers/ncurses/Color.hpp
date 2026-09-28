@@ -1,4 +1,5 @@
 #pragma once
+#include "utils/Log.hpp"
 
 #include <array>
 #include <string>
@@ -52,8 +53,8 @@ namespace Ncurses
 			const int b = std::stoi(match[3].str());
 
 			if (r < 0 || r > 1000 ||
-				g < 0 || g > 1000 ||
-				b < 0 || b > 1000)
+					g < 0 || g > 1000 ||
+					b < 0 || b > 1000)
 				return false;
 			return true;
 
@@ -77,6 +78,13 @@ namespace Ncurses
 
 		static inline void init()
 		{
+			constexpr int palette_size = 6 * 6 * 6;
+
+			Log::info() << "Color palette size: " << palette_size;
+
+			Log::info() << "Possible foreground/background combinations: "
+				<< palette_size * palette_size;
+
 			for (size_t r = 0; r < 6; ++r)
 			{
 				for (size_t g = 0; g < 6; ++g)
@@ -85,8 +93,8 @@ namespace Ncurses
 					{
 						Color c{
 							static_cast<int>(r),
-							static_cast<int>(g),
-							static_cast<int>(b)};
+								static_cast<int>(g),
+								static_cast<int>(b)};
 						init_color(c.id(), r * 200, g * 200, b * 200);
 						init_pair(c.id(), c.id(), Color(0).id());
 					}

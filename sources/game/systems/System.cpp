@@ -38,7 +38,6 @@ namespace Game::System
 	{
 		auto& movement_points = simulation.get_registry().get<Component::Resource::MovementPoints>(event.entity);
 		movement_points.current -= event.amount;
-		Log::debug() << movement_points;
 		return Event::Result{
 			.outcome = Event::Outcome::Accepted,
 			.consequences = {}

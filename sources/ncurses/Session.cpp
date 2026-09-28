@@ -31,6 +31,14 @@ namespace Ncurses
 		   std::printf("\033[?1003h");
 		   std::fflush(stdout);
 		   */
+		Log::info() << "Ncurses color support: "
+			<< (has_colors() ? "yes" : "no");
+
+		Log::info() << "Ncurses COLORS: " << COLORS;
+		Log::info() << "Ncurses COLOR_PAIRS: " << COLOR_PAIRS;
+
+		Log::info() << "Ncurses palette modification: "
+			<< (can_change_color() ? "yes" : "no");
 
 		Color::init();
 

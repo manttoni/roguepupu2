@@ -106,8 +106,6 @@ namespace Game::World
 		if (generated_chunks.contains(chunk_position))
 			return;
 
-		Log::debug() << "Generating chunk: " << chunk_position;
-
 		generated_chunks.emplace(
 				chunk_position,
 				generate_chunk(chunk_position));
