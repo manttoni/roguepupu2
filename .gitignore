@@ -9,4 +9,5 @@ roguepupu2
 *.txt
 *.svg
 tmp/
+scripts/
 
