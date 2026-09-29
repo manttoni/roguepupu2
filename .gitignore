@@ -9,5 +9,6 @@ roguepupu2
 *.txt
 *.svg
 tmp/
-scripts/
+/scripts/*
+!/scripts/build.sh
 
