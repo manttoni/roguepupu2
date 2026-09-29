@@ -24,7 +24,7 @@ namespace Ncurses
 
 		short id() const
 		{
-			return static_cast<short>(r * 36 + g * 6 + b);
+			return static_cast<short>(16 + r * 36 + g * 6 + b);
 		}
 		inline std::string markup() const
 		{
