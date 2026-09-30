@@ -1,11 +1,12 @@
 #pragma once
 
 #include <cstddef>
+#include "utils/Vec2.hpp"
 
 namespace Game::World
 {
 	struct Settings
 	{
-		size_t area_size = 10;
+		Vec2<int> preload_extent{500, 500};
 	};
 }

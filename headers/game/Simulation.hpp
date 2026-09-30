@@ -9,6 +9,7 @@
 #include "databases/EntityDatabase.hpp"
 #include "game/entities/Entity.hpp"
 #include "game/Scheduler.hpp"
+#include "game/Settings.hpp"
 
 namespace Game
 {
@@ -21,6 +22,7 @@ namespace Game
 			entt::registry registry;
 			Turn::Scheduler scheduler;
 			entt::entity player;
+			Settings settings;
 
 			void simulate_node(Event::Node& node);
 
@@ -44,6 +46,9 @@ namespace Game
 			const EntityDatabase& get_entity_database() const { return entity_database; }
 
 			entt::entity get_player() const { return player; }
+
+			const Settings& get_settings() const { return settings; }
+			Settings& get_settings() { return settings; }
 
 			Turn::Actor current_actor() const { return scheduler.current_actor(); }
 			Event::Node simulate(Event::Any initial_event);

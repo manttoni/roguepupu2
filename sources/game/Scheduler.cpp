@@ -3,7 +3,7 @@
 #include <iterator>
 namespace Game::Turn
 {
-	void Scheduler::advance()
+	void Scheduler::next_turn()
 	{
 		current++;
 		if (current == actors.size())

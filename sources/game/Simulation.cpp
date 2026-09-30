@@ -22,8 +22,8 @@ namespace Game
 
 		simulate(
 				Event::Spawn{
-					player,
-					World::GlobalPosition{0, 0} // TODO: make some spawning logic for player
+				player,
+				World::GlobalPosition{0, 0}
 				});
 	}
 
@@ -34,6 +34,15 @@ namespace Game
 		assert(node.consequences.empty() &&
 				"Event shouldn't have consequences yet");
 
+		/* Preload world around player
+		 * */
+		if (
+				const auto* event = std::get_if<Event::EnterPosition>(&node.event);
+				event && event->entity == player)
+		{
+			world.preload_around(registry, player);
+		}
+
 		Event::Result result = System::dispatch(*this, node.event);
 
 		node.outcome = result.outcome;
@@ -43,8 +52,8 @@ namespace Game
 		{
 			Event::Node child{
 				.event = std::move(consequence),
-				.outcome = std::nullopt,
-				.consequences = {}
+					.outcome = std::nullopt,
+					.consequences = {}
 			};
 
 			simulate_node(child);
@@ -56,10 +65,11 @@ namespace Game
 	{
 		Event::Node root{
 			.event = std::move(initial_event),
-			.consequences = {}
+				.consequences = {}
 		};
-
 		simulate_node(root);
+
 		return root;
 	}
 }
+

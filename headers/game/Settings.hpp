@@ -6,6 +6,6 @@ namespace Game
 {
 	struct Settings
 	{
-		Game::World::Settings world;
+		World::Settings settings;
 	};
 }

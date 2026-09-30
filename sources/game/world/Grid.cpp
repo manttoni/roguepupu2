@@ -1,4 +1,6 @@
 #include "game/world/Grid.hpp"
+#include "game/components/Component.hpp"
+#include "external/entt/entt.hpp"
 #include "utils/Log.hpp"
 
 namespace
@@ -18,7 +20,7 @@ namespace
 
 		return {
 			floor_div(position.y, size.y),
-			floor_div(position.x, size.x)
+				floor_div(position.x, size.x)
 		};
 	}
 
@@ -30,7 +32,7 @@ namespace
 
 		return {
 			position.y - chunk.y * size.y,
-			position.x - chunk.x * size.x
+				position.x - chunk.x * size.x
 		};
 	}
 }
@@ -76,12 +78,12 @@ namespace Game::World
 
 		const GlobalPosition begin{
 			chunk_position.y * height,
-			chunk_position.x * width
+				chunk_position.x * width
 		};
 
 		const GlobalPosition end{
 			begin.y + height,
-			begin.x + width
+				begin.x + width
 		};
 
 		Chunk::CellsArray cells;
@@ -117,14 +119,33 @@ namespace Game::World
 				generate_chunk(chunk_position));
 	}
 
-	void Grid::generate_missing(const GlobalPosition& begin, const GlobalPosition& end)
+	void Grid::generate_missing(
+			const GlobalPosition& begin,
+			const GlobalPosition& end)
 	{
-		for (int y = begin.y; y < end.y; y += Chunk::height)
+		if (begin.y >= end.y || begin.x >= end.x)
+			return;
+
+		const auto first = to_chunk_position(begin);
+		const auto last = to_chunk_position(
+				GlobalPosition{end.y - 1, end.x - 1});
+
+		for (int y = first.y; y <= last.y; ++y)
 		{
-			for (int x = begin.x; x < end.x; x += Chunk::width)
+			for (int x = first.x; x <= last.x; ++x)
 			{
-				generate_missing(GlobalPosition{y, x});
+				const ChunkPosition position{y, x};
+
+				if (!generated_chunks.contains(position))
+					generated_chunks.emplace(
+							position, generate_chunk(position));
 			}
 		}
+	}
+
+	void Grid::preload_around(entt::registry& registry, const entt::entity entity)
+	{
+		const auto& position = registry.get<Component::Value::Position>(entity).value;
+		generate_missing(position - settings.preload_extent, position + settings.preload_extent);
 	}
 }

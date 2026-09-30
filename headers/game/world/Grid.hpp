@@ -4,9 +4,11 @@
 #include <cstdint>
 #include <unordered_map>
 
+#include "game/world/Settings.hpp"
 #include "game/world/Chunk.hpp"
 #include "game/world/Position.hpp"
 #include "game/world/Generator.hpp"
+#include "external/entt/fwd.hpp"
 
 namespace Game::World
 {
@@ -34,16 +36,20 @@ namespace Game::World
 
 			Cell& get_cell(const GlobalPosition& position);
 			const Cell* find_cell(const GlobalPosition& position) const;
-
 			bool chunk_generated(const ChunkPosition& chunk_position) const;
+			const ChunkMap& get_generated_chunks() const { return generated_chunks; }
+
 			void generate_missing(const GlobalPosition& global_position);
 			void generate_missing(const GlobalPosition& begin, const GlobalPosition& end);
-
-			const ChunkMap& get_generated_chunks() const { return generated_chunks; }
+			void preload_around(entt::registry& registry, const entt::entity entity);
 
 		private:
 			Generator generator;
+			//Populator populator;
+
 			ChunkMap generated_chunks;
+
+			Settings settings;
 
 			Cell generate_cell(const GlobalPosition& position);
 			Chunk generate_chunk(const ChunkPosition& position);

@@ -40,7 +40,7 @@ namespace Game::Turn
 
 		public:
 			Actor current_actor() const { return actors[current]; }
-			void advance();
+			void next_turn();
 			void add(Actor actor);
 	};
 }

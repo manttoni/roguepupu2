@@ -12,15 +12,16 @@ namespace Game::System
 				Simulation&,
 				const T&)
 		{
-			assert(false && "Event has no process() implementation");
+			assert(false && "Event has no process() implementation. Implement it!");
 
 			return {
 				.outcome = Event::Outcome::Rejected,
-				.consequences = {}
+					.consequences = {}
 			};
 		}
 }
 // Previous is temporary
+
 /* Rejecting an event means that event makes no changes and produces no consequences.
  * It does not undo its parent.
  *
@@ -40,7 +41,7 @@ namespace Game::System
 		movement_points.current -= event.amount;
 		return Event::Result{
 			.outcome = Event::Outcome::Accepted,
-			.consequences = {}
+				.consequences = {}
 		};
 	}
 
@@ -50,38 +51,26 @@ namespace Game::System
 		(void) event;
 		return Event::Result{
 			.outcome = Event::Outcome::Accepted,
-			.consequences = {}
+				.consequences = {}
 		};
 	}
 
 	Event::Result process(Simulation& simulation, const Game::Event::EnterPosition& event)
 	{
-		if (event.entity == simulation.get_player())
-		{
-			auto& world = simulation.get_world();
-			auto& registry = simulation.get_registry();
-			const auto& player_position = registry.get<Component::Value::Position>(event.entity).value;
-			const auto generated_area = 1000;
-			const auto begin = player_position - Vec2<int>{generated_area, generated_area} / 2;
-			const auto end = player_position + Vec2<int>{generated_area, generated_area} / 2;
-			world.generate_missing(begin, end);
-		}
+		(void) simulation;
+		(void) event;
 		return Event::Result{
 			.outcome = Event::Outcome::Accepted,
-			.consequences = {}
+				.consequences = {}
 		};
 	}
 
 	Event::Result process(Simulation& simulation, const Game::Event::Move& event)
 	{
 		auto& registry = simulation.get_registry();
-		auto& world = simulation.get_world();
-		world.generate_missing(event.to);
 
 		if (!Movement::can_move(simulation, event.entity, event.to))
-		{
 			return Event::Result::rejected();
-		}
 
 		registry.replace<Component::Value::Position>(event.entity, event.to);
 
@@ -89,25 +78,25 @@ namespace Game::System
 
 		consequences.push_back(
 				Game::Event::LoseMovementPoints{
-					.entity = event.entity,
-					.amount = Game::World::GlobalPosition{event.from - event.to}.length()
+				.entity = event.entity,
+				.amount = Game::World::GlobalPosition{event.from - event.to}.length()
 				});
 
 		consequences.push_back(
 				Game::Event::LeavePosition{
-					.entity = event.entity,
-					.position = event.from
+				.entity = event.entity,
+				.position = event.from
 				});
 
 		consequences.push_back(
 				Game::Event::EnterPosition{
-					.entity = event.entity,
-					.position = event.to
+				.entity = event.entity,
+				.position = event.to
 				});
 
 		return Event::Result{
 			.outcome = Event::Outcome::Accepted,
-			.consequences = consequences
+				.consequences = consequences
 		};
 	}
 
@@ -124,9 +113,9 @@ namespace Game::System
 		{
 			consequences.push_back(
 					Game::Event::Move{
-						.entity = event.entity,
-						.from = entity_position,
-						.to = target_position
+					.entity = event.entity,
+					.from = entity_position,
+					.to = target_position
 					});
 		}
 		else
@@ -136,7 +125,7 @@ namespace Game::System
 
 		return Event::Result{
 			.outcome = Event::Outcome::Accepted,
-			.consequences = consequences
+				.consequences = consequences
 		};
 	}
 
@@ -154,11 +143,11 @@ namespace Game::System
 		{
 			scheduler.add(
 					Turn::Actor{
-						event.entity,
-						event.entity == simulation.get_player() ?
-							Turn::Controller::Player :
-							Turn::Controller::AI,
-						1 // TODO: roll initiative calculation
+					event.entity,
+					event.entity == simulation.get_player() ?
+					Turn::Controller::Player :
+					Turn::Controller::AI,
+					1 // TODO: roll initiative calculation
 					});
 		}
 
@@ -166,13 +155,13 @@ namespace Game::System
 
 		consequences.push_back(
 				Game::Event::EnterPosition{
-					.entity = event.entity,
-					.position = event.position
+				.entity = event.entity,
+				.position = event.position
 				});
 
 		return Event::Result{
 			.outcome = Event::Outcome::Accepted,
-			.consequences = consequences
+				.consequences = consequences
 		};
 	}
 
@@ -182,8 +171,6 @@ namespace Game::System
 		registry.get<Component::Resource::MovementPoints>(event.entity).reset();
 		registry.get<Component::Resource::ActionPoints>(event.entity).reset();
 		registry.get<Component::Resource::BonusActionPoints>(event.entity).reset();
-
-
 		return Event::Result::accepted();
 	}
 
@@ -191,14 +178,14 @@ namespace Game::System
 	{
 		auto& scheduler = simulation.get_scheduler();
 		assert(scheduler.current_actor().entity == event.entity);
-		scheduler.advance(); // Scheduler now knows the next Actor is the currently acting one
+		scheduler.next_turn();
 
 		Event::Result result;
 		result.outcome = Event::Outcome::Accepted;
 
 		result.consequences.push_back(
 				Game::Event::BeginTurn{
-					.entity = scheduler.current_actor().entity
+				.entity = scheduler.current_actor().entity
 				});
 		return result;
 	}
@@ -208,7 +195,7 @@ namespace Game::System
 		return std::visit(
 				[&](const auto& concrete_event)
 				{
-					return process(simulation, concrete_event);
+				return process(simulation, concrete_event);
 				}
 				, event);
 	}
