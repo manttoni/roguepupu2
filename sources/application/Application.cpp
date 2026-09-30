@@ -68,6 +68,7 @@ void Application::run_game()
 
 	while (game_running)
 	{
+		// preloader.update(*simulation);
 		renderer.render(*simulation);
 
 		const auto input = Ncurses::Input::get_event(1000 / fps);
