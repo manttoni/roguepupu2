@@ -32,7 +32,7 @@ EntityDatabase::EntityDatabase(const std::filesystem::path& path)
 		}
 		if (!Game::Entity::valid_definition(definition))
 		{
-			Log::warning() << "Invalid entity(" << id << ") definition:\n" << definition.dump(4);
+			Log::warning() << "Invalid entity(" << id << ") definition";
 			continue;
 		}
 
