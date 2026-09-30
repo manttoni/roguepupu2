@@ -68,6 +68,8 @@ void Application::run_game()
 
 	while (game_running)
 	{
+		renderer.render(*simulation);
+
 		const auto input = Ncurses::Input::get_event(1000 / fps);
 		if (handle_input(input))
 			continue;
@@ -84,7 +86,6 @@ void Application::run_game()
 		history.add(root);
 		messages.add(EventDescriber::describe(*simulation, root));
 
-		renderer.render(*simulation);
 		//renderer.render(messages);
 	}
 }

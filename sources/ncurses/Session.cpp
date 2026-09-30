@@ -20,9 +20,12 @@ namespace Ncurses
 		noecho();
 		curs_set(0);
 		keypad(stdscr, TRUE);
+
+		// tmux adds its own Escape delay.
+		// To reduce it, add `set -s escape-time 10` to ~/.tmux.conf.
 		set_escdelay(25);
 
-		// Mouse input
+		// Mouse input not in use
 		/*
 		   mousemask(
 		   ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION,
@@ -31,6 +34,7 @@ namespace Ncurses
 		   std::printf("\033[?1003h");
 		   std::fflush(stdout);
 		   */
+
 		Log::info() << "Ncurses color support: "
 			<< (has_colors() ? "yes" : "no");
 
@@ -40,6 +44,7 @@ namespace Ncurses
 		Log::info() << "Ncurses palette modification: "
 			<< (can_change_color() ? "yes" : "no");
 
+		// Init 6*6*6 color cube (216/256 color id's will be used)
 		Color::init();
 
 		Log::info() << "Ncurses initialized";
@@ -53,7 +58,7 @@ namespace Ncurses
 		endwin();
 
 		// Disable mouse movement reporting in case it was enabled.
-		std::printf("\033[?1003l");
+		// std::printf("\033[?1003l");
 		std::fflush(stdout);
 	}
 }
