@@ -12,16 +12,12 @@ namespace
 
 		switch(terrain)
 		{
-			case Terrain::Ground:
-				return Ncurses::Color{1,1,1};
-			case Terrain::Sand:
-				return Ncurses::Color{1,2,2};
 			case Terrain::Rock:
 				return Ncurses::Color{2,2,2};
-			case Terrain::Water:
-				return Ncurses::Color{1,2,3};
-			case Terrain::Grass:
-				return Ncurses::Color{1,3,1};
+			case Terrain::RockFloor:
+				return Ncurses::Color{2,2,2};
+			default:
+				throw std::runtime_error(std::string("Unkown terrain: ") + Game::Enum::to_string<Terrain>(terrain));
 		}
 	}
 
@@ -32,16 +28,12 @@ namespace
 
 		switch(terrain)
 		{
-			case Terrain::Ground:
-				return '.';
-			case Terrain::Sand:
-				return ',';
 			case Terrain::Rock:
 				return '#';
-			case Terrain::Water:
-				return '~';
-			case Terrain::Grass:
-				return '\"';
+			case Terrain::RockFloor:
+				return '.';
+			default:
+				throw std::runtime_error(std::string("Unkown terrain: ") + Game::Enum::to_string<Terrain>(terrain));
 		}
 	}
 }

@@ -13,8 +13,8 @@ namespace Game
 			const EntityDatabase& entity_database,
 			const Entity::Definition::ID& player_definition_id) :
 		seed(seed),
+		rasterizer(seed),
 		entity_database(entity_database),
-		world(seed),
 		player(Entity::create(registry, entity_database, player_definition_id))
 	{
 		if (player == entt::null)
@@ -40,8 +40,22 @@ namespace Game
 				const auto* event = std::get_if<Event::EnterPosition>(&node.event);
 				event && event->entity == player)
 		{
-			world.preload_around(registry, player);
+			const auto& position =
+				registry.get<Component::Value::Position>(player).value;
+			const auto chunkpos = World::to_chunk(position);
+
+			const auto preload = [&](const World::ChunkPosition& cp)
+			{
+				if (!world.contains(cp))
+					world.add(cp, rasterizer.rasterize_chunk(cp));
+			};
+
+			preload(chunkpos);
+			for (const auto& neighbour : World::neighbors(chunkpos))
+				preload(neighbour);
 		}
+		/* ~Preload
+		 * */
 
 		Event::Result result = System::dispatch(*this, node.event);
 

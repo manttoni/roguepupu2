@@ -26,12 +26,11 @@ namespace
 		return !entities.empty();
 	}
 
-	// GlobalPosition is alias for Vec2<int>
 	double distance(
 			const Game::World::GlobalPosition& from,
 			const Game::World::GlobalPosition& to)
 	{
-		const auto& diff = from - to;
+		const auto& diff = from.vec2() - to.vec2();
 		return diff.length();
 	}
 }

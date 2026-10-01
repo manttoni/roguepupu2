@@ -4,8 +4,9 @@ namespace Game::Entity
 {
 	void Spawner::spawn_on_cell(const World::GlobalPosition& position)
 	{
-		const auto* cell = grid.find_cell(position);
-		if (cell == nullptr)
+		if (
+				const auto* cell = grid.find_cell(position);
+				cell == nullptr)
 		{
 			Log::error() << "Spawning on ungenerated cell: " << position;
 			return;
@@ -14,7 +15,9 @@ namespace Game::Entity
 	}
 	void Spawner::spawn_on_chunk(const World::ChunkPosition& position)
 	{
-		if (!grid.chunk_generated(position))
+		if (
+				const auto* chunk = grid.find_chunk(position);
+				chunk == nullptr)
 		{
 			Log::error() << "Spawning on ungenerated chunk: " << position;
 			return;
@@ -22,18 +25,14 @@ namespace Game::Entity
 	}
 	void Spawner::spawn_on_grid()
 	{
-		if (grid.get_generated_chunks().empty())
-		{
-			Log::error() << "Spawning on empty grid";
-			return;
-		}
-
 	}
 	void Spawner::cell_requests(const World::GlobalPosition& position)
 	{
+		(void) position;
 	}
 	void Spawner::chunk_requests(const World::ChunkPosition& position)
 	{
+		(void) position;
 	}
 	void Spawner::grid_requests()
 	{

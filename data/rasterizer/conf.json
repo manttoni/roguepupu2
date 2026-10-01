@@ -1,0 +1,13 @@
+{
+	"default_terrain": "Rock",
+	"layers": [
+		{
+			"id": "first",
+			"terrain": "RockFloor",
+			"frequency": 0.05,
+			"octaves": 4,
+			"persistence": 0.5,
+			"threshold": 0.5
+		}
+	]
+}

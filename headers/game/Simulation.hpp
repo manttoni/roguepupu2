@@ -10,6 +10,7 @@
 #include "game/entities/Entity.hpp"
 #include "game/Scheduler.hpp"
 #include "game/Settings.hpp"
+#include "game/world/Rasterizer.hpp"
 
 namespace Game
 {
@@ -17,11 +18,16 @@ namespace Game
 	{
 		private:
 			const std::string seed;
-			EntityDatabase entity_database;
+
 			World::Grid world;
+			World::Rasterizer rasterizer; // or rename Generator
+
+			EntityDatabase entity_database;
 			entt::registry registry;
+
 			Turn::Scheduler scheduler;
 			entt::entity player;
+
 			Settings settings;
 
 			void simulate_node(Event::Node& node);

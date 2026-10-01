@@ -12,11 +12,10 @@ namespace Game::Enum
 {
 	enum class Terrain
 	{
-		Ground,
-		Sand,
+		None,
+
 		Rock,
-		Water,
-		Grass
+		RockFloor,
 	};
 
 	enum class AIBehaviorType
@@ -209,9 +208,9 @@ namespace Game::Enum
 
 	template<GameEnum E>
 		[[nodiscard]]
-		constexpr std::string_view to_string(const E value)
+		constexpr std::string to_string(const E value)
 		{
-			const auto name = magic_enum::enum_name(value);
+			const auto name = std::string(magic_enum::enum_name(value));
 
 			if (name.empty())
 				return "Unknown";

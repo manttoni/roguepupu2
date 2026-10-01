@@ -79,7 +79,7 @@ namespace Game::System
 		consequences.push_back(
 				Game::Event::LoseMovementPoints{
 				.entity = event.entity,
-				.amount = Game::World::GlobalPosition{event.from - event.to}.length()
+				.amount = Vec2{event.from.vec2() - event.to.vec2()}.length()
 				});
 
 		consequences.push_back(
@@ -105,8 +105,6 @@ namespace Game::System
 		auto& registry = simulation.get_registry();
 		const auto& entity_position = registry.get<Component::Value::Position>(event.entity).value;
 		const auto target_position = entity_position + event.direction;
-		auto& world = simulation.get_world();
-		world.generate_missing(target_position);
 		Event::List consequences;
 
 		if (Movement::can_move(simulation, event.entity, target_position))
@@ -132,12 +130,10 @@ namespace Game::System
 	Event::Result process(Simulation& simulation, const Game::Event::Spawn& event)
 	{
 		auto& registry = simulation.get_registry();
-		auto& world = simulation.get_world();
 		auto& scheduler = simulation.get_scheduler();
 
 		// TODO: validate position. Extract from System::Movement the blocks_movement() and make a System::Spatial?
 
-		world.generate_missing(event.position);
 		registry.emplace<Component::Value::Position>(event.entity, event.position);
 		if (registry.all_of<Component::Tag::Actor>(event.entity))
 		{

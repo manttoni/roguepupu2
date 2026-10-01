@@ -2,10 +2,6 @@
 
 namespace Game::World
 {
-	Chunk::Chunk(const CellsArray& cells) :
-		cells(cells)
-	{}
-
 	const Cell& Chunk::get_cell(const LocalPosition& position) const
 	{
 		return cells[to_index(position)];
