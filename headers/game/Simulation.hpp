@@ -10,7 +10,7 @@
 #include "game/entities/Entity.hpp"
 #include "game/Scheduler.hpp"
 #include "game/Settings.hpp"
-#include "game/world/Rasterizer.hpp"
+#include "game/world/Generator.hpp"
 
 namespace Game
 {
@@ -20,7 +20,7 @@ namespace Game
 			const std::string seed;
 
 			World::Grid world;
-			World::Rasterizer rasterizer; // or rename Generator
+			World::Generator generator; // or rename Generator
 
 			EntityDatabase entity_database;
 			entt::registry registry;

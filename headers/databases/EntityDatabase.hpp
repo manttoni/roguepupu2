@@ -8,10 +8,10 @@ using Json = nlohmann::json;
 
 struct EntityDatabase
 {
-	static constexpr const char* default_entities = "data/entities.json";
+	static constexpr const char* entity_definitions_path = "data/entity/definitions.json";
 
 	std::unordered_map<std::string, Json> definitions;
 
 	explicit EntityDatabase(const std::filesystem::path& path);
-	EntityDatabase() : EntityDatabase(default_entities) {}
+	EntityDatabase() : EntityDatabase(entity_definitions_path) {}
 };

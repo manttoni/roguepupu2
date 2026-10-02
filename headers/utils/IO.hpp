@@ -8,13 +8,6 @@
 
 namespace IO
 {
-	namespace Paths
-	{
-		inline const std::filesystem::path entities_file{
-			"data/entities.json"
-		};
-	}
-
 	using Json = nlohmann::json;
 
 	Json read_json(const std::filesystem::path& path);

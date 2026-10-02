@@ -1,9 +1,9 @@
-#include "game/world/Rasterizer.hpp"
+#include "game/world/Generator.hpp"
 #include "utils/IO.hpp"
 
 namespace Game::World
 {
-	Rasterizer::Rasterizer(
+	Generator::Generator(
 			const std::string& seed,
 			const std::filesystem::path& path)
 	{
@@ -41,7 +41,7 @@ namespace Game::World
 		}
 	}
 
-	Chunk Rasterizer::rasterize_chunk(const ChunkPosition& chunk_position) const
+	Chunk Generator::generate_chunk(const ChunkPosition& chunk_position) const
 	{
 		Chunk chunk;
 		for (int y = 0; y < Chunk::height; ++y)

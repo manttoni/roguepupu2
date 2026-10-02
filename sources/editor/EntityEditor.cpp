@@ -268,7 +268,7 @@ namespace EntityEditor
 	void start()
 	{
 		Definition active;
-		Json all_definitions = IO::read_json(IO::Paths::entities_file);
+		Json all_definitions = IO::read_json(EntityDatabase::entity_definitions_path);
 		UI::Selection selection;
 		Ncurses::Panel back_panel;
 		back_panel.get_window().enable_color(UI::load_theme().text);
@@ -317,12 +317,12 @@ namespace EntityEditor
 			}
 			else if (label == "Read")
 			{
-				all_definitions = IO::read_json(IO::Paths::entities_file);
+				all_definitions = IO::read_json(EntityDatabase::entity_definitions_path);
 				UI::Dialog::alert("Definitions read, size: " + std::to_string(all_definitions.size()));
 			}
 			else if (label == "Write")
 			{
-				if (IO::write_json(IO::Paths::entities_file, all_definitions) == true)
+				if (IO::write_json(EntityDatabase::entity_definitions_path, all_definitions) == true)
 					UI::Dialog::alert("Write succesful");
 				else
 					UI::Dialog::alert("Write unsuccesful");

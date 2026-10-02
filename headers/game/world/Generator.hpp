@@ -10,12 +10,12 @@
 
 namespace Game::World
 {
-	class Rasterizer
+	class Generator
 	{
 		public:
-			Rasterizer(const std::string& seed, const std::filesystem::path& path = "data/rasterizer/conf.json");
+			Generator(const std::string& seed, const std::filesystem::path& path = "data/generator/conf.json");
 
-			Chunk rasterize_chunk(const ChunkPosition& position) const;
+			Chunk generate_chunk(const ChunkPosition& position) const;
 
 		private:
 			struct Layer
@@ -36,6 +36,6 @@ namespace Game::World
 			std::vector<Layer> layers;
 			Game::Enum::Terrain default_terrain = Game::Enum::Terrain::Rock;
 
-			Cell rasterize_cell(const GlobalPosition& position) const;
+			Cell generate_cell(const GlobalPosition& position) const;
 	};
 }

@@ -13,7 +13,7 @@ namespace Game
 			const EntityDatabase& entity_database,
 			const Entity::Definition::ID& player_definition_id) :
 		seed(seed),
-		rasterizer(seed),
+		generator(seed),
 		entity_database(entity_database),
 		player(Entity::create(registry, entity_database, player_definition_id))
 	{
@@ -47,7 +47,7 @@ namespace Game
 			const auto preload = [&](const World::ChunkPosition& cp)
 			{
 				if (!world.contains(cp))
-					world.add(cp, rasterizer.rasterize_chunk(cp));
+					world.add(cp, generator.generate_chunk(cp));
 			};
 
 			preload(chunkpos);
