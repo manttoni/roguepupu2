@@ -7,4 +7,9 @@ logs/
 *.swp
 roguepupu2
 *.txt
+*.svg
+tmp/
+/scripts/*
+*.sh
+!/scripts/build.sh
 

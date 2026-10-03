@@ -1,11 +1,14 @@
 #pragma once
-
+#include "ncurses/Attribute.hpp"
 #include <cctype>           // for toupper
-#include <string>           // for basic_string, string, operator+, operator<<
-#include <regex>
 #include <codecvt>
+#include <cwchar>
 #include <locale>
-#include "domain/NcursesAttr.hpp"
+#include <regex>
+#include <stdexcept>
+#include <string>           // for basic_string, string, operator+, operator<<
+#include <string_view>
+#include "ncurses/Color.hpp"
 
 namespace Utils
 {
@@ -22,44 +25,18 @@ namespace Utils
 		return cap;
 	}
 
-	inline std::string conjugate_third(const std::string& str)
-	{
-		static const std::vector<std::string> es_endings = {"ch", "sh", "s", "x", "z", "o", "es"};
-		static const std::string vocals = "aeiou";
-
-		for (const auto& ending : es_endings)
-		{
-			if (str.ends_with(ending))
-				return str + "es";
-		}
-		if (str.ends_with("y"))
-		{
-			const char second_last = str[str.size() - 2];
-			if (vocals.find(second_last) == std::string::npos)
-				return str.substr(0, str.size() - 1) + "ies";
-		}
-		return str + "s";
-	}
-
-	inline std::string to_utf8(const wchar_t w)
-	{
-		std::wstring ws(1, w);
-		std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
-		return conv.to_bytes(ws);
-	}
-
 	// Remove {color} and [ncurses] attribute markups
 	inline std::string without_markups(const std::string& str)
 	{
 		std::string without = "";
 		for (size_t i = 0; i < str.size(); ++i)
 		{
-			if (str[i] == '{' && Color::is_markup(str, i))
+			if (str[i] == '{' && Ncurses::Color::is_markup(str, i))
 			{
 				i = str.find('}', i);
 				continue;
 			}
-			if (str[i] == '[' && NcursesAttr::is_markup(str, i))
+			if (str[i] == '[' && Ncurses::Attribute::is_markup(str, i))
 			{
 				i = str.find(']', i);
 				continue;

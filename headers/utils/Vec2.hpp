@@ -4,6 +4,8 @@
 #include <cmath>
 #include <sstream>
 #include <ostream>
+#include <nlohmann/json.hpp>
+#include <stdexcept>
 
 template <typename T>
 struct Vec2
@@ -12,7 +14,14 @@ struct Vec2
 	Vec2() : y{}, x{} {}
 	Vec2(const T y, const T x) : y(y), x(x) {}
 	Vec2(const Vec2& other) = default;
-
+	template <typename U>
+		explicit operator Vec2<U>() const
+		{
+			return {
+				static_cast<U>(y),
+				static_cast<U>(x)
+			};
+		}
 	double length() const
 	{
 		return std::hypot(y, x);
@@ -62,25 +71,22 @@ struct Vec2
 	{
 		return {
 			static_cast<T>(std::round(y)),
-				static_cast<T>(std::round(x))
+			static_cast<T>(std::round(x))
 		};
 	}
 
-	bool out_of_bounds(const T min, const T max) const
+	// Convert 'this' to a cell_idx
+	size_t to_idx(const size_t area_size) const
 	{
-		return y < min || x < min || y > max || x > max;
+		assert(y >= 0 && x >= 0 &&
+				static_cast<size_t>(y) < area_size &&
+				static_cast<size_t>(x) < area_size);
+		return static_cast<size_t>(y) * area_size + static_cast<size_t>(x);
 	}
 
-	// Convert this to a cell_idx
-	size_t to_idx(const size_t cave_size) const
+	static inline Vec2<T>from_idx(const size_t idx, const size_t area_size)
 	{
-		assert(!out_of_bounds(size_t{}, cave_size - 1));
-		return static_cast<size_t>(y) * cave_size + static_cast<size_t>(x);
-	}
-
-	static inline Vec2<T>from_idx(const size_t idx, const size_t cave_size)
-	{
-		return Vec2<T>(idx / cave_size, idx % cave_size);
+		return Vec2<T>(idx / area_size, idx % area_size);
 	}
 
 	std::string to_string() const
@@ -95,5 +101,29 @@ struct Vec2
 		os << v.to_string();
 		return os;
 	}
-};
 
+
+};
+template<typename T>
+void from_json(const nlohmann::json& data, Vec2<T>& position)
+{
+	if (!data.is_array() || data.size() != 2)
+		throw std::invalid_argument(
+				"Vec2 must be an array of exactly 2 numbers: [y, x]");
+
+	if constexpr (std::is_integral_v<T>)
+	{
+		if (!data.at(0).is_number_integer()
+			|| !data.at(1).is_number_integer())
+		{
+			throw std::invalid_argument(
+					"Integer Vec2 coordinates must be integers");
+		}
+	}
+
+	const T y = data.at(0).get<T>();
+	const T x = data.at(1).get<T>();
+
+	position.y = y;
+	position.x = x;
+}

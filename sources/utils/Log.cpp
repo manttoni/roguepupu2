@@ -1,61 +1,48 @@
 #include "utils/Log.hpp"
-#include "utils/ANSI.hpp"
-#include <iomanip>
+
+#include <cstdio>
+#include <ctime>
 #include <filesystem>
+#include <fstream>
+#include <iomanip>
 
 namespace Log
 {
-	Stream::Stream(const std::string& label, const ANSI::Code c)
+	Stream::Stream(const char* level)
+		: level(level)
 	{
-		buffer << c << std::left << std::setw(9) << label << ANSI::RESET << timestamp() << " ";
 	}
 
-	Stream::~Stream()
+	Stream::~Stream() noexcept
 	{
-		Log::write(buffer.str());
-	}
-
-	Stream stream()
-	{
-		return Stream{};
-	}
-
-	std::string timestamp()
-	{
-		const auto now = Clock::now();
-		std::time_t time = Clock::to_time_t(now);
-		std::tm tm = *std::localtime(&time);
-		std::ostringstream oss;
-		oss << std::put_time(&tm, "[%d.%m.%Y %H:%M:%S]");
-		return oss.str();
-	}
-
-	void write(const std::string& message, const std::string& filename)
-	{
-		if (std::filesystem::is_directory("logs"))
+		try
+		{
 			std::filesystem::create_directories("logs");
-		std::ofstream os(filename, std::ios::app);
-		if (!os)
-			throw std::runtime_error("Can't open " + filename);
 
-		os << message << std::endl;
-		os.close();
+			std::ofstream file("logs/logs.log", std::ios::app);
+			if (!file)
+			{
+				std::fputs("Could not open logs/logs.log\n", stderr);
+				return;
+			}
+
+			const std::time_t now = std::time(nullptr);
+			const std::tm* time = std::localtime(&now);
+
+			if (time)
+				file << std::put_time(time, "[%d.%m.%Y %H:%M:%S]") << ' ';
+
+			file << level << ' ' << buffer.str() << '\n';
+		}
+		catch (...)
+		{
+			// A destructor must not throw, especially during exception handling.
+			std::fputs("Could not write to logs/logs.log\n", stderr);
+		}
 	}
 
-	Stream info()
-	{
-		return Stream("[INFO]", ANSI::CYAN);
-	}
-	Stream debug()
-	{
-		return Stream("[DEBUG]", ANSI::BLUE);
-	}
-	Stream warning()
-	{
-		return Stream("[WARNING]", ANSI::YELLOW);
-	}
-	Stream error()
-	{
-		return Stream("[ERROR]", ANSI::RED);
-	}
-};
+	Stream info()    { return Stream{"[INFO]"}; }
+	Stream debug()   { return Stream{"[DEBUG]"}; }
+	Stream warning() { return Stream{"[WARNING]"}; }
+	Stream error()   { return Stream{"[ERROR]"}; }
+}
