@@ -68,6 +68,7 @@ namespace Game::System
 	Event::Result process(Simulation& simulation, const Game::Event::Move& event)
 	{
 		auto& registry = simulation.get_registry();
+		assert(event.from == registry.get<Component::Value::Position>(event.entity).value);
 		const auto& grid = simulation.get_grid();
 
 		if (!Movement::can_move(registry, grid, event.entity, event.to))
