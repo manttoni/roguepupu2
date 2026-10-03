@@ -19,7 +19,7 @@ namespace Game
 		private:
 			const std::string seed;
 
-			World::Grid world;
+			World::Grid grid;
 			World::Generator generator; // or rename Generator
 
 			EntityDatabase entity_database;
@@ -43,8 +43,8 @@ namespace Game
 			const entt::registry& get_registry() const { return registry; }
 			entt::registry& get_registry() { return registry; }
 
-			const World::Grid& get_world() const { return world; }
-			World::Grid& get_world() { return world; }
+			const World::Grid& get_grid() const { return grid; }
+			World::Grid& get_grid() { return grid; }
 
 			const Turn::Scheduler& get_scheduler() const { return scheduler; }
 			Turn::Scheduler& get_scheduler() { return scheduler; }

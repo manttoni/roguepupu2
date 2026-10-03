@@ -6,5 +6,9 @@
 
 namespace Game::System::Movement
 {
-	bool can_move(const Simulation& simulation, const entt::entity entity, const World::GlobalPosition& to);
+	bool can_move(
+			const entt::registry& registry,
+			const World::Grid& grid,
+			const entt::entity entity,
+			const World::GlobalPosition& to);
 }

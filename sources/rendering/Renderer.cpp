@@ -62,9 +62,9 @@ void Renderer::render(
 	{
 		for (int x = 0; x < viewport_size.x; ++x)
 		{
-			const auto world_position = top_left + Vec2<int>{y, x};
+			const auto grid_position = top_left + Vec2<int>{y, x};
 			const auto* cell =
-				simulation.get_world().find_cell(world_position);
+				simulation.get_grid().find_cell(grid_position);
 
 			if (!cell)
 				continue; // Missing chunk; preparation should have loaded it.
@@ -72,7 +72,7 @@ void Renderer::render(
 			const auto entities =
 				Game::Entity::find_all(
 						simulation.get_registry(),
-						Game::Component::Value::Position{world_position},
+						Game::Component::Value::Position{grid_position},
 						Game::Component::Tag::Renderable{}
 						);
 			if (entities.size() == 0)

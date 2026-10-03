@@ -34,7 +34,7 @@ namespace Game
 		assert(node.consequences.empty() &&
 				"Event shouldn't have consequences yet");
 
-		/* Preload world around player
+		/* Preload grid around player
 		 * */
 		if (
 				const auto* event = std::get_if<Event::EnterPosition>(&node.event);
@@ -46,8 +46,8 @@ namespace Game
 
 			const auto preload = [&](const World::ChunkPosition& cp)
 			{
-				if (!world.contains(cp))
-					world.add(cp, generator.generate_chunk(cp));
+				if (!grid.contains(cp))
+					grid.add(cp, generator.generate_chunk(cp));
 			};
 
 			preload(chunkpos);

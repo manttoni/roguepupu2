@@ -14,7 +14,14 @@ namespace Game::World
 		public:
 			static constexpr int width = 50;
 			static constexpr int height = 50;
-			static inline Vec2<int> dimensions() { return Vec2<int>{height, width}; }
+			static inline Vec2<int> dimensions()
+			{
+				return Vec2<int>{height, width};
+			}
+
+			Chunk() = default;
+			Chunk(	Game::Enum::Material material,
+					Game::Enum::Form form);
 
 			using CellsArray = std::array<Cell, width * height>;
 

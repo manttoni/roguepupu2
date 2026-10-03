@@ -7,12 +7,11 @@ namespace
 {
 	// TODO: Extract shared spatial queries when needed.
 	bool blocks_movement(
-			const Game::Simulation& simulation,
+			const entt::registry& registry,
+			const Game::World::Grid& grid,
 			const Game::World::GlobalPosition& position)
 	{
-		const auto& world = simulation.get_world();
-		const auto& registry = simulation.get_registry();
-		const auto* cell = world.find_cell(position);
+		const auto* cell = grid.find_cell(position);
 
 		if (!cell || cell->form != Game::Enum::Form::Floor)
 			return true;
@@ -39,23 +38,31 @@ namespace Game::System::Movement
 {
 	/* This is different from a potential 'can_change_position' or something which has a teleport event
 	 * */
-	bool can_move(const Simulation& simulation, const entt::entity entity, const World::GlobalPosition& to)
+	bool can_move(
+			const entt::registry& registry,
+			const World::Grid& grid,
+			const entt::entity entity,
+			const World::GlobalPosition& to)
 	{
-		const auto& registry = simulation.get_registry();
-		const auto& current = registry.get<Game::Component::Value::Position>(entity).value;
-		const auto move_distance = distance(current, to);
-
-		if (!registry.all_of<Game::Component::Value::Position>(entity))
+		if (!registry.all_of<
+				Game::Component::Value::Position,
+				Game::Component::Resource::MovementPoints,
+				Game::Component::Value::CollisionMovement
+				>(entity))
 			return false;
 
-		if (blocks_movement(simulation, to) &&
-				registry
-				.get<Component::Value::CollisionMovement>(entity)
-				.value == true)
+		const auto& current =
+			registry.get<Game::Component::Value::Position>(entity).value;
+
+		const auto move_distance = distance(current, to);
+
+		if (blocks_movement(registry, grid, to) &&
+				registry.get<Component::Value::CollisionMovement>(entity).value == true)
 			return false;
 
 		// TODO: invent movement cost
-		if (move_distance > registry.get<Game::Component::Resource::MovementPoints>(entity).current)
+		if (move_distance >
+				registry.get<Game::Component::Resource::MovementPoints>(entity).current)
 			return false;
 
 		// Can always move just one step at a time. Diagonal distance is ~1.4
@@ -68,8 +75,8 @@ namespace Game::System::Movement
 		{
 			const auto corner1 = World::GlobalPosition{current.y, to.x};
 			const auto corner2 = World::GlobalPosition{to.y, current.x};
-			if (blocks_movement(simulation, corner1)
-				|| blocks_movement(simulation, corner2))
+			if (!can_move(registry, grid, entity, corner1)
+					|| !can_move(registry, grid, entity, corner2))
 				return false;
 		}
 

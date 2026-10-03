@@ -19,9 +19,32 @@ namespace Game::World
 		return &it->second.get_cell(local_position);
 	}
 
+	Cell* Grid::find_cell(const GlobalPosition& global_position)
+	{
+		const auto chunk_position = to_chunk(global_position);
+		const auto it = chunks.find(chunk_position);
+
+		if (it == chunks.end())
+			return nullptr;
+
+		const auto local_position = to_local(chunk_position, global_position);
+
+		return &it->second.get_cell(local_position);
+	}
+
 	const Chunk* Grid::find_chunk(const ChunkPosition& chunk_position) const
 	{
 		const auto it = chunks.find(chunk_position);
+
+		if (it == chunks.end())
+			return nullptr;
+
+		return &it->second;
+	}
+
+	Chunk* Grid::find_chunk(const ChunkPosition& position)
+	{
+		const auto it = chunks.find(position);
 
 		if (it == chunks.end())
 			return nullptr;

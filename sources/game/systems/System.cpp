@@ -68,8 +68,9 @@ namespace Game::System
 	Event::Result process(Simulation& simulation, const Game::Event::Move& event)
 	{
 		auto& registry = simulation.get_registry();
+		const auto& grid = simulation.get_grid();
 
-		if (!Movement::can_move(simulation, event.entity, event.to))
+		if (!Movement::can_move(registry, grid, event.entity, event.to))
 			return Event::Result::rejected();
 
 		registry.replace<Game::Component::Value::Position>(event.entity, event.to);
@@ -103,11 +104,12 @@ namespace Game::System
 	Event::Result process(Simulation& simulation, const Game::Event::Bump& event)
 	{
 		auto& registry = simulation.get_registry();
+		auto& grid = simulation.get_grid();
 		const auto& entity_position = registry.get<Game::Component::Value::Position>(event.entity).value;
 		const auto target_position = entity_position + event.direction;
 		Event::List consequences;
 
-		if (Movement::can_move(simulation, event.entity, target_position))
+		if (Movement::can_move(registry, grid, event.entity, target_position))
 		{
 			consequences.push_back(
 					Game::Event::Move{

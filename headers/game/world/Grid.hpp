@@ -30,7 +30,9 @@ namespace Game::World
 	{
 		public:
 			const Cell* find_cell(const GlobalPosition& position) const;
+			Cell* find_cell(const GlobalPosition& position);
 			const Chunk* find_chunk(const ChunkPosition& position) const;
+			Chunk* find_chunk(const ChunkPosition& position);
 			bool contains(const ChunkPosition& position) const;
 			bool add(const ChunkPosition& position, Chunk chunk);
 
