@@ -230,7 +230,7 @@ namespace Game::Component::Dependency
 				const std::string_view dependency_id)
 		{
 			static constexpr std::string_view prefix =
-				"Game::Component::Tag::";
+				"Game::";
 
 			std::vector<std::string> tag_ids;
 
