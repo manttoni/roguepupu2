@@ -29,15 +29,19 @@ namespace Ncurses::Input
 			case KEY_RIGHT:
 				return Key::Right;
 
+			case KEY_HOME:
 			case KEY_A1:
 				return Key::UpLeft;
 
+			case KEY_PPAGE:
 			case KEY_A3:
 				return Key::UpRight;
 
+			case KEY_END:
 			case KEY_C1:
 				return Key::DownLeft;
 
+			case KEY_NPAGE:
 			case KEY_C3:
 				return Key::DownRight;
 
