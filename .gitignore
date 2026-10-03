@@ -10,5 +10,6 @@ roguepupu2
 *.svg
 tmp/
 /scripts/*
+*.sh
 !/scripts/build.sh
 

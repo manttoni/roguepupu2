@@ -70,8 +70,9 @@ namespace UI::Dialog
 		auto copy = input;
 
 		Menu menu(label);
-		menu.add(UI::Element::TextIn{.label = "", .text = &copy});
-		menu.add(UI::Element::confirm());
+		UI::Element::TextIn text_in{.label = "", .text = &copy};
+		text_in.confirm = true;
+		menu.add(text_in);
 		menu.set_timeout(-1);
 		const auto s = menu.get_selection();
 		if (s.cancelled())

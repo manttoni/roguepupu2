@@ -76,21 +76,21 @@ namespace Game::Entity
 #define X(name, type) \
 		else if (component_str == #name) \
 		{ \
-			registry.emplace<Component::Value::name>(entity, parse_value<type>(data)); \
+			registry.emplace<Game::Component::Value::name>(entity, parse_value<type>(data)); \
 		}
 #include "game/components/Value.def"
 #undef X
 #define X(name, type) \
 		else if (component_str == #name) \
 		{ \
-			registry.emplace<Component::List::name>(entity, parse_value<std::vector<type>>(data)); \
+			registry.emplace<Game::Component::List::name>(entity, parse_value<std::vector<type>>(data)); \
 		}
 #include "game/components/List.def"
 #undef X
 #define X(name, type) \
 		else if (component_str == #name) \
 		{ \
-			registry.emplace<Component::Resource::name>(entity, parse_value<type>(data)); \
+			registry.emplace<Game::Component::Resource::name>(entity, parse_value<type>(data)); \
 		}
 #include "game/components/Resource.def"
 #undef X
@@ -113,7 +113,7 @@ namespace Game::Entity
 				return false;
 #define X(name) \
 			else if (tag == #name) \
-			registry.emplace<Component::Tag::name>(entity);
+			registry.emplace<Game::Component::Tag::name>(entity);
 #include "game/components/Tag.def"
 #undef X
 			else
@@ -134,7 +134,7 @@ namespace Game::Entity
 			else
 				emplace_component(registry, entity, component_str, data);
 		}
-		Log::debug() << "Entity created: " << registry.get<Component::Value::Name>(entity).value;
+		Log::debug() << "Entity created: " << registry.get<Game::Component::Value::Name>(entity).value;
 		return entity;
 	}
 

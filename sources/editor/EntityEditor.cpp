@@ -174,12 +174,12 @@ namespace EntityEditor
 				}
 				else if (component_data.is_string())
 				{
-					if (Component::value_is_enum(component_id))
+					if (Game::Component::value_is_enum(component_id))
 					{
 						editor.add(UI::Element::SingleChoice(
 									component_id,
 									component_data.get_ptr<std::string*>(),
-									Component::get_enum_value_strings(component_id)
+									Game::Component::get_enum_value_strings(component_id)
 									));
 						continue;
 					}

@@ -1,0 +1,32 @@
+{
+	"default_terrain": "Rock",
+	"layers": [
+		{
+			"id": "first",
+			"terrain": "RockFloor",
+			"frequency": 0.05,
+			"octaves": 4,
+			"persistence": 0.5,
+			"threshold": 0.5,
+			"disabled": true
+		}
+		,{
+			"id": "crazy form",
+			"terrain": "RockFloor",
+			"frequency": 1,
+			"octaves": 1,
+			"persistence": 0.5,
+			"threshold": 0.5,
+			"disabled": true
+		}
+		,{
+			"id": "asd",
+			"terrain": "RockFloor",
+			"frequency": 0.13,
+			"octaves": 1,
+			"persistence": 0.5,
+			"threshold": 0.4,
+			"disabled": true
+		}
+	]
+}

@@ -11,7 +11,7 @@
 #include "external/entt/fwd.hpp"
 #include "game/world/Position.hpp"
 
-namespace Component
+namespace Game::Component
 {
 	template<typename T>
 		std::ostream& print_value(std::ostream& os, const T& value)
@@ -76,10 +76,10 @@ namespace Component
 	}
 }
 
-namespace Component::List
+namespace Game::Component::List
 {
 	template<typename T>
-		struct Base : Component::Base<T>
+		struct Base : Game::Component::Base<T>
 	{
 		std::vector<T> values;
 
@@ -109,9 +109,9 @@ namespace Component::List
 	};
 
 #define X(name, type)                                      \
-	struct name : Component::List::Base<type>              \
+	struct name : Game::Component::List::Base<type>              \
 	{                                                       \
-		using Component::List::Base<type>::Base;            \
+		using Game::Component::List::Base<type>::Base;            \
 		static constexpr std::string_view string = #name;   \
 	};
 
@@ -121,7 +121,7 @@ namespace Component::List
 
 
 
-namespace Component::Value
+namespace Game::Component::Value
 {
 	template<typename T>
 		std::ostream& print_component_value(
@@ -135,7 +135,7 @@ namespace Component::Value
 		}
 
 	template<typename T>
-		struct Base : Component::Base<T>
+		struct Base : Game::Component::Base<T>
 	{
 		T value{};
 
@@ -144,7 +144,7 @@ namespace Component::Value
 	};
 
 #define X(name, type) \
-	struct name : Component::Value::Base<type> \
+	struct name : Game::Component::Value::Base<type> \
 	{ \
 		using Base<type>::Base; \
 		static constexpr std::string_view string = #name; \
@@ -165,10 +165,10 @@ namespace Component::Value
 #undef X
 }
 
-namespace Component::Resource
+namespace Game::Component::Resource
 {
 	template<typename T>
-		struct Base : Component::Base<T>
+		struct Base : Game::Component::Base<T>
 	{
 		T current = T{};
 		T maximum = T{};
@@ -179,7 +179,7 @@ namespace Component::Resource
 	};
 
 #define X(name, type) \
-	struct name : Component::Resource::Base<type> \
+	struct name : Game::Component::Resource::Base<type> \
 	{ \
 		static constexpr std::string_view string = #name; \
 		friend std::ostream& operator<<(std::ostream& os, const name& component) \
@@ -194,11 +194,11 @@ namespace Component::Resource
 #undef X
 }
 
-namespace Component::Tag
+namespace Game::Component::Tag
 {
 	struct Base {};
 #define X(name) \
-	struct name : Component::Tag::Base \
+	struct name : Game::Component::Tag::Base \
 	{ \
 		static constexpr std::string_view string = #name; \
 		friend std::ostream& operator<<(std::ostream& os, const name&) \
@@ -210,7 +210,7 @@ namespace Component::Tag
 #undef X
 }
 
-namespace Component::Dependency
+namespace Game::Component::Dependency
 {
 	template<typename C, typename D> constexpr bool is_dependent()
 	{
@@ -230,7 +230,7 @@ namespace Component::Dependency
 				const std::string_view dependency_id)
 		{
 			static constexpr std::string_view prefix =
-				"Component::Tag::";
+				"Game::Component::Tag::";
 
 			std::vector<std::string> tag_ids;
 

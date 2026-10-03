@@ -56,6 +56,8 @@ namespace UI::Element
 		}
 		else if (event.is_ascii() && text.size() < element.length.max)
 		{
+			if (element.confirm && event.key == Key::Enter)
+				return Selection::State::Confirmed;
 			text += event.ch;
 		}
 		else

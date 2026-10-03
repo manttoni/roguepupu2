@@ -37,7 +37,7 @@ namespace Game::System
 
 	Event::Result process(Simulation& simulation, const Game::Event::LoseMovementPoints& event)
 	{
-		auto& movement_points = simulation.get_registry().get<Component::Resource::MovementPoints>(event.entity);
+		auto& movement_points = simulation.get_registry().get<Game::Component::Resource::MovementPoints>(event.entity);
 		movement_points.current -= event.amount;
 		return Event::Result{
 			.outcome = Event::Outcome::Accepted,
@@ -72,7 +72,7 @@ namespace Game::System
 		if (!Movement::can_move(simulation, event.entity, event.to))
 			return Event::Result::rejected();
 
-		registry.replace<Component::Value::Position>(event.entity, event.to);
+		registry.replace<Game::Component::Value::Position>(event.entity, event.to);
 
 		Event::List consequences;
 
@@ -103,7 +103,7 @@ namespace Game::System
 	Event::Result process(Simulation& simulation, const Game::Event::Bump& event)
 	{
 		auto& registry = simulation.get_registry();
-		const auto& entity_position = registry.get<Component::Value::Position>(event.entity).value;
+		const auto& entity_position = registry.get<Game::Component::Value::Position>(event.entity).value;
 		const auto target_position = entity_position + event.direction;
 		Event::List consequences;
 
@@ -134,8 +134,8 @@ namespace Game::System
 
 		// TODO: validate position. Extract from System::Movement the blocks_movement() and make a System::Spatial?
 
-		registry.emplace<Component::Value::Position>(event.entity, event.position);
-		if (registry.all_of<Component::Tag::Actor>(event.entity))
+		registry.emplace<Game::Component::Value::Position>(event.entity, event.position);
+		if (registry.all_of<Game::Component::Tag::Actor>(event.entity))
 		{
 			scheduler.add(
 					Turn::Actor{
@@ -164,9 +164,9 @@ namespace Game::System
 	Event::Result process(Simulation& simulation, const Game::Event::BeginTurn& event)
 	{
 		auto& registry = simulation.get_registry();
-		registry.get<Component::Resource::MovementPoints>(event.entity).reset();
-		registry.get<Component::Resource::ActionPoints>(event.entity).reset();
-		registry.get<Component::Resource::BonusActionPoints>(event.entity).reset();
+		registry.get<Game::Component::Resource::MovementPoints>(event.entity).reset();
+		registry.get<Game::Component::Resource::ActionPoints>(event.entity).reset();
+		registry.get<Game::Component::Resource::BonusActionPoints>(event.entity).reset();
 		return Event::Result::accepted();
 	}
 
@@ -174,6 +174,7 @@ namespace Game::System
 	{
 		auto& scheduler = simulation.get_scheduler();
 		assert(scheduler.current_actor().entity == event.entity);
+		(void) event;
 		scheduler.next_turn();
 
 		Event::Result result;

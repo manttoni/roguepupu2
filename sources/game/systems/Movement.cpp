@@ -14,13 +14,13 @@ namespace
 		const auto& registry = simulation.get_registry();
 		const auto* cell = world.find_cell(position);
 
-		if (!cell || cell->terrain == Game::Enum::Terrain::Rock)
+		if (!cell || cell->form != Game::Enum::Form::Floor)
 			return true;
 
 		const auto entities = Game::Entity::find_all(
 				registry,
-				Component::Value::Position{position},
-				Component::Value::CollisionMovement{true}
+				Game::Component::Value::Position{position},
+				Game::Component::Value::CollisionMovement{true}
 				);
 
 		return !entities.empty();
@@ -42,17 +42,20 @@ namespace Game::System::Movement
 	bool can_move(const Simulation& simulation, const entt::entity entity, const World::GlobalPosition& to)
 	{
 		const auto& registry = simulation.get_registry();
-		const auto& current = registry.get<Component::Value::Position>(entity).value;
+		const auto& current = registry.get<Game::Component::Value::Position>(entity).value;
 		const auto move_distance = distance(current, to);
 
-		if (!registry.all_of<Component::Value::Position>(entity))
+		if (!registry.all_of<Game::Component::Value::Position>(entity))
 			return false;
 
-		if (blocks_movement(simulation, to))
+		if (blocks_movement(simulation, to) &&
+				registry
+				.get<Component::Value::CollisionMovement>(entity)
+				.value == true)
 			return false;
 
 		// TODO: invent movement cost
-		if (move_distance > registry.get<Component::Resource::MovementPoints>(entity).current)
+		if (move_distance > registry.get<Game::Component::Resource::MovementPoints>(entity).current)
 			return false;
 
 		// Can always move just one step at a time. Diagonal distance is ~1.4

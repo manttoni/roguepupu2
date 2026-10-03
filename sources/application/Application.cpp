@@ -6,6 +6,7 @@
 #include "ncurses/Input.hpp"
 #include "game/AI.hpp"
 #include "application/Layout.hpp"
+#include "game/components/Component.hpp"
 
 Game::Event::Any PlayerController::get_event(
 		const Game::Simulation& simulation,
@@ -32,6 +33,7 @@ Game::Event::Any PlayerController::get_event(
 			.entity = current_actor.entity
 		};
 	}
+
 	return Game::Event::Null{};
 }
 
@@ -41,6 +43,22 @@ bool Application::handle_input(const Ncurses::Input::Event& event)
 		game_running = false;
 	if (event.key == Ncurses::Input::Key::Resize)
 		layout.reset();
+	else if (event.is_ascii())
+	{
+		switch (event.ch)
+		{
+			case '\\':
+				{
+					auto& registry = simulation->get_registry();
+					auto player = simulation->get_player();
+					auto& col = registry.get<Game::Component::Value::CollisionMovement>(player);
+					col.value ^= true;
+					Log::info() << "player collision was set to " << col.value;
+				}
+			default:
+				break;
+		}
+	}
 	else
 		return false;
 	return true;

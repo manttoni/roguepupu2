@@ -50,7 +50,7 @@ namespace Game::Entity
 	template<typename C>
 	bool definition_has_component(const Json& definition, const Json& tags)
 	{
-		if constexpr (std::derived_from<C, Component::Tag::Base>)
+		if constexpr (std::derived_from<C, Game::Component::Tag::Base>)
 		{
 			return std::ranges::any_of(tags, [](const Json& tag)
 					{

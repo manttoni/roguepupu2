@@ -6,6 +6,8 @@ namespace Game::World
 {
 	struct Cell
 	{
-		Enum::Terrain terrain;
+		Enum::Material material;
+		Enum::Form form;
+		double water_depth;
 	};
 }

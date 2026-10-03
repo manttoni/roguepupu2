@@ -10,12 +10,17 @@
 
 namespace Game::Enum
 {
-	enum class Terrain
+	enum class Material
 	{
 		None,
+		Stone,
+	};
 
-		Rock,
-		RockFloor,
+	enum class Form
+	{
+		None,
+		Floor,
+		Wall,
 	};
 
 	enum class AIBehaviorType

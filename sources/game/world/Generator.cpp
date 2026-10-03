@@ -1,44 +1,47 @@
 #include "game/world/Generator.hpp"
 #include "utils/IO.hpp"
+#include "game/world/Chunk.hpp"
+#include "utils/Log.hpp"
 
 namespace Game::World
 {
 	Generator::Generator(
 			const std::string& seed,
 			const std::filesystem::path& path)
+		: seed(seed)
 	{
 		const auto conf = IO::read_json(path);
-		if (conf.contains("default_terrain"))
-		{
-			default_terrain =
-				Enum::from_string<Enum::Terrain>(
-						conf.at("default_terrain").get<std::string>());
-		}
 		if (conf.contains("layers") && conf.at("layers").is_array())
+			parse_layers(conf.at("layers"));
+	}
+
+	void Generator::parse_layers(const Json& layers)
+	{
+		for (const auto& layer : layers)
 		{
-			for (const auto& layer : conf.at("layers"))
-			{
-				const auto terrain =
-					Enum::from_string<Enum::Terrain>(
-							layer.at("terrain").get<std::string>());
-				const auto frequency =
-					layer.at("frequency").get<double>();
-				const auto octaves =
-					layer.at("octaves").get<std::int32_t>();
-				const auto persistence =
-					layer.at("persistence").get<double>();
-				auto perlin =
-					Random::Perlin::Generator(
-							seed, {frequency, octaves, persistence});
-				const auto threshold =
-					layer.at("threshold").get<double>();
-				layers.emplace_back(
-						terrain,
-						perlin,
-						threshold
-						);
-			}
+			parse_layer(layer);
 		}
+	}
+
+	void Generator::parse_layer(const Json& layer)
+	{
+		if (layer.value("disabled", false))
+			return;
+
+		const Random::Perlin::Settings perlin_settings{
+			.frequency = layer.value("frequency", 1.0),
+				.octaves = layer.value("octaves", std::int32_t{1}),
+				.persistence = layer.value("persistence", 1.0)
+		};
+
+		layers.emplace_back(Layer{
+				.material = Enum::from_string<Enum::Material>(layer.value("material", "Stone")),
+				.form = Enum::from_string<Enum::Form>(layer.value("form", "Floor")),
+				.threshold = layer.value("threshold", 1.0),
+				.water_depth = layer.value("water_depth", 0.0),
+				.id = layer.value("id", "none"),
+				.perlin = Random::Perlin::Generator(seed, perlin_settings)
+				});
 	}
 
 	Chunk Generator::generate_chunk(const ChunkPosition& chunk_position) const
@@ -49,16 +52,18 @@ namespace Game::World
 			for (int x = 0; x < Chunk::width; ++x)
 			{
 				const LocalPosition local_position{y, x};
-				const GlobalPosition global_position = to_global(chunk_position, local_position);
+				const GlobalPosition global_position =
+					to_global(chunk_position, local_position);
 				auto& cell = chunk.get_cell(local_position);
-				cell.terrain = default_terrain;
 
 				for (const auto& layer : layers)
 				{
-					if (layer.perlin.noise2(global_position.vec2())
-							<= layer.threshold)
+					const auto p = layer.perlin.noise2(global_position.vec2());
+					if (p <= layer.threshold)
 					{
-						cell.terrain = layer.terrain;
+						cell.material = layer.material;
+						cell.form = layer.form;
+						cell.water_depth += layer.water_depth;
 					}
 				}
 			}

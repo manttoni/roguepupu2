@@ -41,7 +41,7 @@ namespace Game
 				event && event->entity == player)
 		{
 			const auto& position =
-				registry.get<Component::Value::Position>(player).value;
+				registry.get<Game::Component::Value::Position>(player).value;
 			const auto chunkpos = World::to_chunk(position);
 
 			const auto preload = [&](const World::ChunkPosition& cp)

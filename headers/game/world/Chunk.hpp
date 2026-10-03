@@ -12,8 +12,8 @@ namespace Game::World
 	class Chunk
 	{
 		public:
-			static constexpr int width = 100;
-			static constexpr int height = 100;
+			static constexpr int width = 50;
+			static constexpr int height = 50;
 			static inline Vec2<int> dimensions() { return Vec2<int>{height, width}; }
 
 			using CellsArray = std::array<Cell, width * height>;

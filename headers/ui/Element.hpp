@@ -39,6 +39,7 @@ namespace UI::Element
 		std::string label;
 		std::string* text = nullptr;
 		Range<std::size_t> length{1, 10};
+		bool confirm = false;
 	};
 	std::string to_string(const TextIn& element);
 	Selection::State handle_input(TextIn& element, const Ncurses::Input::Event& event);
