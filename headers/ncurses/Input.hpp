@@ -19,7 +19,9 @@ namespace Ncurses::Input
 		Right,
 
 		// ASCII
-		Alphanumeric,
+		Alphabetic,
+		Number,
+		Symbol,
 		Space,
 		Enter,
 
@@ -42,12 +44,12 @@ namespace Ncurses::Input
 
 		inline bool is_alphanumeric() const
 		{
-			return key == Key::Alphanumeric;
+			return key == Key::Alphabetic || key == Key::Number;
 		}
 
 		inline bool is_ascii() const
 		{
-			return key >= Key::Alphanumeric && key <= Key::Enter;
+			return key >= Key::Alphabetic && key <= Key::Enter;
 		}
 
 		inline bool is_unprintable() const
@@ -57,6 +59,8 @@ namespace Ncurses::Input
 
 		Vec2<int> to_direction() const;
 	};
-
+	Key translate_key(int raw_key);
+	char translate_character(int raw_key);
+	bool is_shift_modified(int raw_key);
 	Event get_event(int timeout_ms = -1);
 }

@@ -50,21 +50,33 @@ namespace UI::Element
 	{
 		using Key = Ncurses::Input::Key;
 		auto& text = *(element.text);
-		if (event.key == Key::Backspace && text.size() > 0)
+
+		switch (event.key)
 		{
-			text.pop_back();
+			case Key::Backspace:
+				if (text.size() > 0)
+				{
+					text.pop_back();
+					return Selection::State::Changed;
+				}
+				return Selection::State::Ignored;
+			case Key::Enter:
+				if (element.confirm && text.size() >= element.length.min)
+					return Selection::State::Confirmed;
+				return Selection::State::Ignored;
+			case Key::Space:
+			case Key::Number:
+			case Key::Alphabetic:
+			case Key::Symbol:
+				if (text.size() < element.length.max)
+				{
+					text += event.ch;
+					return Selection::State::Changed;
+				}
+				return Selection::State::Ignored;
+			default:
+				return Selection::State::Ignored;
 		}
-		else if (event.is_ascii() && text.size() < element.length.max)
-		{
-			if (element.confirm && event.key == Key::Enter)
-				return Selection::State::Confirmed;
-			text += event.ch;
-		}
-		else
-		{
-			return Selection::State::Ignored;
-		}
-		return Selection::State::Changed;
 	}
 
 	Selection::State handle_input(Button& element, const Ncurses::Input::Event& event)

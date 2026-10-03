@@ -8,99 +8,103 @@
 
 namespace Ncurses::Input
 {
-	namespace
+	Key translate_key(const int raw_key)
 	{
-		Key translate_key(const int raw_key)
+		switch (raw_key)
 		{
-			switch (raw_key)
-			{
-				case ERR:
-					return Key::None;
+			case ERR:
+				return Key::None;
 
-				case KEY_UP:
-					return Key::Up;
+			case KEY_UP:
+				return Key::Up;
 
-				case KEY_DOWN:
-					return Key::Down;
+			case KEY_DOWN:
+				return Key::Down;
 
-				case KEY_SLEFT:
-				case KEY_LEFT:
-					return Key::Left;
+			case KEY_SLEFT:
+			case KEY_LEFT:
+				return Key::Left;
 
-				case KEY_SRIGHT:
-				case KEY_RIGHT:
-					return Key::Right;
+			case KEY_SRIGHT:
+			case KEY_RIGHT:
+				return Key::Right;
 
-				case KEY_A1:
-					return Key::UpLeft;
+			case KEY_A1:
+				return Key::UpLeft;
 
-				case KEY_A3:
-					return Key::UpRight;
+			case KEY_A3:
+				return Key::UpRight;
 
-				case KEY_C1:
-					return Key::DownLeft;
+			case KEY_C1:
+				return Key::DownLeft;
 
-				case KEY_C3:
-					return Key::DownRight;
+			case KEY_C3:
+				return Key::DownRight;
 
-				case ' ':
-					return Key::Space;
+			case ' ':
+				return Key::Space;
 
-				case KEY_ENTER:
-				case '\n':
-				case '\r':
-					return Key::Enter;
+			case KEY_ENTER:
+			case '\n':
+			case '\r':
+				return Key::Enter;
 
-				case KEY_BACKSPACE:
-				case '\b':
-				case 127:
-					return Key::Backspace;
+			case KEY_BACKSPACE:
+			case '\b':
+			case 127:
+				return Key::Backspace;
 
-				case 27:
-					return Key::Escape;
+			case 27:
+				return Key::Escape;
 
-				case KEY_RESIZE:
-					return Key::Resize;
+			case KEY_RESIZE:
+				return Key::Resize;
 
-				default:
-					if (raw_key >= 33 && raw_key <= 126)
-						return Key::Alphanumeric;
+			default:
+				if (raw_key >= '0' && raw_key <= '9')
+					return Key::Number;
 
-					Log::warning() << "Unhandled key input: " << raw_key;
-					return Key::None;
-			}
+				if ((raw_key >= 'A' && raw_key <= 'Z')
+						|| (raw_key >= 'a' && raw_key <= 'z'))
+					return Key::Alphabetic;
+
+				if (raw_key >= 33 && raw_key <= 126)
+					return Key::Symbol;
+
+				Log::warning() << "Unhandled key input: " << raw_key;
+				return Key::None;
 		}
+	}
 
-		bool is_shift_modified(const int raw_key)
+	bool is_shift_modified(const int raw_key)
+	{
+		switch (raw_key)
 		{
-			switch (raw_key)
-			{
-				case KEY_SLEFT:
-				case KEY_SRIGHT:
-					return true;
+			case KEY_SLEFT:
+			case KEY_SRIGHT:
+				return true;
 
 #ifdef KEY_SUP
-				case KEY_SUP:
-					return true;
+			case KEY_SUP:
+				return true;
 #endif
 
 #ifdef KEY_SDOWN
-				case KEY_SDOWN:
-					return true;
+			case KEY_SDOWN:
+				return true;
 #endif
 
-				default:
-					return false;
-			}
+			default:
+				return false;
 		}
+	}
 
-		char translate_character(const int raw_key)
-		{
-			if (raw_key < 0 || raw_key > UCHAR_MAX)
-				return '\0';
+	char translate_character(const int raw_key)
+	{
+		if (raw_key < 0 || raw_key > UCHAR_MAX)
+			return '\0';
 
-			return static_cast<char>(raw_key);
-		}
+		return static_cast<char>(raw_key);
 	}
 	Vec2<int> Event::to_direction() const
 	{
@@ -153,8 +157,8 @@ namespace Ncurses::Input
 
 		return Event{
 			.key = translate_key(raw_key),
-			.ch = translate_character(raw_key),
-			.shift = is_shift_modified(raw_key),
+				.ch = translate_character(raw_key),
+				.shift = is_shift_modified(raw_key),
 		};
 	}
 }
