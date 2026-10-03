@@ -1,4 +1,5 @@
 #include "game/Scheduler.hpp"
+#include "utils/Log.hpp"
 #include <algorithm>
 #include <iterator>
 namespace Game::Turn
@@ -7,7 +8,11 @@ namespace Game::Turn
 	{
 		current++;
 		if (current == actors.size())
+		{
 			current = 0;
+			round++;
+			Log::info() << "Round " << round << " begins";
+		}
 	}
 
 	void Scheduler::add(Actor actor)

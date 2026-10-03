@@ -39,9 +39,11 @@ Game::Event::Any PlayerController::get_event(
 
 bool Application::handle_input(const Ncurses::Input::Event& event)
 {
-	if (event.key == Ncurses::Input::Key::Escape)
+	using Key = Ncurses::Input::Key;
+
+	if (event.key == Key::Escape)
 		game_running = false;
-	if (event.key == Ncurses::Input::Key::Resize)
+	else if (event.key == Key::Resize)
 		layout.reset();
 	else if (event.is_ascii())
 	{
@@ -55,8 +57,9 @@ bool Application::handle_input(const Ncurses::Input::Event& event)
 					col.value ^= true;
 					Log::info() << "player collision was set to " << col.value;
 				}
+				return true;
 			default:
-				break;
+				return false;
 		}
 	}
 	else

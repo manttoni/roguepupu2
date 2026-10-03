@@ -37,11 +37,13 @@ namespace Game::Turn
 		private:
 			std::vector<Actor> actors;
 			std::size_t current = 0;
+			std::size_t round = 0;
 
 		public:
 			Actor current_actor() const { return actors[current]; }
 			void next_turn();
 			void add(Actor actor);
+			std::size_t get_round() const { return round; }
 	};
 }
 
