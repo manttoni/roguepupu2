@@ -1,4 +1,5 @@
 #include "application/Application.hpp"
+#include "editor/EntityEditor.hpp"
 #include "utils/Log.hpp"
 #include "game/Simulation.hpp"
 #include "application/EventDescriber.hpp"
@@ -69,7 +70,7 @@ bool Application::handle_input(const Ncurses::Input::Event& event)
 
 void Application::editor_menu()
 {
-	UI::Dialog::alert("Not implemented");
+	EntityEditor::start();
 }
 
 void Application::settings_menu()
