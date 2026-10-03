@@ -23,9 +23,11 @@ namespace Ncurses::Input
 				case KEY_DOWN:
 					return Key::Down;
 
+				case KEY_SLEFT:
 				case KEY_LEFT:
 					return Key::Left;
 
+				case KEY_SRIGHT:
 				case KEY_RIGHT:
 					return Key::Right;
 
@@ -64,6 +66,7 @@ namespace Ncurses::Input
 					if (raw_key >= 33 && raw_key <= 126)
 						return Key::Alphanumeric;
 
+					Log::warning() << "Unhandled key input: " << raw_key;
 					return Key::None;
 			}
 		}
