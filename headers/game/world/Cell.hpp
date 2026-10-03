@@ -6,8 +6,8 @@ namespace Game::World
 {
 	struct Cell
 	{
-		Enum::Material material;
-		Enum::Form form;
-		double water_depth;
+		Enum::Material material = Enum::Material::None;
+		Enum::Form form = Enum::Form::None;
+		double water_depth{};
 	};
 }
