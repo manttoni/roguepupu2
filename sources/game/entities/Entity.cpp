@@ -1,5 +1,4 @@
 #include "game/entities/Entity.hpp"
-
 #include "utils/Log.hpp"
 
 namespace Game::Entity
@@ -11,7 +10,7 @@ namespace Game::Entity
 
 #define X(component, dependency) \
 		if (registry.all_of<component>(entity) \
-			&& !registry.all_of<dependency>(entity)) \
+				&& !registry.all_of<dependency>(entity)) \
 		{ \
 			return false; \
 		}
@@ -38,9 +37,9 @@ namespace Game::Entity
 
 		const auto& tags = *tags_iterator;
 		if (!std::ranges::all_of(tags, [](const Json& tag)
-				{
+					{
 					return tag.is_string();
-				}))
+					}))
 		{
 			Log::error() << "tags must be strings";
 			return false;
@@ -49,7 +48,7 @@ namespace Game::Entity
 		std::string missing_dependencies;
 #define X(component, dependency) \
 		if (definition_has_component<component>(definition, tags) \
-			&& !definition_has_component<dependency>(definition, tags)) \
+				&& !definition_has_component<dependency>(definition, tags)) \
 		{ \
 			missing_dependencies += "\n[" + std::string(#dependency) + "]"; \
 		}
@@ -134,7 +133,12 @@ namespace Game::Entity
 			else
 				emplace_component(registry, entity, component_str, data);
 		}
-		Log::debug() << "Entity created: " << registry.get<Game::Component::Value::Name>(entity).value;
+		const auto* name =
+			registry.try_get<Component::Value::Name>(entity);
+
+		Log::debug()
+			<< "Entity created: "
+			<< (name ? name->value : "<unnamed>");
 		return entity;
 	}
 
