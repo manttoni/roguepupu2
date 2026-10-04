@@ -17,7 +17,7 @@ namespace Ncurses
 
 		Color() = default;
 		Color(const int r, const int g, const int b) : r(r), g(g), b(b) {}
-		Color(const int i) : r(i), g(i), b(i) {}
+		explicit Color(int id);
 		Color(const std::array<int, 3>& rgb) : r(rgb.at(0)), g(rgb.at(1)), b(rgb.at(2)) {}
 
 		bool operator==(const Color& other) const = default;
@@ -96,7 +96,7 @@ namespace Ncurses
 								static_cast<int>(g),
 								static_cast<int>(b)};
 						init_color(c.id(), r * 200, g * 200, b * 200);
-						init_pair(c.id(), c.id(), Color(0).id());
+						init_pair(c.id(), c.id(), Color{0, 0, 0}.id());
 					}
 				}
 			}

@@ -1,3 +1,4 @@
+#include <sstream>
 #include "editor/EntityEditor.hpp"
 #include "ui/Theme.hpp"
 #include "utils/Log.hpp"
@@ -5,6 +6,8 @@
 #include "ui/Dialog.hpp"
 #include "ui/Menu.hpp"
 #include "ui/Element.hpp"
+#include "ncurses/Color.hpp"
+
 
 namespace EntityEditor
 {
@@ -93,9 +96,14 @@ namespace EntityEditor
 		std::string id = "";
 		UI::Menu new_entity;
 		new_entity.set_title("New entity");
-		new_entity.add(UI::Element::TextIn("Entity id", &id));
+		new_entity.add(UI::Element::TextIn("Entity id", &id, {3, 20}, true));
 		new_entity.add(UI::Element::confirm());
-		new_entity.get_selection();
+		new_entity.add(UI::Element::cancel());
+		const auto selection = new_entity.get_selection();
+		if (selection.cancelled())
+			return std::nullopt;
+
+		assert(selection.confirmed());
 
 		if (!Game::Entity::valid_id(id))
 			return std::nullopt;
@@ -106,7 +114,6 @@ namespace EntityEditor
 		}
 		Definition d{.id = id, .data = Json::object()};
 		d.data["Tags"] = Json::array();
-
 
 		return d;
 	}
@@ -139,15 +146,129 @@ namespace EntityEditor
 		surface.clear();
 		const std::string str = "\"" + definition.id + "\": " + definition.data.dump(4);
 		surface.write(0, 0, str);
-		surface.refresh();
+		//surface.refresh();
+	}
+	template<typename T>
+		Json value_to_json(const T& value)
+		{
+			if constexpr (std::same_as<T, char>)
+				return std::string(1, value);
+			else if constexpr (std::same_as<T, Ncurses::Color>)
+				return value.id();
+			else if constexpr (Game::Enum::GameEnum<T>)
+				return Game::Enum::to_string(value);
+			else
+				return Json(value);
+		}
+	Json component_default(std::string_view id)
+	{
+#define X(name, type) \
+		if (id == #name) \
+		return value_to_json(Game::Component::Value::name{}.value);
+#include "game/components/Value.def"
+#undef X
+
+#define X(name, type) \
+		if (id == #name) \
+		return value_to_json(Game::Component::Resource::name{}.maximum);
+#include "game/components/Resource.def"
+#undef X
+
+#define X(name, type) \
+		if (id == #name) \
+		return Json::array();
+#include "game/components/List.def"
+#undef X
+
+		throw std::invalid_argument(
+				"Unknown component: " + std::string(id));
+	}
+
+	/* Tags can require other Components
+	 * */
+	bool update_dependencies(Definition& definition)
+	{
+		auto& data = definition.data;
+
+		if (!data.contains("Tags"))
+			data["Tags"] = Json::array();
+
+		const auto tags =
+			data.at("Tags").get<std::vector<std::string>>();
+
+		bool changed = false;
+
+		for (const auto& tag : tags)
+		{
+			const auto tag_deps =
+				Game::Component::Dependency::get_required_tag_ids(tag);
+
+			for (const auto& dependency : tag_deps)
+			{
+				auto& current_tags = data.at("Tags");
+
+				if (std::find(
+							current_tags.begin(),
+							current_tags.end(),
+							dependency) == current_tags.end())
+				{
+					current_tags.push_back(dependency);
+					changed = true;
+				}
+			}
+
+			const auto other_deps =
+				Game::Component::Dependency::get_required_non_tag_ids(tag);
+
+			for (const auto& dependency : other_deps)
+			{
+				if (!data.contains(dependency))
+				{
+					data[dependency] = component_default(dependency);
+					changed = true;
+				}
+			}
+		}
+
+		return changed;
+	}
+
+	void rebuild_tag_menu(
+			UI::Menu& tag_menu,
+			std::string& filter,
+			std::vector<TagOption>& tag_options)
+	{
+		tag_menu = UI::Menu("Edit Tags");
+		tag_menu.set_timeout(100);
+
+		tag_menu.add(UI::Element::TextIn{
+				"Filter",
+				&filter
+				});
+
+		for (auto& option : tag_options)
+		{
+			if (option.id.find(filter) == std::string::npos)
+				continue;
+
+			tag_menu.add(UI::Element::Checkbox{
+					option.id,
+					&option.check
+					});
+		}
+
+		tag_menu.add(UI::Element::confirm());
+		tag_menu.add(UI::Element::cancel());
 	}
 
 	void edit_tags(Definition& definition)
 	{
-		auto tags = definition.data["Tags"].get<std::vector<std::string>>();
-		const auto all_tags = Game::Component::get_tag_ids();
+		const auto tags =
+			definition.data.at("Tags").get<std::vector<std::string>>();
+
 		std::vector<TagOption> tag_options;
-		for (const auto& tag : all_tags)
+
+		for (const auto& tag : Game::Component::get_tag_ids())
 		{
 			tag_options.emplace_back(
 					tag,
@@ -155,151 +276,183 @@ namespace EntityEditor
 		}
 
 		UI::Menu tag_menu("Edit Tags");
-		for (auto& option : tag_options)
+		tag_menu.set_timeout(100);
+		UI::Selection selection;
+		std::string filter;
+		bool rebuild = true;
+
+		while (true)
 		{
-			tag_menu.add(UI::Element::Checkbox(
-						option.id,
-						&option.check
-						));
+			if (rebuild)
+			{
+				rebuild_tag_menu(tag_menu, filter, tag_options);
+				rebuild = false;
+			}
+
+			selection = tag_menu.get_selection(selection.index);
+			if (tag_menu.changed())
+				rebuild = true;
+
+			if (selection.cancelled())
+				return;
+
+			if (selection.confirmed())
+				break;
 		}
-		tag_menu.add(UI::Element::confirm());
-		tag_menu.add(UI::Element::cancel());
-		tag_menu.set_timeout(-1);
-		const auto selection = tag_menu.get_selection();
 
-		if (selection.cancelled())
-			return;
-
-		assert(selection.confirmed());
-
-		definition.data["Tags"] = Json::array();
+		auto selected_tags = Json::array();
 
 		for (const auto& option : tag_options)
 		{
 			if (option.check)
-				definition.data["Tags"].push_back(option.id);
+				selected_tags.push_back(option.id);
+		}
+
+		definition.data["Tags"] = std::move(selected_tags);
+
+		while (update_dependencies(definition))
+		{
 		}
 	}
+
+	void rebuild_editor(UI::Menu& editor, Definition& definition)
+	{
+		Log::debug() << "Rebuilding editor menu";
+
+		editor.set_title("Editing \'" + definition.id + "\'");
+		editor.set_timeout(500);
+		editor.clear_elements();
+
+		for (auto& [component_id, component_data] : definition.data.items())
+		{
+			if (component_id == "Color")
+			{
+				editor.add(UI::Element::ValueSelector<Json::number_integer_t>(
+							component_id,
+							component_data.get_ptr<Json::number_integer_t*>(),
+							{16,231}
+							));
+			}
+			else if (component_data.is_boolean())
+			{
+				editor.add(UI::Element::Checkbox(
+							component_id,
+							component_data.get_ptr<bool*>()
+							));
+			}
+			else if (component_data.is_string())
+			{
+				if (Game::Component::value_is_enum(component_id))
+				{
+					editor.add(UI::Element::SingleChoice(
+								component_id,
+								component_data.get_ptr<std::string*>(),
+								Game::Component::get_enum_value_strings(component_id)
+								));
+					continue;
+				}
+				editor.add(UI::Element::TextIn(
+							component_id,
+							component_data.get_ptr<std::string*>()
+							));
+			}
+			else if (component_data.is_number_unsigned())
+			{
+				using T = Json::number_unsigned_t;
+
+				editor.add(UI::Element::ValueSelector<T>{
+						component_id,
+						component_data.get_ptr<T*>(),
+						{0, 100}
+						});
+			}
+			else if (component_data.is_number_integer())
+			{
+				using T = Json::number_integer_t;
+
+				editor.add(UI::Element::ValueSelector<T>{
+						component_id,
+						component_data.get_ptr<T*>(),
+						{-100, 100}
+						});
+			}
+			else if (component_data.is_number_float())
+			{
+				using T = Json::number_float_t;
+
+				editor.add(UI::Element::ValueSelector<T>{
+						component_id,
+						component_data.get_ptr<T*>(),
+						{-100, 100}
+						});
+			}
+			else if (component_data.is_array())
+			{
+				editor.add(
+						UI::Element::MultiChoice(
+							component_id,
+							component_data.size()
+							));
+			}
+		}
+
+		editor.add(UI::Element::confirm());	// apply changes
+		editor.add(UI::Element::cancel());	// revert changes
+	}
+
 
 	void edit_definition(Definition& definition)
 	{
 		const auto original = definition;
-		//auto* tags = definition["Tags"].get<std::vector<std::string>>().
-		Ncurses::Panel edit_panel;
+
+		Ncurses::Panel edit_panel; // Show the json itself in the background
 		edit_panel.get_window().enable_color(UI::load_theme().text);
+
 		UI::Selection selection;
+		UI::Menu editor;
+		bool rebuild = true;
+
 		while (true)
 		{
-			print_definition(edit_panel.get_window(), definition);
-			UI::Menu editor;
-			editor.set_title("Editing \'" + definition.id + "\'" +
-					(Game::Entity::valid_definition(definition.data) ? "" : "*")
-					);
-			editor.set_timeout(-1);
-			//editor.add(UI::Element::MultiChoice("Tags", &tags));
-
-			for (auto& [component_id, component_data] : definition.data.items())
+			if (rebuild)
 			{
-				if (component_data.is_boolean())
-				{
-					editor.add(UI::Element::Checkbox(
-								component_id,
-								component_data.get_ptr<bool*>()
-								));
-				}
-				else if (component_data.is_string())
-				{
-					if (Game::Component::value_is_enum(component_id))
-					{
-						editor.add(UI::Element::SingleChoice(
-									component_id,
-									component_data.get_ptr<std::string*>(),
-									Game::Component::get_enum_value_strings(component_id)
-									));
-						continue;
-					}
-					editor.add(UI::Element::TextIn(
-								component_id,
-								component_data.get_ptr<std::string*>()
-								));
-				}
-				else if (component_data.is_number_unsigned())
-				{
-					using T = Json::number_unsigned_t;
-
-					editor.add(UI::Element::ValueSelector<T>{
-							component_id,
-							component_data.get_ptr<T*>(),
-							{0, 100}
-							});
-				}
-				else if (component_data.is_number_integer())
-				{
-					using T = Json::number_integer_t;
-
-					editor.add(UI::Element::ValueSelector<T>{
-							component_id,
-							component_data.get_ptr<T*>(),
-							{-100, 100}
-							});
-				}
-				else if (component_data.is_number_float())
-				{
-					using T = Json::number_float_t;
-
-					editor.add(UI::Element::ValueSelector<T>{
-							component_id,
-							component_data.get_ptr<T*>(),
-							{-100, 100}
-							});
-				}
-				else if (component_data.is_array())
-				{
-					editor.add(
-							UI::Element::MultiChoice(
-								component_id,
-								component_data.size()
-								));
-				}
+				rebuild_editor(editor, definition);
+				rebuild = false;
 			}
 
-			editor.add(UI::Element::confirm());	// apply changes
-			editor.add(UI::Element::cancel());	// revert changes
+			print_definition(edit_panel.get_window(), definition);
 
 			selection = editor.get_selection(selection.index);
-			Log::debug() << "Editor selection: " << selection;
+			if (!selection.timed_out())
+				Log::debug() << "Editor selection: " << selection;
+
 			using State = UI::Selection::State;
-			switch (selection.state)
+
+			if (selection.cancelled())
 			{
-				case State::Pending:
-					continue;
-				case State::Selected:
-					// should not happen, this is for buttons which are not confirm or cancel
-					break;
-				case State::Confirmed:
-					return;
-				case State::Cancelled:
-					definition = original;
-					return;
-				case State::TimedOut:
-					continue;
-				case State::Error:
-					Log::error() << "Error in edit_definition";
-					continue;
-				case State::SingleChoice:
-					// shouldnt happen, or even exist, because Menu already handles editing SingleChoice
-					continue;
-				case State::MultiChoice:
-					if (selection.label == "Tags")
-						edit_tags(definition);
-					// opens another menu, where user can choose many, because Menu doesnt do that itself
-					continue;
-				case State::Ignored:
-					// should not happen
-					continue;
-				case State::Changed:
-					// should not happen
-					continue;
+				definition = original;
+				return;
+			}
+
+			if (selection.confirmed())
+				return;
+
+			if (selection.label == "Tags")
+			{
+				edit_tags(definition);
+				rebuild = true;
+			}
+
+			if (selection.state == State::MultiChoice)
+			{
+				// TODO
+				continue;
+			}
+
+			if (selection.state == State::Error)
+			{
+				Log::error() << selection;
+				return;
 			}
 		}
 	}

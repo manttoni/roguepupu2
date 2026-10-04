@@ -25,6 +25,7 @@ namespace Game::Component
 			using value_type = T;
 		};
 
+	// TODO: move to Enum.hpp
 	template<typename T>
 		std::vector<std::string> enum_value_strings()
 		{
@@ -226,33 +227,9 @@ namespace Game::Component::Dependency
 	}
 
 	// get ids of components that are dependent on C
-	inline std::vector<std::string>
-		get_directly_dependent_tag_ids(
-				const std::string_view dependency_id)
-		{
-			static constexpr std::string_view prefix =
-				"Game::";
+	std::vector<std::string> get_required_tag_ids(
+			const std::string_view dependency_id);
 
-			std::vector<std::string> tag_ids;
-
-#define X(component, dependency) \
-			{ \
-				constexpr std::string_view component_id{#component};\
-				constexpr std::string_view required_id{#dependency};\
-				if (component_id.starts_with(prefix) && \
-						required_id.starts_with(prefix) && \
-						required_id.substr(prefix.size()) == \
-						dependency_id) \
-				{ \
-					tag_ids.emplace_back( \
-							component_id.substr(prefix.size())); \
-				} \
-			}
-
-#include "Dependency.def"
-
-#undef X
-
-			return tag_ids;
-		}
+	std::vector<std::string> get_required_non_tag_ids(
+			std::string_view tag_id);
 }

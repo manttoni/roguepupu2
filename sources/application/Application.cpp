@@ -71,6 +71,7 @@ bool Application::handle_input(const Ncurses::Input::Event& event)
 void Application::editor_menu()
 {
 	EntityEditor::start();
+	entity_database = EntityDatabase{};
 }
 
 void Application::settings_menu()

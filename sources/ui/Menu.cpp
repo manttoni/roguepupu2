@@ -118,6 +118,7 @@ namespace UI
 
 	Selection Menu::get_selection(size_t selected)
 	{
+		changed_ = false;
 		reset_panel();
 		while (true)
 		{
@@ -145,6 +146,11 @@ namespace UI
 				default:
 					{
 						const Selection selection = handle_input(selected, event);
+						if (selection.state == Selection::State::Changed)
+						{
+							changed_ = true;
+							Log::debug() << "\'" << selection.label << "\' changed";
+						}
 						if (selection.selected() || selection.confirmed() || selection.cancelled() || selection.state == Selection::State::MultiChoice)
 							return selection;
 					}
