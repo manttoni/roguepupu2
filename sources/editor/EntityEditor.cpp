@@ -62,7 +62,7 @@ namespace EntityEditor
 		{
 			const auto filtered_definitions = filter_definitions(all_definitions, filter);
 			UI::Menu search;
-			search.set_title("Seach definition");
+			search.set_title("Search definition");
 			search.set_timeout(100);
 			search.add(UI::Element::TextIn("Filter", &filter));
 			for (const auto& def : filtered_definitions)
@@ -113,6 +113,7 @@ namespace EntityEditor
 
 	/* Return true if 'definition' is already completely the same as one in 'all_definitions'
 	 * */
+
 	bool definition_matches(const Json& all_definitions, const Definition& definition)
 	{
 		return all_definitions.contains(definition.id) && all_definitions.at(definition.id) == definition.data;
@@ -127,16 +128,10 @@ namespace EntityEditor
 			return;
 		if (!definition_matches(all_definitions, active) && !active.id.empty())
 		{
-			if (UI::Dialog::get_selection("Save/overwrite \"" + active.id + "\"?", {"Yes", "No"}).label == "Yes")
+			if (UI::Dialog::get_selection("Save \"" + active.id + "\"?", {"Yes", "No"}).label == "Yes")
 				add_definition(all_definitions, active);
 		}
 		active = *definition;
-	}
-
-	void check_tags(Definition& definition)
-	{
-		const auto tags = definition.data["Tags"].get<std::vector<std::string>>();
-
 	}
 
 	void print_definition(Ncurses::Window& surface, const Definition& definition)
@@ -147,9 +142,49 @@ namespace EntityEditor
 		surface.refresh();
 	}
 
+	void edit_tags(Definition& definition)
+	{
+		auto tags = definition.data["Tags"].get<std::vector<std::string>>();
+		const auto all_tags = Game::Component::get_tag_ids();
+		std::vector<TagOption> tag_options;
+		for (const auto& tag : all_tags)
+		{
+			tag_options.emplace_back(
+					tag,
+					std::find(tags.begin(), tags.end(), tag) != tags.end());
+		}
+
+		UI::Menu tag_menu("Edit Tags");
+		for (auto& option : tag_options)
+		{
+			tag_menu.add(UI::Element::Checkbox(
+						option.id,
+						&option.check
+						));
+		}
+		tag_menu.add(UI::Element::confirm());
+		tag_menu.add(UI::Element::cancel());
+		tag_menu.set_timeout(-1);
+		const auto selection = tag_menu.get_selection();
+
+		if (selection.cancelled())
+			return;
+
+		assert(selection.confirmed());
+
+		definition.data["Tags"] = Json::array();
+
+		for (const auto& option : tag_options)
+		{
+			if (option.check)
+				definition.data["Tags"].push_back(option.id);
+		}
+	}
+
 	void edit_definition(Definition& definition)
 	{
 		const auto original = definition;
+		//auto* tags = definition["Tags"].get<std::vector<std::string>>().
 		Ncurses::Panel edit_panel;
 		edit_panel.get_window().enable_color(UI::load_theme().text);
 		UI::Selection selection;
@@ -157,10 +192,10 @@ namespace EntityEditor
 		{
 			print_definition(edit_panel.get_window(), definition);
 			UI::Menu editor;
-			editor.set_title(definition.id +
+			editor.set_title("Editing \'" + definition.id + "\'" +
 					(Game::Entity::valid_definition(definition.data) ? "" : "*")
 					);
-			editor.set_timeout(500);
+			editor.set_timeout(-1);
 			//editor.add(UI::Element::MultiChoice("Tags", &tags));
 
 			for (auto& [component_id, component_data] : definition.data.items())
@@ -218,19 +253,21 @@ namespace EntityEditor
 							{-100, 100}
 							});
 				}
-				/*else if (component_data.is_array())
-				  {
-				  editor.add(UI::Element::MultiChoice<std::string>(
-				  component_id,
-				  component_data.get_ptr<std::vector<std::string>*>()
-				  ));
-				  }*/
+				else if (component_data.is_array())
+				{
+					editor.add(
+							UI::Element::MultiChoice(
+								component_id,
+								component_data.size()
+								));
+				}
 			}
 
 			editor.add(UI::Element::confirm());	// apply changes
 			editor.add(UI::Element::cancel());	// revert changes
 
 			selection = editor.get_selection(selection.index);
+			Log::debug() << "Editor selection: " << selection;
 			using State = UI::Selection::State;
 			switch (selection.state)
 			{
@@ -253,6 +290,8 @@ namespace EntityEditor
 					// shouldnt happen, or even exist, because Menu already handles editing SingleChoice
 					continue;
 				case State::MultiChoice:
+					if (selection.label == "Tags")
+						edit_tags(definition);
 					// opens another menu, where user can choose many, because Menu doesnt do that itself
 					continue;
 				case State::Ignored:

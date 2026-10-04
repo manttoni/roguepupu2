@@ -74,7 +74,10 @@ namespace Game::Component
 #undef X
 		return false; // Could still be some other enum than GameEnum
 	}
-}
+
+	std::vector<std::string> get_tag_ids();
+
+} // namespace Game::Component
 
 namespace Game::Component::List
 {
@@ -118,8 +121,6 @@ namespace Game::Component::List
 #include "List.def"
 #undef X
 }
-
-
 
 namespace Game::Component::Value
 {

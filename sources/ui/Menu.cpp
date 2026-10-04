@@ -57,6 +57,7 @@ namespace UI
 	void Menu::add(const Element::Any& element)
 	{
 		elements.push_back(element);
+		Log::debug() << "\'" << Element::get_label(element) << "\' added to \'" << title << "\'";
 	}
 
 	void Menu::add(const std::vector<Element::Any>& elements)
@@ -121,7 +122,8 @@ namespace UI
 		while (true)
 		{
 			print_elements(selected);
-			const Ncurses::Input::Event event = Ncurses::Input::get_event(timeout);
+			const Ncurses::Input::Event event =
+				Ncurses::Input::get_event(timeout);
 			using Key = Ncurses::Input::Key;
 			switch (event.key)
 			{
@@ -143,7 +145,7 @@ namespace UI
 				default:
 					{
 						const Selection selection = handle_input(selected, event);
-						if (selection.selected() || selection.confirmed() || selection.cancelled())
+						if (selection.selected() || selection.confirmed() || selection.cancelled() || selection.state == Selection::State::MultiChoice)
 							return selection;
 					}
 					break;
