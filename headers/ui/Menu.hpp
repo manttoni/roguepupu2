@@ -22,7 +22,7 @@ namespace UI
 			void print_elements(const size_t selected);
 			Selection handle_input(const std::size_t selected, const Ncurses::Input::Event& event);
 			UI::Theme theme = UI::load_theme();
-			bool changed_;
+			bool changed_ = true;
 
 		public:
 			// Center the menu as close to position as possible.
@@ -56,5 +56,7 @@ namespace UI
 			inline bool changed() const { return changed_; }
 
 			inline void clear_elements() { elements.clear(); }
+
+			inline int get_timeout() const { return timeout; }
 	};
 }

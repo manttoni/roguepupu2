@@ -58,6 +58,7 @@ namespace UI
 	{
 		elements.push_back(element);
 		Log::debug() << "\'" << Element::get_label(element) << "\' added to \'" << title << "\'";
+		changed_ = true;
 	}
 
 	void Menu::add(const std::vector<Element::Any>& elements)
@@ -118,6 +119,7 @@ namespace UI
 
 	Selection Menu::get_selection(size_t selected)
 	{
+		selected = Math::clamp(0, elements.size());
 		changed_ = false;
 		reset_panel();
 		while (true)
