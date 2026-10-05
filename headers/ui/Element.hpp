@@ -12,6 +12,12 @@ namespace UI::Element
 {
 	using Json = nlohmann::json;
 
+	enum class Role
+	{
+		Normal,
+		Confirm,
+		Cancel
+	};
 	struct Null
 	{
 		std::string label = "Null";
@@ -108,7 +114,6 @@ namespace UI::Element
 
 	struct Button
 	{
-		enum class Role { Normal, Cancel, Confirm };
 		std::string label;
 		Role role = Role::Normal;
 	};
@@ -208,6 +213,6 @@ namespace UI::Element
 			>;
 	std::string to_string(const Any& element);
 	std::string get_label(const Any& element);
-	static inline Button confirm() { return Button{.label = "Confirm", .role = Button::Role::Confirm}; }
-	static inline Button cancel() { return Button{.label = "Cancel", .role = Button::Role::Cancel}; }
+	static inline Button confirm() { return Button{.label = "Confirm", .role = Role::Confirm}; }
+	static inline Button cancel() { return Button{.label = "Cancel", .role = Role::Cancel}; }
 }

@@ -138,7 +138,7 @@ void Application::main_menu()
 		main.add(UI::Element::Button("Editor"));
 		main.add(UI::Element::Button("Settings"));
 		main.add(UI::Element::Button("Controls"));
-		main.add(UI::Element::Button("Exit", UI::Element::Button::Role::Cancel));
+		main.add(UI::Element::Button("Exit", UI::Element::Role::Cancel));
 
 		selection = main.get_selection(selection.index);
 

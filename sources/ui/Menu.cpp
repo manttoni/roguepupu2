@@ -9,15 +9,17 @@
 #include <vector>
 #include <variant>
 
+#include "ncurses/Screen.hpp"
+#include "ui/Element.hpp"
+#include "ui/Format.hpp"
+#include "ui/Menu.hpp"
 #include "ui/Menu.hpp"
 #include "utils/Log.hpp"
-#include "ncurses/Screen.hpp"
-#include "ui/Menu.hpp"
-#include "utils/Vec2.hpp"
-#include "utils/Utils.hpp"
+#include "utils/Math.hpp"
 #include "utils/Math.hpp"
 #include "utils/Parser.hpp"
-#include "ui/Element.hpp"
+#include "utils/Utils.hpp"
+#include "utils/Vec2.hpp"
 
 namespace UI
 {
@@ -29,20 +31,16 @@ namespace UI
 
 	void Menu::reset_panel()
 	{
+		const auto formatted = Format::elements(elements);
 		const auto longest = std::max_element(
-				elements.begin(),
-				elements.end(),
+				formatted.begin(),
+				formatted.end(),
 				[](const auto& a, const auto& b)
 				{
-					return Element::to_string(a).size()
-						< Element::to_string(b).size();
-				}
-				);
-
-		const std::size_t longest_length =
-			longest == elements.end()
-			? 0
-			: Element::to_string(*longest).size();
+					return a.size() < b.size();
+				});
+		const auto longest_length =
+			longest == formatted.end() ? 0 : longest->size();
 
 		const int height = 2 + elements.size();
 		const int width  = 4 + std::max(longest_length, title.size() + 2);
@@ -69,20 +67,23 @@ namespace UI
 
 	void Menu::print_elements(const size_t selected)
 	{
+		const auto lines = Format::elements(elements);
+
 		Ncurses::Window& surface = panel.get_window();
 		surface.clear();
 		surface.enable_color(theme.text);
-		for (size_t i = 0; i < elements.size(); ++i)
+
+		for (size_t i = 0; i < lines.size(); ++i)
 		{
 			if (selected == i) surface.enable_attribute(Ncurses::Attribute(A_REVERSE));
-			std::visit( [&surface, i](const auto& e) { surface.write(i + 1, 2, Element::to_string(e)); }, elements[i] );
+			surface.write(i + 1, 2, lines[i]);
 			if (selected == i) surface.disable_attribute(Ncurses::Attribute(A_REVERSE));
 		}
 		surface.disable_color(theme.text);
 		surface.enable_color(theme.border);
 		surface.draw_border();
 		surface.disable_color(theme.border);
-		surface.refresh();
+		surface.refresh(); // does this do anything in this context?
 		update_panels();
 		doupdate();
 	}
@@ -119,7 +120,7 @@ namespace UI
 
 	Selection Menu::get_selection(size_t selected)
 	{
-		selected = Math::clamp(0, elements.size());
+		selected = Math::clamp<size_t>(selected, 0, elements.size() - 1);
 		changed_ = false;
 		reset_panel();
 		while (true)

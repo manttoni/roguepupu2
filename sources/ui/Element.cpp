@@ -96,7 +96,7 @@ namespace UI::Element
 	Selection::State handle_input(Button& element, const Ncurses::Input::Event& event)
 	{
 		using Key = Ncurses::Input::Key;
-		using Role = Button::Role;
+		using Role = Role;
 
 		if (event.key != Key::Enter)
 			return Selection::State::Ignored;

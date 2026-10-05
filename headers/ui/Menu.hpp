@@ -42,21 +42,16 @@ namespace UI
 
 			Selection get_selection(size_t default_selected = 0);
 
-			void set_timeout(const int value)
-			{
-				timeout = value;
-			}
+			void set_timeout(const int value) { timeout = value; }
+			void set_title(const std::string& title) { this->title = title; }
+			int get_timeout() const { return timeout; }
+			std::string get_title() const { return title; }
 
-			void set_title(const std::string& title)
-			{
-				this->title = title;
-			}
 			std::string get_label(std::size_t index) const;
 
 			inline bool changed() const { return changed_; }
 
 			inline void clear_elements() { elements.clear(); }
-
-			inline int get_timeout() const { return timeout; }
+			const std::vector<Element::Any>& get_elements() const { return elements; }
 	};
 }

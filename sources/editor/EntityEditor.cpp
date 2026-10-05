@@ -1,4 +1,6 @@
 #include <sstream>
+#include "ui/Subset.hpp"
+#include "ui/Search.hpp"
 #include "editor/EntityEditor.hpp"
 #include "ui/Theme.hpp"
 #include "utils/Log.hpp"
@@ -25,62 +27,16 @@ namespace EntityEditor
 		return true;
 	}
 
-	std::vector<Definition> filter_definitions(const Json& all_definitions, const std::string& filter)
-	{
-		std::vector<Definition> filtered;
-
-		for (const auto& [id, data] : all_definitions.items())
-		{
-			bool matches = filter.empty() || id.find(filter) != std::string::npos;
-
-			if (!matches)
-			{
-				for (const auto& [component_id, component_data] : data.items())
-				{
-					if (component_data.is_string() && component_data.get<std::string>().find(filter) != std::string::npos)
-					{
-						matches = true;
-						break;
-					}
-					if (component_id.find(filter) != std::string::npos)
-					{
-						matches = true;
-						break;
-					}
-				}
-			}
-
-			if (matches)
-				filtered.push_back({.id = id, .data = data});
-		}
-
-		return filtered;
-	}
-
 	std::optional<Definition> search_definition(const Json& all_definitions)
 	{
-		std::string filter = "";
-		UI::Selection selection;
-		while (true)
-		{
-			const auto filtered_definitions = filter_definitions(all_definitions, filter);
-			UI::Menu search;
-			search.set_title("Search definition");
-			search.set_timeout(100);
-			search.add(UI::Element::TextIn("Filter", &filter));
-			for (const auto& def : filtered_definitions)
-			{
-				search.add(UI::Element::Button(def.id));
-			}
-			search.add(UI::Element::cancel());
-
-			selection = search.get_selection(selection.index);
-			if (selection.selected())
-				return Definition{.id = selection.label, .data = all_definitions.at(selection.label)};
-			if (selection.cancelled())
-				break;
-		}
-		return std::nullopt;
+		UI::Menu menu("Search Definition");
+		for (const auto& [id, data] : all_definitions.items())
+			menu.add(UI::Element::Button(id));
+		menu.add(UI::Element::cancel());
+		const auto selection = UI::Search::select(menu);
+		if (selection.cancelled())
+			return std::nullopt;
+		return Definition{.id = selection.label, .data = all_definitions.at(selection.label)};
 	}
 
 	std::optional<Definition> load_definition(const Json& all_definitions)
@@ -93,16 +49,10 @@ namespace EntityEditor
 
 	std::optional<Definition> new_definition(const Json& all_definitions)
 	{
-		std::string id = "";
-		UI::Menu new_entity;
-		new_entity.set_title("New entity");
-		new_entity.add(UI::Element::TextIn("Entity id", &id, {3, 20}, true));
-		new_entity.add(UI::Element::confirm());
-		new_entity.add(UI::Element::cancel());
-		const auto selection = new_entity.get_selection();
+		std::string id;
+		const auto selection = UI::Dialog::get_input("Entity ID", id);
 		if (selection.cancelled())
 			return std::nullopt;
-
 		assert(selection.confirmed());
 
 		if (!Game::Entity::valid_id(id))
@@ -120,14 +70,13 @@ namespace EntityEditor
 
 	/* Return true if 'definition' is already completely the same as one in 'all_definitions'
 	 * */
-
 	bool definition_matches(const Json& all_definitions, const Definition& definition)
 	{
 		return all_definitions.contains(definition.id) && all_definitions.at(definition.id) == definition.data;
 	}
 
 	/* Remove "active status" from active definition by giving it to 'definition' instead
-	 * Save 'active' into 'all_definitions' if user confirms
+	 * Save 'active' into 'all_definitions' if user confirms. Still needs to be written to file.
 	 * */
 	void activate_definition(Json& all_definitions, Definition& active, const std::optional<Definition>& definition)
 	{
@@ -146,7 +95,6 @@ namespace EntityEditor
 		surface.clear();
 		const std::string str = "\"" + definition.id + "\": " + definition.data.dump(4);
 		surface.write(0, 0, str);
-		//surface.refresh();
 	}
 	template<typename T>
 		Json value_to_json(const T& value)
@@ -233,101 +181,28 @@ namespace EntityEditor
 		return changed;
 	}
 
-	void rebuild_tag_menu(
-			UI::Menu& tag_menu,
-			std::string& filter,
-			std::vector<TagOption>& tag_options)
-	{
-		tag_menu = UI::Menu("Edit Tags");
-		tag_menu.set_timeout(100);
-
-		tag_menu.add(UI::Element::TextIn{
-				"Filter",
-				&filter
-				});
-
-		for (auto& option : tag_options)
-		{
-			if (option.id.find(filter) == std::string::npos)
-				continue;
-
-			tag_menu.add(UI::Element::Checkbox{
-					option.id,
-					&option.check
-					});
-		}
-
-		tag_menu.add(UI::Element::confirm());
-		tag_menu.add(UI::Element::cancel());
-	}
-
 	void edit_tags(Definition& definition)
 	{
-		const auto tags =
-			definition.data.at("Tags").get<std::vector<std::string>>();
-
-		std::vector<TagOption> tag_options;
-
-		for (const auto& tag : Game::Component::get_tag_ids())
-		{
-			tag_options.emplace_back(
-					tag,
-					std::find(tags.begin(), tags.end(), tag) != tags.end());
-		}
-
-		UI::Menu tag_menu("Edit Tags");
-		tag_menu.set_timeout(100);
-		UI::Selection selection;
-		std::string filter;
-		bool rebuild = true;
-
-		while (true)
-		{
-			if (rebuild)
-			{
-				rebuild_tag_menu(tag_menu, filter, tag_options);
-				rebuild = false;
-			}
-
-			selection = tag_menu.get_selection(selection.index);
-			if (tag_menu.changed())
-				rebuild = true;
-
-			if (selection.cancelled())
-				return;
-
-			if (selection.confirmed())
-				break;
-		}
-
-		auto selected_tags = Json::array();
-
-		for (const auto& option : tag_options)
-		{
-			if (option.check)
-				selected_tags.push_back(option.id);
-		}
-
-		definition.data["Tags"] = std::move(selected_tags);
-
-		while (update_dependencies(definition))
-		{
-		}
+		const auto all_tags = Game::Component::get_tag_ids();
+		auto tags = definition.data["Tags"].get<std::vector<std::string>>();
+		UI::Subset::edit(all_tags, tags);
+		definition.data["Tags"] = tags;
+		while (update_dependencies(definition)) {}
 	}
 
-	void rebuild_editor(UI::Menu& editor, Definition& definition)
+	void build_edit_definition_menu(UI::Menu& menu, Definition& definition)
 	{
-		Log::debug() << "Rebuilding editor menu";
+		Log::debug() << "Building menu menu";
 
-		editor.set_title("Editing \'" + definition.id + "\'");
-		editor.set_timeout(500);
-		editor.clear_elements();
+		menu.set_title("Editing \'" + definition.id + "\'");
+		menu.set_timeout(500);
+		menu.clear_elements();
 
 		for (auto& [component_id, component_data] : definition.data.items())
 		{
 			if (component_id == "Color")
 			{
-				editor.add(UI::Element::ValueSelector<Json::number_integer_t>(
+				menu.add(UI::Element::ValueSelector<Json::number_integer_t>(
 							component_id,
 							component_data.get_ptr<Json::number_integer_t*>(),
 							{16,231}
@@ -335,7 +210,7 @@ namespace EntityEditor
 			}
 			else if (component_data.is_boolean())
 			{
-				editor.add(UI::Element::Checkbox(
+				menu.add(UI::Element::Checkbox(
 							component_id,
 							component_data.get_ptr<bool*>()
 							));
@@ -344,14 +219,14 @@ namespace EntityEditor
 			{
 				if (Game::Component::value_is_enum(component_id))
 				{
-					editor.add(UI::Element::SingleChoice(
+					menu.add(UI::Element::SingleChoice(
 								component_id,
 								component_data.get_ptr<std::string*>(),
 								Game::Component::get_enum_value_strings(component_id)
 								));
 					continue;
 				}
-				editor.add(UI::Element::TextIn(
+				menu.add(UI::Element::TextIn(
 							component_id,
 							component_data.get_ptr<std::string*>()
 							));
@@ -360,7 +235,7 @@ namespace EntityEditor
 			{
 				using T = Json::number_unsigned_t;
 
-				editor.add(UI::Element::ValueSelector<T>{
+				menu.add(UI::Element::ValueSelector<T>{
 						component_id,
 						component_data.get_ptr<T*>(),
 						{0, 100}
@@ -370,7 +245,7 @@ namespace EntityEditor
 			{
 				using T = Json::number_integer_t;
 
-				editor.add(UI::Element::ValueSelector<T>{
+				menu.add(UI::Element::ValueSelector<T>{
 						component_id,
 						component_data.get_ptr<T*>(),
 						{-100, 100}
@@ -380,7 +255,7 @@ namespace EntityEditor
 			{
 				using T = Json::number_float_t;
 
-				editor.add(UI::Element::ValueSelector<T>{
+				menu.add(UI::Element::ValueSelector<T>{
 						component_id,
 						component_data.get_ptr<T*>(),
 						{-100, 100}
@@ -388,71 +263,40 @@ namespace EntityEditor
 			}
 			else if (component_data.is_array())
 			{
-				editor.add(
-						UI::Element::MultiChoice(
-							component_id,
-							component_data.size()
-							));
+				menu.add(UI::Element::MultiChoice{
+						component_id,
+						component_data.size()
+						});
 			}
 		}
 
-		editor.add(UI::Element::confirm());	// apply changes
-		editor.add(UI::Element::cancel());	// revert changes
+		menu.add(UI::Element::confirm());
+		menu.add(UI::Element::cancel());
 	}
-
 
 	void edit_definition(Definition& definition)
 	{
 		const auto original = definition;
 
-		Ncurses::Panel edit_panel; // Show the json itself in the background
-		edit_panel.get_window().enable_color(UI::load_theme().text);
-
-		UI::Selection selection;
-		UI::Menu editor;
-		bool rebuild = true;
-
 		while (true)
 		{
-			if (rebuild)
+			UI::Menu menu;
+			build_edit_definition_menu(menu, definition);
+			const auto selection = UI::Search::select(menu);
+			switch (selection.state)
 			{
-				rebuild_editor(editor, definition);
-				rebuild = false;
-			}
-
-			print_definition(edit_panel.get_window(), definition);
-
-			selection = editor.get_selection(selection.index);
-			if (!selection.timed_out())
-				Log::debug() << "Editor selection: " << selection;
-
-			using State = UI::Selection::State;
-
-			if (selection.cancelled())
-			{
-				definition = original;
-				return;
-			}
-
-			if (selection.confirmed())
-				return;
-
-			if (selection.label == "Tags")
-			{
-				edit_tags(definition);
-				rebuild = true;
-			}
-
-			if (selection.state == State::MultiChoice)
-			{
-				// TODO
-				continue;
-			}
-
-			if (selection.state == State::Error)
-			{
-				Log::error() << selection;
-				return;
+				case UI::Selection::State::Cancelled:
+					definition = original;
+					return;
+				case UI::Selection::State::Confirmed:
+					return;
+				case UI::Selection::State::MultiChoice:
+					if (selection.label == "Tags")
+						edit_tags(definition);
+					continue;
+				default:
+					Log::error() << selection;
+					return;
 			}
 		}
 	}
