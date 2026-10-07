@@ -41,10 +41,7 @@ namespace EntityEditor
 
 	std::optional<Definition> load_definition(const Json& all_definitions)
 	{
-		const auto definition = search_definition(all_definitions);
-		if (!definition.has_value())
-			return std::nullopt;
-		return definition;
+		return search_definition(all_definitions);
 	}
 
 	std::optional<Definition> new_definition(const Json& all_definitions)
@@ -54,7 +51,6 @@ namespace EntityEditor
 		if (selection.cancelled())
 			return std::nullopt;
 		assert(selection.confirmed());
-
 		if (!Game::Entity::valid_id(id))
 			return std::nullopt;
 		if (all_definitions.contains(id))
@@ -64,7 +60,6 @@ namespace EntityEditor
 		}
 		Definition d{.id = id, .data = Json::object()};
 		d.data["Tags"] = Json::array();
-
 		return d;
 	}
 
@@ -96,6 +91,7 @@ namespace EntityEditor
 		const std::string str = "\"" + definition.id + "\": " + definition.data.dump(4);
 		surface.write(0, 0, str);
 	}
+
 	template<typename T>
 		Json value_to_json(const T& value)
 		{
@@ -108,6 +104,7 @@ namespace EntityEditor
 			else
 				return Json(value);
 		}
+
 	Json component_default(std::string_view id)
 	{
 #define X(name, type) \
