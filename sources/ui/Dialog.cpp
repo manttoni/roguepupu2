@@ -70,7 +70,10 @@ namespace UI::Dialog
 		auto copy = input;
 
 		Menu menu(label);
-		UI::Element::TextIn text_in{.label = "", .text = &copy};
+		UI::Element::TextIn text_in{
+			.label = "",
+				.text = &copy,
+				.length = {0, std::max<size_t>(copy.size(), 23)}};
 		text_in.confirm = true;
 		menu.add(text_in);
 		menu.add(UI::Element::confirm());
