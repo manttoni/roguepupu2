@@ -18,7 +18,6 @@
         "OnDeath": [],
         "OnDestroy": [],
         "OnSpawn": [],
-        "SpawnConditions": [],
         "Strength": 8,
         "Tags": [
             "Player",
@@ -31,25 +30,22 @@
         "VisionRange": 10,
         "Wisdom": 8
     },
-    "shortsword": {
+    "stone": {
+        "Ammo": "Bullet",
         "CollisionMovement": false,
         "CollisionVision": false,
         "Color": 102,
-        "DamageRolls": [],
-        "Glyph": "s",
-        "GoldValue": 10,
-        "Name": "shortsword",
+        "Glyph": ".",
+        "GoldValue": 0,
+        "Name": "Stone",
         "OnSpawn": [],
         "Rarity": "Common",
-        "SpawnConditions": [],
         "Tags": [
-            "Weapon",
-            "Equipment",
+            "Ammo",
             "Item",
+            "Renderable",
             "WorldObject",
-            "Renderable"
-        ],
-        "WeaponProperties": [],
-        "WeaponType": "Shortsword"
+            "Equipment"
+        ]
     }
 }

@@ -1,20 +1,30 @@
-X(AIBehaviors, entt::entity)
-X(OnSpawn, entt::entity)
+// Runtime entity containers
 X(EquippedItems, entt::entity)
-X(DamageRolls, entt::entity)
 X(Inventory, entt::entity)
-X(Lights, entt::entity)
-X(OnCast, entt::entity)
-X(OnDamage, entt::entity)
-X(OnDeath, entt::entity)
-X(OnDestroy, entt::entity)
-X(OnEnter, entt::entity)
-X(OnGather, entt::entity)
-X(OnHit, entt::entity)
-X(OnMove, entt::entity)
-X(OnOpen, entt::entity)
-X(OnUpcast, entt::entity)
-X(OnUse, entt::entity)
-X(Projectiles, entt::entity)
-X(WorldObjects, entt::entity)
+
+// Needs editor, entity defining
+X(AIBehaviors, Game::Enum::AIBehavior)
 X(WeaponProperties, Game::Enum::WeaponProperty)
+
+// Dicerolls
+// Stores ids of damageroll tagged entities
+X(DamageRolls, Game::Entity::Definition::ID)
+
+// Effects, ids of entities with tag Effect
+X(OnSpawn, Game::Entity::Definition::ID)
+X(OnCast, Game::Entity::Definition::ID)
+X(OnDamage, Game::Entity::Definition::ID)
+X(OnDeath, Game::Entity::Definition::ID)
+X(OnDestroy, Game::Entity::Definition::ID)
+X(OnEnter, Game::Entity::Definition::ID)
+X(OnGather, Game::Entity::Definition::ID)
+X(OnHit, Game::Entity::Definition::ID)
+X(OnMove, Game::Entity::Definition::ID)
+X(OnOpen, Game::Entity::Definition::ID)
+X(OnUpcast, Game::Entity::Definition::ID)
+X(OnUse, Game::Entity::Definition::ID)
+X(Lights, Game::Entity::Definition::ID)
+
+// Visual/effects
+X(Projectiles, entt::entity)
+
