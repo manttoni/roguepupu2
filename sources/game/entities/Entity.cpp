@@ -123,7 +123,9 @@ namespace Game::Entity
 		}
 		return true;
 	}
-	entt::entity create(entt::registry& registry, const Definition& definition)
+	entt::entity create(
+			entt::registry& registry,
+			const Definition& definition)
 	{
 		const auto entity = registry.create();
 		for (const auto& [component_str, data] : definition.data.items())
@@ -142,7 +144,10 @@ namespace Game::Entity
 		return entity;
 	}
 
-	entt::entity create(entt::registry& registry, const EntityDatabase& entity_database, const Definition::ID& id)
+	entt::entity create(
+			entt::registry& registry,
+			const EntityDatabase& entity_database,
+			const Definition::ID& id)
 	{
 		if (!entity_database.definitions.contains(id))
 		{
@@ -153,5 +158,29 @@ namespace Game::Entity
 		return create(registry, definition);
 	}
 
+	// Checks only direct requirements and not requirement chains
+	bool requires_component(
+			const Definition& definition,
+			const std::string& component_name)
+	{
+		const auto tags = definition.data["Tags"].get<std::vector<std::string>>();
+
+		for (const auto& tag : tags)
+		{
+			const auto required_tags = Component::Dependency::get_required_tag_ids(tag);
+			if (std::find(
+						required_tags.begin(),
+						required_tags.end(),
+						component_name) != required_tags.end())
+				return true;
+			const auto required_non_tags = Component::Dependency::get_required_non_tag_ids(tag);
+			if (std::find(
+						required_non_tags.begin(),
+						required_non_tags.end(),
+						component_name) != required_tags.end())
+				return true;
+		}
+		return false;
+	}
 } // namespace Game::Entity
 
