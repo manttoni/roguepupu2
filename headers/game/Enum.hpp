@@ -10,6 +10,12 @@
 
 namespace Game::Enum
 {
+	enum class AIBehavior
+	{
+		Idle,
+		Wander,
+	};
+
 	enum class Material
 	{
 		None,
