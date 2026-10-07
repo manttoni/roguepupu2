@@ -10,6 +10,7 @@
 #include "game/Enum.hpp"
 #include "external/entt/fwd.hpp"
 #include "game/world/Position.hpp"
+#include "game/entities/Definition.hpp"
 
 namespace Game::Component
 {

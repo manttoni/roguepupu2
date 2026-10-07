@@ -13,17 +13,11 @@
 #include "external/entt/entt.hpp"
 #include "game/Enum.hpp"
 #include "databases/EntityDatabase.hpp"
+#include "game/entities/Definition.hpp"
 
 namespace Game::Entity
 {
 	using Json = nlohmann::json;
-
-	struct Definition
-	{
-		using ID = std::string;
-		ID id;
-		Json data;
-	};
 
 	// Keep the definition visible for compile-time calls.
 	inline constexpr bool valid_id(const Definition::ID& id) noexcept
