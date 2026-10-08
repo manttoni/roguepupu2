@@ -1,5 +1,6 @@
 #pragma once
 
+#include <nlohmann/json.hpp>
 #include <string>
 
 namespace Game::Entity
@@ -10,5 +11,7 @@ namespace Game::Entity
 		using ID = std::string;
 		ID id;
 		Json data;
+
+		bool operator==(const Definition& other) const = default;
 	};
 }

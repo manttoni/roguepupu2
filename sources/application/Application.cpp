@@ -7,7 +7,7 @@
 #include "ncurses/Input.hpp"
 #include "game/AI.hpp"
 #include "application/Layout.hpp"
-#include "game/components/Component.hpp"
+#include "game/component/Component.hpp"
 
 Game::Event::Any PlayerController::get_event(
 		const Game::Simulation& simulation,

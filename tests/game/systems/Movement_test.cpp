@@ -1,5 +1,5 @@
 #include "fixtures/WorldTest.hpp"
-#include "game/systems/Movement.hpp"
+#include "game/system/Movement.hpp"
 
 namespace
 {

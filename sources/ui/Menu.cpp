@@ -55,7 +55,6 @@ namespace UI
 	void Menu::add(const Element::Any& element)
 	{
 		elements.push_back(element);
-		Log::debug() << "\'" << Element::get_label(element) << "\' added to \'" << title << "\'";
 		changed_ = true;
 	}
 

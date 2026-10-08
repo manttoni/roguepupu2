@@ -1,7 +1,7 @@
 #include "application/EntityDescriber.hpp"
 #include "external/entt/entt.hpp"
 #include <string>
-#include "game/components/Component.hpp"
+#include "game/component/Component.hpp"
 
 std::string EntityDescriber::describe(entt::entity entity) const
 {

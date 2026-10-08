@@ -265,4 +265,13 @@ namespace Game::Enum
 
 			return result;
 		}
+
+	template<typename T>
+		[[nodiscard]] std::vector<std::string> get_value_strings_or_empty()
+		{
+			if constexpr (GameEnum<T>)
+				return get_value_strings<T>();
+			else
+				return {};
+		}
 } // namespace Enum

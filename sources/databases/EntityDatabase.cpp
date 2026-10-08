@@ -2,7 +2,7 @@
 #include "utils/Log.hpp"
 #include "utils/IO.hpp"
 #include "utils/Parser.hpp"
-#include "game/entities/Entity.hpp"
+#include "game/entity/Entity.hpp"
 
 #include <stdexcept>
 #include <iostream>

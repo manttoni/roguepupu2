@@ -1,15 +1,17 @@
-#include <sstream>
-#include "ui/Subset.hpp"
-#include "ui/Search.hpp"
-#include "editor/EntityEditor.hpp"
-#include "ui/Theme.hpp"
-#include "utils/Log.hpp"
-#include "utils/IO.hpp"
-#include "ui/Dialog.hpp"
-#include "ui/Menu.hpp"
-#include "ui/Element.hpp"
-#include "ncurses/Color.hpp"
 
+#include "editor/EntityEditor.hpp"
+#include "game/component/Dependency.hpp"
+#include "game/component/Component.hpp"
+#include "ncurses/Color.hpp"
+#include "ui/Dialog.hpp"
+#include "ui/Element.hpp"
+#include "ui/Menu.hpp"
+#include "ui/Search.hpp"
+#include "ui/Subset.hpp"
+#include "ui/Theme.hpp"
+#include "utils/IO.hpp"
+#include "utils/Log.hpp"
+#include <sstream>
 
 namespace EntityEditor
 {
@@ -110,19 +112,19 @@ namespace EntityEditor
 #define X(name, type) \
 		if (id == #name) \
 		return value_to_json(Game::Component::Value::name{}.value);
-#include "game/components/Value.def"
+#include "game/component/Value.def"
 #undef X
 
 #define X(name, type) \
 		if (id == #name) \
 		return value_to_json(Game::Component::Resource::name{}.maximum);
-#include "game/components/Resource.def"
+#include "game/component/Resource.def"
 #undef X
 
 #define X(name, type) \
 		if (id == #name) \
 		return Json::array();
-#include "game/components/List.def"
+#include "game/component/List.def"
 #undef X
 
 		throw std::invalid_argument(
@@ -131,7 +133,7 @@ namespace EntityEditor
 
 	/* Tags can require other Components
 	 * */
-	bool update_dependencies(Definition& definition)
+	bool add_required(Definition& definition)
 	{
 		auto& data = definition.data;
 
@@ -158,6 +160,7 @@ namespace EntityEditor
 							dependency) == current_tags.end())
 				{
 					current_tags.push_back(dependency);
+					Log::info() << "Added required Tag: " << dependency;
 					changed = true;
 				}
 			}
@@ -170,6 +173,7 @@ namespace EntityEditor
 				if (!data.contains(dependency))
 				{
 					data[dependency] = component_default(dependency);
+					Log::info() << "Added required Component: " << dependency;
 					changed = true;
 				}
 			}
@@ -178,13 +182,55 @@ namespace EntityEditor
 		return changed;
 	}
 
+	bool erase_unrequired(Definition& definition)
+	{
+		auto copy = definition;
+		auto& tags = copy.data["Tags"];
+		for (auto it = tags.begin(); it != tags.end();)
+		{
+			const auto tag_id = it->get<std::string>();
+			if (!Game::Entity::requires_component(definition, tag_id))
+			{
+				Log::info() << "Erased nonrequired Tag: " << tag_id;
+				it = tags.erase(it);
+			}
+			else
+				++it;
+		}
+		for (const auto& [component_id, component_data] : definition.data.items())
+		{
+			if (!Game::Entity::requires_component(definition, component_id))
+			{
+				if (component_id == "Tags")
+					continue;
+				copy.data.erase(component_id);
+				Log::info() << "Erased nonrequired Component: " << component_id;
+			}
+		}
+		if (definition == copy)
+			return false;
+		definition = copy;
+		return true;
+	}
+
+	void update_requirements(Definition& definition)
+	{
+		while (add_required(definition)) {}
+		while (erase_unrequired(definition)) {}
+	}
+
+	/* This is what will define the entitys requirements
+	 * Adding a Tag also adds its requirements
+	 * Removing a Tag will remove its requirements,
+	 * if no other Tag requires them
+	 * */
 	void edit_tags(Definition& definition)
 	{
-		const auto all_tags = Game::Component::get_tag_ids();
+		const auto all_tags = Game::Component::Tag::get_ids();
 		auto tags = definition.data["Tags"].get<std::vector<std::string>>();
 		UI::Subset::edit(all_tags, tags);
 		definition.data["Tags"] = tags;
-		while (update_dependencies(definition)) {}
+		update_requirements(definition);
 	}
 
 	void build_edit_definition_menu(UI::Menu& menu, Definition& definition)
@@ -214,7 +260,8 @@ namespace EntityEditor
 			}
 			else if (component_data.is_string())
 			{
-				if (Game::Component::value_is_enum(component_id))
+				// entt::entity is also an enum, but not 'GameEnum'
+				if (Game::Component::value_is_game_enum(component_id))
 				{
 					menu.add(UI::Element::SingleChoice(
 								component_id,

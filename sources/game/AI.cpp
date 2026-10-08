@@ -1,6 +1,6 @@
 #include "game/AI.hpp"
 #include "external/entt/entt.hpp"
-#include "game/components/Component.hpp"
+#include "game/component/Component.hpp"
 
 namespace Game::AI
 {

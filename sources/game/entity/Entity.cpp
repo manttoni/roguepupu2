@@ -1,4 +1,5 @@
-#include "game/entities/Entity.hpp"
+#include "game/entity/Entity.hpp"
+#include "game/component/Dependency.hpp"
 #include "utils/Log.hpp"
 
 namespace Game::Entity
@@ -14,7 +15,7 @@ namespace Game::Entity
 		{ \
 			return false; \
 		}
-#include "game/components/Dependency.def"
+#include "game/component/Dependency.def"
 #undef X
 
 		return true;
@@ -52,7 +53,7 @@ namespace Game::Entity
 		{ \
 			missing_dependencies += "\n[" + std::string(#dependency) + "]"; \
 		}
-#include "game/components/Dependency.def"
+#include "game/component/Dependency.def"
 #undef X
 
 		if (missing_dependencies.empty())
@@ -62,7 +63,7 @@ namespace Game::Entity
 		return false;
 	}
 	/* Entity Creation
-	 * uses macro expansions from game/components/ .def files
+	 * uses macro expansions from game/component/ .def files
 	 * */
 	bool emplace_component(
 			entt::registry& registry,
@@ -77,21 +78,21 @@ namespace Game::Entity
 		{ \
 			registry.emplace<Game::Component::Value::name>(entity, parse_value<type>(data)); \
 		}
-#include "game/components/Value.def"
+#include "game/component/Value.def"
 #undef X
 #define X(name, type) \
 		else if (component_str == #name) \
 		{ \
 			registry.emplace<Game::Component::List::name>(entity, parse_value<std::vector<type>>(data)); \
 		}
-#include "game/components/List.def"
+#include "game/component/List.def"
 #undef X
 #define X(name, type) \
 		else if (component_str == #name) \
 		{ \
 			registry.emplace<Game::Component::Resource::name>(entity, parse_value<type>(data)); \
 		}
-#include "game/components/Resource.def"
+#include "game/component/Resource.def"
 #undef X
 		else
 		{
@@ -113,7 +114,7 @@ namespace Game::Entity
 #define X(name) \
 			else if (tag == #name) \
 			registry.emplace<Game::Component::Tag::name>(entity);
-#include "game/components/Tag.def"
+#include "game/component/Tag.def"
 #undef X
 			else
 			{

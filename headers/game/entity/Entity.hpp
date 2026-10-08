@@ -9,11 +9,12 @@
 #include <nlohmann/json.hpp>
 
 #include "ncurses/Color.hpp"
-#include "game/components/Component.hpp"
+#include "game/component/Component.hpp"
+#include "game/component/Tag.hpp"
 #include "external/entt/entt.hpp"
 #include "game/Enum.hpp"
 #include "databases/EntityDatabase.hpp"
-#include "game/entities/Definition.hpp"
+#include "game/entity/Definition.hpp"
 
 namespace Game::Entity
 {

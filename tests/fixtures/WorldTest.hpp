@@ -4,7 +4,7 @@
 #include <gtest/gtest.h>
 
 #include "game/world/Grid.hpp"
-#include "game/components/Component.hpp"
+#include "game/component/Component.hpp"
 #include "external/entt/entt.hpp"
 
 class WorldTest : public ::testing::Test
