@@ -1,5 +1,5 @@
 #include "game/world/Grid.hpp"
-#include "game/components/Component.hpp"
+#include "game/component/Component.hpp"
 #include "external/entt/entt.hpp"
 #include "utils/Log.hpp"
 #include "game/world/Position.hpp"

@@ -1,5 +1,9 @@
 #pragma once
 
+#include <string>
+#include <string_view>
+#include <iosfwd>
+
 namespace UI
 {
 	/* When user chooses a button in a menu, that button will be returned wrapped in a Selection.
@@ -24,10 +28,13 @@ namespace UI
 		size_t index = 0; // index of Element that was selected
 		std::string label = "";
 
-		inline bool pending() const { return state == State::Pending; }
-		inline bool selected() const { return state == State::Selected; }
-		inline bool confirmed() const { return state == State::Confirmed; }
-		inline bool cancelled() const { return state == State::Cancelled; }
-		inline bool timed_out() const { return state == State::TimedOut; }
+		bool pending() const { return state == State::Pending; }
+		bool selected() const { return state == State::Selected; }
+		bool confirmed() const { return state == State::Confirmed; }
+		bool cancelled() const { return state == State::Cancelled; }
+		bool timed_out() const { return state == State::TimedOut; }
 	};
+	std::string_view to_string(Selection::State state);
+	std::ostream& operator<<(std::ostream& os, Selection::State state);
+	std::ostream& operator<<(std::ostream& os, const Selection& selection);
 }

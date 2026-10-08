@@ -23,14 +23,14 @@ namespace UI::Dialog
 			UI::Element::Button button{.label = label};
 
 			if (label == "Back" || label == "Cancel")
-				button.role = UI::Element::Button::Role::Cancel;
+				button.role = UI::Element::Role::Cancel;
 			else if (
 					label == "Confirm" ||
 					label == "OK" ||
 					label == "Ok" ||
 					label == "Continue")
 			{
-				button.role = UI::Element::Button::Role::Confirm;
+				button.role = UI::Element::Role::Confirm;
 			}
 
 			dialog_box.add(button);
@@ -65,19 +65,24 @@ namespace UI::Dialog
 		get_selection(message, {"Ok"});
 	}
 
-	void get_input(const std::string& label, std::string& input)
+	Selection get_input(const std::string& label, std::string& input)
 	{
 		auto copy = input;
 
 		Menu menu(label);
-		UI::Element::TextIn text_in{.label = "", .text = &copy};
+		UI::Element::TextIn text_in{
+			.label = "",
+				.text = &copy,
+				.length = {0, std::max<size_t>(copy.size(), 23)}};
 		text_in.confirm = true;
 		menu.add(text_in);
+		menu.add(UI::Element::confirm());
+		menu.add(UI::Element::cancel());
 		menu.set_timeout(-1);
 		const auto s = menu.get_selection();
-		if (s.cancelled())
-			return;
-		input = copy;
+		if (s.confirmed())
+			input = copy;
+		return s;
 	}
 
 	std::string get_input(const std::string& label)

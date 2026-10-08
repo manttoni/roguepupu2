@@ -1,6 +1,6 @@
 #include "game/Simulation.hpp"
 
-#include "game/systems/System.hpp"
+#include "game/system/System.hpp"
 
 #include <deque>
 #include <utility>

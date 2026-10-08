@@ -37,6 +37,20 @@ namespace UI::Element
 	{
 		return element.label + " : " + (*(element.value) ? "[X]" : "[ ]");
 	}
+	std::string to_string(const MultiChoice& element)
+	{
+		return element.label + " : " + "[" + std::to_string(element.chosen) + " chosen]";
+	}
+	Selection::State handle_input(MultiChoice& element, const Ncurses::Input::Event& event)
+	{
+		using Key = Ncurses::Input::Key;
+
+		if (event.key != Key::Enter)
+			return Selection::State::Ignored;
+
+		Log::debug() << "Selected MultiChoice: " << element.label;
+		return Selection::State::MultiChoice;
+	}
 
 	std::string to_string(const Separator& element)
 	{
@@ -82,7 +96,7 @@ namespace UI::Element
 	Selection::State handle_input(Button& element, const Ncurses::Input::Event& event)
 	{
 		using Key = Ncurses::Input::Key;
-		using Role = Button::Role;
+		using Role = Role;
 
 		if (event.key != Key::Enter)
 			return Selection::State::Ignored;

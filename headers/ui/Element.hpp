@@ -12,6 +12,12 @@ namespace UI::Element
 {
 	using Json = nlohmann::json;
 
+	enum class Role
+	{
+		Normal,
+		Confirm,
+		Cancel
+	};
 	struct Null
 	{
 		std::string label = "Null";
@@ -108,7 +114,6 @@ namespace UI::Element
 
 	struct Button
 	{
-		enum class Role { Normal, Cancel, Confirm };
 		std::string label;
 		Role role = Role::Normal;
 	};
@@ -172,25 +177,15 @@ namespace UI::Element
 			return Selection::State::Changed;
 		}
 
-	template<typename T> struct MultiChoice // choose any
+	// Editing the values has to be done outside
+	struct MultiChoice
 	{
 		std::string label;
-		std::vector<T>* chosen = nullptr;
-		std::vector<T> choices;
+		std::size_t chosen;
 	};
-	template<typename T> std::string to_string(const MultiChoice<T>& element)
-	{
-		return element.label + " : " + "[" + std::to_string(element.chosen->size()) + " chosen]";
-	}
-	template<typename T> Selection::State handle_input(MultiChoice<T>&, const Ncurses::Input::Event& event)
-	{
-		using Key = Ncurses::Input::Key;
 
-		if (event.key != Key::Enter)
-			return Selection::State::Ignored;
-
-		return Selection::State::MultiChoice;
-	}
+	std::string to_string(const MultiChoice& element);
+	Selection::State handle_input(MultiChoice&, const Ncurses::Input::Event& event);
 
 	struct Separator
 	{
@@ -213,11 +208,11 @@ namespace UI::Element
 		Button,
 		Checkbox,
 		SingleChoice<std::string>,
-		MultiChoice<std::string>,
+		MultiChoice,
 		Separator
 			>;
 	std::string to_string(const Any& element);
 	std::string get_label(const Any& element);
-	static inline Button confirm() { return Button{.label = "Confirm", .role = Button::Role::Confirm}; }
-	static inline Button cancel() { return Button{.label = "Cancel", .role = Button::Role::Cancel}; }
+	static inline Button confirm() { return Button{.label = "Confirm", .role = Role::Confirm}; }
+	static inline Button cancel() { return Button{.label = "Cancel", .role = Role::Cancel}; }
 }

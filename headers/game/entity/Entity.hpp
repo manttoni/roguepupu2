@@ -9,21 +9,16 @@
 #include <nlohmann/json.hpp>
 
 #include "ncurses/Color.hpp"
-#include "game/components/Component.hpp"
+#include "game/component/Component.hpp"
+#include "game/component/Tag.hpp"
 #include "external/entt/entt.hpp"
 #include "game/Enum.hpp"
 #include "databases/EntityDatabase.hpp"
+#include "game/entity/Definition.hpp"
 
 namespace Game::Entity
 {
 	using Json = nlohmann::json;
-
-	struct Definition
-	{
-		using ID = std::string;
-		ID id;
-		Json data;
-	};
 
 	// Keep the definition visible for compile-time calls.
 	inline constexpr bool valid_id(const Definition::ID& id) noexcept
@@ -140,5 +135,7 @@ namespace Game::Entity
 
 	entt::entity create(entt::registry& registry, const Definition& definition);
 	entt::entity create(entt::registry& registry, const EntityDatabase& entity_database, const Definition::ID& id);
+
+	bool requires_component(const Definition& definition, const std::string& component);
 } // namespace Game::Entity
 

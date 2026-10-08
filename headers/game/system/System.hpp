@@ -1,6 +1,6 @@
 #pragma once
 
-#include "game/events/Event.hpp"
+#include "game/event/Event.hpp"
 #include "game/Simulation.hpp"
 
 namespace Game::System

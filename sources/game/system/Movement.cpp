@@ -1,5 +1,5 @@
-#include "game/systems/Movement.hpp"
-#include "game/entities/Entity.hpp"
+#include "game/system/Movement.hpp"
+#include "game/entity/Entity.hpp"
 #include "utils/Vec2.hpp"
 #include "game/world/Position.hpp"
 

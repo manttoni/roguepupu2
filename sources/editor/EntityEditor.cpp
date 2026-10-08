@@ -1,10 +1,17 @@
+
 #include "editor/EntityEditor.hpp"
-#include "ui/Theme.hpp"
-#include "utils/Log.hpp"
-#include "utils/IO.hpp"
+#include "game/component/Dependency.hpp"
+#include "game/component/Component.hpp"
+#include "ncurses/Color.hpp"
 #include "ui/Dialog.hpp"
-#include "ui/Menu.hpp"
 #include "ui/Element.hpp"
+#include "ui/Menu.hpp"
+#include "ui/Search.hpp"
+#include "ui/Subset.hpp"
+#include "ui/Theme.hpp"
+#include "utils/IO.hpp"
+#include "utils/Log.hpp"
+#include <sstream>
 
 namespace EntityEditor
 {
@@ -22,81 +29,30 @@ namespace EntityEditor
 		return true;
 	}
 
-	std::vector<Definition> filter_definitions(const Json& all_definitions, const std::string& filter)
-	{
-		std::vector<Definition> filtered;
-
-		for (const auto& [id, data] : all_definitions.items())
-		{
-			bool matches = filter.empty() || id.find(filter) != std::string::npos;
-
-			if (!matches)
-			{
-				for (const auto& [component_id, component_data] : data.items())
-				{
-					if (component_data.is_string() && component_data.get<std::string>().find(filter) != std::string::npos)
-					{
-						matches = true;
-						break;
-					}
-					if (component_id.find(filter) != std::string::npos)
-					{
-						matches = true;
-						break;
-					}
-				}
-			}
-
-			if (matches)
-				filtered.push_back({.id = id, .data = data});
-		}
-
-		return filtered;
-	}
-
 	std::optional<Definition> search_definition(const Json& all_definitions)
 	{
-		std::string filter = "";
-		UI::Selection selection;
-		while (true)
-		{
-			const auto filtered_definitions = filter_definitions(all_definitions, filter);
-			UI::Menu search;
-			search.set_title("Seach definition");
-			search.set_timeout(100);
-			search.add(UI::Element::TextIn("Filter", &filter));
-			for (const auto& def : filtered_definitions)
-			{
-				search.add(UI::Element::Button(def.id));
-			}
-			search.add(UI::Element::cancel());
-
-			selection = search.get_selection(selection.index);
-			if (selection.selected())
-				return Definition{.id = selection.label, .data = all_definitions.at(selection.label)};
-			if (selection.cancelled())
-				break;
-		}
-		return std::nullopt;
+		UI::Menu menu("Search Definition");
+		for (const auto& [id, data] : all_definitions.items())
+			menu.add(UI::Element::Button(id));
+		menu.add(UI::Element::cancel());
+		const auto selection = UI::Search::select(menu);
+		if (selection.cancelled())
+			return std::nullopt;
+		return Definition{.id = selection.label, .data = all_definitions.at(selection.label)};
 	}
 
 	std::optional<Definition> load_definition(const Json& all_definitions)
 	{
-		const auto definition = search_definition(all_definitions);
-		if (!definition.has_value())
-			return std::nullopt;
-		return definition;
+		return search_definition(all_definitions);
 	}
 
 	std::optional<Definition> new_definition(const Json& all_definitions)
 	{
-		std::string id = "";
-		UI::Menu new_entity;
-		new_entity.set_title("New entity");
-		new_entity.add(UI::Element::TextIn("Entity id", &id));
-		new_entity.add(UI::Element::confirm());
-		new_entity.get_selection();
-
+		std::string id;
+		const auto selection = UI::Dialog::get_input("Entity ID", id);
+		if (selection.cancelled())
+			return std::nullopt;
+		assert(selection.confirmed());
 		if (!Game::Entity::valid_id(id))
 			return std::nullopt;
 		if (all_definitions.contains(id))
@@ -106,8 +62,6 @@ namespace EntityEditor
 		}
 		Definition d{.id = id, .data = Json::object()};
 		d.data["Tags"] = Json::array();
-
-
 		return d;
 	}
 
@@ -119,7 +73,7 @@ namespace EntityEditor
 	}
 
 	/* Remove "active status" from active definition by giving it to 'definition' instead
-	 * Save 'active' into 'all_definitions' if user confirms
+	 * Save 'active' into 'all_definitions' if user confirms. Still needs to be written to file.
 	 * */
 	void activate_definition(Json& all_definitions, Definition& active, const std::optional<Definition>& definition)
 	{
@@ -127,16 +81,10 @@ namespace EntityEditor
 			return;
 		if (!definition_matches(all_definitions, active) && !active.id.empty())
 		{
-			if (UI::Dialog::get_selection("Save/overwrite \"" + active.id + "\"?", {"Yes", "No"}).label == "Yes")
+			if (UI::Dialog::get_selection("Save \"" + active.id + "\"?", {"Yes", "No"}).label == "Yes")
 				add_definition(all_definitions, active);
 		}
 		active = *definition;
-	}
-
-	void check_tags(Definition& definition)
-	{
-		const auto tags = definition.data["Tags"].get<std::vector<std::string>>();
-
 	}
 
 	void print_definition(Ncurses::Window& surface, const Definition& definition)
@@ -144,123 +92,256 @@ namespace EntityEditor
 		surface.clear();
 		const std::string str = "\"" + definition.id + "\": " + definition.data.dump(4);
 		surface.write(0, 0, str);
-		surface.refresh();
+	}
+
+	template<typename T>
+		Json value_to_json(const T& value)
+		{
+			if constexpr (std::same_as<T, char>)
+				return std::string(1, value);
+			else if constexpr (std::same_as<T, Ncurses::Color>)
+				return value.id();
+			else if constexpr (Game::Enum::GameEnum<T>)
+				return Game::Enum::to_string(value);
+			else
+				return Json(value);
+		}
+
+	Json component_default(std::string_view id)
+	{
+#define X(name, type) \
+		if (id == #name) \
+		return value_to_json(Game::Component::Value::name{}.value);
+#include "game/component/Value.def"
+#undef X
+
+#define X(name, type) \
+		if (id == #name) \
+		return value_to_json(Game::Component::Resource::name{}.maximum);
+#include "game/component/Resource.def"
+#undef X
+
+#define X(name, type) \
+		if (id == #name) \
+		return Json::array();
+#include "game/component/List.def"
+#undef X
+
+		throw std::invalid_argument(
+				"Unknown component: " + std::string(id));
+	}
+
+	/* Tags can require other Components
+	 * */
+	bool add_required(Definition& definition)
+	{
+		auto& data = definition.data;
+
+		if (!data.contains("Tags"))
+			data["Tags"] = Json::array();
+
+		const auto tags =
+			data.at("Tags").get<std::vector<std::string>>();
+
+		bool changed = false;
+
+		for (const auto& tag : tags)
+		{
+			const auto tag_deps =
+				Game::Component::Dependency::get_required_tag_ids(tag);
+
+			for (const auto& dependency : tag_deps)
+			{
+				auto& current_tags = data.at("Tags");
+
+				if (std::find(
+							current_tags.begin(),
+							current_tags.end(),
+							dependency) == current_tags.end())
+				{
+					current_tags.push_back(dependency);
+					Log::info() << "Added required Tag: " << dependency;
+					changed = true;
+				}
+			}
+
+			const auto other_deps =
+				Game::Component::Dependency::get_required_non_tag_ids(tag);
+
+			for (const auto& dependency : other_deps)
+			{
+				if (!data.contains(dependency))
+				{
+					data[dependency] = component_default(dependency);
+					Log::info() << "Added required Component: " << dependency;
+					changed = true;
+				}
+			}
+		}
+
+		return changed;
+	}
+
+	bool erase_unrequired(Definition& definition)
+	{
+		auto copy = definition;
+		auto& tags = copy.data["Tags"];
+		for (auto it = tags.begin(); it != tags.end();)
+		{
+			const auto tag_id = it->get<std::string>();
+			if (!Game::Entity::requires_component(definition, tag_id))
+			{
+				Log::info() << "Erased nonrequired Tag: " << tag_id;
+				it = tags.erase(it);
+			}
+			else
+				++it;
+		}
+		for (const auto& [component_id, component_data] : definition.data.items())
+		{
+			if (!Game::Entity::requires_component(definition, component_id))
+			{
+				if (component_id == "Tags")
+					continue;
+				copy.data.erase(component_id);
+				Log::info() << "Erased nonrequired Component: " << component_id;
+			}
+		}
+		if (definition == copy)
+			return false;
+		definition = copy;
+		return true;
+	}
+
+	void update_requirements(Definition& definition)
+	{
+		while (add_required(definition)) {}
+		// while (erase_unrequired(definition)) {}
+		// that works in mysterious ways
+	}
+
+	/* This is what will define the entitys requirements
+	 * Adding a Tag also adds its requirements
+	 * Removing a Tag will remove its requirements,
+	 * if no other Tag requires them
+	 * */
+	void edit_tags(Definition& definition)
+	{
+		const auto all_tags = Game::Component::Tag::get_ids();
+		auto tags = definition.data["Tags"].get<std::vector<std::string>>();
+		UI::Subset::edit(all_tags, tags);
+		definition.data["Tags"] = tags;
+		update_requirements(definition);
+	}
+
+	void build_edit_definition_menu(UI::Menu& menu, Definition& definition)
+	{
+		Log::debug() << "Building menu menu";
+
+		menu.set_title("Editing \'" + definition.id + "\'");
+		menu.set_timeout(500);
+		menu.clear_elements();
+
+		for (auto& [component_id, component_data] : definition.data.items())
+		{
+			if (component_id == "Color")
+			{
+				menu.add(UI::Element::ValueSelector<Json::number_integer_t>(
+							component_id,
+							component_data.get_ptr<Json::number_integer_t*>(),
+							{16,231}
+							));
+			}
+			else if (component_data.is_boolean())
+			{
+				menu.add(UI::Element::Checkbox(
+							component_id,
+							component_data.get_ptr<bool*>()
+							));
+			}
+			else if (component_data.is_string())
+			{
+				// entt::entity is also an enum, but not 'GameEnum'
+				if (Game::Component::value_is_game_enum(component_id))
+				{
+					menu.add(UI::Element::SingleChoice(
+								component_id,
+								component_data.get_ptr<std::string*>(),
+								Game::Component::get_enum_value_strings(component_id)
+								));
+					continue;
+				}
+				menu.add(UI::Element::TextIn(
+							component_id,
+							component_data.get_ptr<std::string*>()
+							));
+			}
+			else if (component_data.is_number_unsigned())
+			{
+				using T = Json::number_unsigned_t;
+
+				menu.add(UI::Element::ValueSelector<T>{
+						component_id,
+						component_data.get_ptr<T*>(),
+						{0, 100}
+						});
+			}
+			else if (component_data.is_number_integer())
+			{
+				using T = Json::number_integer_t;
+
+				menu.add(UI::Element::ValueSelector<T>{
+						component_id,
+						component_data.get_ptr<T*>(),
+						{-100, 100}
+						});
+			}
+			else if (component_data.is_number_float())
+			{
+				using T = Json::number_float_t;
+
+				menu.add(UI::Element::ValueSelector<T>{
+						component_id,
+						component_data.get_ptr<T*>(),
+						{-100, 100}
+						});
+			}
+			else if (component_data.is_array())
+			{
+				menu.add(UI::Element::MultiChoice{
+						component_id,
+						component_data.size()
+						});
+			}
+		}
+
+		menu.add(UI::Element::confirm());
+		menu.add(UI::Element::cancel());
 	}
 
 	void edit_definition(Definition& definition)
 	{
 		const auto original = definition;
-		Ncurses::Panel edit_panel;
-		edit_panel.get_window().enable_color(UI::load_theme().text);
-		UI::Selection selection;
+
 		while (true)
 		{
-			print_definition(edit_panel.get_window(), definition);
-			UI::Menu editor;
-			editor.set_title(definition.id +
-					(Game::Entity::valid_definition(definition.data) ? "" : "*")
-					);
-			editor.set_timeout(500);
-			//editor.add(UI::Element::MultiChoice("Tags", &tags));
-
-			for (auto& [component_id, component_data] : definition.data.items())
-			{
-				if (component_data.is_boolean())
-				{
-					editor.add(UI::Element::Checkbox(
-								component_id,
-								component_data.get_ptr<bool*>()
-								));
-				}
-				else if (component_data.is_string())
-				{
-					if (Game::Component::value_is_enum(component_id))
-					{
-						editor.add(UI::Element::SingleChoice(
-									component_id,
-									component_data.get_ptr<std::string*>(),
-									Game::Component::get_enum_value_strings(component_id)
-									));
-						continue;
-					}
-					editor.add(UI::Element::TextIn(
-								component_id,
-								component_data.get_ptr<std::string*>()
-								));
-				}
-				else if (component_data.is_number_unsigned())
-				{
-					using T = Json::number_unsigned_t;
-
-					editor.add(UI::Element::ValueSelector<T>{
-							component_id,
-							component_data.get_ptr<T*>(),
-							{0, 100}
-							});
-				}
-				else if (component_data.is_number_integer())
-				{
-					using T = Json::number_integer_t;
-
-					editor.add(UI::Element::ValueSelector<T>{
-							component_id,
-							component_data.get_ptr<T*>(),
-							{-100, 100}
-							});
-				}
-				else if (component_data.is_number_float())
-				{
-					using T = Json::number_float_t;
-
-					editor.add(UI::Element::ValueSelector<T>{
-							component_id,
-							component_data.get_ptr<T*>(),
-							{-100, 100}
-							});
-				}
-				/*else if (component_data.is_array())
-				  {
-				  editor.add(UI::Element::MultiChoice<std::string>(
-				  component_id,
-				  component_data.get_ptr<std::vector<std::string>*>()
-				  ));
-				  }*/
-			}
-
-			editor.add(UI::Element::confirm());	// apply changes
-			editor.add(UI::Element::cancel());	// revert changes
-
-			selection = editor.get_selection(selection.index);
-			using State = UI::Selection::State;
+			UI::Menu menu;
+			build_edit_definition_menu(menu, definition);
+			const auto selection = UI::Search::select(menu);
 			switch (selection.state)
 			{
-				case State::Pending:
-					continue;
-				case State::Selected:
-					// should not happen, this is for buttons which are not confirm or cancel
-					break;
-				case State::Confirmed:
-					return;
-				case State::Cancelled:
+				case UI::Selection::State::Cancelled:
 					definition = original;
 					return;
-				case State::TimedOut:
+				case UI::Selection::State::Confirmed:
+					return;
+				case UI::Selection::State::MultiChoice:
+					if (selection.label == "Tags")
+						edit_tags(definition);
 					continue;
-				case State::Error:
-					Log::error() << "Error in edit_definition";
-					continue;
-				case State::SingleChoice:
-					// shouldnt happen, or even exist, because Menu already handles editing SingleChoice
-					continue;
-				case State::MultiChoice:
-					// opens another menu, where user can choose many, because Menu doesnt do that itself
-					continue;
-				case State::Ignored:
-					// should not happen
-					continue;
-				case State::Changed:
-					// should not happen
-					continue;
+				default:
+					Log::error() << selection;
+					return;
 			}
 		}
 	}
