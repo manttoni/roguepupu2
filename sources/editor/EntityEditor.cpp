@@ -216,7 +216,8 @@ namespace EntityEditor
 	void update_requirements(Definition& definition)
 	{
 		while (add_required(definition)) {}
-		while (erase_unrequired(definition)) {}
+		// while (erase_unrequired(definition)) {}
+		// that works in mysterious ways
 	}
 
 	/* This is what will define the entitys requirements

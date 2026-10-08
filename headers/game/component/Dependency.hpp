@@ -11,6 +11,7 @@ namespace Game::Component::Dependency
 	std::vector<std::string> get_required_tag_ids(std::string_view tag_id);
 	std::vector<std::string> get_required_non_tag_ids(std::string_view tag_id);
 
+	/*
 	// Does C directly require D?
 	template<typename C, typename D>
 		constexpr bool directly_requires()
@@ -23,6 +24,7 @@ namespace Game::Component::Dependency
 
 			return false;
 		}
+*/
 	bool is_directly_required(
 			const Game::Entity::Definition& definition,
 			const std::string& component_id);
