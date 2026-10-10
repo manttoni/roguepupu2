@@ -220,19 +220,7 @@ namespace EntityEditor
 		// that works in mysterious ways
 	}
 
-	/* This is what will define the entitys requirements
-	 * Adding a Tag also adds its requirements
-	 * (Removing a Tag will remove its requirements),
-	 * if no other Tag requires them
-	 * */
-	void edit_tags(Definition& definition)
-	{
-		const auto all_tags = Game::Component::Tag::get_ids();
-		auto tags = definition.data["Tags"].get<std::vector<std::string>>();
-		UI::Subset::edit(all_tags, tags);
-		definition.data["Tags"] = tags;
-		update_requirements(definition);
-	}
+
 
 	void build_edit_definition_menu(UI::Menu& menu, Definition& definition)
 	{
@@ -319,24 +307,36 @@ namespace EntityEditor
 		menu.add(UI::Element::cancel());
 	}
 
-	void edit_list(const std::string_view component_id, Json& list)
-	{
-		// current cases are a list of selected enums,
-		// or a list of selected entity ids.
-		// This function should offer to create the entity in place,
-		// or at least type any id freely and add that
+void edit_list(std::string_view id, Definition& definition)
+{
+	std::vector<std::string> all;
 
-		if (Game::Component::value_is_game_enum(component_id))
-		{
-			auto choices = list.get<std::vector<std::string>>();
-			const auto selection =
-				UI::Subset::edit(Game::Component::get_enum_value_strings(component_id), choices);
-			if (selection.confirmed())
-				list = choices;
-		}
-		else
-			Log::warning() << "Unsupported MultiChoice list element type in component: " << component_id;
+	if (id == "Tags")
+		all = Game::Component::Tag::get_ids();
+	else if (Game::Component::value_is_game_enum(id))
+		all = Game::Component::get_enum_value_strings(id);
+	else
+	{
+		Log::warning() << "Unsupported list component: " << id;
+		return;
 	}
+
+	auto& list = definition.data.at(id);
+	auto subset = list.get<std::vector<std::string>>();
+
+	const auto selection = UI::Subset::edit(all, subset);
+
+	if (selection.cancelled())
+		return;
+	if (!selection.confirmed())
+		throw std::runtime_error(
+			"List editing selection state should be confirm or cancel");
+
+	list = subset;
+
+	if (id == "Tags")
+		update_requirements(definition);
+}
 
 	void edit_definition(Definition& definition)
 	{
@@ -355,10 +355,7 @@ namespace EntityEditor
 				case UI::Selection::State::Confirmed:
 					return;
 				case UI::Selection::State::MultiChoice:
-					if (selection.label == "Tags")
-						edit_tags(definition);
-					else
-						edit_list(selection.label, definition.data.at(selection.label));
+					edit_list(selection.label, definition);
 					continue;
 				default:
 					Log::error() << selection;
