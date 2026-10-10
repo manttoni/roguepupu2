@@ -1,14 +1,14 @@
 #include "ui/Element.hpp"
 #include "ui/Menu.hpp"
 #include "ui/Search.hpp"
-#include "ui/Selection.hpp"
 #include "ui/Subset.hpp"
+#include <stdexcept>
 #include <algorithm>
 #include <map>
 
 namespace UI::Subset
 {
-	void edit(const std::vector<std::string>& all, std::vector<std::string>& subset)
+	Selection edit(const std::vector<std::string>& all, std::vector<std::string>& subset)
 	{
 		const auto original = subset;
 		UI::Menu menu;
@@ -26,15 +26,21 @@ namespace UI::Subset
 		if (selection.cancelled())
 		{
 			subset = original;
-			return;
 		}
-
-		assert(selection.confirmed());
-		subset.clear();
-		for (const auto& [s, b] : selected)
+		else if (selection.confirmed())
 		{
-			if (b)
-				subset.push_back(s);
+			subset.clear();
+			for (const auto& [s, b] : selected)
+			{
+				if (b)
+					subset.push_back(s);
+			}
 		}
+		else
+			throw std::runtime_error(
+					std::string("Unexpected selection state: ")
+					+ std::string(to_string(selection.state)));
+
+		return selection;
 	}
 }

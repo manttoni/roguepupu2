@@ -222,7 +222,7 @@ namespace EntityEditor
 
 	/* This is what will define the entitys requirements
 	 * Adding a Tag also adds its requirements
-	 * Removing a Tag will remove its requirements,
+	 * (Removing a Tag will remove its requirements),
 	 * if no other Tag requires them
 	 * */
 	void edit_tags(Definition& definition)
@@ -319,6 +319,25 @@ namespace EntityEditor
 		menu.add(UI::Element::cancel());
 	}
 
+	void edit_list(const std::string_view component_id, Json& list)
+	{
+		// current cases are a list of selected enums,
+		// or a list of selected entity ids.
+		// This function should offer to create the entity in place,
+		// or at least type any id freely and add that
+
+		if (Game::Component::value_is_game_enum(component_id))
+		{
+			auto choices = list.get<std::vector<std::string>>();
+			const auto selection =
+				UI::Subset::edit(Game::Component::get_enum_value_strings(component_id), choices);
+			if (selection.confirmed())
+				list = choices;
+		}
+		else
+			Log::warning() << "Unsupported MultiChoice list element type in component: " << component_id;
+	}
+
 	void edit_definition(Definition& definition)
 	{
 		const auto original = definition;
@@ -338,6 +357,8 @@ namespace EntityEditor
 				case UI::Selection::State::MultiChoice:
 					if (selection.label == "Tags")
 						edit_tags(definition);
+					else
+						edit_list(selection.label, definition.data.at(selection.label));
 					continue;
 				default:
 					Log::error() << selection;

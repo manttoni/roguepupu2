@@ -2,8 +2,9 @@
 
 #include <vector>
 #include <string>
+#include "ui/Selection.hpp"
 
 namespace UI::Subset
 {
-	void edit(const std::vector<std::string>& all, std::vector<std::string>& subset);
+	Selection edit(const std::vector<std::string>& all, std::vector<std::string>& subset);
 }
