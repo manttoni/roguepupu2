@@ -1,6 +1,6 @@
 #include "application/EventDescriber.hpp"
 #include "application/EntityDescriber.hpp"
-#include "game/events/Event.hpp"
+#include "game/event/Event.hpp"
 #include "game/Simulation.hpp"
 #include "utils/Log.hpp"
 

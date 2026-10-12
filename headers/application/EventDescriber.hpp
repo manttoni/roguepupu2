@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "game/Simulation.hpp"
-#include "game/events/Event.hpp"
+#include "game/event/Event.hpp"
 
 namespace EventDescriber
 {

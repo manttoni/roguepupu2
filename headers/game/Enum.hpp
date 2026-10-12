@@ -10,6 +10,12 @@
 
 namespace Game::Enum
 {
+	enum class AIBehavior
+	{
+		Idle,
+		Wander,
+	};
+
 	enum class Material
 	{
 		None,
@@ -258,5 +264,14 @@ namespace Game::Enum
 				result.emplace_back(name);
 
 			return result;
+		}
+
+	template<typename T>
+		[[nodiscard]] std::vector<std::string> get_value_strings_or_empty()
+		{
+			if constexpr (GameEnum<T>)
+				return get_value_strings<T>();
+			else
+				return {};
 		}
 } // namespace Enum

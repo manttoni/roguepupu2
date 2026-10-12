@@ -5,9 +5,9 @@
 
 #include "external/entt/entt.hpp"
 #include "game/world/Grid.hpp"
-#include "game/events/Event.hpp"
+#include "game/event/Event.hpp"
 #include "databases/EntityDatabase.hpp"
-#include "game/entities/Entity.hpp"
+#include "game/entity/Entity.hpp"
 #include "game/Scheduler.hpp"
 #include "game/Settings.hpp"
 #include "game/world/Generator.hpp"

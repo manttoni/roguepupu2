@@ -1,7 +1,7 @@
-#include "game/systems/System.hpp"
+#include "game/system/System.hpp"
 #include "game/Simulation.hpp"
-#include "game/systems/Movement.hpp"
-#include "game/components/Component.hpp"
+#include "game/system/Movement.hpp"
+#include "game/component/Component.hpp"
 #include "utils/Log.hpp"
 
 // This is temporary

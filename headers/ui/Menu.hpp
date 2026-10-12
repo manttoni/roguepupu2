@@ -22,6 +22,7 @@ namespace UI
 			void print_elements(const size_t selected);
 			Selection handle_input(const std::size_t selected, const Ncurses::Input::Event& event);
 			UI::Theme theme = UI::load_theme();
+			bool changed_ = true;
 
 		public:
 			// Center the menu as close to position as possible.
@@ -41,15 +42,16 @@ namespace UI
 
 			Selection get_selection(size_t default_selected = 0);
 
-			void set_timeout(const int value)
-			{
-				timeout = value;
-			}
+			void set_timeout(const int value) { timeout = value; }
+			void set_title(const std::string& title) { this->title = title; }
+			int get_timeout() const { return timeout; }
+			std::string get_title() const { return title; }
 
-			void set_title(const std::string& title)
-			{
-				this->title = title;
-			}
 			std::string get_label(std::size_t index) const;
+
+			inline bool changed() const { return changed_; }
+
+			inline void clear_elements() { elements.clear(); }
+			const std::vector<Element::Any>& get_elements() const { return elements; }
 	};
 }

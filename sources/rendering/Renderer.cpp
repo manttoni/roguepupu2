@@ -1,5 +1,5 @@
 #include "rendering/Renderer.hpp"
-#include "game/entities/Entity.hpp"
+#include "game/entity/Entity.hpp"
 #include "utils/Vec2.hpp"
 #include "ncurses/Color.hpp"
 

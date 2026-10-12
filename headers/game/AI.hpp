@@ -2,7 +2,7 @@
 
 #include "game/Simulation.hpp"
 #include "external/entt/fwd.hpp"
-#include "game/events/Event.hpp"
+#include "game/event/Event.hpp"
 
 namespace Game::AI
 {
