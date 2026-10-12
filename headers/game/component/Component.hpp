@@ -22,6 +22,19 @@ namespace Game::Component
 		return false;
 	}
 
+	inline bool value_is_entity_id(std::string_view component_id)
+	{
+#define X(name, type) \
+		if (component_id == #name) \
+		{ \
+			return #type == "Entity::Definition::ID"; \
+		}
+#include "List.def"
+#include "Value.def"
+#undef X
+		return false;
+	}
+
 	std::vector<std::string> get_tag_ids();
 
 	inline std::vector<std::string> get_enum_value_strings(
