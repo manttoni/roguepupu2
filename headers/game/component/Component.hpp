@@ -27,7 +27,7 @@ namespace Game::Component
 #define X(name, type) \
 		if (component_id == #name) \
 		{ \
-			return #type == "Entity::Definition::ID"; \
+			return std::string_view{#type} == "Game::Entity::Definition::ID"; \
 		}
 #include "List.def"
 #include "Value.def"

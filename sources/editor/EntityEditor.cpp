@@ -1,4 +1,3 @@
-
 #include "editor/EntityEditor.hpp"
 #include "game/component/Dependency.hpp"
 #include "game/component/Component.hpp"
@@ -220,12 +219,8 @@ namespace EntityEditor
 		// that works in mysterious ways
 	}
 
-
-
 	void build_edit_definition_menu(UI::Menu& menu, Definition& definition)
 	{
-		Log::debug() << "Building menu menu";
-
 		menu.set_title("Editing \'" + definition.id + "\'");
 		menu.set_timeout(500);
 		menu.clear_elements();
@@ -307,36 +302,38 @@ namespace EntityEditor
 		menu.add(UI::Element::cancel());
 	}
 
-void edit_list(std::string_view id, Definition& definition)
-{
-	std::vector<std::string> all;
-
-	if (id == "Tags")
-		all = Game::Component::Tag::get_ids();
-	else if (Game::Component::value_is_game_enum(id))
-		all = Game::Component::get_enum_value_strings(id);
-	else
+	void edit_list(std::string_view id, Definition& definition)
 	{
-		Log::warning() << "Unsupported list component: " << id;
-		return;
+		std::vector<std::string> all;
+
+		if (id == "Tags")
+			all = Game::Component::Tag::get_ids();
+		else if (Game::Component::value_is_game_enum(id))
+			all = Game::Component::get_enum_value_strings(id);
+		else if (Game::Component::value_is_entity_id(id))
+			all = Game::Entity::get_ids();
+		else
+		{
+			Log::warning() << "Unsupported list component: " << id;
+			return;
+		}
+
+		auto& list = definition.data.at(id);
+		auto subset = list.get<std::vector<std::string>>();
+
+		const auto selection = UI::Subset::edit(all, subset);
+
+		if (selection.cancelled())
+			return;
+		if (!selection.confirmed())
+			throw std::runtime_error(
+					"List editing selection state should be confirm or cancel");
+
+		list = subset;
+
+		if (id == "Tags")
+			update_requirements(definition);
 	}
-
-	auto& list = definition.data.at(id);
-	auto subset = list.get<std::vector<std::string>>();
-
-	const auto selection = UI::Subset::edit(all, subset);
-
-	if (selection.cancelled())
-		return;
-	if (!selection.confirmed())
-		throw std::runtime_error(
-			"List editing selection state should be confirm or cancel");
-
-	list = subset;
-
-	if (id == "Tags")
-		update_requirements(definition);
-}
 
 	void edit_definition(Definition& definition)
 	{

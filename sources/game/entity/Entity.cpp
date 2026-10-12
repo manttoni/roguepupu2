@@ -1,4 +1,5 @@
 #include "game/entity/Entity.hpp"
+#include "utils/IO.hpp"
 #include "game/component/Dependency.hpp"
 #include "utils/Log.hpp"
 
@@ -183,5 +184,18 @@ namespace Game::Entity
 		}
 		return false;
 	}
+
+	std::vector<Definition::ID> get_ids()
+	{
+		const auto definitions = IO::read_json(EntityDatabase::entity_definitions_path);
+		std::vector<Definition::ID> ids;
+		for (const auto& [id, data_unused] : definitions.items())
+		{
+			(void) data_unused;
+			ids.push_back(id);
+		}
+		return ids;
+	}
+
 } // namespace Game::Entity
 

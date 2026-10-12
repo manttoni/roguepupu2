@@ -137,5 +137,7 @@ namespace Game::Entity
 	entt::entity create(entt::registry& registry, const EntityDatabase& entity_database, const Definition::ID& id);
 
 	bool requires_component(const Definition& definition, const std::string& component);
+	std::vector<Definition::ID> get_ids();
+
 } // namespace Game::Entity
 
