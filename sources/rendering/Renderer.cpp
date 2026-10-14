@@ -28,7 +28,7 @@ namespace
 			case Form::Wall:
 				return '#';
 			case Form::Floor:
-				return ' ';
+				return '.';
 			default:
 				Log::warning() << "Unmapped cell form: " + Game::Enum::to_string<Form>(cell.form);
 				return '?';

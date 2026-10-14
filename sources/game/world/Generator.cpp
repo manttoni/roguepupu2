@@ -1,4 +1,7 @@
+#include <stdexcept>
 #include "game/world/Generator.hpp"
+#include "utils/Perlin.hpp"
+#include "utils/Random.hpp"
 #include "utils/IO.hpp"
 #include "game/world/Chunk.hpp"
 #include "utils/Log.hpp"
@@ -25,12 +28,12 @@ namespace Game::World
 			if (terrain.contains("material"))
 			{
 				const auto& material = terrain.at("material").get<std::string>();
-				cell.material = Game::Enum::from_string<Material>(material);
+				cell.material = Enum::from_string<Enum::Material>(material);
 			}
 			if (terrain.contains("form"))
 			{
 				const auto& form = terrain.at("form").get<std::string>();
-				cell.form = Game::Enum::from_string<Form>(form);
+				cell.form = Enum::from_string<Enum::Form>(form);
 			}
 		}
 		if (layer.contains("entities"))
@@ -46,16 +49,18 @@ namespace Game::World
 				spawn_requests.push_back(SpawnRequest{entity_id, position});
 			}
 		}
-		if (layer.contains("noise") && layer.at("noise").contains("regions"))
+		if (layer.contains("noise"))
 		{
+			if (!layer.at("noise").contains("regions"))
+				Log::warning() << "noise has no regions, which makes it useless";
 			const auto& noise = layer.at("noise");
 			const Random::Perlin::Settings settings{
 				.frequency = noise.value("frequency", 0.01),
 					.octaves = noise.value("octaves", 1),
 					.persistence = noise.value("persistence", 0.5)
 			};
-			const auto noise_value =
-				Random::Perlin::Generator{seed, settings}.noise2(position);
+			const double noise_value =
+				Random::Perlin::Generator{seed, settings}.noise2(position.vec2());
 
 			for (const auto& region : noise.at("regions"))
 			{
@@ -71,23 +76,30 @@ namespace Game::World
 	}
 
 
-Cell Generator::generate_cell(const GlobalPosition& position)
-{
-	Cell cell;
-
-	const auto& bases = conf.at("bases");
-	const auto& layers = conf.at("layers");
-
-	for (const auto& base : bases)
+	Cell Generator::generate_cell(const GlobalPosition& position)
 	{
-		const auto id = base.get<std::string>();
+		Cell cell;
 
-		if (layers.contains(id))
-			apply_layer(id, cell, position);
+		const auto& bases = conf.at("bases");
+		const auto& layers = conf.at("layers");
+
+		for (const auto& base : bases)
+		{
+			const auto id = base.get<std::string>();
+
+			if (layers.contains(id))
+				apply_layer(id, cell, position);
+		}
+
+		if (cell.material == Enum::Material::None
+				|| cell.form == Enum::Form::None)
+		{
+			throw std::runtime_error(
+					std::string("Generated invalid cell: ")
+					+ Cell::to_string(cell));
+		}
+		return cell;
 	}
-
-	return cell;
-}
 
 	Chunk Generator::generate_chunk(const ChunkPosition& chunk_position)
 	{
@@ -97,10 +109,14 @@ Cell Generator::generate_cell(const GlobalPosition& position)
 			for (int x = 0; x < Chunk::width; ++x)
 			{
 				const LocalPosition local_position{y, x};
-				const GlobalPosition global_position = to_global(chunk_position, local_position);
+				const GlobalPosition global_position =
+					to_global(chunk_position, local_position);
 				chunk.get_cell(local_position) = generate_cell(global_position);
 			}
 		}
+		Log::debug()
+			<< "Chunk generated: " << chunk
+			<< ", at: " << chunk_position;
 		return chunk;
 	}
 }

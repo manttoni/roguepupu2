@@ -1,9 +1,9 @@
 #pragma once
 
 #include "game/world/Cell.hpp"
-#include "game/world/Layer.hpp"
 #include "game/world/Chunk.hpp"
 #include "game/world/Position.hpp"
+#include "game/entity/Definition.hpp"
 #include <filesystem>
 #include <nlohmann/json.hpp>
 #include <string>
@@ -31,6 +31,7 @@ namespace Game::World
 			std::string seed;
 			Json conf;
 
+			void apply_layer(const std::string& layer_id, Cell& cell, const GlobalPosition& position);
 			Cell generate_cell(const GlobalPosition& position);
 
 			std::vector<SpawnRequest> spawn_requests;
