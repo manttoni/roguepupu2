@@ -9,7 +9,7 @@
         "Constitution": 8,
         "CreatureType": "Humanoid",
         "Dexterity": 8,
-        "Faction": "None",
+        "Faction": "Player",
         "Glyph": "@",
         "Intelligence": 8,
         "MovementPoints": 10000,
