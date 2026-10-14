@@ -6,8 +6,8 @@ cd "$PROJECT_ROOT"
 
 readonly LOG_DIR="$PROJECT_ROOT/logs"
 readonly LOG_FILE="$LOG_DIR/logs.log"
-readonly DEBUG_DIR="$PROJECT_ROOT/build-debug"
-readonly RELEASE_DIR="$PROJECT_ROOT/build-release"
+readonly DEBUG_DIR="$PROJECT_ROOT/build/debug"
+readonly RELEASE_DIR="$PROJECT_ROOT/build/release"
 
 CXX_COMPILER="${CXX:-clang++}"
 BUILD_JOBS="${BUILD_JOBS:-$(nproc)}"
