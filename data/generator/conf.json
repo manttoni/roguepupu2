@@ -1,48 +1,79 @@
 {
+	"bases": [ "world" ],
 	"layers": [
-		{
-			"id": "init",
-			"material": "Stone",
-			"form": "Floor",
-			"threshold": 1.0,
-			"water_depth": 0.0,
-			"disabled": false
+		"world": {
+			"terrain": {
+				"Material": "Stone",
+				"Form": "Floor"
+			},
+			"entities": [
+				{ "id": "item_fossil", "chance": 0.1 }
+			],
+			"noise": {
+				"frequency": 0.5,
+				"octaves": 2,
+				"persistence": 0.42,
+				"regions": [
+					{
+						"range": [ 0.0, 0.3 ],
+						"layer_id": "ocean"
+					},
+					{
+						"range": [ 0.3, 0.7 ],
+						"layer_id": "land"
+					},
+					{
+						"range": [ 0.7, 1.0 ],
+						"layer_id": "mountains"
+					}
+				]
+			}
 		},
-		{
-			"id": "mountain",
-			"form": "Wall",
-			"frequency": 0.002,
-			"octaves": 8,
-			"threshold": 0.55,
-			"disabled": false
+		"ocean": {
+			"noise": {
+				"frequency": 0.25,
+				"octaves": 4,
+				"persistence": 0.69,
+				"regions": [
+					{
+						"range": [ 0.0, 0.5 ],
+						"layer_id": "deep_ocean"
+					},
+					{
+						"range": [ 0.5, 1.0 ],
+						"layer_id": "shallow_ocean"
+					}
+				]
+			}
 		},
-		{
-			"id": "caves",
-			"form": "Floor",
-			"frequency": 0.1,
-			"threshold": 0.5,
-			"octaves": 2,
-			"disabled": false
+		"deep_ocean": {
+			"water": {
+				"set_level": 10
+			}
 		},
-		{
-			"id": "noisy_floor",
-			"form": "Floor",
-			"frequency": 1.0,
-			"threshold": 0.4,
-			"disabled": true
+		"shallow_ocean": {
+			"water": {
+				"set_level": 1
+			},
+			"entities": [
+				{
+					"id": "item_seashell", "chance": 0.1 }
+				}
+			]
 		},
-		{
-			"id": "lakes",
-			"water_depth": 1,
-			"frequency": 0.01,
-			"threshold": 0.35,
-			"disabled": true
+		"land": {
+			"entities": [
+				{ "id": "natural_plant_tree", "chance": 0.1 }
+			]
 		},
-
-		{
-			"id": "rubble",
-			"entity_id": "rubble",
-			"threshold": 0.1
+		"mountains": {
+			"terrain": {
+				"Material": "Stone",
+				"Form": "Wall"
+			},
+			"entities": [
+				{ "id": "item_stone", "chance": 0.1 }
+			]
 		}
 	]
 }

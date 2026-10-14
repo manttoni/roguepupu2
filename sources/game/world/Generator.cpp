@@ -7,44 +7,89 @@ namespace Game::World
 {
 	Generator::Generator(
 			const std::string& seed,
-			const std::filesystem::path& path)
-		: seed(seed)
-	{
-		const auto conf = IO::read_json(path);
-		if (conf.contains("layers") && conf.at("layers").is_array())
-			parse_layers(conf.at("layers"));
-	}
+			const std::filesystem::path& path) :
+		seed(seed),
+		conf(IO::read_json(path))
+	{}
 
-	void Generator::parse_layers(const Json& layers)
+	void Generator::apply_layer(
+			const std::string& id,
+			Cell& cell,
+			const GlobalPosition& position)
 	{
-		for (const auto& layer : layers)
+		const auto& layers = conf.at("layers");
+		const auto& layer = layers.at(id);
+		if (layer.contains("terrain"))
 		{
-			parse_layer(layer);
+			const auto& terrain = layer.at("terrain");
+			if (terrain.contains("material"))
+			{
+				const auto& material = terrain.at("material").get<std::string>();
+				cell.material = Game::Enum::from_string<Material>(material);
+			}
+			if (terrain.contains("form"))
+			{
+				const auto& form = terrain.at("form").get<std::string>();
+				cell.form = Game::Enum::from_string<Form>(form);
+			}
+		}
+		if (layer.contains("entities"))
+		{
+			const auto& entities = layer.at("entities");
+			for (const auto& entity : entities)
+			{
+				const auto chance = entity.value("chance", 1.0);
+				// TODO: make deterministic
+				if (Random::rand<double>(0.0, 1.0) > chance)
+					continue;
+				const auto entity_id = entity.at("id").get<std::string>();
+				spawn_requests.push_back(SpawnRequest{entity_id, position});
+			}
+		}
+		if (layer.contains("noise") && layer.at("noise").contains("regions"))
+		{
+			const auto& noise = layer.at("noise");
+			const Random::Perlin::Settings settings{
+				.frequency = noise.value("frequency", 0.01),
+					.octaves = noise.value("octaves", 1),
+					.persistence = noise.value("persistence", 0.5)
+			};
+			const auto noise_value =
+				Random::Perlin::Generator{seed, settings}.noise2(position);
+
+			for (const auto& region : noise.at("regions"))
+			{
+				if (!region.contains("id") || !region.contains("range"))
+					continue;
+				const auto& id = region.at("id").get<std::string>();
+				const auto& range = region.at("range").get<std::vector<double>>();
+				if (id.empty() || noise_value < range[0] || noise_value > range[1])
+					continue;
+				apply_layer(id, cell, position);
+			}
 		}
 	}
 
-	void Generator::parse_layer(const Json& layer)
+
+Cell Generator::generate_cell(const GlobalPosition& position)
+{
+	Cell cell;
+
+	const auto& bases = conf.at("bases");
+	const auto& layers = conf.at("layers");
+
+	for (const auto& base : bases)
 	{
-		if (layer.value("disabled", false))
-			return;
+		const auto id = base.get<std::string>();
 
-		const Random::Perlin::Settings perlin_settings{
-			.frequency = layer.value("frequency", 1.0),
-				.octaves = layer.value("octaves", std::int32_t{1}),
-				.persistence = layer.value("persistence", 1.0)
-		};
-
-		layers.emplace_back(Layer{
-				.material = Enum::from_string<Enum::Material>(layer.value("material", "Stone")),
-				.form = Enum::from_string<Enum::Form>(layer.value("form", "Floor")),
-				.threshold = layer.value("threshold", 1.0),
-				.water_depth = layer.value("water_depth", 0.0),
-				.id = layer.value("id", "none"),
-				.perlin = Random::Perlin::Generator(seed, perlin_settings)
-				});
+		if (layers.contains(id))
+			apply_layer(id, cell, position);
 	}
 
-	Chunk Generator::generate_chunk(const ChunkPosition& chunk_position) const
+	return cell;
+}
+
+	Chunk Generator::generate_chunk(const ChunkPosition& chunk_position)
 	{
 		Chunk chunk;
 		for (int y = 0; y < Chunk::height; ++y)
@@ -52,20 +97,8 @@ namespace Game::World
 			for (int x = 0; x < Chunk::width; ++x)
 			{
 				const LocalPosition local_position{y, x};
-				const GlobalPosition global_position =
-					to_global(chunk_position, local_position);
-				auto& cell = chunk.get_cell(local_position);
-
-				for (const auto& layer : layers)
-				{
-					const auto p = layer.perlin.noise2(global_position.vec2());
-					if (p <= layer.threshold)
-					{
-						cell.material = layer.material;
-						cell.form = layer.form;
-						cell.water_depth += layer.water_depth;
-					}
-				}
+				const GlobalPosition global_position = to_global(chunk_position, local_position);
+				chunk.get_cell(local_position) = generate_cell(global_position);
 			}
 		}
 		return chunk;
