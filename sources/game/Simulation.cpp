@@ -1,4 +1,5 @@
 #include "game/Simulation.hpp"
+#include "game/entity/Entity.hpp"
 #include "ncurses/Screen.hpp"
 
 #include "game/system/System.hpp"
@@ -44,8 +45,23 @@ namespace Game
 			for (int x = center.x - radius_x; x <= center.x + radius_x; ++x)
 			{
 				const World::ChunkPosition cp{y, x};
-				if (!grid.contains(cp))
-					grid.add(cp, generator.generate_chunk(cp));
+				if (grid.contains(cp))
+					continue;
+
+				grid.add(cp, generator.generate_chunk(cp));
+
+				auto& spawn_requests = generator.get_spawn_requests();
+				for (const auto& request : spawn_requests)
+				{
+					if (
+							World::Cell* cell = grid.find_cell(request.position);
+							cell && cell->form == Enum::Form::Wall
+							)
+						continue;
+					const auto entity = Entity::create(registry, entity_database, request.id);
+					registry.emplace_or_replace<Component::Value::Position>(entity, request.position);
+				}
+				spawn_requests.clear();
 			}
 		}
 	}

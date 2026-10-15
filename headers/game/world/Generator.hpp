@@ -25,7 +25,7 @@ namespace Game::World
 			Generator(const std::string& seed, const std::filesystem::path& path = "data/generator/conf.json");
 
 			Chunk generate_chunk(const ChunkPosition& position);
-			std::vector<SpawnRequest>& get_spawn_requests();
+			std::vector<SpawnRequest>& get_spawn_requests() { return spawn_requests; }
 
 		private:
 			std::string seed;

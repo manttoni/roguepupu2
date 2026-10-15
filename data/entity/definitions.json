@@ -47,5 +47,18 @@
             "WorldObject",
             "Equipment"
         ]
+    },
+    "tree": {
+        "CollisionMovement": true,
+        "CollisionVision": true,
+        "Color": 64,
+        "Glyph": "T",
+        "Name": "Tree",
+        "OnSpawn": [],
+        "Tags": [
+            "Plant",
+            "WorldObject",
+            "Renderable"
+        ]
     }
 }

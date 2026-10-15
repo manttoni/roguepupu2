@@ -60,7 +60,7 @@ namespace Game::World
 					.persistence = noise.value("persistence", 0.5)
 			};
 			const double noise_value =
-				Random::Perlin::Generator{seed, settings}.noise2(position.vec2());
+				Random::Perlin::Generator{seed + id, settings}.noise2(position.vec2());
 
 			for (const auto& region : noise.at("regions"))
 			{
@@ -116,7 +116,8 @@ namespace Game::World
 		}
 		Log::debug()
 			<< "Chunk generated: " << chunk
-			<< ", at: " << chunk_position;
+			<< ", at: " << chunk_position
+			<< ", spawns: " << spawn_requests.size();
 		return chunk;
 	}
 }

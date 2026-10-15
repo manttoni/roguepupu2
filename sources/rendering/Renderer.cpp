@@ -13,6 +13,8 @@ namespace
 		{
 			case Material::Stone:
 				return Ncurses::Color{1,1,1};
+			case Material::Soil:
+				return Ncurses::Color{1,1,0};
 			default:
 				Log::warning() << "Unmapped cell material: " + Game::Enum::to_string<Material>(cell.material);
 				return Ncurses::Color{};
@@ -28,7 +30,7 @@ namespace
 			case Form::Wall:
 				return '#';
 			case Form::Floor:
-				return '.';
+				return '_';
 			default:
 				Log::warning() << "Unmapped cell form: " + Game::Enum::to_string<Form>(cell.form);
 				return '?';

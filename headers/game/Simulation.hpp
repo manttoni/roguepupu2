@@ -3,14 +3,14 @@
 #include <utility>
 #include <vector>
 
-#include "external/entt/entt.hpp"
-#include "game/world/Grid.hpp"
-#include "game/event/Event.hpp"
 #include "databases/EntityDatabase.hpp"
-#include "game/entity/Entity.hpp"
+#include "external/entt/entt.hpp"
 #include "game/Scheduler.hpp"
 #include "game/Settings.hpp"
+#include "game/entity/Entity.hpp"
+#include "game/event/Event.hpp"
 #include "game/world/Generator.hpp"
+#include "game/world/Grid.hpp"
 
 namespace Game
 {
@@ -20,7 +20,7 @@ namespace Game
 			const std::string seed;
 
 			World::Grid grid;
-			World::Generator generator; // or rename Generator
+			World::Generator generator;
 
 			EntityDatabase entity_database;
 			entt::registry registry;

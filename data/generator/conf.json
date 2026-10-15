@@ -2,76 +2,73 @@
 	"bases": [ "world" ],
 	"layers": {
 		"world": {
+			"noise": {
+				"frequency": 0.0075,
+				"octaves": 1,
+				"persistence": 1.0,
+				"regions": [
+					{
+						"range": [ 0.0, 0.5 ],
+						"id": "land"
+					},
+					{
+						"range": [ 0.5, 1.0 ],
+						"id": "mountain"
+					}
+				]
+			}
+		},
+
+		"land": {
 			"terrain": {
 				"material": "Stone",
 				"form": "Floor"
 			},
 			"entities": [
-				{ "id": "item_fossil", "chance": 0.1 }
+				{ "id": "stone", "chance": 0.025 }
 			],
 			"noise": {
 				"frequency": 0.01,
-				"octaves": 4,
+				"octaves": 2,
 				"persistence": 1.0,
 				"regions": [
 					{
-						"range": [ 0.0, 0.3 ],
-						"id": "ocean"
-					},
-					{
-						"range": [ 0.3, 0.7 ],
-						"id": "land"
-					},
-					{
-						"range": [ 0.6, 1.0 ],
-						"id": "mountains"
-					}
-				]
-			}
-		},
-		"ocean": {
-			"noise": {
-				"frequency": 0.25,
-				"octaves": 4,
-				"persistence": 0.69,
-				"regions": [
-					{
 						"range": [ 0.0, 0.5 ],
-						"id": "deep_ocean"
-					},
-					{
-						"range": [ 0.5, 1.0 ],
-						"id": "shallow_ocean"
+						"id": "forest"
 					}
 				]
 			}
 		},
-		"deep_ocean": {
-			"water": {
-				"set_level": 10
-			}
-		},
-		"shallow_ocean": {
-			"water": {
-				"set_level": 1
+		"forest": {
+			"terrain": {
+				"material": "Soil"
 			},
 			"entities": [
-				{ "id": "item_seashell", "chance": 0.1 }
+				{ "id": "tree", "chance": 0.05 }
 			]
 		},
-		"land": {
-			"entities": [
-				{ "id": "natural_plant_tree", "chance": 0.1 }
-			]
-		},
-		"mountains": {
+
+		"mountain": {
 			"terrain": {
 				"material": "Stone",
 				"form": "Wall"
 			},
-			"entities": [
-				{ "id": "item_stone", "chance": 0.1 }
-			]
+			"noise": {
+				"frequency": 0.1,
+				"octaves": 2,
+				"persistence": 1.0,
+				"regions": [
+					{
+						"range": [ 0.0, 0.5 ],
+						"id": "cave"
+					}
+				]
+			}
+		},
+		"cave": {
+			"terrain": {
+				"form": "Floor"
+			}
 		}
 	}
 }
