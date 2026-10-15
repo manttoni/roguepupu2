@@ -1,4 +1,5 @@
 #include "game/Simulation.hpp"
+#include "ncurses/Screen.hpp"
 
 #include "game/system/System.hpp"
 
@@ -27,6 +28,34 @@ namespace Game
 				});
 	}
 
+	void Simulation::load_chunks(const World::ChunkPosition& center)
+	{
+		const auto viewport = Ncurses::Screen::size();
+		const auto dimensions = World::Chunk::dimensions();
+
+		// ceil(viewport / (2 * chunk_dimensions)), independently per axis.
+		const int radius_y =
+			(viewport.y + 2 * dimensions.y - 1) / (2 * dimensions.y);
+		const int radius_x =
+			(viewport.x + 2 * dimensions.x - 1) / (2 * dimensions.x);
+
+		for (int y = center.y - radius_y; y <= center.y + radius_y; ++y)
+		{
+			for (int x = center.x - radius_x; x <= center.x + radius_x; ++x)
+			{
+				const World::ChunkPosition cp{y, x};
+				if (!grid.contains(cp))
+					grid.add(cp, generator.generate_chunk(cp));
+			}
+		}
+	}
+
+	void Simulation::load_chunks()
+	{
+		const auto& player_position = registry.get<Component::Value::Position>(player);
+		load_chunks(World::to_chunk(player_position.value));
+	}
+
 	void Simulation::simulate_node(Event::Node& node)
 	{
 		assert(!node.outcome.has_value() &&
@@ -42,17 +71,8 @@ namespace Game
 		{
 			const auto& position =
 				registry.get<Game::Component::Value::Position>(player).value;
-			const auto chunkpos = World::to_chunk(position);
-
-			const auto preload = [&](const World::ChunkPosition& cp)
-			{
-				if (!grid.contains(cp))
-					grid.add(cp, generator.generate_chunk(cp));
-			};
-
-			preload(chunkpos);
-			for (const auto& neighbour : World::neighbors(chunkpos))
-				preload(neighbour);
+			const auto chunk_position = World::to_chunk(position);
+			load_chunks(chunk_position);
 		}
 		/* ~Preload
 		 * */

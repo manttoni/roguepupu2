@@ -45,20 +45,26 @@ bool Application::handle_input(const Ncurses::Input::Event& event)
 	if (event.key == Key::Escape)
 		game_running = false;
 	else if (event.key == Key::Resize)
+	{
 		layout.reset();
+		if (simulation.has_value())
+			simulation->load_chunks();
+	}
 	else if (event.is_ascii())
 	{
 		switch (event.ch)
 		{
 			case '\\':
+				if (simulation.has_value())
 				{
 					auto& registry = simulation->get_registry();
 					auto player = simulation->get_player();
 					auto& col = registry.get<Game::Component::Value::CollisionMovement>(player);
 					col.value ^= true;
 					Log::info() << "player collision was set to " << col.value;
+					return true;
 				}
-				return true;
+				return false;
 			default:
 				return false;
 		}

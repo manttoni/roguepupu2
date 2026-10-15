@@ -58,5 +58,7 @@ namespace Game
 
 			Turn::Actor current_actor() const { return scheduler.current_actor(); }
 			Event::Node simulate(Event::Any initial_event);
+			void load_chunks(const World::ChunkPosition& center);
+			void load_chunks();
 	};
 }
