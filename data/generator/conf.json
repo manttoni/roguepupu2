@@ -4,7 +4,7 @@
 		"world": {
 			"noise": {
 				"frequency": 0.0075,
-				"octaves": 1,
+				"octaves": 4,
 				"persistence": 1.0,
 				"regions": [
 					{
