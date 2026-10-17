@@ -4,6 +4,7 @@
 #include "game/world/Chunk.hpp"
 #include "game/world/Position.hpp"
 #include "game/entity/Definition.hpp"
+#include "game/entity/SpawnRequest.hpp"
 #include <filesystem>
 #include <nlohmann/json.hpp>
 #include <string>
@@ -11,12 +12,6 @@
 
 namespace Game::World
 {
-	struct SpawnRequest
-	{
-		Entity::Definition::ID id;
-		GlobalPosition position;
-	};
-
 	class Generator
 	{
 		using Json = nlohmann::json;
@@ -28,7 +23,7 @@ namespace Game::World
 					"data/generator/conf.json");
 
 			Chunk generate_chunk(const ChunkPosition& position);
-			std::vector<SpawnRequest>& get_spawn_requests()
+			std::vector<Entity::SpawnRequest>& get_spawn_requests()
 			{
 				return spawn_requests;
 			}
@@ -44,7 +39,7 @@ namespace Game::World
 					const double weight);
 			Cell generate_cell(const GlobalPosition& position);
 
-			std::vector<SpawnRequest> spawn_requests;
+			std::vector<Entity::SpawnRequest> spawn_requests;
 			bool roll(const double chance) const;
 	};
 }

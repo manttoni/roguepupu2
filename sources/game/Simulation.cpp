@@ -17,6 +17,7 @@ namespace Game
 		seed(seed),
 		generator(seed),
 		entity_database(entity_database),
+		spawner(registry, this->entity_database, grid),
 		player(Entity::create(registry, entity_database, player_definition_id))
 	{
 		if (player == entt::null)
@@ -50,17 +51,12 @@ namespace Game
 
 				grid.add(cp, generator.generate_chunk(cp));
 
+				/* Spawn entities
+				 * Spawner checks if it can spawn there and if the cell exists
+				 * */
 				auto& spawn_requests = generator.get_spawn_requests();
 				for (const auto& request : spawn_requests)
-				{
-					if (
-							World::Cell* cell = grid.find_cell(request.position);
-							cell && cell->form == Enum::Form::Wall
-							)
-						continue;
-					const auto entity = Entity::create(registry, entity_database, request.id);
-					registry.emplace_or_replace<Component::Value::Position>(entity, request.position);
-				}
+					spawner.spawn(request);
 				spawn_requests.clear();
 			}
 		}

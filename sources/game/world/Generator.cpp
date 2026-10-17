@@ -50,7 +50,7 @@ namespace Game::World
 				if (!roll(chance))
 					continue;
 				const auto entity_id = entity.at("id").get<std::string>();
-				spawn_requests.push_back(SpawnRequest{entity_id, position});
+				spawn_requests.push_back(Entity::SpawnRequest{entity_id, position});
 			}
 		}
 		if (layer.contains("noise"))

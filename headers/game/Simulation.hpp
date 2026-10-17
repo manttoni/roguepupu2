@@ -8,6 +8,7 @@
 #include "game/Scheduler.hpp"
 #include "game/Settings.hpp"
 #include "game/entity/Entity.hpp"
+#include "game/entity/Spawner.hpp"
 #include "game/event/Event.hpp"
 #include "game/world/Generator.hpp"
 #include "game/world/Grid.hpp"
@@ -24,6 +25,8 @@ namespace Game
 
 			EntityDatabase entity_database;
 			entt::registry registry;
+
+			Entity::Spawner spawner;
 
 			Turn::Scheduler scheduler;
 			entt::entity player;
