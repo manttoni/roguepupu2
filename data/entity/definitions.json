@@ -9,7 +9,7 @@
         "Constitution": 8,
         "CreatureType": "Humanoid",
         "Dexterity": 8,
-        "Faction": "None",
+        "Faction": "Player",
         "Glyph": "@",
         "Intelligence": 8,
         "MovementPoints": 10000,
@@ -46,6 +46,19 @@
             "Renderable",
             "WorldObject",
             "Equipment"
+        ]
+    },
+    "tree": {
+        "CollisionMovement": true,
+        "CollisionVision": true,
+        "Color": 64,
+        "Glyph": "T",
+        "Name": "Tree",
+        "OnSpawn": [],
+        "Tags": [
+            "Plant",
+            "WorldObject",
+            "Renderable"
         ]
     }
 }

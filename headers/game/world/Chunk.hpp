@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ostream>
 #include <array>
 #include <cstddef>
 
@@ -28,6 +29,8 @@ namespace Game::World
 			const Cell& get_cell(const LocalPosition& position) const;
 			Cell& get_cell(const LocalPosition& position);
 
+			const CellsArray& get_cells() const { return cells; }
+
 		private:
 			CellsArray cells;
 
@@ -36,4 +39,19 @@ namespace Game::World
 				return position.y * width + position.x;
 			}
 	};
+
+	inline std::ostream& operator<<(std::ostream& os, const Chunk& chunk)
+	{
+		size_t walls = 0;
+		size_t floors = 0;
+		for (const auto& cell : chunk.get_cells())
+		{
+			if (cell.form == Enum::Form::Wall)
+				walls++;
+			else if (cell.form == Enum::Form::Floor)
+				floors++;
+		}
+		os << "{ walls: " << walls << ", floors: " << floors << " }";
+		return os;
+	}
 }

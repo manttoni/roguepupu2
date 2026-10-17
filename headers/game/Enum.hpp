@@ -20,6 +20,7 @@ namespace Game::Enum
 	{
 		None,
 		Stone,
+		Soil
 	};
 
 	enum class Form

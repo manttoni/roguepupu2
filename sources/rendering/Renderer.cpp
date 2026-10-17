@@ -7,15 +7,14 @@ namespace
 {
 	constexpr Ncurses::Color cell_color(const Game::World::Cell& cell)
 	{
-		if (cell.water_depth > 0)
-			return Ncurses::Color{0,0,1};
-
 		using Material = Game::Enum::Material;
 
 		switch(cell.material)
 		{
 			case Material::Stone:
 				return Ncurses::Color{1,1,1};
+			case Material::Soil:
+				return Ncurses::Color{1,1,0};
 			default:
 				Log::warning() << "Unmapped cell material: " + Game::Enum::to_string<Material>(cell.material);
 				return Ncurses::Color{};
@@ -25,23 +24,13 @@ namespace
 	constexpr char cell_glyph(const Game::World::Cell& cell)
 	{
 		using Form = Game::Enum::Form;
-		using Material = Game::Enum::Material;
 
 		switch (cell.form)
 		{
 			case Form::Wall:
 				return '#';
 			case Form::Floor:
-				if (cell.water_depth > 0)
-					return '~';
-				switch (cell.material)
-				{
-					case Material::Stone:
-						return '.';
-					default:
-						Log::warning() << "Unmapped cell material: " + Game::Enum::to_string<Material>(cell.material);
-						return '\0';
-				}
+				return '_';
 			default:
 				Log::warning() << "Unmapped cell form: " + Game::Enum::to_string<Form>(cell.form);
 				return '?';

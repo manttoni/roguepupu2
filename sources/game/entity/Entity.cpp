@@ -141,6 +141,7 @@ namespace Game::Entity
 			registry.try_get<Component::Value::Name>(entity);
 
 		Log::debug()
+			<< "[Entity]"
 			<< "Entity created: "
 			<< (name ? name->value : "<unnamed>");
 		return entity;

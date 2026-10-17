@@ -51,6 +51,11 @@ struct Vec2
 		assert(s != T{});
 		return { y / s, x / s };
 	}
+	Vec2 operator/(const Vec2<T>& other) const
+	{
+		assert(other.y != 0 && other.x != 0 && "Divide by 0");
+		return Vec2<T>{ y / other.y, x / other.x };
+	}
 	Vec2 operator*(const T s) const
 	{
 		return { y * s, x * s };

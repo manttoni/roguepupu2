@@ -1,48 +1,74 @@
 {
-	"layers": [
-		{
-			"id": "init",
-			"material": "Stone",
-			"form": "Floor",
-			"threshold": 1.0,
-			"water_depth": 0.0,
-			"disabled": false
-		},
-		{
-			"id": "mountain",
-			"form": "Wall",
-			"frequency": 0.002,
-			"octaves": 8,
-			"threshold": 0.55,
-			"disabled": false
-		},
-		{
-			"id": "caves",
-			"form": "Floor",
-			"frequency": 0.1,
-			"threshold": 0.5,
-			"octaves": 2,
-			"disabled": false
-		},
-		{
-			"id": "noisy_floor",
-			"form": "Floor",
-			"frequency": 1.0,
-			"threshold": 0.4,
-			"disabled": true
-		},
-		{
-			"id": "lakes",
-			"water_depth": 1,
-			"frequency": 0.01,
-			"threshold": 0.35,
-			"disabled": true
+	"bases": [ "world" ],
+	"layers": {
+		"world": {
+			"noise": {
+				"frequency": 0.0075,
+				"octaves": 4,
+				"persistence": 1.0,
+				"regions": [
+					{
+						"range": [ 0.0, 0.55 ],
+						"id": "land"
+					},
+					{
+						"range": [ 0.45, 1.0 ],
+						"id": "mountain"
+					}
+				]
+			}
 		},
 
-		{
-			"id": "rubble",
-			"entity_id": "rubble",
-			"threshold": 0.1
+		"land": {
+			"terrain": {
+				"material": "Stone",
+				"form": "Floor"
+			},
+			"entities": [
+				{ "id": "stone", "chance": 0.025 }
+			],
+			"noise": {
+				"frequency": 0.01,
+				"octaves": 2,
+				"persistence": 1.0,
+				"regions": [
+					{
+						"range": [ 0.0, 0.5 ],
+						"id": "forest"
+					}
+				]
+			}
+		},
+		"forest": {
+			"terrain": {
+				"material": "Soil"
+			},
+			"entities": [
+				{ "id": "tree", "chance": 0.05 }
+			]
+		},
+
+		"mountain": {
+			"terrain": {
+				"material": "Stone",
+				"form": "Wall"
+			},
+			"noise": {
+				"frequency": 0.1,
+				"octaves": 2,
+				"persistence": 1.0,
+				"regions": [
+					{
+						"range": [ 0.0, 0.5 ],
+						"id": "cave"
+					}
+				]
+			}
+		},
+		"cave": {
+			"terrain": {
+				"form": "Floor"
+			}
 		}
-	]
+	}
 }
