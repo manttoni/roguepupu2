@@ -176,7 +176,10 @@ void Application::main_menu()
 				continue;
 			}
 
-			simulation.emplace(Game::Simulation(UI::Dialog::get_input("Seed"), entity_database, select_player()));
+			simulation.emplace(
+						UI::Dialog::get_input("Seed"),
+						entity_database,
+						select_player());
 			run_game();
 		}
 		else if (selection.label == "Editor")

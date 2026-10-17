@@ -40,6 +40,11 @@ namespace Game
 					const std::string& seed,
 					const EntityDatabase& entity_database,
 					const Entity::Definition::ID& player_definition_id);
+			Simulation(const Simulation&) = delete;
+			Simulation& operator=(const Simulation&) = delete;
+
+			Simulation(Simulation&&) = delete;
+			Simulation& operator=(Simulation&&) = delete;
 
 			const std::string& get_seed() const { return seed; }
 
