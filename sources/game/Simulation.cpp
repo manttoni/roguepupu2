@@ -18,7 +18,10 @@ namespace Game
 		generator(seed),
 		entity_database(entity_database),
 		spawner(registry, this->entity_database, grid),
-		player(Entity::create(registry, entity_database, player_definition_id))
+		player(Entity::create(
+					registry,
+					this->entity_database,
+					player_definition_id))
 	{
 		if (player == entt::null)
 			throw std::runtime_error("Player is entt::null");
@@ -35,7 +38,6 @@ namespace Game
 		const auto viewport = Ncurses::Screen::size();
 		const auto dimensions = World::Chunk::dimensions();
 
-		// ceil(viewport / (2 * chunk_dimensions)), independently per axis.
 		const int radius_y =
 			(viewport.y + 2 * dimensions.y - 1) / (2 * dimensions.y);
 		const int radius_x =
@@ -64,7 +66,8 @@ namespace Game
 
 	void Simulation::load_chunks()
 	{
-		const auto& player_position = registry.get<Component::Value::Position>(player);
+		const auto& player_position =
+			registry.get<Component::Value::Position>(player);
 		load_chunks(World::to_chunk(player_position.value));
 	}
 
@@ -78,8 +81,10 @@ namespace Game
 		/* Preload grid around player
 		 * */
 		if (
-				const auto* event = std::get_if<Event::EnterPosition>(&node.event);
-				event && event->entity == player)
+				const auto* event =
+				std::get_if<Event::EnterPosition>(&node.event);
+				event && event->entity == player
+				)
 		{
 			const auto& position =
 				registry.get<Game::Component::Value::Position>(player).value;
@@ -90,18 +95,15 @@ namespace Game
 		 * */
 
 		Event::Result result = System::dispatch(*this, node.event);
-
 		node.outcome = result.outcome;
 
 		node.consequences.reserve(result.consequences.size());
 		for (auto& consequence : result.consequences)
 		{
-			Event::Node child{
-				.event = std::move(consequence),
-					.outcome = std::nullopt,
-					.consequences = {}
-			};
-
+			Event::Node child;
+			child.event = std::move(consequence);
+			child.outcome = std::nullopt;
+			child.consequences = {};
 			simulate_node(child);
 			node.consequences.push_back(std::move(child));
 		}
@@ -109,10 +111,10 @@ namespace Game
 
 	Event::Node Simulation::simulate(Event::Any initial_event)
 	{
-		Event::Node root{
-			.event = std::move(initial_event),
-				.consequences = {}
-		};
+		Event::Node root;
+		root.event = std::move(initial_event);
+		root.consequences = {};
+
 		simulate_node(root);
 
 		return root;

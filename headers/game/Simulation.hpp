@@ -52,14 +52,17 @@ namespace Game
 			const Turn::Scheduler& get_scheduler() const { return scheduler; }
 			Turn::Scheduler& get_scheduler() { return scheduler; }
 
-			const EntityDatabase& get_entity_database() const { return entity_database; }
+			const EntityDatabase& get_entity_database() const
+			{ return entity_database; }
 
 			entt::entity get_player() const { return player; }
 
 			const Settings& get_settings() const { return settings; }
 			Settings& get_settings() { return settings; }
 
-			Turn::Actor current_actor() const { return scheduler.current_actor(); }
+			Turn::Actor current_actor() const
+			{ return scheduler.current_actor(); }
+
 			Event::Node simulate(Event::Any initial_event);
 			void load_chunks(const World::ChunkPosition& center);
 			void load_chunks();
