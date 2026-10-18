@@ -1,49 +1,99 @@
 #include "rendering/Renderer.hpp"
+#include "game/component/Runtime.hpp"
 #include "game/entity/Entity.hpp"
 #include "utils/Vec2.hpp"
 #include "ncurses/Color.hpp"
+#include <stdexcept>
 
-namespace
+Renderer::Visual Renderer::get_cell_visual(const Game::World::Cell& cell)
 {
-	constexpr Ncurses::Color cell_color(const Game::World::Cell& cell)
-	{
-		using Material = Game::Enum::Material;
+	using Form = Game::Enum::Form;
+	using Material = Game::Enum::Material;
 
-		switch(cell.material)
-		{
-			case Material::Stone:
-				return Ncurses::Color{1,1,1};
-			case Material::Soil:
-				return Ncurses::Color{1,1,0};
-			default:
-				Log::warning() << "Unmapped cell material: " + Game::Enum::to_string<Material>(cell.material);
-				return Ncurses::Color{};
-		}
+	Renderer::Visual visual;
+
+	switch (cell.form)
+	{
+		case Form::Wall:
+			visual.glyph = '#';
+			break;
+		case Form::Floor:
+			visual.glyph = '_';
+			break;
+		default:
+			Log::warning()
+				<< "Unmapped cell form: "
+				<< Game::Enum::to_string<Form>(cell.form);
+			visual.glyph = '?';
 	}
 
-	constexpr char cell_glyph(const Game::World::Cell& cell)
+	switch (cell.material)
 	{
-		using Form = Game::Enum::Form;
-
-		switch (cell.form)
-		{
-			case Form::Wall:
-				return '#';
-			case Form::Floor:
-				return '_';
-			default:
-				Log::warning() << "Unmapped cell form: " + Game::Enum::to_string<Form>(cell.form);
-				return '?';
-		}
+		case Material::Stone:
+			visual.color = Ncurses::Color{1,1,1};
+			break;
+		case Material::Soil:
+			visual.color = Ncurses::Color{1,1,0};
+			break;
+		default:
+			Log::warning()
+				<< "Unmapped cell material: "
+				<< Game::Enum::to_string<Material>(cell.material);
+			visual.color = Ncurses::Color{1, 0, 0};
 	}
+	return visual;
 }
 
-void Renderer::render(
+std::optional<Renderer::Visual> Renderer::get_entity_visual(
 		const Game::Simulation& simulation,
-		const Game::World::GlobalPosition& center)
+		const Game::World::GlobalPosition& position)
 {
+	const auto& registry = simulation.get_registry();
+	const auto entities = Game::Entity::find_all(
+			registry,
+			Game::Component::Value::Position{position});
+	if (entities.empty())
+		return std::nullopt;
+
+	const auto entity = entities[frame % entities.size()];
+
+	Renderer::Visual visual;
+	visual.glyph = registry.get<Game::Component::Value::Glyph>(entity).value;
+	visual.color = registry.get<Game::Component::Value::Color>(entity).value;
+	return visual;
+}
+
+Renderer::Visual Renderer::get_visual(
+		const Game::Simulation& simulation,
+		const Game::World::GlobalPosition& position)
+{
+	const auto entity_visual =
+		get_entity_visual(simulation, position);
+	if (entity_visual.has_value())
+		return entity_visual.value();
+
+	auto* cell = simulation.get_grid().find_cell(position);
+	if (cell == nullptr)
+		throw std::runtime_error(
+				std::string("Cell not loaded at: ")
+				+ position.to_string());
+	return get_cell_visual(*cell);
+}
+
+void Renderer::render_player_perspective(const Game::Simulation& simulation)
+{
+	const auto& registry = simulation.get_registry();
+	const auto player = simulation.get_player();
+	if (!registry.all_of<Game::Component::Runtime::Vision>(player))
+		throw std::runtime_error("Player has no Vision component");
+	const auto& player_position =
+		registry.get<Game::Component::Value::Position>(player).value;
 	const auto viewport_size = surface.dimensions();
-	const auto top_left = center - viewport_size / 2;
+	const auto top_left = player_position - viewport_size / 2;
+	const auto& visible_positions =
+		registry.get<Game::Component::Runtime::Vision>(player).visible;
+	const auto& seen_positions =
+		registry.get<Game::Component::Runtime::Vision>(player).seen;
 
 	surface.clear();
 
@@ -51,36 +101,28 @@ void Renderer::render(
 	{
 		for (int x = 0; x < viewport_size.x; ++x)
 		{
-			const auto grid_position = top_left + Vec2<int>{y, x};
-			const auto* cell =
-				simulation.get_grid().find_cell(grid_position);
+			const auto position = top_left + Vec2<int>{y, x};
 
-			if (!cell)
-				continue; // Missing chunk; preparation should have loaded it.
-
-			const auto entities =
-				Game::Entity::find_all(
-						simulation.get_registry(),
-						Game::Component::Value::Position{grid_position},
-						Game::Component::Tag::Renderable{}
-						);
-			if (entities.size() == 0)
+			if (
+					std::find(
+						visible_positions.begin(),
+						visible_positions.end(),
+						position) != visible_positions.end())
 			{
-				const auto color = cell_color(*cell);
-
-				surface.enable_color(color);
-				surface.put(y, x, cell_glyph(*cell));
-				surface.disable_color(color);
-
-				continue;
+				const auto visual = get_visual(simulation, position);
+				surface.put(y, x, visual.glyph, visual.color);
 			}
-
-			const auto entity = entities[frame % entities.size()]; // when multiple entities in same position, render a different one each frame
-			const auto color = simulation.get_registry().get<Game::Component::Value::Color>(entity).value;
-
-			surface.enable_color(color);
-			surface.put(y, x, simulation.get_registry().get<Game::Component::Value::Glyph>(entity).value);
-			surface.disable_color(color);
+			else if (
+					std::find(
+						seen_positions.begin(),
+						seen_positions.end(),
+						position) != seen_positions.end())
+			{
+				const auto visual = get_visual(simulation, position);
+				surface.enable_attribute(Ncurses::Attribute{A_DIM});
+				surface.put(y, x, visual.glyph, visual.color);
+				surface.disable_attribute(Ncurses::Attribute{A_DIM});
+			}
 		}
 	}
 
@@ -88,12 +130,4 @@ void Renderer::render(
 	frame++;
 }
 
-void Renderer::render(const Game::Simulation& simulation)
-{
-	const auto player = simulation.get_player();
-	const auto& position =
-		simulation.get_registry()
-		.get<Game::Component::Value::Position>(player);
 
-	render(simulation, position.value);
-}

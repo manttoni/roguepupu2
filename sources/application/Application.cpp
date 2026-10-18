@@ -97,7 +97,7 @@ void Application::run_game()
 
 	while (game_running)
 	{
-		renderer.render(*simulation);
+		renderer.render_player_perspective(*simulation);
 		// renderer.write(messages);
 
 		const auto input = Ncurses::Input::get_event(1000 / fps);

@@ -1,6 +1,7 @@
 #pragma once
 #include <nlohmann/json.hpp>
-
+#include <cstddef>
+#include <functional>
 #include <sstream>
 #include "utils/Vec2.hpp"
 
@@ -49,6 +50,13 @@ namespace Game::World
 				return {y - other.y, x - other.x};
 			}
 
+			std::string to_string() const
+			{
+				return
+					"(" + std::to_string(y)
+					+ ", "
+					+ std::to_string(x) + ")";
+			}
 		};
 
 	struct ChunkSpace {};
@@ -60,13 +68,17 @@ namespace Game::World
 	using LocalPosition = Position<LocalSpace>;
 
 	ChunkPosition to_chunk(const GlobalPosition& global);
-	GlobalPosition to_global(const ChunkPosition& chunk, const LocalPosition& local);
-	LocalPosition to_local(const ChunkPosition& chunk, const GlobalPosition& global);
+	GlobalPosition to_global(
+			const ChunkPosition& chunk,
+			const LocalPosition& local);
+	LocalPosition to_local(
+			const ChunkPosition& chunk,
+			const GlobalPosition& global);
 
 	template <typename T>
 		std::ostream& operator<<(std::ostream& out, const Position<T>& position)
 		{
-			return out << '(' << position.y << ", " << position.x << ')';
+			return out << position.to_string();
 		}
 
 	template <typename T>
@@ -101,3 +113,19 @@ namespace Game::World
 		}
 }
 
+namespace std
+{
+	template <typename Space>
+		struct hash<Game::World::Position<Space>>
+		{
+			std::size_t operator()(
+					const Game::World::Position<Space>& position) const noexcept
+			{
+				const auto hy = std::hash<int>{}(position.y);
+				const auto hx = std::hash<int>{}(position.x);
+
+				return hy ^ (hx + std::size_t{0x9e3779b9}
+						+ (hy << 6) + (hy >> 2));
+			}
+		};
+}

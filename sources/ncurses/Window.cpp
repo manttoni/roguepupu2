@@ -64,6 +64,17 @@ namespace Ncurses
 	void Window::put(
 			const int y,
 			const int x,
+			const char character,
+			const Color& color)
+	{
+		enable_color(color);
+		put(y, x, character);
+		disable_color(color);
+	}
+
+	void Window::put(
+			const int y,
+			const int x,
 			const char character)
 	{
 		wmove(ptr, y, x);

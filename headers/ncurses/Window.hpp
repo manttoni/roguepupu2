@@ -39,6 +39,7 @@ namespace Ncurses
 			std::string get_title() const { return title; }
 			void set_title(const std::string& title) { this->title = title; }
 
+			void put(int y, int x, char character, const Color& color);
 			void put(int y, int x, char character);
 			void put(char character);
 

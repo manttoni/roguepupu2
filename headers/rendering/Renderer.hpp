@@ -9,14 +9,24 @@ class Renderer
 {
 	public:
 		Renderer(Ncurses::Window& surface) : surface(surface) {}
-		void render(const Game::Simulation& simulation, const Game::World::GlobalPosition& center);
-		void render(const Game::Simulation& simulation); // deduce center (player position)
-		/* This might not be here in the end, but could be. Printing messages on same surface is not necessarily bad.
-		void render_messages(const std::vector<std::string>& messages)
-		*/
+
+		void render_player_perspective(const Game::Simulation& simulation);
 
 	private:
 		Ncurses::Window& surface;
 		size_t frame = 0;
+
+		struct Visual
+		{
+			char glyph;
+			Ncurses::Color color;
+		};
+		Visual get_visual(
+				const Game::Simulation& simulation,
+				const Game::World::GlobalPosition& position);
+		std::optional<Visual> get_entity_visual(
+				const Game::Simulation& simulation,
+				const Game::World::GlobalPosition& position);
+		Visual get_cell_visual(const Game::World::Cell& cell);
 };
 
