@@ -133,11 +133,7 @@ void Renderer::render_player_perspective(const Game::Simulation& simulation)
 				const auto pixel = get_pixel(simulation, position);
 				surface.put(y, x, pixel);
 			}
-			else if (
-					std::find(
-						seen_positions.begin(),
-						seen_positions.end(),
-						position) != seen_positions.end())
+			else if (seen_positions.contains(position))
 			{
 				auto pixel = get_pixel(simulation, position);
 				pixel.attribute |= Ncurses::Attribute{A_DIM};
