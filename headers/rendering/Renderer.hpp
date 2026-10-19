@@ -4,6 +4,7 @@
 #include "game/Simulation.hpp"
 #include "game/world/Position.hpp"
 #include "ui/Theme.hpp"
+#include "ncurses/Pixel.hpp"
 
 class Renderer
 {
@@ -16,17 +17,14 @@ class Renderer
 		Ncurses::Window& surface;
 		size_t frame = 0;
 
-		struct Visual
-		{
-			char glyph;
-			Ncurses::Color color;
-		};
-		Visual get_visual(
+		Ncurses::Pixel get_pixel(
 				const Game::Simulation& simulation,
 				const Game::World::GlobalPosition& position);
-		std::optional<Visual> get_entity_visual(
+		entt::entity get_entity(
 				const Game::Simulation& simulation,
 				const Game::World::GlobalPosition& position);
-		Visual get_cell_visual(const Game::World::Cell& cell);
+		Ncurses::Color get_cell_color(const Game::World::Cell& cell);
+		char get_cell_glyph(const Game::World::Cell& cell);
+
 };
 
