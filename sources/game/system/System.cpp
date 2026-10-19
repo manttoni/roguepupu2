@@ -32,7 +32,7 @@ namespace Game::System
  * */
 namespace Game::System
 {
-	Event::Result process(Simulation&, const Game::Event::Null&)
+	Event::Result process(Simulation&, const Event::Null&)
 	{
 		return Event::Result::rejected();
 		// this event has no effect on simulation
@@ -40,11 +40,11 @@ namespace Game::System
 
 	Event::Result process(
 			Simulation& simulation,
-			const Game::Event::LoseMovementPoints& event)
+			const Event::LoseMovementPoints& event)
 	{
 		auto& movement_points =
 			simulation.get_registry()
-			.get<Game::Component::Resource::MovementPoints>(event.entity);
+			.get<Component::Resource::MovementPoints>(event.entity);
 		movement_points.current -= event.amount;
 		return Event::Result{
 			.outcome = Event::Outcome::Accepted,
@@ -54,7 +54,7 @@ namespace Game::System
 
 	Event::Result process(
 			Simulation& simulation,
-			const Game::Event::LeavePosition& event)
+			const Event::LeavePosition& event)
 	{
 		(void) simulation;
 		(void) event;
@@ -66,7 +66,7 @@ namespace Game::System
 
 	Event::Result process(
 			Simulation& simulation,
-			const Game::Event::EnterPosition& event)
+			const Event::EnterPosition& event)
 	{
 		(void) simulation;
 		(void) event;
@@ -78,7 +78,7 @@ namespace Game::System
 
 	Event::Result process(
 			Simulation& simulation,
-			const Game::Event::Move& event)
+			const Event::Move& event)
 	{
 		auto& registry = simulation.get_registry();
 		assert(event.from
@@ -89,26 +89,26 @@ namespace Game::System
 		if (!Movement::can_move(registry, grid, event.entity, event.to))
 			return Event::Result::rejected();
 
-		registry.replace<Game::Component::Value::Position>(
+		registry.replace<Component::Value::Position>(
 				event.entity,
 				event.to);
 
 		Event::List consequences;
 
 		consequences.push_back(
-				Game::Event::LoseMovementPoints{
+				Event::LoseMovementPoints{
 				.entity = event.entity,
 				.amount = Vec2{event.from.vec2() - event.to.vec2()}.length()
 				});
 
 		consequences.push_back(
-				Game::Event::LeavePosition{
+				Event::LeavePosition{
 				.entity = event.entity,
 				.position = event.from
 				});
 
 		consequences.push_back(
-				Game::Event::EnterPosition{
+				Event::EnterPosition{
 				.entity = event.entity,
 				.position = event.to
 				});
@@ -121,19 +121,19 @@ namespace Game::System
 
 	Event::Result process(
 			Simulation& simulation,
-			const Game::Event::Bump& event)
+			const Event::Bump& event)
 	{
 		auto& registry = simulation.get_registry();
 		auto& grid = simulation.get_grid();
 		const auto& entity_position =
-			registry.get<Game::Component::Value::Position>(event.entity).value;
+			registry.get<Component::Value::Position>(event.entity).value;
 		const auto target_position = entity_position + event.direction;
 		Event::List consequences;
 
 		if (Movement::can_move(registry, grid, event.entity, target_position))
 		{
 			consequences.push_back(
-					Game::Event::Move{
+					Event::Move{
 					.entity = event.entity,
 					.from = entity_position,
 					.to = target_position
@@ -152,19 +152,15 @@ namespace Game::System
 
 	Event::Result process(
 			Simulation& simulation,
-			const Game::Event::Spawn& event)
+			const Event::Spawn& event)
 	{
 		auto& registry = simulation.get_registry();
 		auto& scheduler = simulation.get_scheduler();
 
-		// TODO: validate position.
-		// Extract from System::Movement the
-		// blocks_movement() and make a System::Spatial?
-
-		registry.emplace<Game::Component::Value::Position>(
+		registry.emplace<Component::Value::Position>(
 				event.entity,
 				event.position);
-		if (registry.all_of<Game::Component::Tag::Actor>(event.entity))
+		if (registry.all_of<Component::Tag::Actor>(event.entity))
 		{
 			scheduler.add(
 					Turn::Actor{
@@ -179,7 +175,7 @@ namespace Game::System
 		Event::List consequences;
 
 		consequences.push_back(
-				Game::Event::EnterPosition{
+				Event::EnterPosition{
 				.entity = event.entity,
 				.position = event.position
 				});
@@ -192,10 +188,10 @@ namespace Game::System
 
 	Event::Result process(
 			Simulation& simulation,
-			const Game::Event::BeginTurn& event)
+			const Event::BeginTurn& event)
 	{
 		auto& registry = simulation.get_registry();
-		using Resource = Game::Component::Resource;
+		namespace Resource = Component::Resource;
 		registry.get<Resource::MovementPoints>(event.entity).reset();
 		registry.get<Resource::ActionPoints>(event.entity).reset();
 		registry.get<Resource::BonusActionPoints>(event.entity).reset();
@@ -204,7 +200,7 @@ namespace Game::System
 
 	Event::Result process(
 			Simulation& simulation,
-			const Game::Event::EndTurn& event)
+			const Event::EndTurn& event)
 	{
 		auto& scheduler = simulation.get_scheduler();
 		assert(scheduler.current_actor().entity == event.entity);
@@ -215,15 +211,15 @@ namespace Game::System
 		result.outcome = Event::Outcome::Accepted;
 
 		result.consequences.push_back(
-				Game::Event::BeginTurn{
+				Event::BeginTurn{
 				.entity = scheduler.current_actor().entity
 				});
 		return result;
 	}
 
-	Game::Event::Result dispatch(
+	Event::Result dispatch(
 			Simulation& simulation,
-			const Game::Event::Any& event)
+			const Event::Any& event)
 	{
 		return std::visit(
 				[&](const auto& concrete_event)
