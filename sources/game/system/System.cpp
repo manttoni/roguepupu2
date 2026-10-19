@@ -35,6 +35,26 @@ namespace Game::System
 		return Event::Result::rejected(); // this event has no effect on simulation
 	}
 
+	Event::Result process(Simulation& simulation, const Game::Event::PickUp& event)
+	{
+		auto& registry = simulation.get_registry();
+
+		registry.erase<Component::Value::Position>(event.target);
+
+		Event::List consequences;
+
+		consequences.push_back(
+				Event::ReceiveItem{
+					.entity = event.entity,
+					.item = event.target
+				});
+
+		return Event::Result{
+				.outcome = Event::Outcome::Accepted,
+				.consequences = consequences
+		};
+	}
+
 	Event::Result process(Simulation& simulation, const Game::Event::LoseMovementPoints& event)
 	{
 		auto& movement_points = simulation.get_registry().get<Game::Component::Resource::MovementPoints>(event.entity);

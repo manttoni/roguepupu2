@@ -4,24 +4,40 @@
 
 Game::Event::Any PlayerController::select_entity_interaction_event(
 		const entt::registry& registry,
-		const entt::entity entity)
+		const entt::entity entity,
+		const entt::entity player)
 {
 	const auto& entity_name =
 		registry.get<Game::Component::Value::Name>(entity).value;
 	UI::Menu menu(entity_name);
+
+	namespace Component = Game::Component;
+	namespace Value = Component::Value;
+	if (registry.all_of<Component::Value::Position>(entity))
+		menu.add(UI::Element::Button("Pick Up"));
+
 	menu.add(UI::Element::cancel());
 	const auto selection = menu.get_selection();
 	if (selection.cancelled())
 		return Game::Event::Null{};
+
+	if (selection.label == "Pick Up")
+	{
+		return Game::Event::PickUp{
+			.entity = player,
+			.target = entity
+		};
+	}
 	return Game::Event::Null{};
 }
 
 Game::Event::Any PlayerController::select_entity_list_interaction_event(
 		const entt::registry& registry,
-		const std::vector<entt::entity>& entities)
+		const std::vector<entt::entity>& entities,
+		const entt::entity player)
 {
 	if (entities.size() == 1)
-		return select_entity_interaction_event(registry, entities.back());
+		return select_entity_interaction_event(registry, entities.back(), player);
 
 	UI::Selection selection;
 	UI::Menu menu;
@@ -48,7 +64,7 @@ Game::Event::Any PlayerController::select_entity_list_interaction_event(
 					== registry.get<Game::Component::Value::Name>(entity).value)
 			{
 				const auto event =
-					select_entity_interaction_event(registry, entity);
+					select_entity_interaction_event(registry, entity, player);
 				return event;
 			}
 		}
@@ -62,6 +78,7 @@ Game::Event::Any PlayerController::select_position_interaction_event(
 {
 	const auto& grid = simulation.get_grid();
 	const auto& registry = simulation.get_registry();
+	const auto player = simulation.get_player();
 	const auto* const cell = grid.find_cell(position);
 	if (cell == nullptr)
 		throw std::runtime_error("Cell not found");
@@ -73,7 +90,7 @@ Game::Event::Any PlayerController::select_position_interaction_event(
 	if (entities.empty())
 		return Game::Event::Null{};
 
-	return select_entity_list_interaction_event(registry, entities);
+	return select_entity_list_interaction_event(registry, entities, player);
 }
 
 Game::Event::Any PlayerController::get_event(
