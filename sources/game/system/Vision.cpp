@@ -81,7 +81,9 @@ namespace Game::System::Vision
 		const auto& position =
 			registry.get<Component::Value::Position>(entity).value;
 
-		constexpr double vision_range = 10.0;
+		const auto vision_range =
+			registry.get<Component::Value::VisionRange>(entity).value;
+
 		const auto nearby_positions =
 			World::nearby(position, vision_range);
 
