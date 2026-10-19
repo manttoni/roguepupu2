@@ -8,7 +8,13 @@ namespace Ncurses
 {
 	struct Attribute
 	{
-		chtype type;
+		chtype type = A_NORMAL;
+
+		Attribute& operator|=(const Attribute& other) noexcept
+		{
+			type |= other.type;
+			return *this;
+		}
 
 		inline std::string markup() const
 		{
@@ -44,8 +50,17 @@ namespace Ncurses
 			if (!std::regex_match(markup, match, regex))
 				return false;
 
-			const std::vector<std::string> handled_attrs = {"A_BOLD", "A_DIM", "A_REVERSE", "A_NORMAL", "A_BLINK"};
-			auto it = std::find(handled_attrs.begin(), handled_attrs.end(), match[1]);
+			const std::vector<std::string> handled_attrs = {
+				"A_BOLD",
+				"A_DIM",
+				"A_REVERSE",
+				"A_NORMAL",
+				"A_BLINK"
+			};
+			auto it = std::find(
+					handled_attrs.begin(),
+					handled_attrs.end(),
+					match[1]);
 			return it != handled_attrs.end();
 		}
 
@@ -54,7 +69,11 @@ namespace Ncurses
 				const std::size_t idx
 				)
 		{
-			assert(is_markup(str, idx));
+			if (!is_markup(str, idx))
+			{
+				Log::error() << "Invalid markup: " << str;
+				return Attribute{A_NORMAL};
+			}
 
 			const auto close = str.find(']', idx);
 			const auto markup = str.substr(idx + 1, close - idx - 1);
