@@ -1,4 +1,5 @@
 #include "application/PlayerController.hpp"
+#include "game/component/Runtime.hpp"
 #include "ui/Search.hpp"
 #include "ui/Menu.hpp"
 
@@ -10,13 +11,26 @@ Game::Event::Any PlayerController::select_entity_interaction_event(
 	const auto& entity_name =
 		registry.get<Game::Component::Value::Name>(entity).value;
 	UI::Menu menu(entity_name);
+	std::vector<std::string> buttons;
 
 	namespace Component = Game::Component;
 	namespace Value = Component::Value;
-	if (registry.all_of<Component::Value::Position>(entity))
-		menu.add(UI::Element::Button("Pick Up"));
+	if (registry.all_of<
+			Component::Value::Position,
+			Component::Tag::Item
+			>(entity))
+	{
+		buttons.push_back("Pick Up");
+	}
+	if (registry.all_of<Component::Runtime::Inventory>(entity))
+	{
+		buttons.push_back("Inventory");
+	}
 
+	for (const auto& button : buttons)
+		menu.add(UI::Element::Button{button});
 	menu.add(UI::Element::cancel());
+
 	const auto selection = menu.get_selection();
 	if (selection.cancelled())
 		return Game::Event::Null{};
@@ -27,6 +41,13 @@ Game::Event::Any PlayerController::select_entity_interaction_event(
 			.entity = player,
 			.target = entity
 		};
+	}
+	else if (selection.label == "Inventory")
+	{
+		return select_entity_list_interaction_event(
+				registry,
+				registry.get<Component::Runtime::Inventory>(entity).items,
+				player);
 	}
 	return Game::Event::Null{};
 }

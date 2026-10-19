@@ -1,7 +1,3 @@
-// Runtime entity containers
-X(EquippedItems, entt::entity)
-X(Inventory, entt::entity)
-
 // Needs editor, entity defining
 X(AIBehaviors, Game::Enum::AIBehavior)
 X(WeaponProperties, Game::Enum::WeaponProperty)

@@ -35,6 +35,22 @@ namespace Game::System
 		return Event::Result::rejected(); // this event has no effect on simulation
 	}
 
+	Event::Result process(Simulation& simulation, const Game::Event::ReceiveItem& event)
+	{
+		auto& registry = simulation.get_registry();
+
+		if (
+				auto* inventory = registry.try_get<Component::Runtime::Inventory>(event.entity);
+				inventory != nullptr)
+		{
+			inventory->items.push_back(event.item);
+		}
+		else
+			return Event::Result::rejected();
+
+		return Event::Result::accepted();
+	}
+
 	Event::Result process(Simulation& simulation, const Game::Event::PickUp& event)
 	{
 		auto& registry = simulation.get_registry();
