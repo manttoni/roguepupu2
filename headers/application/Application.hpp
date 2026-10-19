@@ -68,6 +68,7 @@ class Application
 		void editor_menu();
 		void settings_menu();
 		void controls_menu();
+		void developer_menu();
 
 		void run_game();
 		std::string select_player() const;
