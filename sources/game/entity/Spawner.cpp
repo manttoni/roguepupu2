@@ -1,4 +1,5 @@
 #include "game/entity/Spawner.hpp"
+#include "game/world/Position.hpp"
 #include "game/entity/Entity.hpp"
 #include "external/entt/entt.hpp"
 
@@ -26,7 +27,32 @@ namespace Game::Entity
 
 	entt::entity Spawner::spawn(const Entity::SpawnRequest& request)
 	{
-		return spawn(request.id, request.position);
+		if (request.search_radius < 1.0 && can_spawn(request))
+			return spawn(request.id, request.position);
+
+		if (request.search_radius >= 1.0)
+			return spawn(request.id, find_spawn_position_near(request));
+
+		return entt::null;
+	}
+
+	World::GlobalPosition Spawner::find_spawn_position_near(
+			const SpawnRequest& request)
+	{
+		auto copy = request;
+		const auto positions = World::nearby(
+				request.position,
+				request.search_radius
+				);
+		for (const auto position : positions)
+		{
+			if (can_spawn(copy))
+				return copy.position;
+			copy.position = position;
+		}
+		Log::warning() << "Could not find suitable spawning location for: "
+			<< request.id;
+		return request.position; // could not find better position
 	}
 
 	bool Spawner::can_spawn(
