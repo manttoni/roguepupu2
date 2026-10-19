@@ -13,18 +13,7 @@ namespace Game::Component::Runtime
 	struct Vision
 	{
 		std::vector<World::GlobalPosition> visible_positions;
-		std::vector<entt::entity> visible_entities;
-	};
-
-	struct Memory
-	{
-		struct EntityObservation
-		{
-			World::GlobalPosition position;
-			size_t turn;
-		};
-
 		std::unordered_set<World::GlobalPosition> seen_positions;
-		std::unordered_map<entt::entity, EntityObservation> seen_entities;
+		std::vector<entt::entity> visible_entities;
 	};
 }
