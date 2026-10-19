@@ -9,35 +9,6 @@
 #include "application/Layout.hpp"
 #include "game/component/Component.hpp"
 
-Game::Event::Any PlayerController::get_event(
-		const Game::Simulation& simulation,
-		const Ncurses::Input::Event& event
-		) const
-{
-	const auto current_actor = simulation.current_actor();
-
-	assert(current_actor.controller == Game::Turn::Controller::Player);
-
-	if (event.key == Ncurses::Input::Key::None)
-		return Game::Event::Null{};
-
-	if (event.is_directional())
-	{
-		return Game::Event::Bump{
-			.entity = current_actor.entity,
-				.direction = event.to_direction()
-		};
-	}
-	else if (event.key == Ncurses::Input::Key::Space)
-	{
-		return Game::Event::EndTurn{
-			.entity = current_actor.entity
-		};
-	}
-
-	return Game::Event::Null{};
-}
-
 bool Application::handle_input(const Ncurses::Input::Event& event)
 {
 	using Key = Ncurses::Input::Key;

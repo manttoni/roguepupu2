@@ -82,7 +82,7 @@ namespace UI
 		surface.enable(theme.border);
 		surface.draw_border();
 		surface.disable(theme.border);
-		surface.refresh(); // does this do anything in this context?
+		//surface.refresh(); // does this do anything in this context?
 		update_panels();
 		doupdate();
 	}
