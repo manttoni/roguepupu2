@@ -64,12 +64,24 @@ namespace Ncurses
 	void Window::put(
 			const int y,
 			const int x,
-			const char character,
-			const Color& color)
+			const Ncurses::Pixel& pixel)
 	{
-		enable_color(color);
+		enable(pixel.fgcolor, pixel.bgcolor);
+		enable(pixel.attribute);
+		put(y, x, pixel.glyph);
+		disable(pixel.attribute);
+		disable(pixel.fgcolor, pixel.bgcolor);
+	}
+
+	void Window::put(
+			const int y,
+			const int x,
+			const char character,
+			const Color& fg)
+	{
+		enable(fg);
 		put(y, x, character);
-		disable_color(color);
+		disable(fg);
 	}
 
 	void Window::put(
@@ -114,7 +126,7 @@ namespace Ncurses
 			{
 				if (color_enabled)
 				{
-					disable_color(color);
+					disable(color);
 					color_enabled = false;
 				}
 
@@ -126,7 +138,7 @@ namespace Ncurses
 			{
 				if (attribute_enabled)
 				{
-					disable_attribute(attribute);
+					disable(attribute);
 					attribute_enabled = false;
 				}
 
@@ -137,10 +149,10 @@ namespace Ncurses
 			if (Ncurses::Color::is_markup(str, i))
 			{
 				if (color_enabled)
-					disable_color(color);
+					disable(color);
 
 				color = Ncurses::Color::from_markup(str, i);
-				enable_color(color);
+				enable(color);
 				color_enabled = true;
 
 				const auto end = str.find('}', i);
@@ -151,10 +163,10 @@ namespace Ncurses
 			if (Ncurses::Attribute::is_markup(str, i))
 			{
 				if (attribute_enabled)
-					disable_attribute(attribute);
+					disable(attribute);
 
 				attribute = Ncurses::Attribute::from_markup(str, i);
-				enable_attribute(attribute);
+				enable(attribute);
 				attribute_enabled = true;
 
 				const auto end = str.find(']', i);
@@ -175,9 +187,9 @@ namespace Ncurses
 	void Window::draw_border()
 	{
 		box(ptr, 0, 0);
-		enable_attribute(Attribute{A_ITALIC});
+		enable(Attribute{A_ITALIC});
 		write(0, 2, " " + title + " ");
-		disable_attribute(Attribute{A_ITALIC});
+		disable(Attribute{A_ITALIC});
 	}
 
 	void Window::refresh()
@@ -190,24 +202,26 @@ namespace Ncurses
 		wnoutrefresh(ptr);
 	}
 
-	void Window::enable_attribute(const Ncurses::Attribute& attribute)
+	void Window::enable(const Ncurses::Attribute& attribute)
 	{
 		wattron(ptr, attribute.type);
 	}
 
-	void Window::disable_attribute(const Ncurses::Attribute& attribute)
+	void Window::disable(const Ncurses::Attribute& attribute)
 	{
 		wattroff(ptr, attribute.type);
 	}
 
-	void Window::enable_color(const Color& color)
+	void Window::enable(const Color& fg, const Color& bg)
 	{
-		wattron(ptr, COLOR_PAIR(static_cast<int>(color.id())));
+		(void) bg;
+		wattron(ptr, COLOR_PAIR(static_cast<int>(fg.id())));
 	}
 
-	void Window::disable_color(const Color& color)
+	void Window::disable(const Color& fg, const Color& bg)
 	{
-		wattroff(ptr, COLOR_PAIR(static_cast<int>(color.id())));
+		(void) bg;
+		wattroff(ptr, COLOR_PAIR(static_cast<int>(fg.id())));
 	}
 
 	Vec2<int> Window::dimensions() const

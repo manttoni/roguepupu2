@@ -367,7 +367,7 @@ namespace EntityEditor
 		Json all_definitions = IO::read_json(EntityDatabase::entity_definitions_path);
 		UI::Selection selection;
 		Ncurses::Panel back_panel;
-		back_panel.get_window().enable_color(UI::load_theme().text);
+		back_panel.get_window().enable(UI::load_theme().text);
 		while (true)
 		{
 			print_definition(back_panel.get_window(), active);
