@@ -148,6 +148,14 @@ namespace Game::World
 		}
 
 	template <typename T>
+		double distance(const Position<T>& a, const Position<T>& b)
+		{
+			return std::hypot(
+					static_cast<double>(a.y) - static_cast<double>(b.y),
+					static_cast<double>(a.x) - static_cast<double>(b.x));
+		}
+
+	template <typename T>
 		void from_json(const nlohmann::json& j, Position<T>& position)
 		{
 			position.y = j.at("y").get<int>();
