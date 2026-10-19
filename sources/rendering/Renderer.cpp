@@ -1,49 +1,120 @@
 #include "rendering/Renderer.hpp"
+#include "game/component/Runtime.hpp"
 #include "game/entity/Entity.hpp"
 #include "utils/Vec2.hpp"
 #include "ncurses/Color.hpp"
+#include "ncurses/Pixel.hpp"
+#include <stdexcept>
 
-namespace
+char Renderer::get_cell_glyph(const Game::World::Cell& cell)
 {
-	constexpr Ncurses::Color cell_color(const Game::World::Cell& cell)
+	using Form = Game::Enum::Form;
+
+	switch (cell.form)
 	{
-		using Material = Game::Enum::Material;
-
-		switch(cell.material)
-		{
-			case Material::Stone:
-				return Ncurses::Color{1,1,1};
-			case Material::Soil:
-				return Ncurses::Color{1,1,0};
-			default:
-				Log::warning() << "Unmapped cell material: " + Game::Enum::to_string<Material>(cell.material);
-				return Ncurses::Color{};
-		}
-	}
-
-	constexpr char cell_glyph(const Game::World::Cell& cell)
-	{
-		using Form = Game::Enum::Form;
-
-		switch (cell.form)
-		{
-			case Form::Wall:
-				return '#';
-			case Form::Floor:
-				return '_';
-			default:
-				Log::warning() << "Unmapped cell form: " + Game::Enum::to_string<Form>(cell.form);
-				return '?';
-		}
+		case Form::Wall:
+			return '#';
+		case Form::Floor:
+			return '_';
+		default:
+			Log::warning()
+				<< "Unmapped cell form: "
+				<< Game::Enum::to_string<Form>(cell.form);
+			return '?';
 	}
 }
 
-void Renderer::render(
-		const Game::Simulation& simulation,
-		const Game::World::GlobalPosition& center)
+Ncurses::Color Renderer::get_cell_color(const Game::World::Cell& cell)
 {
-	const auto viewport_size = surface.dimensions();
-	const auto top_left = center - viewport_size / 2;
+	using Material = Game::Enum::Material;
+	switch (cell.material)
+	{
+		case Material::Stone:
+			return Ncurses::Color{1,1,1};
+		case Material::Soil:
+			return Ncurses::Color{1,1,0};
+		default:
+			Log::warning()
+				<< "Unmapped cell material: "
+				<< Game::Enum::to_string<Material>(cell.material);
+			return Ncurses::Color{1, 0, 0};
+	}
+}
+
+entt::entity Renderer::get_entity(
+		const Game::Simulation& simulation,
+		const Game::World::GlobalPosition& position)
+{
+	const auto& registry = simulation.get_registry();
+	const auto entities = Game::Entity::find_all(
+			registry,
+			Game::Component::Value::Position{position},
+			Game::Component::Tag::Renderable{});
+	if (entities.empty())
+		return entt::null;
+
+	const auto entity = entities[frame % entities.size()];
+	return entity;
+}
+
+Ncurses::Pixel Renderer::get_pixel(
+		const Game::Simulation& simulation,
+		const Game::World::GlobalPosition& position)
+{
+	Ncurses::Pixel pixel;
+
+	const auto entity = get_entity(simulation, position);
+	if (entity != entt::null)
+	{
+		// This class touches only entities with Tag::Renderable
+		// Tag::Renderable promises components for glyph and color
+		// If entity doesn't have these, mistake is in earlier validation
+		// Attribute is not a component, but entity can have derived attribute
+		const auto& registry = simulation.get_registry();
+		pixel.glyph =
+			registry.get<Game::Component::Value::Glyph>(entity).value;
+		pixel.fgcolor =
+			registry.get<Game::Component::Value::Color>(entity).value;
+		// Give some attribute based on some Tag for example, TODO
+	}
+
+	const auto* const cell = simulation.get_grid().find_cell(position);
+	if (cell == nullptr)
+		throw std::runtime_error("Rendered Cell not loaded");
+	if (pixel.glyph == '\0')
+		pixel.glyph = get_cell_glyph(*cell);
+	if (pixel.fgcolor == Ncurses::Color{})
+		pixel.fgcolor = get_cell_color(*cell);
+	// pixel.bgcolor = lightmap
+
+	return pixel;
+}
+
+void Renderer::render_player_perspective(const Game::Simulation& simulation)
+{
+	const auto&
+		registry =
+		simulation.get_registry();
+	const auto
+		player =
+		simulation.get_player();
+	const auto&
+		player_position =
+		registry.get<Game::Component::Value::Position>(player).value;
+	const auto
+		viewport_size =
+		surface.dimensions();
+	const auto
+		top_left =
+		player_position - viewport_size / 2;
+	const auto&
+		visible_positions =
+		registry.get<Game::Component::Runtime::Vision>(player)
+		.visible_positions;
+	const auto&
+		seen_positions =
+		registry.get<Game::Component::Runtime::Vision>(player)
+		.seen_positions;
 
 	surface.clear();
 
@@ -51,36 +122,23 @@ void Renderer::render(
 	{
 		for (int x = 0; x < viewport_size.x; ++x)
 		{
-			const auto grid_position = top_left + Vec2<int>{y, x};
-			const auto* cell =
-				simulation.get_grid().find_cell(grid_position);
+			const auto position = top_left + Vec2<int>{y, x};
 
-			if (!cell)
-				continue; // Missing chunk; preparation should have loaded it.
-
-			const auto entities =
-				Game::Entity::find_all(
-						simulation.get_registry(),
-						Game::Component::Value::Position{grid_position},
-						Game::Component::Tag::Renderable{}
-						);
-			if (entities.size() == 0)
+			if (
+					std::find(
+						visible_positions.begin(),
+						visible_positions.end(),
+						position) != visible_positions.end())
 			{
-				const auto color = cell_color(*cell);
-
-				surface.enable_color(color);
-				surface.put(y, x, cell_glyph(*cell));
-				surface.disable_color(color);
-
-				continue;
+				const auto pixel = get_pixel(simulation, position);
+				surface.put(y, x, pixel);
 			}
-
-			const auto entity = entities[frame % entities.size()]; // when multiple entities in same position, render a different one each frame
-			const auto color = simulation.get_registry().get<Game::Component::Value::Color>(entity).value;
-
-			surface.enable_color(color);
-			surface.put(y, x, simulation.get_registry().get<Game::Component::Value::Glyph>(entity).value);
-			surface.disable_color(color);
+			else if (seen_positions.contains(position))
+			{
+				auto pixel = get_pixel(simulation, position);
+				pixel.attribute |= Ncurses::Attribute{A_DIM};
+				surface.put(y, x, pixel);
+			}
 		}
 	}
 
@@ -88,12 +146,4 @@ void Renderer::render(
 	frame++;
 }
 
-void Renderer::render(const Game::Simulation& simulation)
-{
-	const auto player = simulation.get_player();
-	const auto& position =
-		simulation.get_registry()
-		.get<Game::Component::Value::Position>(player);
 
-	render(simulation, position.value);
-}

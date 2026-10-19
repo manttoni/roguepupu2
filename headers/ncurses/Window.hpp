@@ -5,6 +5,7 @@
 
 #include <ncurses.h>
 
+#include "ncurses/Pixel.hpp"
 #include "utils/Vec2.hpp"
 #include "ncurses/Color.hpp"
 #include "ncurses/Attribute.hpp"
@@ -39,6 +40,8 @@ namespace Ncurses
 			std::string get_title() const { return title; }
 			void set_title(const std::string& title) { this->title = title; }
 
+			void put(int y, int x, const Ncurses::Pixel& pixel);
+			void put(int y, int x, char character, const Ncurses::Color& fg);
 			void put(int y, int x, char character);
 			void put(char character);
 
@@ -51,11 +54,15 @@ namespace Ncurses
 			void refresh();
 			void stage_refresh();
 
-			void enable_attribute(const Ncurses::Attribute& attribute);
-			void disable_attribute(const Ncurses::Attribute& attribute);
+			void enable(const Ncurses::Attribute& attribute);
+			void disable(const Ncurses::Attribute& attribute);
 
-			void enable_color(const Color& color);
-			void disable_color(const Color& color);
+			void enable(
+					const Ncurses::Color& fg,
+					const Ncurses::Color& bg = Ncurses::Color{0,0,0});
+			void disable(
+					const Ncurses::Color& fg,
+					const Ncurses::Color& bg = Ncurses::Color{0,0,0});
 
 			Vec2<int> dimensions() const;
 			Vec2<int> position() const;

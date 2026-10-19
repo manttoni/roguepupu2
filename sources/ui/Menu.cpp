@@ -70,18 +70,18 @@ namespace UI
 
 		Ncurses::Window& surface = panel.get_window();
 		surface.clear();
-		surface.enable_color(theme.text);
+		surface.enable(theme.text);
 
 		for (size_t i = 0; i < lines.size(); ++i)
 		{
-			if (selected == i) surface.enable_attribute(Ncurses::Attribute(A_REVERSE));
+			if (selected == i) surface.enable(Ncurses::Attribute(A_REVERSE));
 			surface.write(i + 1, 2, lines[i]);
-			if (selected == i) surface.disable_attribute(Ncurses::Attribute(A_REVERSE));
+			if (selected == i) surface.disable(Ncurses::Attribute(A_REVERSE));
 		}
-		surface.disable_color(theme.text);
-		surface.enable_color(theme.border);
+		surface.disable(theme.text);
+		surface.enable(theme.border);
 		surface.draw_border();
-		surface.disable_color(theme.border);
+		surface.disable(theme.border);
 		surface.refresh(); // does this do anything in this context?
 		update_panels();
 		doupdate();
