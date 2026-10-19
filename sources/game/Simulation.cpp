@@ -1,4 +1,5 @@
 #include "game/Simulation.hpp"
+#include "game/system/Vision.hpp"
 #include "game/entity/Entity.hpp"
 #include "ncurses/Screen.hpp"
 
@@ -107,6 +108,13 @@ namespace Game
 			simulate_node(child);
 			node.consequences.push_back(std::move(child));
 		}
+
+		/* TODO: create something so this doesnt get called too often
+		 * */
+		System::Vision::update_vision(
+				registry,
+				grid,
+				scheduler.current_actor().entity);
 	}
 
 	Event::Node Simulation::simulate(Event::Any initial_event)
