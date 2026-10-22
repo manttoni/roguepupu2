@@ -43,10 +43,10 @@ namespace Game::System
 		auto& registry = simulation.get_registry();
 
 		if (
-				auto* inventory = registry.try_get<Component::Runtime::Inventory>(event.entity);
+				auto* inventory = registry.try_get<Component::List::Inventory>(event.entity);
 				inventory != nullptr)
 		{
-			inventory->items.push_back(event.item);
+			inventory->values.push_back(event.item);
 		}
 		else
 			return Event::Result::rejected();
@@ -58,7 +58,7 @@ namespace Game::System
 	{
 		auto& registry = simulation.get_registry();
 
-		if (!registry.all_of<Component::Runtime::Inventory>(event.entity))
+		if (!registry.all_of<Component::List::Inventory>(event.entity))
 			return Event::Result::rejected();
 
 		registry.erase<Component::Value::Position>(event.item);

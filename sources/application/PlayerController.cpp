@@ -12,7 +12,7 @@ Game::Event::Any PlayerController::select_entity_interaction_event(
 	namespace Value = Component::Value;
 
 	//const bool in_player_inventory =
-	//	registry.get<Component::Runtime::Inventory>(player).contains(entity);
+	//	registry.get<Component::List::Inventory>(player).contains(entity);
 	const bool on_ground =
 		registry.all_of<Component::Value::Position>(entity);
 	const auto& entity_name =
@@ -32,7 +32,7 @@ Game::Event::Any PlayerController::select_entity_interaction_event(
 		else
 			buttons.push_back("Take");
 	}
-	if (registry.all_of<Component::Runtime::Inventory>(entity))
+	if (registry.all_of<Component::List::Inventory>(entity))
 	{
 		buttons.push_back("Inventory");
 	}
@@ -70,7 +70,7 @@ Game::Event::Any PlayerController::select_entity_interaction_event(
 	{
 		return select_entity_list_interaction_event(
 				registry,
-				registry.get<Component::Runtime::Inventory>(entity).items,
+				registry.get<Component::List::Inventory>(entity).values,
 				player);
 	}
 	return Game::Event::Null{};

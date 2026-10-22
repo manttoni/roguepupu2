@@ -1,4 +1,5 @@
 X(Component::Tag::Abstract,			Component::Value::Name)
+X(Component::Tag::Creature,			Component::List::Inventory)
 X(Component::Tag::Actor,			Component::Resource::ActionPoints)
 X(Component::Tag::Actor,			Component::Resource::BonusActionPoints)
 X(Component::Tag::Actor,			Component::Resource::MovementPoints)
