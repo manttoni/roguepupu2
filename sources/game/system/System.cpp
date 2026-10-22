@@ -55,14 +55,14 @@ namespace Game::System
 	{
 		auto& registry = simulation.get_registry();
 
-		registry.erase<Component::Value::Position>(event.target);
+		registry.erase<Component::Value::Position>(event.item);
 
 		Event::List consequences;
 
 		consequences.push_back(
 				Event::ReceiveItem{
 					.entity = event.entity,
-					.item = event.target
+					.item = event.item
 				});
 
 		return Event::Result{

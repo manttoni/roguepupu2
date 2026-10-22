@@ -8,19 +8,29 @@ Game::Event::Any PlayerController::select_entity_interaction_event(
 		const entt::entity entity,
 		const entt::entity player)
 {
+	namespace Component = Game::Component;
+	namespace Value = Component::Value;
+
+	//const bool in_player_inventory =
+	//	registry.get<Component::Runtime::Inventory>(player).contains(entity);
+	const bool on_ground =
+		registry.all_of<Component::Value::Position>(entity);
 	const auto& entity_name =
-		registry.get<Game::Component::Value::Name>(entity).value;
+		registry.get<Component::Value::Color>(entity).value.markup()
+		+ registry.get<Component::Value::Name>(entity).value
+		+ "{reset}";
+
 	UI::Menu menu(entity_name);
 	std::vector<std::string> buttons;
 
-	namespace Component = Game::Component;
-	namespace Value = Component::Value;
-	if (registry.all_of<
-			Component::Value::Position,
-			Component::Tag::Item
-			>(entity))
+	if (registry.all_of<Component::Tag::Item>(entity))
 	{
-		buttons.push_back("Pick Up");
+		if (on_ground)
+			buttons.push_back("Pick Up");
+	//	else if (in_player_inventory)
+	//		buttons.push_back("Drop");
+		else
+			buttons.push_back("Take");
 	}
 	if (registry.all_of<Component::Runtime::Inventory>(entity))
 	{
@@ -39,7 +49,21 @@ Game::Event::Any PlayerController::select_entity_interaction_event(
 	{
 		return Game::Event::PickUp{
 			.entity = player,
-			.target = entity
+				.item = entity
+		};
+	}
+	else if (selection.label == "Drop")
+	{
+		return Game::Event::Drop{
+			.entity = player,
+				.item = entity
+		};
+	}
+	else if (selection.label == "Take")
+	{
+		return Game::Event::Take{
+			.entity = player,
+				.item = entity
 		};
 	}
 	else if (selection.label == "Inventory")

@@ -131,7 +131,7 @@ namespace Game::Event
 	struct PickUp
 	{
 		entt::entity entity = entt::null;
-		entt::entity target = entt::null;
+		entt::entity item = entt::null;
 	};
 	using Any = std::variant<
 		Null,
