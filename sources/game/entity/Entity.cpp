@@ -140,6 +140,12 @@ namespace Game::Entity
 		if (registry.all_of<Component::Tag::Creature>(entity))
 		{
 			registry.emplace<Component::Runtime::Vision>(entity);
+			if (registry.get<Component::Value::CreatureType>(entity).value
+					== Enum::CreatureType::Humanoid)
+			{
+				registry.emplace<Component::Runtime::Inventory>(entity);
+				registry.emplace<Component::Runtime::EquippedItems>(entity);
+			}
 		}
 	}
 

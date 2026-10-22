@@ -128,8 +128,14 @@ namespace Game::Event
 	{
 		entt::entity entity = entt::null;
 	};
+	struct PickUp
+	{
+		entt::entity entity = entt::null;
+		entt::entity item = entt::null;
+	};
 	using Any = std::variant<
 		Null,
+		PickUp,
 	Move,
 	LeavePosition,
 	EnterPosition,

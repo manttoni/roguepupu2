@@ -38,9 +38,46 @@ namespace Game::System
 		// this event has no effect on simulation
 	}
 
-	Event::Result process(
-			Simulation& simulation,
-			const Event::LoseMovementPoints& event)
+	Event::Result process(Simulation& simulation, const Game::Event::ReceiveItem& event)
+	{
+		auto& registry = simulation.get_registry();
+
+		if (
+				auto* inventory = registry.try_get<Component::Runtime::Inventory>(event.entity);
+				inventory != nullptr)
+		{
+			inventory->items.push_back(event.item);
+		}
+		else
+			return Event::Result::rejected();
+
+		return Event::Result::accepted();
+	}
+
+	Event::Result process(Simulation& simulation, const Game::Event::PickUp& event)
+	{
+		auto& registry = simulation.get_registry();
+
+		if (!registry.all_of<Component::Runtime::Inventory>(event.entity))
+			return Event::Result::rejected();
+
+		registry.erase<Component::Value::Position>(event.item);
+
+		Event::List consequences;
+
+		consequences.push_back(
+				Event::ReceiveItem{
+					.entity = event.entity,
+					.item = event.item
+				});
+
+		return Event::Result{
+				.outcome = Event::Outcome::Accepted,
+				.consequences = consequences
+		};
+	}
+
+	Event::Result process(Simulation& simulation, const Game::Event::LoseMovementPoints& event)
 	{
 		auto& movement_points =
 			simulation.get_registry()

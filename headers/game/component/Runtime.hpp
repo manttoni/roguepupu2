@@ -16,4 +16,12 @@ namespace Game::Component::Runtime
 		std::unordered_set<World::GlobalPosition> seen_positions;
 		std::vector<entt::entity> visible_entities;
 	};
+
+	struct Inventory
+	{
+		std::vector<entt::entity> items;
+	};
+	struct EquippedItems
+	{
+	};
 }

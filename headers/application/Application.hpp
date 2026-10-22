@@ -2,6 +2,7 @@
 
 #include <optional>
 
+#include "application/PlayerController.hpp"
 #include "ncurses/Panel.hpp"
 #include "game/world/Settings.hpp"
 #include "game/Settings.hpp"
@@ -32,14 +33,11 @@ class Messages
 		std::vector<std::string> descriptions;
 
 	public:
-		void add(const std::vector<std::string>& desc) { descriptions.insert(descriptions.end(), desc.begin(), desc.end()); }
+		void add(const std::vector<std::string>& desc)
+		{
+			descriptions.insert(descriptions.end(), desc.begin(), desc.end());
+		}
 		void add(const std::string& desc) { descriptions.push_back(desc); }
-};
-
-class PlayerController
-{
-	public:
-		Game::Event::Any get_event(const Game::Simulation& simulation, const Ncurses::Input::Event& event) const;
 };
 
 class Application
@@ -56,7 +54,7 @@ class Application
 		Messages messages;
 
 		std::optional<Game::Simulation> simulation = std::nullopt;
-		PlayerController player_controller; // probably doesnt need to be here but who knows
+		PlayerController player_controller;
 
 		bool application_running = true;
 		bool game_running = false;
@@ -68,6 +66,7 @@ class Application
 		void editor_menu();
 		void settings_menu();
 		void controls_menu();
+		void developer_menu();
 
 		void run_game();
 		std::string select_player() const;

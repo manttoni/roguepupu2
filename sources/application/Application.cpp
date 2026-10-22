@@ -9,35 +9,6 @@
 #include "application/Layout.hpp"
 #include "game/component/Component.hpp"
 
-Game::Event::Any PlayerController::get_event(
-		const Game::Simulation& simulation,
-		const Ncurses::Input::Event& event
-		) const
-{
-	const auto current_actor = simulation.current_actor();
-
-	assert(current_actor.controller == Game::Turn::Controller::Player);
-
-	if (event.key == Ncurses::Input::Key::None)
-		return Game::Event::Null{};
-
-	if (event.is_directional())
-	{
-		return Game::Event::Bump{
-			.entity = current_actor.entity,
-			.direction = event.to_direction()
-		};
-	}
-	else if (event.key == Ncurses::Input::Key::Space)
-	{
-		return Game::Event::EndTurn{
-			.entity = current_actor.entity
-		};
-	}
-
-	return Game::Event::Null{};
-}
-
 bool Application::handle_input(const Ncurses::Input::Event& event)
 {
 	using Key = Ncurses::Input::Key;
@@ -54,12 +25,17 @@ bool Application::handle_input(const Ncurses::Input::Event& event)
 	{
 		switch (event.ch)
 		{
+			case '`':
+				developer_menu();
+				return true;
 			case '\\':
 				if (simulation.has_value())
 				{
 					auto& registry = simulation->get_registry();
 					auto player = simulation->get_player();
-					auto& col = registry.get<Game::Component::Value::CollisionMovement>(player);
+					auto& col =
+						registry.get<
+						Game::Component::Value::CollisionMovement>(player);
 					col.value ^= true;
 					Log::info() << "player collision was set to " << col.value;
 					return true;
@@ -72,6 +48,19 @@ bool Application::handle_input(const Ncurses::Input::Event& event)
 	else
 		return false;
 	return true;
+}
+
+void Application::developer_menu()
+{
+	auto& registry = simulation->get_registry();
+	auto player = simulation->get_player();
+	UI::Menu menu("Developer Menu");
+	menu.add(
+			UI::Element::Checkbox(
+				"noClip",
+				&registry.get<Game::Component::Value::CollisionMovement>(player)
+				.value));
+	menu.get_selection(); // wait for esc
 }
 
 void Application::editor_menu()
@@ -169,17 +158,17 @@ void Application::main_menu()
 		else if (selection.label == "New Game")
 		{
 			if (
-				simulation.has_value() &&
-				!UI::Dialog::confirm("Lose current game?")
+					simulation.has_value() &&
+					!UI::Dialog::confirm("Lose current game?")
 			   )
 			{
 				continue;
 			}
 
 			simulation.emplace(
-						UI::Dialog::get_input("Seed"),
-						entity_database,
-						select_player());
+					UI::Dialog::get_input("Seed"),
+					entity_database,
+					select_player());
 			run_game();
 		}
 		else if (selection.label == "Editor")
