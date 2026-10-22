@@ -55,6 +55,9 @@ namespace Game::System
 	{
 		auto& registry = simulation.get_registry();
 
+		if (!registry.all_of<Component::Runtime::Inventory>(event.entity))
+			return Event::Result::rejected();
+
 		registry.erase<Component::Value::Position>(event.item);
 
 		Event::List consequences;
