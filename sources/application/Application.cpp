@@ -81,6 +81,7 @@ void Application::controls_menu()
 
 void Application::run_game()
 {
+	layout.get_panel(Layout::Panel::Game).bring_to_top();
 	game_running = true;
 	assert(simulation.has_value());
 
@@ -88,7 +89,8 @@ void Application::run_game()
 	{
 		renderer.render_player_perspective(*simulation);
 		// renderer.write(messages);
-
+update_panels();
+doupdate();
 		const auto input = Ncurses::Input::get_event(1000 / fps);
 		if (handle_input(input))
 			continue;

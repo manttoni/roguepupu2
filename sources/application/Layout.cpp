@@ -1,7 +1,14 @@
 #include "application/Layout.hpp"
 #include "ncurses/Screen.hpp"
 
+Layout::Layout()
+{
+	panels[Panel::Game] = Ncurses::Panel{};
+	reset();
+}
+
 void Layout::reset()
 {
-	game_panel.resize(Ncurses::Screen::height(), Ncurses::Screen::width());
+	panels[Panel::Game]
+		.resize(Ncurses::Screen::height(), Ncurses::Screen::width());
 }
