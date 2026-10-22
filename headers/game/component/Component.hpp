@@ -5,6 +5,7 @@
 #include "game/component/Value.hpp"
 #include "game/component/List.hpp"
 #include "game/component/Resource.hpp"
+#include "game/component/Runtime.hpp"
 
 namespace Game::Component
 {

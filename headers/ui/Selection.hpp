@@ -20,7 +20,7 @@ namespace UI
 			TimedOut, // if menu is not blocking, it can return before anything is selected
 			Error,
 			SingleChoice,
-			MultiChoice,
+			MultiChoice, // Suggests opening another menu if this was selected
 			Ignored,
 			Changed,
 		};
