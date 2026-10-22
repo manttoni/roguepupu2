@@ -7,7 +7,8 @@ namespace Game::Entity
 {
 	struct SpawnRequest
 	{
-		Definition::ID id;
-		World::GlobalPosition position;
+		Definition::ID id{};
+		World::GlobalPosition position{};
+		double search_radius = 0.0;
 	};
 }

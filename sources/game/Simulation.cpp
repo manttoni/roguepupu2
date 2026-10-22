@@ -30,7 +30,12 @@ namespace Game
 		simulate(
 				Event::Spawn{
 				player,
-				World::GlobalPosition{0, 0}
+				spawner.find_spawn_position_near(
+						Entity::SpawnRequest{
+							player_definition_id,
+							World::GlobalPosition{0, 0},
+							1000.0
+							}),
 				});
 	}
 

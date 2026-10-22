@@ -26,6 +26,9 @@ namespace Game::Entity
 					) const;
 			bool can_spawn(const Entity::SpawnRequest& request);
 
+			World::GlobalPosition find_spawn_position_near(
+					const Entity::SpawnRequest& request);
+
 		private:
 			entt::registry& registry;
 			const EntityDatabase& database;
