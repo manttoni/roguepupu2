@@ -17,10 +17,6 @@ namespace Game::Component::Runtime
 		std::vector<entt::entity> visible_entities;
 	};
 
-	struct Inventory
-	{
-		std::vector<entt::entity> items;
-	};
 	struct EquippedItems
 	{
 	};

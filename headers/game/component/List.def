@@ -24,3 +24,5 @@ X(Lights, Game::Entity::Definition::ID)
 // Visual/effects
 X(Projectiles, entt::entity)
 
+// Used during runtime
+X(Inventory, entt::entity)

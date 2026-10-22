@@ -143,7 +143,7 @@ namespace Game::Entity
 			if (registry.get<Component::Value::CreatureType>(entity).value
 					== Enum::CreatureType::Humanoid)
 			{
-				registry.emplace<Component::Runtime::Inventory>(entity);
+				registry.emplace<Component::List::Inventory>(entity);
 				registry.emplace<Component::Runtime::EquippedItems>(entity);
 			}
 		}

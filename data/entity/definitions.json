@@ -12,6 +12,7 @@
         "Faction": "Player",
         "Glyph": "@",
         "Intelligence": 8,
+        "Inventory": [],
         "MovementPoints": 10000,
         "Name": "Rabdin",
         "OnDamage": [],
@@ -20,12 +21,12 @@
         "OnSpawn": [],
         "Strength": 8,
         "Tags": [
-            "Player",
             "Creature",
-            "Actor",
             "Destructible",
+            "Player",
             "Renderable",
-            "WorldObject"
+            "WorldObject",
+            "Actor"
         ],
         "VisionRange": 10,
         "Wisdom": 8
