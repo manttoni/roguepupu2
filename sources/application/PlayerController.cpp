@@ -145,6 +145,8 @@ Game::Event::Any PlayerController::get_event(
 {
 	const auto current_actor = simulation.current_actor();
 	assert(current_actor.controller == Game::Turn::Controller::Player);
+	(void) current_actor;
+
 	const auto player = simulation.get_player();
 	assert(player != entt::null);
 	assert(current_actor.entity == player);
