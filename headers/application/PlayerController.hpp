@@ -1,5 +1,5 @@
 #pragma once
-
+#include "external/magic_enum/magic_enum.hpp"
 #include "game/event/Event.hpp"
 #include "game/Simulation.hpp"
 #include "ncurses/Input.hpp"
@@ -7,6 +7,21 @@
 class PlayerController
 {
 	private:
+		enum class Interaction
+		{
+			PickUp,
+			Take,
+			Throw,
+			Drop,
+			OpenInventory
+		};
+
+		enum class Location
+		{
+			OnGround,
+			InInventory
+		};
+
 		static Game::Event::Any select_entity_interaction_event(
 				const entt::registry& registry,
 				const entt::entity entity,

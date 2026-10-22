@@ -153,9 +153,6 @@ namespace Ncurses::Input
 		const int raw_key = getch();
 		flushinp();
 
-		if (raw_key != -1)
-			Log::info() << "[Keypress] " << raw_key;
-
 		if (raw_key == ERR)
 			return Event{};
 

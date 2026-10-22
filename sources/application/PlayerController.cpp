@@ -1,4 +1,5 @@
 #include "application/PlayerController.hpp"
+#include "game/component/List.hpp"
 #include "game/component/Runtime.hpp"
 #include "ui/Search.hpp"
 #include "ui/Menu.hpp"
@@ -11,68 +12,83 @@ Game::Event::Any PlayerController::select_entity_interaction_event(
 	namespace Component = Game::Component;
 	namespace Value = Component::Value;
 
-	//const bool in_player_inventory =
-	//	registry.get<Component::List::Inventory>(player).contains(entity);
-	const bool on_ground =
-		registry.all_of<Component::Value::Position>(entity);
+	const Location location =
+		registry.all_of<Component::Value::Position>(entity) ?
+		Location::OnGround : Location::InInventory;
+	const entt::entity container =
+		registry.get<Component::List::Inventory>(player).contains(entity) ?
+		player : entt::null;
+
 	const auto& entity_name =
 		registry.get<Component::Value::Color>(entity).value.markup()
 		+ registry.get<Component::Value::Name>(entity).value
 		+ "{reset}";
 
 	UI::Menu menu(entity_name);
-	std::vector<std::string> buttons;
+	std::vector<Interaction> interactions;
 
 	if (registry.all_of<Component::Tag::Item>(entity))
 	{
-		if (on_ground)
-			buttons.push_back("Pick Up");
-	//	else if (in_player_inventory)
-	//		buttons.push_back("Drop");
-		else
-			buttons.push_back("Take");
+		switch (location)
+		{
+			case Location::OnGround:
+				interactions.push_back(Interaction::PickUp);
+				break;
+			case Location::InInventory:
+				if (container == player)
+				{
+					interactions.push_back(Interaction::Throw);
+					interactions.push_back(Interaction::Drop);
+					break;
+				}
+				interactions.push_back(Interaction::Take);
+				break;
+			default:
+				break;
+		}
 	}
 	if (registry.all_of<Component::List::Inventory>(entity))
-	{
-		buttons.push_back("Inventory");
-	}
+		interactions.push_back(Interaction::OpenInventory);
 
-	for (const auto& button : buttons)
-		menu.add(UI::Element::Button{button});
+	for (const auto interaction : interactions)
+		menu.add(UI::Element::Button(
+					std::string(magic_enum::enum_name(interaction))));
 	menu.add(UI::Element::cancel());
 
 	const auto selection = menu.get_selection();
 	if (selection.cancelled())
 		return Game::Event::Null{};
 
-	if (selection.label == "Pick Up")
+	switch (interactions.at(selection.index))
 	{
-		return Game::Event::PickUp{
-			.entity = player,
-				.item = entity
-		};
+		case Interaction::PickUp:
+			return Game::Event::PickUp{
+				.entity = player,
+					.item = entity
+			};
+
+		case Interaction::Drop:
+			return Game::Event::Drop{
+				.entity = player,
+					.item = entity
+			};
+
+		case Interaction::Take:
+			return Game::Event::Take{
+				.entity = player,
+					.item = entity
+			};
+
+		case Interaction::OpenInventory:
+			return select_entity_list_interaction_event(
+					registry,
+					registry.get<Component::List::Inventory>(entity).values,
+					player);
+
+		default:
+			break;
 	}
-	else if (selection.label == "Drop")
-	{
-		return Game::Event::Drop{
-			.entity = player,
-				.item = entity
-		};
-	}
-	else if (selection.label == "Take")
-	{
-		return Game::Event::Take{
-			.entity = player,
-				.item = entity
-		};
-	}
-	else if (selection.label == "Inventory")
-	{
-		return select_entity_list_interaction_event(
-				registry,
-				registry.get<Component::List::Inventory>(entity).values,
-				player);
-	}
+
 	return Game::Event::Null{};
 }
 
