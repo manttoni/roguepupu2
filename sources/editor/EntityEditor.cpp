@@ -377,6 +377,7 @@ namespace EntityEditor
 			editor.add(UI::Element::Button("New"));		// Create a blank definition with a valid id, and set it active
 			editor.add(UI::Element::Button("Load"));	// Load a definition from Json object, and set it active
 			editor.add(UI::Element::Button("Edit"));	// Change values of active definition
+			editor.add(UI::Element::Button("Update"));	// Add missing requirements or remove unnecessary ones
 			editor.add(UI::Element::Button("Add"));		// Add active definition to Json object
 			editor.add(UI::Element::Button("Erase"));	// Erase active definition from Json object
 			editor.add(UI::Element::Button("Read"));	// Read json object from file
@@ -399,6 +400,10 @@ namespace EntityEditor
 			else if (label == "Edit")
 			{
 				edit_definition(active);
+			}
+			else if (label == "Update")
+			{
+				update_requirements(active);
 			}
 			else if (label == "Add")
 			{
