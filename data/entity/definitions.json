@@ -29,6 +29,7 @@
             "Actor"
         ],
         "VisionRange": 10,
+        "Weight": 0.0,
         "Wisdom": 8
     },
     "stone": {
@@ -47,7 +48,8 @@
             "Renderable",
             "WorldObject",
             "Equipment"
-        ]
+        ],
+        "Weight": 0.0
     },
     "tree": {
         "CollisionMovement": true,
@@ -60,6 +62,7 @@
             "Plant",
             "WorldObject",
             "Renderable"
-        ]
+        ],
+        "Weight": 0.0
     }
 }

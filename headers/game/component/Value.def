@@ -1,4 +1,5 @@
 X(ArmorClass, int)
+X(Weight, double)
 X(Color, Ncurses::Color)
 X(Position, Game::World::GlobalPosition)
 X(Faction, Game::Enum::Faction)
