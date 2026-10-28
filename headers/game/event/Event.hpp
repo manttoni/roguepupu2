@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <variant>
+#include <optional>
 #include "game/world/Position.hpp"
 #include "external/entt/entt.hpp"
 #include "game/Enum.hpp"
@@ -9,8 +10,19 @@
 
 namespace Game::Event
 {
+	using Target = std::variant<
+		std::monostate,
+		entt::entity,
+		World::GlobalPosition>;
+
 	struct Null
 	{
+	};
+	struct Throw
+	{
+		entt::entity entity = entt::null;
+		entt::entity item = entt::null;
+		Target target{};
 	};
 	struct Move
 	{
@@ -120,6 +132,11 @@ namespace Game::Event
 		entt::entity entity = entt::null;
 		entt::entity item = entt::null;
 	};
+	struct LoseItem
+	{
+		entt::entity entity = entt::null;
+		entt::entity item = entt::null;
+	};
 	struct EndTurn
 	{
 		entt::entity entity = entt::null;
@@ -135,29 +152,31 @@ namespace Game::Event
 	};
 	using Any = std::variant<
 		Null,
+		LoseItem,
 		PickUp,
-	Move,
-	LeavePosition,
-	EnterPosition,
-	Bump,
-	Attack,
-	AttackHit,
-	AttackMiss,
-	TakeDamage,
-	Spawn,
-	Destroy,
-	Drop,
-	Take,
-	Equip,
-	Unequip,
-	DiceRoll,
-	Death,
-	BecomeHostile,
-	ReceiveItem,
-	LoseMovementPoints,
-	EndTurn,
-	BeginTurn
-		>;
+		Move,
+		LeavePosition,
+		EnterPosition,
+		Bump,
+		Attack,
+		AttackHit,
+		AttackMiss,
+		TakeDamage,
+		Spawn,
+		Destroy,
+		Drop,
+		Take,
+		Equip,
+		Unequip,
+		DiceRoll,
+		Death,
+		BecomeHostile,
+		ReceiveItem,
+		LoseMovementPoints,
+		EndTurn,
+		BeginTurn,
+		Throw
+			>;
 	using List = std::vector<Any>;
 	enum class Outcome // was it accepted into the game simulation?
 	{
@@ -173,7 +192,7 @@ namespace Game::Event
 		{
 			return Result{
 				.outcome = Outcome::Rejected,
-				.consequences = {}
+					.consequences = {}
 			};
 		}
 
@@ -181,7 +200,7 @@ namespace Game::Event
 		{
 			return Result{
 				.outcome = Outcome::Accepted,
-				.consequences = {}
+					.consequences = {}
 			};
 		}
 	};

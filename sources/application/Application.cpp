@@ -9,6 +9,11 @@
 #include "application/Layout.hpp"
 #include "game/component/Component.hpp"
 
+Application::Application() :
+	renderer(layout.get_panel(Layout::Panel::Game).get_window()),
+	player_controller(renderer)
+{}
+
 bool Application::handle_input(const Ncurses::Input::Event& event)
 {
 	using Key = Ncurses::Input::Key;
@@ -56,11 +61,11 @@ void Application::developer_menu()
 	auto player = simulation->get_player();
 	UI::Menu menu("Developer Menu");
 	menu.add(
-			UI::Element::Checkbox(
-				"noClip",
-				&registry.get<Game::Component::Value::CollisionMovement>(player)
-				.value));
-	menu.get_selection(); // wait for esc
+		UI::Element::Checkbox(
+			"Movement Collision (\\)",
+			&registry.get<Game::Component::Value::CollisionMovement>(player)
+			.value));
+	menu.get_selection();
 }
 
 void Application::editor_menu()
@@ -88,9 +93,9 @@ void Application::run_game()
 	while (game_running)
 	{
 		renderer.render_player_perspective(*simulation);
-		// renderer.write(messages);
-update_panels();
-doupdate();
+		renderer.write(messages.get_last(20));
+		update_panels();
+		doupdate();
 		const auto input = Ncurses::Input::get_event(1000 / fps);
 		if (handle_input(input))
 			continue;
@@ -160,17 +165,17 @@ void Application::main_menu()
 		else if (selection.label == "New Game")
 		{
 			if (
-					simulation.has_value() &&
-					!UI::Dialog::confirm("Lose current game?")
+				simulation.has_value() &&
+				!UI::Dialog::confirm("Lose current game?")
 			   )
 			{
 				continue;
 			}
 
 			simulation.emplace(
-					UI::Dialog::get_input("Seed"),
-					entity_database,
-					select_player());
+				UI::Dialog::get_input("Seed"),
+				entity_database,
+				select_player());
 			run_game();
 		}
 		else if (selection.label == "Editor")
@@ -188,9 +193,9 @@ void Application::main_menu()
 		else
 		{
 			throw std::runtime_error(
-					"Unknown main-menu selection: " +
-					selection.label
-					);
+				"Unknown main-menu selection: " +
+				selection.label
+				);
 		}
 	}
 }

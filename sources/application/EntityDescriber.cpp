@@ -14,7 +14,14 @@ std::string EntityDescriber::describe(entt::entity entity) const
 		return "<invalid entity " + std::to_string(id) + ">";
 
 	if (const auto* name = registry.try_get<Game::Component::Value::Name>(entity))
+	{
+		std::string d;
+		if (const auto* color = registry.try_get<Game::Component::Value::Color>(entity))
+		{
+			return color->value.markup() + name->value + "{reset}";
+		}
 		return name->value;
+	}
 
 	return "<unnamed entity " + std::to_string(id) + ">";
 }

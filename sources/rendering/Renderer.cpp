@@ -1,4 +1,5 @@
 #include "rendering/Renderer.hpp"
+#include "ncurses/Screen.hpp"
 #include "game/component/Runtime.hpp"
 #include "game/entity/Entity.hpp"
 #include "utils/Vec2.hpp"
@@ -90,7 +91,9 @@ Ncurses::Pixel Renderer::get_pixel(
 	return pixel;
 }
 
-void Renderer::render_player_perspective(const Game::Simulation& simulation)
+void Renderer::render_player_perspective(
+		const Game::Simulation& simulation,
+		const std::optional<Game::World::GlobalPosition> cursor)
 {
 	const auto&
 		registry =
@@ -124,21 +127,24 @@ void Renderer::render_player_perspective(const Game::Simulation& simulation)
 		{
 			const auto position = top_left + Vec2<int>{y, x};
 
-			if (
-					std::find(
+			const bool visible =
+				std::find(
 						visible_positions.begin(),
 						visible_positions.end(),
-						position) != visible_positions.end())
-			{
-				const auto pixel = get_pixel(simulation, position);
-				surface.put(y, x, pixel);
-			}
-			else if (seen_positions.contains(position))
-			{
-				auto pixel = get_pixel(simulation, position);
+						position) != visible_positions.end();
+
+			if (!visible && !seen_positions.contains(position))
+				continue;
+
+			auto pixel = get_pixel(simulation, position);
+
+			if (!visible)
 				pixel.attribute |= Ncurses::Attribute{A_DIM};
-				surface.put(y, x, pixel);
-			}
+
+			if (cursor && position == *cursor)
+				pixel.attribute |= Ncurses::Attribute{A_REVERSE};
+
+			surface.put(y, x, pixel);
 		}
 	}
 
@@ -146,4 +152,15 @@ void Renderer::render_player_perspective(const Game::Simulation& simulation)
 	frame++;
 }
 
+void Renderer::write(const std::vector<std::string>& messages)
+{
+	const auto height =
+		static_cast<std::size_t>(Ncurses::Screen::size().y);
+	const auto messages_size = messages.size();
 
+	for (std::size_t i = 0; i < messages_size && i < height; ++i)
+	{
+		surface.write(height - i - 1, 0, messages[messages_size - 1 - i]);
+	}
+	surface.refresh();
+}

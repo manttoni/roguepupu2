@@ -1,43 +1,73 @@
 #pragma once
+
+#include <optional>
+
 #include "external/magic_enum/magic_enum.hpp"
 #include "game/event/Event.hpp"
 #include "game/Simulation.hpp"
 #include "ncurses/Input.hpp"
+#include "rendering/Renderer.hpp"
 
 class PlayerController
 {
 	private:
 		enum class Interaction
 		{
+			Null,
+			OpenInventory,
 			PickUp,
 			Take,
 			Throw,
-			Drop,
-			OpenInventory
+			Drop
 		};
 
 		enum class Location
 		{
-			OnGround,
-			InInventory
+			Ground,
+			Inventory
 		};
 
-		static Game::Event::Any select_entity_interaction_event(
-				const entt::registry& registry,
-				const entt::entity entity,
-				const entt::entity player);
+		enum class Targeting
+		{
+			Anything,
+			Entity,
+			Position
+		};
 
-		static Game::Event::Any select_entity_list_interaction_event(
-				const entt::registry& registry,
-				const std::vector<entt::entity>& entities,
-				const entt::entity player);
+		Renderer& renderer;
 
-		static Game::Event::Any select_position_interaction_event(
-				const Game::Simulation& simulation,
-				const Game::World::GlobalPosition& position);
+		std::optional<Game::World::GlobalPosition> select_position(
+			const Game::Simulation& simulation);
 
+		entt::entity select_entity(
+			const Game::Simulation& simulation,
+			const std::vector<entt::entity>& entities);
+
+		entt::entity select_entity(
+			const Game::Simulation& simulation);
+
+		Interaction get_interaction(
+			const Game::Simulation& simulation,
+			const entt::entity entity);
+
+		std::optional<Game::Event::Target> select_target(
+			const Game::Simulation& simulation,
+			Targeting targeting);
+
+		Game::Event::Any get_interaction_event(
+			const Game::Simulation& simulation);
+
+		Game::Event::Any get_interaction_event(
+			const Game::Simulation& simulation,
+			const entt::entity entity);
 	public:
+		PlayerController(Renderer& renderer);
+
 		Game::Event::Any get_event(
-				const Game::Simulation& simulation,
-				const Ncurses::Input::Event& event) const;
+			const Game::Simulation& simulation,
+			const Ncurses::Input::Event& event);
+
+
+	private:
+
 };
