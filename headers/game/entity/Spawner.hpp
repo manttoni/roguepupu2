@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include "external/entt/fwd.hpp"
 #include "databases/EntityDatabase.hpp"
 #include "game/world/Grid.hpp"
@@ -26,7 +27,7 @@ namespace Game::Entity
 					) const;
 			bool can_spawn(const Entity::SpawnRequest& request);
 
-			World::GlobalPosition find_spawn_position_near(
+			std::optional<World::GlobalPosition> find_spawn_position_near(
 					const Entity::SpawnRequest& request);
 
 		private:

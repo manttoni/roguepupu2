@@ -166,13 +166,6 @@ namespace Game::Entity
 
 		emplace_runtime_components(registry, entity);
 
-		const auto* name =
-			registry.try_get<Component::Value::Name>(entity);
-
-		Log::debug()
-			<< "[Entity]"
-			<< "Entity created: "
-			<< (name ? name->value : "<unnamed>");
 		return entity;
 	}
 

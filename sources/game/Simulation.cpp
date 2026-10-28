@@ -12,31 +12,36 @@
 namespace Game
 {
 	Simulation::Simulation(
-			const std::string& seed,
-			const EntityDatabase& entity_database,
-			const Entity::Definition::ID& player_definition_id) :
+		const std::string& seed,
+		const EntityDatabase& entity_database,
+		const Entity::Definition::ID& player_definition_id) :
 		seed(seed),
 		generator(seed),
 		entity_database(entity_database),
 		spawner(registry, this->entity_database, grid),
 		player(Entity::create(
-					registry,
-					this->entity_database,
-					player_definition_id))
+				registry,
+				this->entity_database,
+				player_definition_id))
 	{
 		if (player == entt::null)
 			throw std::runtime_error("Player is entt::null");
 
-		simulate(
-				Event::Spawn{
-				player,
-				spawner.find_spawn_position_near(
-						Entity::SpawnRequest{
-							player_definition_id,
-							World::GlobalPosition{0, 0},
-							1000.0
-							}),
+		load_chunks(World::ChunkPosition{0,0});
+		const auto spawn_position =
+			spawner.find_spawn_position_near(
+				Entity::SpawnRequest{
+				player_definition_id,
+				World::GlobalPosition{0, 0},
+				10.0
 				});
+		if (!spawn_position)
+			throw std::runtime_error("Cannot find suitable player spawn");
+		simulate(
+			Event::Spawn{
+			player,
+			*spawn_position
+			});
 	}
 
 	void Simulation::load_chunks(const World::ChunkPosition& center)
@@ -80,17 +85,17 @@ namespace Game
 	void Simulation::simulate_node(Event::Node& node)
 	{
 		assert(!node.outcome.has_value() &&
-				"Event already simulated");
+			"Event already simulated");
 		assert(node.consequences.empty() &&
-				"Event shouldn't have consequences yet");
+			"Event shouldn't have consequences yet");
 
 		/* Preload grid around player
 		 * */
 		if (
-				const auto* event =
-				std::get_if<Event::EnterPosition>(&node.event);
-				event && event->entity == player
-				)
+			const auto* event =
+			std::get_if<Event::EnterPosition>(&node.event);
+			event && event->entity == player
+		   )
 		{
 			const auto& position =
 				registry.get<Game::Component::Value::Position>(player).value;
@@ -117,9 +122,9 @@ namespace Game
 		/* TODO: create something so this doesnt get called too often
 		 * */
 		System::Vision::update_vision(
-				registry,
-				grid,
-				scheduler.current_actor().entity);
+			registry,
+			grid,
+			scheduler.current_actor().entity);
 	}
 
 	Event::Node Simulation::simulate(Event::Any initial_event)

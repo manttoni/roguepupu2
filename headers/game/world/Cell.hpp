@@ -9,7 +9,6 @@ namespace Game::World
 	{
 		Enum::Material material = Enum::Material::None;
 		Enum::Form form = Enum::Form::None;
-		double water_depth{};
 
 		inline static std::string to_string(const Cell& cell)
 		{

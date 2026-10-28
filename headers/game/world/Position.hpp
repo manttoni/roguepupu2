@@ -103,6 +103,14 @@ namespace Game::World
 		}
 
 	template <typename T>
+		double distance(const Position<T>& a, const Position<T>& b)
+		{
+			return std::hypot(
+					static_cast<double>(a.y) - static_cast<double>(b.y),
+					static_cast<double>(a.x) - static_cast<double>(b.x));
+		}
+
+	template <typename T>
 		std::vector<Position<T>> nearby(
 				const Position<T>& position,
 				const double radius)
@@ -144,15 +152,13 @@ namespace Game::World
 				}
 			}
 
-			return positions;
-		}
+			std::sort(positions.begin(), positions.end(),
+				[&position](auto& a, auto& b)
+				{
+				return distance(a, position) < distance(b, position);
+				});
 
-	template <typename T>
-		double distance(const Position<T>& a, const Position<T>& b)
-		{
-			return std::hypot(
-					static_cast<double>(a.y) - static_cast<double>(b.y),
-					static_cast<double>(a.x) - static_cast<double>(b.x));
+			return positions;
 		}
 
 	template <typename T>

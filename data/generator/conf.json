@@ -4,15 +4,15 @@
 		"world": {
 			"noise": {
 				"frequency": 0.0075,
-				"octaves": 4,
+				"octaves": 1,
 				"persistence": 1.0,
 				"regions": [
 					{
-						"range": [ 0.0, 0.55 ],
+						"range": [ 0.0, 0.6 ],
 						"id": "land"
 					},
 					{
-						"range": [ 0.45, 1.0 ],
+						"range": [ 0.4, 1.0 ],
 						"id": "mountain"
 					}
 				]
@@ -44,7 +44,7 @@
 				"material": "Soil"
 			},
 			"entities": [
-				{ "id": "tree", "chance": 0.05 }
+				{ "id": "tree", "chance": 0.075 }
 			]
 		},
 

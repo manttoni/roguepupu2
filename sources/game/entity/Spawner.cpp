@@ -6,16 +6,16 @@
 namespace Game::Entity
 {
 	Spawner::Spawner(entt::registry& registry,
-			const EntityDatabase& database,
-			const World::Grid& grid) :
+		const EntityDatabase& database,
+		const World::Grid& grid) :
 		registry(registry),
 		database(database),
 		grid(grid)
 	{}
 
 	entt::entity Spawner::spawn(
-			const Definition::ID& id,
-			const World::GlobalPosition& position)
+		const Definition::ID& id,
+		const World::GlobalPosition& position)
 	{
 		if (!can_spawn(id, position))
 			return entt::null;
@@ -31,38 +31,41 @@ namespace Game::Entity
 			return spawn(request.id, request.position);
 
 		if (request.search_radius >= 1.0)
-			return spawn(request.id, find_spawn_position_near(request));
+		{
+			const auto found_position = find_spawn_position_near(request);
+			if (found_position)
+				return spawn(request.id, *found_position);
+		}
 
 		return entt::null;
 	}
 
-	World::GlobalPosition Spawner::find_spawn_position_near(
-			const SpawnRequest& request)
+	std::optional<World::GlobalPosition> Spawner::find_spawn_position_near(
+		const SpawnRequest& request)
 	{
-		auto copy = request;
-		const auto positions = World::nearby(
-				request.position,
-				request.search_radius
-				);
-		for (const auto position : positions)
+		if (can_spawn(request))
+			return request.position;
+
+		for (const auto& position :
+			World::nearby(request.position, request.search_radius))
 		{
-			if (can_spawn(copy))
-				return copy.position;
-			copy.position = position;
+			if (can_spawn(request.id, position))
+				return position;
 		}
-		Log::warning() << "Could not find suitable spawning location for: "
-			<< request.id;
-		return request.position; // could not find better position
+		return std::nullopt;
 	}
 
 	bool Spawner::can_spawn(
-			const Definition::ID& id,
-			const World::GlobalPosition& position
-			) const
+		const Definition::ID& id,
+		const World::GlobalPosition& position
+		) const
 	{
 		const auto* const cell = grid.find_cell(position);
 		if (cell == nullptr)
+		{
+			Log::debug() << "Cell not generated";
 			return false;
+		}
 
 		const auto& data = database.definitions.at(id);
 		const auto& tags = data.at("Tags");
@@ -75,18 +78,18 @@ namespace Game::Entity
 		}
 
 		if (cell->form != Enum::Form::Floor)
-			return false; // TODO: Tags can change this restriction
+			return false;
 
 		const auto blocking_entities = find_all(
-				registry,
-				Component::Value::Position{position},
-				Component::Value::CollisionMovement{true}
-				);
+			registry,
+			Component::Value::Position{position},
+			Component::Value::CollisionMovement{true}
+			);
 
 		const auto all_entities = find_all(
-				registry,
-				Component::Value::Position{position}
-				);
+			registry,
+			Component::Value::Position{position}
+			);
 
 		if (!blocking_entities.empty())
 			return false;
