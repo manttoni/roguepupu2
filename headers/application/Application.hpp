@@ -38,6 +38,11 @@ class Messages
 			descriptions.insert(descriptions.end(), desc.begin(), desc.end());
 		}
 		void add(const std::string& desc) { descriptions.push_back(desc); }
+		std::vector<std::string> get_last(std::size_t count) const
+		{
+			count = std::min(count, descriptions.size());
+			return {descriptions.end() - count, descriptions.end()};
+		}
 };
 
 class Application
