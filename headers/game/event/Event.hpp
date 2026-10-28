@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <variant>
+#include <optional>
 #include "game/world/Position.hpp"
 #include "external/entt/entt.hpp"
 #include "game/Enum.hpp"
