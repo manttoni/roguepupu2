@@ -92,17 +92,16 @@ namespace Game::System
 			std::get_if<World::GlobalPosition>(&target))
 			return *position;
 
-		const auto entity = std::get<entt::entity>(target);
-		if (!registry.valid(entity))
-			return std::nullopt;
+		if (const auto* entity =
+			std::get_if<entt::entity>(&target);
+			entity && registry.valid(*entity))
+		{
+			if (const auto* position =
+				registry.try_get<Component::Value::Position>(*entity))
+				return position->value;
+		}
 
-		const auto* position =
-			registry.try_get<Component::Value::Position>(entity);
-
-		if (!position)
-			return std::nullopt;
-
-		return position->value;
+		return std::nullopt;
 	}
 
 	Event::Result process(Simulation& simulation, const Game::Event::Throw& event)
@@ -163,6 +162,10 @@ namespace Game::System
 		auto& registry = simulation.get_registry();
 
 		if (!registry.all_of<Component::List::Inventory>(event.entity))
+			return Event::Result::rejected();
+		if (!registry.all_of<Component::Value::Position>(event.item))
+			return Event::Result::rejected();
+		if (registry.get<Component::List::Inventory>(event.entity).contains(event.item))
 			return Event::Result::rejected();
 
 		registry.erase<Component::Value::Position>(event.item);
