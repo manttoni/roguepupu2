@@ -90,7 +90,9 @@ Ncurses::Pixel Renderer::get_pixel(
 	return pixel;
 }
 
-void Renderer::render_player_perspective(const Game::Simulation& simulation)
+void Renderer::render_player_perspective(
+		const Game::Simulation& simulation,
+		const std::optional<Game::World::GlobalPosition> cursor)
 {
 	const auto&
 		registry =

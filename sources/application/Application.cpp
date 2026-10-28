@@ -61,11 +61,11 @@ void Application::developer_menu()
 	auto player = simulation->get_player();
 	UI::Menu menu("Developer Menu");
 	menu.add(
-			UI::Element::Checkbox(
-				"noClip",
-				&registry.get<Game::Component::Value::CollisionMovement>(player)
-				.value));
-	menu.get_selection(); // wait for esc
+		UI::Element::Checkbox(
+			"Movement Collision (\\)",
+			&registry.get<Game::Component::Value::CollisionMovement>(player)
+			.value));
+	menu.get_selection();
 }
 
 void Application::editor_menu()
@@ -165,17 +165,17 @@ void Application::main_menu()
 		else if (selection.label == "New Game")
 		{
 			if (
-					simulation.has_value() &&
-					!UI::Dialog::confirm("Lose current game?")
+				simulation.has_value() &&
+				!UI::Dialog::confirm("Lose current game?")
 			   )
 			{
 				continue;
 			}
 
 			simulation.emplace(
-					UI::Dialog::get_input("Seed"),
-					entity_database,
-					select_player());
+				UI::Dialog::get_input("Seed"),
+				entity_database,
+				select_player());
 			run_game();
 		}
 		else if (selection.label == "Editor")
@@ -193,9 +193,9 @@ void Application::main_menu()
 		else
 		{
 			throw std::runtime_error(
-					"Unknown main-menu selection: " +
-					selection.label
-					);
+				"Unknown main-menu selection: " +
+				selection.label
+				);
 		}
 	}
 }

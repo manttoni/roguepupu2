@@ -9,11 +9,11 @@ namespace Game::System
 {
 	template<typename T>
 		Event::Result process(
-				Simulation&,
-				const T&)
+			Simulation&,
+			const T&)
 		{
 			assert(false
-					&& "Event has no process() implementation. Implement it!");
+				&& "Event has no process() implementation. Implement it!");
 
 			return {
 				.outcome = Event::Outcome::Rejected,
@@ -194,8 +194,8 @@ namespace Game::System
 	}
 
 	Event::Result process(
-			Simulation& simulation,
-			const Event::LeavePosition& event)
+		Simulation& simulation,
+		const Event::LeavePosition& event)
 	{
 		(void) simulation;
 		(void) event;
@@ -258,8 +258,8 @@ namespace Game::System
 	}
 
 	Event::Result process(
-			Simulation& simulation,
-			const Event::Bump& event)
+		Simulation& simulation,
+		const Event::Bump& event)
 	{
 		auto& registry = simulation.get_registry();
 		auto& grid = simulation.get_grid();
@@ -271,11 +271,11 @@ namespace Game::System
 		if (Movement::can_move(registry, grid, event.entity, target_position))
 		{
 			consequences.push_back(
-					Event::Move{
-					.entity = event.entity,
-					.from = entity_position,
-					.to = target_position
-					});
+				Event::Move{
+				.entity = event.entity,
+				.from = entity_position,
+				.to = target_position
+				});
 		}
 		else
 		{
@@ -289,34 +289,34 @@ namespace Game::System
 	}
 
 	Event::Result process(
-			Simulation& simulation,
-			const Event::Spawn& event)
+		Simulation& simulation,
+		const Event::Spawn& event)
 	{
 		auto& registry = simulation.get_registry();
 		auto& scheduler = simulation.get_scheduler();
 
 		registry.emplace<Component::Value::Position>(
-				event.entity,
-				event.position);
+			event.entity,
+			event.position);
 		if (registry.all_of<Component::Tag::Actor>(event.entity))
 		{
 			scheduler.add(
-					Turn::Actor{
-					event.entity,
-					event.entity == simulation.get_player() ?
-					Turn::Controller::Player :
-					Turn::Controller::AI,
-					1 // TODO: roll initiative calculation
-					});
+				Turn::Actor{
+				event.entity,
+				event.entity == simulation.get_player() ?
+				Turn::Controller::Player :
+				Turn::Controller::AI,
+				1 // TODO: roll initiative calculation
+				});
 		}
 
 		Event::List consequences;
 
 		consequences.push_back(
-				Event::EnterPosition{
-				.entity = event.entity,
-				.position = event.position
-				});
+			Event::EnterPosition{
+			.entity = event.entity,
+			.position = event.position
+			});
 
 		return Event::Result{
 			.outcome = Event::Outcome::Accepted,
@@ -325,8 +325,8 @@ namespace Game::System
 	}
 
 	Event::Result process(
-			Simulation& simulation,
-			const Event::BeginTurn& event)
+		Simulation& simulation,
+		const Event::BeginTurn& event)
 	{
 		auto& registry = simulation.get_registry();
 		namespace Resource = Component::Resource;
@@ -337,8 +337,8 @@ namespace Game::System
 	}
 
 	Event::Result process(
-			Simulation& simulation,
-			const Event::EndTurn& event)
+		Simulation& simulation,
+		const Event::EndTurn& event)
 	{
 		auto& scheduler = simulation.get_scheduler();
 		assert(scheduler.current_actor().entity == event.entity);
@@ -349,21 +349,21 @@ namespace Game::System
 		result.outcome = Event::Outcome::Accepted;
 
 		result.consequences.push_back(
-				Event::BeginTurn{
-				.entity = scheduler.current_actor().entity
-				});
+			Event::BeginTurn{
+			.entity = scheduler.current_actor().entity
+			});
 		return result;
 	}
 
 	Event::Result dispatch(
-			Simulation& simulation,
-			const Event::Any& event)
+		Simulation& simulation,
+		const Event::Any& event)
 	{
 		return std::visit(
-				[&](const auto& concrete_event)
-				{
-				return process(simulation, concrete_event);
-				}
-				, event);
+			[&](const auto& concrete_event)
+			{
+			return process(simulation, concrete_event);
+			}
+			, event);
 	}
 }

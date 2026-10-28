@@ -45,12 +45,12 @@ namespace EventDescriber
 			<< ", advantage=" << event.advantage;
 
 		return ed.describe(event.attacker) + " hits " +
-			ed.describe(event.defender) + ".";
+			ed.describe(event.defender);
 	}
 
 	std::string describe(
-			const Game::Simulation& simulation,
-			const Event::AttackMiss& event)
+		const Game::Simulation& simulation,
+		const Event::AttackMiss& event)
 	{
 		EntityDescriber ed(simulation.get_registry());
 
@@ -62,12 +62,12 @@ namespace EventDescriber
 			<< ", advantage=" << event.advantage;
 
 		return ed.describe(event.attacker) + " misses " +
-			ed.describe(event.defender) + ".";
+			ed.describe(event.defender);
 	}
 
 	std::string describe(
-			const Game::Simulation& simulation,
-			const Event::TakeDamage& event)
+		const Game::Simulation& simulation,
+		const Event::TakeDamage& event)
 	{
 		EntityDescriber ed(simulation.get_registry());
 
@@ -85,8 +85,8 @@ namespace EventDescriber
 	}
 
 	std::string describe(
-			const Game::Simulation& simulation,
-			const Event::Spawn& event)
+		const Game::Simulation& simulation,
+		const Event::Spawn& event)
 	{
 		EntityDescriber ed(simulation.get_registry());
 
@@ -102,8 +102,8 @@ namespace EventDescriber
 	}
 
 	std::string describe(
-			const Game::Simulation& simulation,
-			const Event::Destroy& event)
+		const Game::Simulation& simulation,
+		const Event::Destroy& event)
 	{
 		EntityDescriber ed(simulation.get_registry());
 
@@ -114,8 +114,8 @@ namespace EventDescriber
 	}
 
 	std::string describe(
-			const Game::Simulation& simulation,
-			const Event::Drop& event)
+		const Game::Simulation& simulation,
+		const Event::Drop& event)
 	{
 		EntityDescriber ed(simulation.get_registry());
 
@@ -125,12 +125,12 @@ namespace EventDescriber
 			<< ", position=" << event.position;
 
 		return ed.describe(event.entity) + " drops " +
-			ed.describe(event.item) + ".";
+			ed.describe(event.item);
 	}
 
 	std::string describe(
-			const Game::Simulation& simulation,
-			const Event::Take& event)
+		const Game::Simulation& simulation,
+		const Event::Take& event)
 	{
 		EntityDescriber ed(simulation.get_registry());
 
@@ -140,12 +140,12 @@ namespace EventDescriber
 			<< ", position=" << event.position;
 
 		return ed.describe(event.entity) + " takes " +
-			ed.describe(event.item) + ".";
+			ed.describe(event.item);
 	}
 
 	std::string describe(
-			const Game::Simulation& simulation,
-			const Event::Equip& event)
+		const Game::Simulation& simulation,
+		const Event::Equip& event)
 	{
 		EntityDescriber ed(simulation.get_registry());
 
@@ -154,12 +154,12 @@ namespace EventDescriber
 			<< ", equipment=" << ed.describe(event.equipment);
 
 		return ed.describe(event.entity) + " equips " +
-			ed.describe(event.equipment) + ".";
+			ed.describe(event.equipment);
 	}
 
 	std::string describe(
-			const Game::Simulation& simulation,
-			const Event::Unequip& event)
+		const Game::Simulation& simulation,
+		const Event::Unequip& event)
 	{
 		EntityDescriber ed(simulation.get_registry());
 
@@ -168,12 +168,12 @@ namespace EventDescriber
 			<< ", equipment=" << ed.describe(event.equipment);
 
 		return ed.describe(event.entity) + " unequips " +
-			ed.describe(event.equipment) + ".";
+			ed.describe(event.equipment);
 	}
 
 	std::string describe(
-			const Game::Simulation&,
-			const Event::DiceRoll& event)
+		const Game::Simulation&,
+		const Event::DiceRoll& event)
 	{
 		Log::debug()
 			<< "DiceRoll: dice=" << event.dice
@@ -189,8 +189,8 @@ namespace EventDescriber
 	}
 
 	std::string describe(
-			const Game::Simulation& simulation,
-			const Event::Death& event)
+		const Game::Simulation& simulation,
+		const Event::Death& event)
 	{
 		EntityDescriber ed(simulation.get_registry());
 
@@ -201,8 +201,8 @@ namespace EventDescriber
 	}
 
 	std::string describe(
-			const Game::Simulation& simulation,
-			const Event::BecomeHostile& event)
+		const Game::Simulation& simulation,
+		const Event::BecomeHostile& event)
 	{
 		EntityDescriber ed(simulation.get_registry());
 
@@ -212,12 +212,12 @@ namespace EventDescriber
 
 		return ed.describe(event.entity) +
 			" becomes hostile toward " +
-			ed.describe(event.target) + ".";
+			ed.describe(event.target);
 	}
 
 	std::string describe(
-			const Game::Simulation& simulation,
-			const Event::ReceiveItem& event)
+		const Game::Simulation& simulation,
+		const Event::ReceiveItem& event)
 	{
 		EntityDescriber ed(simulation.get_registry());
 
@@ -226,42 +226,42 @@ namespace EventDescriber
 			<< ", item=" << ed.describe(event.item);
 
 		return ed.describe(event.entity) + " receives " +
-			ed.describe(event.item) + ".";
+			ed.describe(event.item);
 	}
 	/* Meant for converting an event tree into a vector of strings.
 	 * Those strings will be displayed to the player
 	 * */
 	std::vector<std::string> describe(
-			const Game::Simulation& simulation,
-			const Event::Node& root)
+		const Game::Simulation& simulation,
+		const Event::Node& root)
 	{
 		assert(root.outcome.has_value() && "root event not simulated");
 
 		if (root.outcome.value() == Event::Outcome::Rejected)
 		{
 			assert(
-					root.consequences.empty() &&
-					"rejected node has consequences");
+				root.consequences.empty() &&
+				"rejected node has consequences");
 			return {};
 		}
 
 		std::vector<std::string> descriptions;
 
 		std::visit(
-				[&](const auto& event)
-				{
-				if constexpr (requires { describe(simulation, event); })
-				descriptions.push_back(describe(simulation, event));
-				},
-				root.event);
+			[&](const auto& event)
+			{
+			if constexpr (requires { describe(simulation, event); })
+			descriptions.push_back(describe(simulation, event));
+			},
+			root.event);
 
 		for (const auto& consequence : root.consequences)
 		{
 			auto children = describe(simulation, consequence);
 			descriptions.insert(
-					descriptions.end(),
-					std::make_move_iterator(children.begin()),
-					std::make_move_iterator(children.end()));
+				descriptions.end(),
+				std::make_move_iterator(children.begin()),
+				std::make_move_iterator(children.end()));
 		}
 
 		return descriptions;
