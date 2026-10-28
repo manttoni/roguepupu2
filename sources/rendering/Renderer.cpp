@@ -127,7 +127,7 @@ void Renderer::render_player_perspective(
 		{
 			const auto position = top_left + Vec2<int>{y, x};
 
-			const bool visible =
+			const bool visible = render_all ? true :
 				std::find(
 						visible_positions.begin(),
 						visible_positions.end(),

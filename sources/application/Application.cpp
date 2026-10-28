@@ -42,10 +42,12 @@ bool Application::handle_input(const Ncurses::Input::Event& event)
 						registry.get<
 						Game::Component::Value::CollisionMovement>(player);
 					col.value ^= true;
-					Log::info() << "player collision was set to " << col.value;
 					return true;
 				}
 				return false;
+			case ']':
+				renderer.get_render_all() ^= true;
+				return true;
 			default:
 				return false;
 		}
@@ -62,9 +64,13 @@ void Application::developer_menu()
 	UI::Menu menu("Developer Menu");
 	menu.add(
 		UI::Element::Checkbox(
-			"Movement Collision (\\)",
+			"Movement collision ('\\')",
 			&registry.get<Game::Component::Value::CollisionMovement>(player)
 			.value));
+	menu.add(
+		UI::Element::Checkbox(
+			"Render all positions (']')",
+			&renderer.get_render_all()));
 	menu.get_selection();
 }
 
