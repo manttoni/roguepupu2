@@ -38,13 +38,117 @@ namespace Game::System
 		// this event has no effect on simulation
 	}
 
+	Event::Result process(Simulation& simulation, const Game::Event::Drop& event)
+	{
+		auto& registry = simulation.get_registry();
+		auto& inventory = registry.get<Component::List::Inventory>(event.entity);
+		if (!inventory.contains(event.item))
+		{
+			Log::error() << "Entity doesnt have item being dropped";
+			return Event::Result::rejected();
+		}
+		const auto& entity_position = registry.get<Component::Value::Position>(event.entity).value;
+
+		Event::List consequences;
+
+		consequences.push_back(
+			Event::LoseItem{
+			.entity = event.entity,
+			.item = event.item
+			});
+
+		consequences.push_back(
+			Event::EnterPosition{
+			.entity = event.item,
+			.position = entity_position
+			});
+
+		return Event::Result{
+			.outcome = Event::Outcome::Accepted,
+				.consequences = consequences
+		};
+	}
+
+	Event::Result process(Simulation& simulation, const Game::Event::LoseItem& event)
+	{
+		auto& registry = simulation.get_registry();
+		if (!registry.all_of<Component::List::Inventory>(event.entity))
+			return Event::Result::rejected();
+		auto& inventory = registry.get<Component::List::Inventory>(event.entity);
+		if (!inventory.contains(event.item))
+		{
+			Log::error() << "Entity doesnt have item";
+			return Event::Result::rejected();
+		}
+		inventory.remove(event.item);
+		return Event::Result::accepted();
+	}
+
+	std::optional<World::GlobalPosition> get_target_position(
+		const entt::registry& registry,
+		const Event::Target& target)
+	{
+		if (const auto* position =
+			std::get_if<World::GlobalPosition>(&target))
+			return *position;
+
+		const auto entity = std::get<entt::entity>(target);
+		if (!registry.valid(entity))
+			return std::nullopt;
+
+		const auto* position =
+			registry.try_get<Component::Value::Position>(entity);
+
+		if (!position)
+			return std::nullopt;
+
+		return position->value;
+	}
+
+	Event::Result process(Simulation& simulation, const Game::Event::Throw& event)
+	{
+		auto& registry = simulation.get_registry();
+		auto& inventory = registry.get<Component::List::Inventory>(event.entity);
+		if (!inventory.contains(event.item))
+		{
+			Log::error() << "Entity doesnt have item being dropped";
+			return Event::Result::rejected();
+		}
+
+		const auto target_position = get_target_position(registry, event.target);
+		if (!target_position)
+		{
+			Log::error() << "Target position not defined";
+			return Event::Result::rejected();
+		}
+
+		Event::List consequences;
+
+		consequences.push_back(
+			Event::LoseItem{
+			.entity = event.entity,
+			.item = event.item
+			});
+
+		consequences.push_back(
+			Event::EnterPosition{
+			.entity = event.item,
+			.position = *target_position
+			});
+
+		return Event::Result{
+			.outcome = Event::Outcome::Accepted,
+				.consequences = consequences
+		};
+	}
+
 	Event::Result process(Simulation& simulation, const Game::Event::ReceiveItem& event)
 	{
 		auto& registry = simulation.get_registry();
 
 		if (
-				auto* inventory = registry.try_get<Component::List::Inventory>(event.entity);
-				inventory != nullptr)
+			auto* inventory = registry.try_get<Component::List::Inventory>(event.entity);
+			inventory != nullptr)
 		{
 			inventory->values.push_back(event.item);
 		}
@@ -66,13 +170,13 @@ namespace Game::System
 		Event::List consequences;
 
 		consequences.push_back(
-				Event::ReceiveItem{
-					.entity = event.entity,
-					.item = event.item
-				});
+			Event::ReceiveItem{
+			.entity = event.entity,
+			.item = event.item
+			});
 
 		return Event::Result{
-				.outcome = Event::Outcome::Accepted,
+			.outcome = Event::Outcome::Accepted,
 				.consequences = consequences
 		};
 	}
@@ -102,11 +206,12 @@ namespace Game::System
 	}
 
 	Event::Result process(
-			Simulation& simulation,
-			const Event::EnterPosition& event)
+		Simulation& simulation,
+		const Event::EnterPosition& event)
 	{
-		(void) simulation;
-		(void) event;
+		auto& registry = simulation.get_registry();
+		registry.emplace_or_replace<Component::Value::Position>(event.entity, event.position);
+
 		return Event::Result{
 			.outcome = Event::Outcome::Accepted,
 				.consequences = {}
@@ -114,41 +219,37 @@ namespace Game::System
 	}
 
 	Event::Result process(
-			Simulation& simulation,
-			const Event::Move& event)
+		Simulation& simulation,
+		const Event::Move& event)
 	{
 		auto& registry = simulation.get_registry();
 		assert(event.from
-				== registry.get<Component::Value::Position>(event.entity)
-				.value);
+			== registry.get<Component::Value::Position>(event.entity)
+			.value);
 		const auto& grid = simulation.get_grid();
 
 		if (!Movement::can_move(registry, grid, event.entity, event.to))
 			return Event::Result::rejected();
 
-		registry.replace<Component::Value::Position>(
-				event.entity,
-				event.to);
-
 		Event::List consequences;
 
 		consequences.push_back(
-				Event::LoseMovementPoints{
-				.entity = event.entity,
-				.amount = Vec2{event.from.vec2() - event.to.vec2()}.length()
-				});
+			Event::LoseMovementPoints{
+			.entity = event.entity,
+			.amount = Vec2{event.from.vec2() - event.to.vec2()}.length()
+			});
 
 		consequences.push_back(
-				Event::LeavePosition{
-				.entity = event.entity,
-				.position = event.from
-				});
+			Event::LeavePosition{
+			.entity = event.entity,
+			.position = event.from
+			});
 
 		consequences.push_back(
-				Event::EnterPosition{
-				.entity = event.entity,
-				.position = event.to
-				});
+			Event::EnterPosition{
+			.entity = event.entity,
+			.position = event.to
+			});
 
 		return Event::Result{
 			.outcome = Event::Outcome::Accepted,
