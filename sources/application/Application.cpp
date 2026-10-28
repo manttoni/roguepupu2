@@ -9,6 +9,11 @@
 #include "application/Layout.hpp"
 #include "game/component/Component.hpp"
 
+Application::Application() :
+	renderer(layout.get_panel(Layout::Panel::Game).get_window()),
+	player_controller(renderer)
+{}
+
 bool Application::handle_input(const Ncurses::Input::Event& event)
 {
 	using Key = Ncurses::Input::Key;

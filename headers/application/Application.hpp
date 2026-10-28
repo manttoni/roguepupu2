@@ -74,6 +74,7 @@ class Application
 		Settings load_settings();
 
 	public:
-		Application() : renderer(layout.get_panel(Layout::Panel::Game).get_window()) {}
+		Application();
+
 		void run();
 };
