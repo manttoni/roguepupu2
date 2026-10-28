@@ -9,8 +9,22 @@ namespace EventDescriber
 	namespace Event = Game::Event;
 
 	std::string describe(
-			const Game::Simulation& simulation,
-			const Event::Attack& event)
+		const Game::Simulation& simulation,
+		const Event::Throw& event)
+	{
+		EntityDescriber ed(simulation.get_registry());
+
+		auto desc = ed.describe(event.entity) + " throws " + ed.describe(event.item);
+
+		if (const auto* target = std::get_if<entt::entity>(&event.target))
+			desc += " at " + ed.describe(*target);
+
+		return desc;
+	}
+
+	std::string describe(
+		const Game::Simulation& simulation,
+		const Event::Attack& event)
 	{
 		EntityDescriber ed(simulation.get_registry());
 
@@ -28,12 +42,12 @@ namespace EventDescriber
 		if (event.weapon != entt::null)
 			desc += " with " + ed.describe(event.weapon);
 
-		return desc + ".";
+		return desc;
 	}
 
 	std::string describe(
-			const Game::Simulation& simulation,
-			const Event::AttackHit& event)
+		const Game::Simulation& simulation,
+		const Event::AttackHit& event)
 	{
 		EntityDescriber ed(simulation.get_registry());
 

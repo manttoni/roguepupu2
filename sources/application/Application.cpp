@@ -93,9 +93,9 @@ void Application::run_game()
 	while (game_running)
 	{
 		renderer.render_player_perspective(*simulation);
-		// renderer.write(messages);
-update_panels();
-doupdate();
+		renderer.write(messages.get_last(20));
+		update_panels();
+		doupdate();
 		const auto input = Ncurses::Input::get_event(1000 / fps);
 		if (handle_input(input))
 			continue;
