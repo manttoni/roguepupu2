@@ -127,7 +127,7 @@ namespace EntityEditor
 #undef X
 
 		throw std::invalid_argument(
-				"Unknown component: " + std::string(id));
+			"Unknown component: " + std::string(id));
 	}
 
 	/* Tags can require other Components
@@ -154,9 +154,9 @@ namespace EntityEditor
 				auto& current_tags = data.at("Tags");
 
 				if (std::find(
-							current_tags.begin(),
-							current_tags.end(),
-							dependency) == current_tags.end())
+						current_tags.begin(),
+						current_tags.end(),
+						dependency) == current_tags.end())
 				{
 					current_tags.push_back(dependency);
 					Log::info() << "Added required Tag: " << dependency;
@@ -248,53 +248,57 @@ namespace EntityEditor
 				if (Game::Component::value_is_game_enum(component_id))
 				{
 					menu.add(UI::Element::SingleChoice(
-								component_id,
-								component_data.get_ptr<std::string*>(),
-								Game::Component::get_enum_value_strings(component_id)
-								));
+							component_id,
+							component_data.get_ptr<std::string*>(),
+							Game::Component::get_enum_value_strings(
+								component_id)
+							));
 					continue;
 				}
-				menu.add(UI::Element::TextIn(
-							component_id,
-							component_data.get_ptr<std::string*>()
-							));
+				menu.add(UI::Element::TextIn{
+					.label = component_id,
+					.text = component_data.get_ptr<std::string*>(),
+					.length = Range<std::size_t> {1, 27},
+					.confirm = false
+					});
 			}
 			else if (component_data.is_number_unsigned())
 			{
 				using T = Json::number_unsigned_t;
 
 				menu.add(UI::Element::ValueSelector<T>{
-						component_id,
-						component_data.get_ptr<T*>(),
-						{0, 100}
-						});
+					component_id,
+					component_data.get_ptr<T*>(),
+					{0, 100}
+					});
 			}
 			else if (component_data.is_number_integer())
 			{
 				using T = Json::number_integer_t;
 
 				menu.add(UI::Element::ValueSelector<T>{
-						component_id,
-						component_data.get_ptr<T*>(),
-						{-100, 100}
-						});
+					component_id,
+					component_data.get_ptr<T*>(),
+					{-100, 100}
+					});
 			}
 			else if (component_data.is_number_float())
 			{
 				using T = Json::number_float_t;
 
 				menu.add(UI::Element::ValueSelector<T>{
-						component_id,
-						component_data.get_ptr<T*>(),
-						{-100, 100}
-						});
+					component_id,
+					component_data.get_ptr<T*>(),
+					{-100, 100},
+					0.1
+					});
 			}
 			else if (component_data.is_array())
 			{
 				menu.add(UI::Element::MultiChoice{
-						component_id,
-						component_data.size()
-						});
+					component_id,
+					component_data.size()
+					});
 			}
 		}
 
@@ -327,7 +331,7 @@ namespace EntityEditor
 			return;
 		if (!selection.confirmed())
 			throw std::runtime_error(
-					"List editing selection state should be confirm or cancel");
+				"List editing selection state should be confirm or cancel");
 
 		list = subset;
 

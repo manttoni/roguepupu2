@@ -11,15 +11,15 @@
 namespace Ncurses
 {
 	Window::Window(
-			const std::size_t height,
-			const std::size_t width,
-			const std::size_t y,
-			const std::size_t x)
+		const std::size_t height,
+		const std::size_t width,
+		const std::size_t y,
+		const std::size_t x)
 		: ptr(newwin(
-					static_cast<int>(height),
-					static_cast<int>(width),
-					static_cast<int>(y),
-					static_cast<int>(x)))
+				static_cast<int>(height),
+				static_cast<int>(width),
+				static_cast<int>(y),
+				static_cast<int>(x)))
 	{
 		if (ptr == nullptr)
 			throw std::runtime_error("Failed to create ncurses window");
@@ -62,9 +62,9 @@ namespace Ncurses
 	}
 
 	void Window::put(
-			const int y,
-			const int x,
-			const Ncurses::Pixel& pixel)
+		const int y,
+		const int x,
+		const Ncurses::Pixel& pixel)
 	{
 		enable(pixel.fgcolor, pixel.bgcolor);
 		enable(pixel.attribute);
@@ -74,10 +74,10 @@ namespace Ncurses
 	}
 
 	void Window::put(
-			const int y,
-			const int x,
-			const char character,
-			const Color& fg)
+		const int y,
+		const int x,
+		const char character,
+		const Color& fg)
 	{
 		enable(fg);
 		put(y, x, character);
@@ -85,9 +85,9 @@ namespace Ncurses
 	}
 
 	void Window::put(
-			const int y,
-			const int x,
-			const char character)
+		const int y,
+		const int x,
+		const char character)
 	{
 		wmove(ptr, y, x);
 		waddch(ptr, static_cast<unsigned char>(character));
@@ -99,9 +99,9 @@ namespace Ncurses
 	}
 
 	void Window::write(
-			const int y,
-			const int x,
-			const std::string& str)
+		const int y,
+		const int x,
+		const std::string& str)
 	{
 		wmove(ptr, y, x);
 		write(str);
@@ -268,8 +268,8 @@ namespace Ncurses
 	}
 
 	void Window::resize(
-			const std::size_t height,
-			const std::size_t width)
+		const std::size_t height,
+		const std::size_t width)
 	{
 		if (ptr == nullptr)
 			throw std::logic_error("Cannot resize an uninitialized window");
@@ -278,15 +278,15 @@ namespace Ncurses
 			static_cast<std::size_t>(std::numeric_limits<int>::max());
 
 		if (height == 0 || width == 0 ||
-				height > max_dimension || width > max_dimension)
+			height > max_dimension || width > max_dimension)
 		{
 			throw std::invalid_argument("Invalid ncurses window dimensions");
 		}
 
 		if (wresize(
-					ptr,
-					static_cast<int>(height),
-					static_cast<int>(width)) == ERR)
+				ptr,
+				static_cast<int>(height),
+				static_cast<int>(width)) == ERR)
 		{
 			throw std::runtime_error("Failed to resize ncurses window");
 		}

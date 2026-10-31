@@ -59,8 +59,8 @@ entt::entity Renderer::get_entity(
 }
 
 Ncurses::Pixel Renderer::get_pixel(
-		const Game::Simulation& simulation,
-		const Game::World::GlobalPosition& position)
+	const Game::Simulation& simulation,
+	const Game::World::GlobalPosition& position)
 {
 	Ncurses::Pixel pixel;
 
@@ -76,7 +76,8 @@ Ncurses::Pixel Renderer::get_pixel(
 			registry.get<Game::Component::Value::Glyph>(entity).value;
 		pixel.fgcolor =
 			registry.get<Game::Component::Value::Color>(entity).value;
-		// Give some attribute based on some Tag for example, TODO
+		if (registry.all_of<Game::Component::Tag::Item>(entity))
+			pixel.attribute = Ncurses::Attribute{A_ITALIC};
 	}
 
 	const auto* const cell = simulation.get_grid().find_cell(position);
@@ -137,9 +138,9 @@ void Renderer::render_player_perspective(
 
 			const bool visible = render_all ? true :
 				std::find(
-						visible_positions.begin(),
-						visible_positions.end(),
-						position) != visible_positions.end();
+					visible_positions.begin(),
+					visible_positions.end(),
+					position) != visible_positions.end();
 
 			if (!visible && !seen_positions.contains(position))
 				continue;

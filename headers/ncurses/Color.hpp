@@ -66,8 +66,8 @@ namespace Ncurses
 			const int b = std::stoi(match[3].str());
 
 			if (r < 0 || r > 1000 ||
-					g < 0 || g > 1000 ||
-					b < 0 || b > 1000)
+				g < 0 || g > 1000 ||
+				b < 0 || b > 1000)
 				return false;
 			return true;
 
