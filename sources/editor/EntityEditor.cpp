@@ -219,6 +219,38 @@ namespace EntityEditor
 		// that works in mysterious ways
 	}
 
+	void edit_color(Definition& definition)
+	{
+		auto& data = definition.data.at("Color");
+		auto color = data.get<Ncurses::Color>();
+
+		UI::Menu menu("Color");
+
+		menu.add(UI::Element::ValueSelector<int>{
+			"Red",
+			&color.r,
+			{0, 5}
+			});
+
+		menu.add(UI::Element::ValueSelector<int>{
+			"Green",
+			&color.g,
+			{0, 5}
+			});
+
+		menu.add(UI::Element::ValueSelector<int>{
+			"Blue",
+			&color.b,
+			{0, 5}
+			});
+
+		menu.add(UI::Element::confirm());
+		menu.add(UI::Element::cancel());
+
+		if (menu.get_selection().confirmed())
+			data = color.id();
+	}
+
 	void build_edit_definition_menu(UI::Menu& menu, Definition& definition)
 	{
 		menu.set_title("Editing \'" + definition.id + "\'");
@@ -229,18 +261,21 @@ namespace EntityEditor
 		{
 			if (component_id == "Color")
 			{
-				menu.add(UI::Element::ValueSelector<Json::number_integer_t>(
-							component_id,
-							component_data.get_ptr<Json::number_integer_t*>(),
-							{16,231}
-							));
+				menu.add(UI::Element::Button(component_id));
+				/*
+				   menu.add(UI::Element::ValueSelector<Json::number_integer_t>(
+				   component_id,
+				   component_data.get_ptr<Json::number_integer_t*>(),
+				   {16,231}
+				   ));
+				   */
 			}
 			else if (component_data.is_boolean())
 			{
 				menu.add(UI::Element::Checkbox(
-							component_id,
-							component_data.get_ptr<bool*>()
-							));
+						component_id,
+						component_data.get_ptr<bool*>()
+						));
 			}
 			else if (component_data.is_string())
 			{
@@ -350,6 +385,10 @@ namespace EntityEditor
 			const auto selection = UI::Search::select(menu);
 			switch (selection.state)
 			{
+				case UI::Selection::State::Selected:
+					if (selection.label == "Color")
+						edit_color(definition);
+					continue;
 				case UI::Selection::State::Cancelled:
 					definition = original;
 					return;
