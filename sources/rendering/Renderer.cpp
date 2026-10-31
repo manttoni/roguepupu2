@@ -86,14 +86,22 @@ Ncurses::Pixel Renderer::get_pixel(
 		pixel.glyph = get_cell_glyph(*cell);
 	if (pixel.fgcolor == Ncurses::Color{})
 		pixel.fgcolor = get_cell_color(*cell);
-	// pixel.bgcolor = lightmap
+
+	const auto& lightmap = simulation.get_lightmap();
+	const auto it = lightmap.find(position);
+	pixel.bgcolor = it != lightmap.end()
+		? Ncurses::Color{
+			it->second.r, it->second.g, it->second.b}
+		: Ncurses::Color{};
+
+	pixel.fgcolor += pixel.bgcolor;
 
 	return pixel;
 }
 
 void Renderer::render_player_perspective(
-		const Game::Simulation& simulation,
-		const std::optional<Game::World::GlobalPosition> cursor)
+	const Game::Simulation& simulation,
+	const std::optional<Game::World::GlobalPosition> cursor)
 {
 	const auto&
 		registry =

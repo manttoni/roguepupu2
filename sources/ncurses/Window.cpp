@@ -214,14 +214,15 @@ namespace Ncurses
 
 	void Window::enable(const Color& fg, const Color& bg)
 	{
-		(void) bg;
-		wattron(ptr, COLOR_PAIR(static_cast<int>(fg.id())));
+		int pair = alloc_pair(fg.id(), bg.id());
+
+		if (pair == ERR || wcolor_set(ptr, 0, &pair) == ERR)
+			throw std::runtime_error("Could not set color pair");
 	}
 
-	void Window::disable(const Color& fg, const Color& bg)
+	void Window::disable(const Color&, const Color&)
 	{
-		(void) bg;
-		wattroff(ptr, COLOR_PAIR(static_cast<int>(fg.id())));
+		wcolor_set(ptr, 0, nullptr);
 	}
 
 	Vec2<int> Window::dimensions() const
