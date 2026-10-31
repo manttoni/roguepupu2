@@ -108,7 +108,7 @@ namespace Ncurses
 							static_cast<int>(r),
 								static_cast<int>(g),
 								static_cast<int>(b)};
-						init_color(c.id(), r * 200, g * 200, b * 200);
+						init_color(c.id(), r * 100, g * 100, b * 100);
 						init_pair(c.id(), c.id(), Color{0, 0, 0}.id());
 					}
 				}

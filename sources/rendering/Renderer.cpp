@@ -31,26 +31,28 @@ Ncurses::Color Renderer::get_cell_color(const Game::World::Cell& cell)
 	switch (cell.material)
 	{
 		case Material::Stone:
-			return Ncurses::Color{1,1,1};
+			if (cell.form == Game::Enum::Form::Floor)
+				return Ncurses::Color{1,1,1};
+			return Ncurses::Color{2,2,2};
 		case Material::Soil:
-			return Ncurses::Color{1,1,0};
+			return Ncurses::Color{2,2,0};
 		default:
 			Log::warning()
 				<< "Unmapped cell material: "
 				<< Game::Enum::to_string<Material>(cell.material);
-			return Ncurses::Color{1, 0, 0};
+			return Ncurses::Color{2, 0, 0};
 	}
 }
 
 entt::entity Renderer::get_entity(
-		const Game::Simulation& simulation,
-		const Game::World::GlobalPosition& position)
+	const Game::Simulation& simulation,
+	const Game::World::GlobalPosition& position)
 {
 	const auto& registry = simulation.get_registry();
 	const auto entities = Game::Entity::find_all(
-			registry,
-			Game::Component::Value::Position{position},
-			Game::Component::Tag::Renderable{});
+		registry,
+		Game::Component::Value::Position{position},
+		Game::Component::Tag::Renderable{});
 	if (entities.empty())
 		return entt::null;
 
