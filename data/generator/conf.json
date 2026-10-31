@@ -4,17 +4,11 @@
 		"world": {
 			"noise": {
 				"frequency": 0.0075,
-				"octaves": 1,
+				"octaves": 3,
 				"persistence": 1.0,
 				"regions": [
-					{
-						"range": [ 0.0, 0.6 ],
-						"id": "land"
-					},
-					{
-						"range": [ 0.4, 1.0 ],
-						"id": "mountain"
-					}
+					{ "range": [ 0.0, 0.5 ], "id": "land" },
+					{ "range": [ 0.5, 1.0 ], "id": "mountain" }
 				]
 			}
 		},
@@ -32,10 +26,7 @@
 				"octaves": 2,
 				"persistence": 1.0,
 				"regions": [
-					{
-						"range": [ 0.0, 0.5 ],
-						"id": "forest"
-					}
+					{ "range": [ 0.0, 0.5 ], "id": "forest" }
 				]
 			}
 		},
@@ -58,17 +49,26 @@
 				"octaves": 2,
 				"persistence": 1.0,
 				"regions": [
-					{
-						"range": [ 0.0, 0.5 ],
-						"id": "cave"
-					}
+					{ "range": [ 0.0, 0.5 ], "id": "cave" }
 				]
 			}
 		},
 		"cave": {
 			"terrain": {
 				"form": "Floor"
+			},
+			"noise": {
+				"frequency": 0.25,
+				"octaves": 5,
+				"regions": [
+					{ "range": [ 0.4, 0.5 ], "id": "fungal" }
+				]
 			}
+		},
+		"fungal": {
+			"entities": [
+				{ "id": "mushroom_glowing", "chance": 0.02 }
+			]
 		}
 	}
 }
