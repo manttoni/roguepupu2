@@ -35,11 +35,23 @@ namespace Game
 
 			void simulate_node(Event::Node& node);
 
+			struct LightColor
+			{
+				double r = 0.0;
+				double g = 0.0;
+				double b = 0.0;
+			};
+			using Lightmap =
+				std::unordered_map<
+				Game::World::GlobalPosition,
+				LightColor>;
+			Lightmap lightmap;
+
 		public:
 			Simulation(
-					const std::string& seed,
-					const EntityDatabase& entity_database,
-					const Entity::Definition::ID& player_definition_id);
+				const std::string& seed,
+				const EntityDatabase& entity_database,
+				const Entity::Definition::ID& player_definition_id);
 			Simulation(const Simulation&) = delete;
 			Simulation& operator=(const Simulation&) = delete;
 
@@ -71,5 +83,8 @@ namespace Game
 			Event::Node simulate(Event::Any initial_event);
 			void load_chunks(const World::ChunkPosition& center);
 			void load_chunks();
+
+			Lightmap& get_lightmap() { return lightmap; }
+			const Lightmap& get_lightmap() const { return lightmap; }
 	};
 }

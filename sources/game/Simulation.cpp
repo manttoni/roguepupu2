@@ -1,4 +1,5 @@
 #include "game/Simulation.hpp"
+#include "game/system/Lighting.hpp"
 #include "game/system/Vision.hpp"
 #include "game/entity/Entity.hpp"
 #include "ncurses/Screen.hpp"
@@ -69,7 +70,12 @@ namespace Game
 				 * */
 				auto& spawn_requests = generator.get_spawn_requests();
 				for (const auto& request : spawn_requests)
-					spawner.spawn(request);
+				{
+					const auto entity = spawner.spawn(request);
+
+					if (entity != entt::null)
+						System::Lighting::update(*this, entity);
+				}
 				spawn_requests.clear();
 			}
 		}

@@ -127,7 +127,7 @@ namespace EntityEditor
 #undef X
 
 		throw std::invalid_argument(
-				"Unknown component: " + std::string(id));
+			"Unknown component: " + std::string(id));
 	}
 
 	/* Tags can require other Components
@@ -154,9 +154,9 @@ namespace EntityEditor
 				auto& current_tags = data.at("Tags");
 
 				if (std::find(
-							current_tags.begin(),
-							current_tags.end(),
-							dependency) == current_tags.end())
+						current_tags.begin(),
+						current_tags.end(),
+						dependency) == current_tags.end())
 				{
 					current_tags.push_back(dependency);
 					Log::info() << "Added required Tag: " << dependency;
@@ -219,6 +219,38 @@ namespace EntityEditor
 		// that works in mysterious ways
 	}
 
+	void edit_color(Definition& definition)
+	{
+		auto& data = definition.data.at("Color");
+		auto color = data.get<Ncurses::Color>();
+
+		UI::Menu menu("Color");
+
+		menu.add(UI::Element::ValueSelector<int>{
+			"Red",
+			&color.r,
+			{0, 5}
+			});
+
+		menu.add(UI::Element::ValueSelector<int>{
+			"Green",
+			&color.g,
+			{0, 5}
+			});
+
+		menu.add(UI::Element::ValueSelector<int>{
+			"Blue",
+			&color.b,
+			{0, 5}
+			});
+
+		menu.add(UI::Element::confirm());
+		menu.add(UI::Element::cancel());
+
+		if (menu.get_selection().confirmed())
+			data = color.id();
+	}
+
 	void build_edit_definition_menu(UI::Menu& menu, Definition& definition)
 	{
 		menu.set_title("Editing \'" + definition.id + "\'");
@@ -229,18 +261,21 @@ namespace EntityEditor
 		{
 			if (component_id == "Color")
 			{
-				menu.add(UI::Element::ValueSelector<Json::number_integer_t>(
-							component_id,
-							component_data.get_ptr<Json::number_integer_t*>(),
-							{16,231}
-							));
+				menu.add(UI::Element::Button(component_id));
+				/*
+				   menu.add(UI::Element::ValueSelector<Json::number_integer_t>(
+				   component_id,
+				   component_data.get_ptr<Json::number_integer_t*>(),
+				   {16,231}
+				   ));
+				   */
 			}
 			else if (component_data.is_boolean())
 			{
 				menu.add(UI::Element::Checkbox(
-							component_id,
-							component_data.get_ptr<bool*>()
-							));
+						component_id,
+						component_data.get_ptr<bool*>()
+						));
 			}
 			else if (component_data.is_string())
 			{
@@ -248,53 +283,57 @@ namespace EntityEditor
 				if (Game::Component::value_is_game_enum(component_id))
 				{
 					menu.add(UI::Element::SingleChoice(
-								component_id,
-								component_data.get_ptr<std::string*>(),
-								Game::Component::get_enum_value_strings(component_id)
-								));
+							component_id,
+							component_data.get_ptr<std::string*>(),
+							Game::Component::get_enum_value_strings(
+								component_id)
+							));
 					continue;
 				}
-				menu.add(UI::Element::TextIn(
-							component_id,
-							component_data.get_ptr<std::string*>()
-							));
+				menu.add(UI::Element::TextIn{
+					.label = component_id,
+					.text = component_data.get_ptr<std::string*>(),
+					.length = Range<std::size_t> {1, 27},
+					.confirm = false
+					});
 			}
 			else if (component_data.is_number_unsigned())
 			{
 				using T = Json::number_unsigned_t;
 
 				menu.add(UI::Element::ValueSelector<T>{
-						component_id,
-						component_data.get_ptr<T*>(),
-						{0, 100}
-						});
+					component_id,
+					component_data.get_ptr<T*>(),
+					{0, 100}
+					});
 			}
 			else if (component_data.is_number_integer())
 			{
 				using T = Json::number_integer_t;
 
 				menu.add(UI::Element::ValueSelector<T>{
-						component_id,
-						component_data.get_ptr<T*>(),
-						{-100, 100}
-						});
+					component_id,
+					component_data.get_ptr<T*>(),
+					{-100, 100}
+					});
 			}
 			else if (component_data.is_number_float())
 			{
 				using T = Json::number_float_t;
 
 				menu.add(UI::Element::ValueSelector<T>{
-						component_id,
-						component_data.get_ptr<T*>(),
-						{-100, 100}
-						});
+					component_id,
+					component_data.get_ptr<T*>(),
+					{-100, 100},
+					0.1
+					});
 			}
 			else if (component_data.is_array())
 			{
 				menu.add(UI::Element::MultiChoice{
-						component_id,
-						component_data.size()
-						});
+					component_id,
+					component_data.size()
+					});
 			}
 		}
 
@@ -327,7 +366,7 @@ namespace EntityEditor
 			return;
 		if (!selection.confirmed())
 			throw std::runtime_error(
-					"List editing selection state should be confirm or cancel");
+				"List editing selection state should be confirm or cancel");
 
 		list = subset;
 
@@ -346,6 +385,10 @@ namespace EntityEditor
 			const auto selection = UI::Search::select(menu);
 			switch (selection.state)
 			{
+				case UI::Selection::State::Selected:
+					if (selection.label == "Color")
+						edit_color(definition);
+					continue;
 				case UI::Selection::State::Cancelled:
 					definition = original;
 					return;
@@ -376,6 +419,7 @@ namespace EntityEditor
 			editor.set_title("Active entity: " + active_id);
 			editor.add(UI::Element::Button("New"));		// Create a blank definition with a valid id, and set it active
 			editor.add(UI::Element::Button("Load"));	// Load a definition from Json object, and set it active
+			editor.add(UI::Element::Button("Save"));	// Save changes to file
 			editor.add(UI::Element::Button("Edit"));	// Change values of active definition
 			editor.add(UI::Element::Button("Update"));	// Add missing requirements or remove unnecessary ones
 			editor.add(UI::Element::Button("Add"));		// Add active definition to Json object
@@ -396,6 +440,14 @@ namespace EntityEditor
 			else if (label == "Load")
 			{
 				activate_definition(all_definitions, active, load_definition(all_definitions));
+			}
+			else if (label == "Save")
+			{
+				add_definition(all_definitions, active);
+				if (IO::write_json(EntityDatabase::entity_definitions_path, all_definitions) == true)
+					UI::Dialog::alert("Save succesful");
+				else
+					UI::Dialog::alert("Save unsuccesful");
 			}
 			else if (label == "Edit")
 			{

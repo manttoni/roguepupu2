@@ -1,4 +1,5 @@
 #include "game/system/System.hpp"
+#include "game/system/Lighting.hpp"
 #include "game/Simulation.hpp"
 #include "game/system/Movement.hpp"
 #include "game/component/Component.hpp"
@@ -214,7 +215,7 @@ namespace Game::System
 	{
 		auto& registry = simulation.get_registry();
 		registry.emplace_or_replace<Component::Value::Position>(event.entity, event.position);
-
+		Lighting::update(simulation, event.entity);
 		return Event::Result{
 			.outcome = Event::Outcome::Accepted,
 				.consequences = {}

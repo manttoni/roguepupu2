@@ -1,6 +1,8 @@
 #pragma once
 #include "utils/Log.hpp"
 
+#include <cmath>
+#include <algorithm>
 #include <array>
 #include <string>
 #include <regex>
@@ -17,11 +19,22 @@ namespace Ncurses
 
 		Color() = default;
 		Color(const int r, const int g, const int b) : r(r), g(g), b(b) {}
+		Color(const double r, const double g, const double b) :
+			r(static_cast<int>(std::round(r))),
+			g(static_cast<int>(std::round(g))),
+			b(static_cast<int>(std::round(b)))
+		{}
 		explicit Color(int id);
 		Color(const std::array<int, 3>& rgb) : r(rgb.at(0)), g(rgb.at(1)), b(rgb.at(2)) {}
 
 		bool operator==(const Color& other) const = default;
-
+		inline Color& operator+=(const Color& other) noexcept
+		{
+			r = std::clamp(r + other.r, 0, 5);
+			g = std::clamp(g + other.g, 0, 5);
+			b = std::clamp(b + other.b, 0, 5);
+			return *this;
+		}
 		short id() const
 		{
 			return static_cast<short>(16 + r * 36 + g * 6 + b);
@@ -53,8 +66,8 @@ namespace Ncurses
 			const int b = std::stoi(match[3].str());
 
 			if (r < 0 || r > 1000 ||
-					g < 0 || g > 1000 ||
-					b < 0 || b > 1000)
+				g < 0 || g > 1000 ||
+				b < 0 || b > 1000)
 				return false;
 			return true;
 
@@ -95,7 +108,7 @@ namespace Ncurses
 							static_cast<int>(r),
 								static_cast<int>(g),
 								static_cast<int>(b)};
-						init_color(c.id(), r * 200, g * 200, b * 200);
+						init_color(c.id(), r * 100, g * 100, b * 100);
 						init_pair(c.id(), c.id(), Color{0, 0, 0}.id());
 					}
 				}
