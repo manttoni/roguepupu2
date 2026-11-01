@@ -58,7 +58,7 @@
 				"form": "Floor"
 			},
 			"noise": {
-				"frequency": 0.25,
+				"frequency": 0.75,
 				"octaves": 5,
 				"regions": [
 					{ "range": [ 0.4, 0.5 ], "id": "fungal" }
