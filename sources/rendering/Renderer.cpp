@@ -101,7 +101,7 @@ Ncurses::Pixel Renderer::get_pixel(
 		pixel.fgcolor =
 			registry.get<Game::Component::Value::Color>(entity).value;
 		if (registry.all_of<Game::Component::Tag::Item>(entity))
-			pixel.attribute = Ncurses::Attribute{A_ITALIC};
+			pixel.attribute |= Ncurses::Attribute{A_ITALIC};
 	}
 
 	const auto* const cell = simulation.get_grid().find_cell(position);
