@@ -113,9 +113,9 @@ namespace Ncurses
 								static_cast<int>(b)};
 						init_color(
 							c.id(),
-							r * levels[r],
-							g * levels[g],
-							b * levels[b]);
+							levels[r],
+							levels[g],
+							levels[b]);
 					}
 				}
 			}

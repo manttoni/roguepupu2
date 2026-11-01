@@ -32,8 +32,8 @@ Ncurses::Color Renderer::get_cell_color(const Game::World::Cell& cell)
 	{
 		case Material::Stone:
 			if (cell.form == Game::Enum::Form::Floor)
-				return Ncurses::Color{1,1,1};
-			return Ncurses::Color{2,2,2};
+				return Ncurses::Color{2,2,2};
+			return Ncurses::Color{4,4,4};
 		case Material::Soil:
 			return Ncurses::Color{2,2,0};
 		default:
