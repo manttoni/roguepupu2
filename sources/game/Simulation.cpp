@@ -110,10 +110,7 @@ namespace Game
 			event && event->entity == player
 		   )
 		{
-			const auto& position =
-				registry.get<Game::Component::Value::Position>(player).value;
-			const auto chunk_position = World::to_chunk(position);
-			load_chunks(chunk_position);
+			load_chunks(World::to_chunk(event->position));
 		}
 		/* ~Preload
 		 * */
@@ -134,10 +131,13 @@ namespace Game
 
 		/* TODO: create something so this doesnt get called too often
 		 * */
-		System::Vision::update_vision(
-			registry,
-			grid,
-			scheduler.current_actor().entity);
+		if (registry.all_of<Component::Value::Position>(scheduler.current_actor().entity))
+		{
+			System::Vision::update_vision(
+				registry,
+				grid,
+				scheduler.current_actor().entity);
+		}
 	}
 
 	Event::Node Simulation::simulate(Event::Any initial_event)
