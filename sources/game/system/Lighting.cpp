@@ -20,8 +20,6 @@ namespace Game::System::Lighting
 			registry.get<Component::Value::Radius>(light).value;
 		const auto& color =
 			registry.get<Component::Value::Color>(light).value;
-		const auto& intensity =
-			registry.get<Component::Value::Intensity>(light).value;
 
 		const auto nearby_positions =
 			World::nearby(position, radius);
@@ -35,13 +33,10 @@ namespace Game::System::Lighting
 			if (!Vision::los(registry, grid, position, np))
 				continue;
 			auto& light_color = lightmap[np];
-			const auto& distance = World::distance(position, np);
-			const double t = std::clamp(1.0 - distance / radius, 0.0, 1.0);
-			const double falloff = t * t;
-			const double strength = multiplier * intensity * falloff;
-			light_color.r += color.r * strength;
-			light_color.g += color.g * strength;
-			light_color.b += color.b * strength;
+
+			light_color.r = std::max(light_color.r, multiplier * color.r);
+			light_color.g = std::max(light_color.g, multiplier * color.g);
+			light_color.b = std::max(light_color.b, multiplier * color.b);
 		}
 	}
 
@@ -58,11 +53,12 @@ namespace Game::System::Lighting
 			return;
 		const auto& position =
 			registry.get<Component::Value::Position>(entity).value;
-		if (registry.all_of<Component::Tag::Light>(entity))
+		/* This would actually be a bug
+		 * if (registry.all_of<Component::Tag::Light>(entity))
 		{
 			update_light(simulation, entity, position, multiplier);
 			return;
-		}
+		}*/
 		if (!registry.all_of<Component::Tag::LightSource>(entity))
 			return;
 		/*if (const auto* equipped_items =

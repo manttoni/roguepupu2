@@ -1,5 +1,4 @@
 X(Component::Tag::Abstract,			Component::Value::Name)
-X(Component::Tag::Light,			Component::Value::Intensity)
 X(Component::Tag::Light,			Component::Value::Color)
 X(Component::Tag::Light,			Component::Value::Radius)
 X(Component::Tag::Mushroom,			Component::Tag::WorldObject)

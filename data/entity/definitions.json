@@ -1,8 +1,7 @@
 {
     "light_mushroom_blue": {
-        "Color": 18,
-        "Intensity": 0.9999999999999997,
-        "Radius": 7.0,
+        "Color": 17,
+        "Radius": 4.000000000000001,
         "Tags": [
             "Light"
         ]

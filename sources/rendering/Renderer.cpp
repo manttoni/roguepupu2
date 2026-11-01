@@ -93,8 +93,7 @@ Ncurses::Pixel Renderer::get_pixel(
 	const auto& lightmap = simulation.get_lightmap();
 	const auto it = lightmap.find(position);
 	pixel.bgcolor = it != lightmap.end()
-		? Ncurses::Color{
-			it->second.r, it->second.g, it->second.b}
+		? it->second
 		: Ncurses::Color{};
 
 	pixel.fgcolor += pixel.bgcolor;

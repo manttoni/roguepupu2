@@ -35,16 +35,10 @@ namespace Game
 
 			void simulate_node(Event::Node& node);
 
-			struct LightColor
-			{
-				double r = 0.0;
-				double g = 0.0;
-				double b = 0.0;
-			};
 			using Lightmap =
 				std::unordered_map<
 				Game::World::GlobalPosition,
-				LightColor>;
+				Ncurses::Color>;
 			Lightmap lightmap;
 
 		public:

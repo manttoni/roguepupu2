@@ -19,11 +19,7 @@ namespace Ncurses
 
 		Color() = default;
 		Color(const int r, const int g, const int b) : r(r), g(g), b(b) {}
-		Color(const double r, const double g, const double b) :
-			r(static_cast<int>(std::round(r))),
-			g(static_cast<int>(std::round(g))),
-			b(static_cast<int>(std::round(b)))
-		{}
+
 		explicit Color(int id);
 		Color(const std::array<int, 3>& rgb) : r(rgb.at(0)), g(rgb.at(1)), b(rgb.at(2)) {}
 
