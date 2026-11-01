@@ -26,6 +26,9 @@ class Renderer
 		size_t frame = 0;
 		bool render_all = false;
 
+		Ncurses::Color get_bgcolor(
+			const Game::Simulation& simulation,
+			const Game::World::GlobalPosition& position);
 		Ncurses::Pixel get_pixel(
 			const Game::Simulation& simulation,
 			const Game::World::GlobalPosition& position);

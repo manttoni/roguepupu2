@@ -12,7 +12,7 @@ namespace Game::System::Lighting
 		Simulation& simulation,
 		const entt::entity light,
 		const World::GlobalPosition& position,
-		const int multiplier)
+		const Operation operation)
 	{
 		const auto& registry = simulation.get_registry();
 
@@ -20,6 +20,7 @@ namespace Game::System::Lighting
 			registry.get<Component::Value::Radius>(light).value;
 		const auto& color =
 			registry.get<Component::Value::Color>(light).value;
+		const auto& color_id = color.id();
 
 		const auto nearby_positions =
 			World::nearby(position, radius);
@@ -32,11 +33,27 @@ namespace Game::System::Lighting
 		{
 			if (!Vision::los(registry, grid, position, np))
 				continue;
-			auto& light_color = lightmap[np];
 
-			light_color.r = std::max(light_color.r, multiplier * color.r);
-			light_color.g = std::max(light_color.g, multiplier * color.g);
-			light_color.b = std::max(light_color.b, multiplier * color.b);
+			if (operation == Operation::Add)
+			{
+				++lightmap[np][color_id];
+				continue;
+			}
+
+			const auto position_it = lightmap.find(np);
+			if (position_it == lightmap.end())
+				continue;
+
+			auto& colors = position_it->second;
+			const auto color_it = colors.find(color_id);
+			if (color_it == colors.end() || color_it->second == 0)
+				continue;
+
+			if (--color_it->second == 0)
+				colors.erase(color_it);
+
+			if (colors.empty())
+				lightmap.erase(position_it);
 		}
 	}
 
@@ -45,28 +62,15 @@ namespace Game::System::Lighting
 		const entt::entity entity,
 		const Operation operation)
 	{
-		const auto multiplier = operation == Operation::Add ? 1 : -1;
-
 		auto& registry = simulation.get_registry();
 
-		if (!registry.all_of<Component::Value::Position>(entity))
+		const auto* position =
+			registry.try_get<Component::Value::Position>(entity);
+		if (!position)
 			return;
-		const auto& position =
-			registry.get<Component::Value::Position>(entity).value;
-		/* This would actually be a bug
-		 * if (registry.all_of<Component::Tag::Light>(entity))
-		{
-			update_light(simulation, entity, position, multiplier);
-			return;
-		}*/
 		if (!registry.all_of<Component::Tag::LightSource>(entity))
 			return;
-		/*if (const auto* equipped_items =
-		  registry.try_get<Component::List::EquippedItems>(entity))
-		  {
-		  for (const auto& item : equipped_items->values)
-		  update(simulation, item);
-		  }*/
+
 		if (const auto* lights =
 			registry.try_get<Component::List::Lights>(entity);
 			lights)
@@ -77,7 +81,13 @@ namespace Game::System::Lighting
 			{
 				const auto light_entity =
 					Entity::create(registry, definitions, light_id);
-				update_light(simulation, light_entity, position, multiplier);
+
+				update_light(
+					simulation,
+					light_entity,
+					position->value,
+					operation);
+
 				registry.destroy(light_entity);
 			}
 		}

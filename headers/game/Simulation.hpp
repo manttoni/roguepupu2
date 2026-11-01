@@ -12,6 +12,7 @@
 #include "game/event/Event.hpp"
 #include "game/world/Generator.hpp"
 #include "game/world/Grid.hpp"
+#include "ncurses/Color.hpp"
 
 namespace Game
 {
@@ -35,10 +36,14 @@ namespace Game
 
 			void simulate_node(Event::Node& node);
 
+			using PositionLights =
+				std::unordered_map<
+				Ncurses::Color::ID,
+				std::size_t>;
 			using Lightmap =
 				std::unordered_map<
 				Game::World::GlobalPosition,
-				Ncurses::Color>;
+				PositionLights>;
 			Lightmap lightmap;
 
 		public:

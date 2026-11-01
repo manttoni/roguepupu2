@@ -10,7 +10,13 @@ namespace Game::System::Lighting
 		Add,
 		Remove
 	};
-	void update(
+	void update_light(
+		Simulation& simulation,
+		entt::entity light,
+		const World::GlobalPosition& position,
+		Operation operation);
+
+void update(
 		Simulation& simulation,
 		entt::entity entity,
 		Operation operation);

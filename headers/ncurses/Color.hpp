@@ -13,6 +13,8 @@ namespace Ncurses
 {
 	struct Color
 	{
+		using ID = short;
+
 		int r = 0;
 		int g = 0;
 		int b = 0;
@@ -31,9 +33,9 @@ namespace Ncurses
 			b = std::clamp(b + other.b, 0, 5);
 			return *this;
 		}
-		short id() const
+		ID id() const
 		{
-			return static_cast<short>(16 + r * 36 + g * 6 + b);
+			return static_cast<ID>(16 + r * 36 + g * 6 + b);
 		}
 		inline std::string markup() const
 		{
@@ -88,7 +90,7 @@ namespace Ncurses
 		static inline void init()
 		{
 			constexpr int palette_size = 6 * 6 * 6;
-			constexpr std::array<short, 6> levels{
+			constexpr std::array<ID, 6> levels{
 				0, 20, 80, 180, 320, 500
 			};
 

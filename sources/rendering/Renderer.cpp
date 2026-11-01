@@ -60,6 +60,28 @@ entt::entity Renderer::get_entity(
 	return entity;
 }
 
+Ncurses::Color Renderer::get_bgcolor(
+	const Game::Simulation& simulation,
+	const Game::World::GlobalPosition& position)
+{
+	Ncurses::Color bgcolor{0,0,0};
+
+	const auto& lightmap = simulation.get_lightmap();
+	if (!lightmap.contains(position))
+		return bgcolor;
+	const auto& position_lights = lightmap.at(position);
+
+	for (const auto& [color_id, unused] : position_lights)
+	{
+		const Ncurses::Color color{color_id};
+		bgcolor.r = std::max(bgcolor.r, color.r);
+		bgcolor.g = std::max(bgcolor.g, color.g);
+		bgcolor.b = std::max(bgcolor.b, color.b);
+	}
+
+	return bgcolor;
+}
+
 Ncurses::Pixel Renderer::get_pixel(
 	const Game::Simulation& simulation,
 	const Game::World::GlobalPosition& position)
@@ -89,12 +111,7 @@ Ncurses::Pixel Renderer::get_pixel(
 		pixel.glyph = get_cell_glyph(*cell);
 	if (pixel.fgcolor == Ncurses::Color{})
 		pixel.fgcolor = get_cell_color(*cell);
-
-	const auto& lightmap = simulation.get_lightmap();
-	const auto it = lightmap.find(position);
-	pixel.bgcolor = it != lightmap.end()
-		? it->second
-		: Ncurses::Color{};
+	pixel.bgcolor = get_bgcolor(simulation, position);
 
 	pixel.fgcolor += pixel.bgcolor;
 
