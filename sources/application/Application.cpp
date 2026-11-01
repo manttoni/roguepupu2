@@ -1,13 +1,13 @@
 #include "application/Application.hpp"
-#include "editor/EntityEditor.hpp"
-#include "utils/Log.hpp"
-#include "game/Simulation.hpp"
 #include "application/EventDescriber.hpp"
-#include "ui/Dialog.hpp"
-#include "ncurses/Input.hpp"
-#include "game/AI.hpp"
 #include "application/Layout.hpp"
+#include "editor/EntityEditor.hpp"
+#include "game/AI.hpp"
+#include "game/Simulation.hpp"
 #include "game/component/Component.hpp"
+#include "ncurses/Input.hpp"
+#include "ui/Dialog.hpp"
+#include "utils/Log.hpp"
 
 Application::Application() :
 	renderer(layout.get_panel(Layout::Panel::Game).get_window()),
