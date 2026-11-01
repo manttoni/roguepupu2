@@ -92,6 +92,9 @@ namespace Ncurses
 		static inline void init()
 		{
 			constexpr int palette_size = 6 * 6 * 6;
+			constexpr std::array<short, 6> levels{
+				0, 20, 80, 180, 320, 500
+			};
 
 			Log::info() << "Color palette size: " << palette_size;
 
@@ -108,8 +111,11 @@ namespace Ncurses
 							static_cast<int>(r),
 								static_cast<int>(g),
 								static_cast<int>(b)};
-						init_color(c.id(), r * 100, g * 100, b * 100);
-						init_pair(c.id(), c.id(), Color{0, 0, 0}.id());
+						init_color(
+							c.id(),
+							r * levels[r],
+							g * levels[g],
+							b * levels[b]);
 					}
 				}
 			}

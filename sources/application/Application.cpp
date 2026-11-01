@@ -208,6 +208,10 @@ void Application::main_menu()
 
 void Application::run()
 {
+	if (!can_change_color())
+	{
+		UI::Dialog::alert("Terminal does not support custom color palette");
+	}
 	while (application_running)
 		main_menu();
 }
