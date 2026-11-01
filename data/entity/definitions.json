@@ -41,9 +41,6 @@
         "Glyph": "@",
         "Intelligence": 8,
         "Inventory": [],
-        "Lights": [
-            "light_mushroom_blue"
-        ],
         "MovementPoints": 10000,
         "Name": "Rabdin",
         "OnDamage": [],
@@ -55,7 +52,6 @@
             "Actor",
             "Creature",
             "Destructible",
-            "LightSource",
             "Player",
             "Renderable",
             "WorldObject"
