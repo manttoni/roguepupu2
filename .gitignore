@@ -12,4 +12,5 @@ tmp/
 *.sh
 !/scripts/build.sh
 compile_commands.json
+*:Zone.Identifier
 
