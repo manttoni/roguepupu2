@@ -1,4 +1,5 @@
 #include "game/Simulation.hpp"
+#include "game/system/Lighting.hpp"
 #include "game/system/Vision.hpp"
 #include "game/entity/Entity.hpp"
 #include "ncurses/Screen.hpp"
@@ -46,6 +47,7 @@ namespace Game
 
 	void Simulation::load_chunks(const World::ChunkPosition& center)
 	{
+		bool chunks_loaded = false;
 		const auto viewport = Ncurses::Screen::size();
 		const auto dimensions = World::Chunk::dimensions();
 
@@ -63,16 +65,27 @@ namespace Game
 					continue;
 
 				grid.add(cp, generator.generate_chunk(cp));
+				chunks_loaded = true;
 
 				/* Spawn entities
 				 * Spawner checks if it can spawn there and if the cell exists
 				 * */
 				auto& spawn_requests = generator.get_spawn_requests();
 				for (const auto& request : spawn_requests)
-					spawner.spawn(request);
+				{
+					const auto entity = spawner.spawn(request);
+
+					if (entity != entt::null)
+						System::Lighting::update(
+							*this,
+							entity,
+							System::Lighting::Operation::Add);
+				}
 				spawn_requests.clear();
 			}
 		}
+		if (chunks_loaded)
+			System::Lighting::reset(*this);
 	}
 
 	void Simulation::load_chunks()
@@ -97,10 +110,7 @@ namespace Game
 			event && event->entity == player
 		   )
 		{
-			const auto& position =
-				registry.get<Game::Component::Value::Position>(player).value;
-			const auto chunk_position = World::to_chunk(position);
-			load_chunks(chunk_position);
+			load_chunks(World::to_chunk(event->position));
 		}
 		/* ~Preload
 		 * */
@@ -121,10 +131,13 @@ namespace Game
 
 		/* TODO: create something so this doesnt get called too often
 		 * */
-		System::Vision::update_vision(
-			registry,
-			grid,
-			scheduler.current_actor().entity);
+		if (registry.all_of<Component::Value::Position>(scheduler.current_actor().entity))
+		{
+			System::Vision::update_vision(
+				registry,
+				grid,
+				scheduler.current_actor().entity);
+		}
 	}
 
 	Event::Node Simulation::simulate(Event::Any initial_event)

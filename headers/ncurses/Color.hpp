@@ -1,6 +1,8 @@
 #pragma once
 #include "utils/Log.hpp"
 
+#include <cmath>
+#include <algorithm>
 #include <array>
 #include <string>
 #include <regex>
@@ -11,20 +13,29 @@ namespace Ncurses
 {
 	struct Color
 	{
+		using ID = short;
+
 		int r = 0;
 		int g = 0;
 		int b = 0;
 
 		Color() = default;
 		Color(const int r, const int g, const int b) : r(r), g(g), b(b) {}
+
 		explicit Color(int id);
 		Color(const std::array<int, 3>& rgb) : r(rgb.at(0)), g(rgb.at(1)), b(rgb.at(2)) {}
 
 		bool operator==(const Color& other) const = default;
-
-		short id() const
+		inline Color& operator+=(const Color& other) noexcept
 		{
-			return static_cast<short>(16 + r * 36 + g * 6 + b);
+			r = std::clamp(r + other.r, 0, 5);
+			g = std::clamp(g + other.g, 0, 5);
+			b = std::clamp(b + other.b, 0, 5);
+			return *this;
+		}
+		ID id() const
+		{
+			return static_cast<ID>(16 + r * 36 + g * 6 + b);
 		}
 		inline std::string markup() const
 		{
@@ -53,8 +64,8 @@ namespace Ncurses
 			const int b = std::stoi(match[3].str());
 
 			if (r < 0 || r > 1000 ||
-					g < 0 || g > 1000 ||
-					b < 0 || b > 1000)
+				g < 0 || g > 1000 ||
+				b < 0 || b > 1000)
 				return false;
 			return true;
 
@@ -79,6 +90,9 @@ namespace Ncurses
 		static inline void init()
 		{
 			constexpr int palette_size = 6 * 6 * 6;
+			constexpr std::array<ID, 6> levels{
+				0, 20, 80, 180, 320, 500
+			};
 
 			Log::info() << "Color palette size: " << palette_size;
 
@@ -95,8 +109,11 @@ namespace Ncurses
 							static_cast<int>(r),
 								static_cast<int>(g),
 								static_cast<int>(b)};
-						init_color(c.id(), r * 200, g * 200, b * 200);
-						init_pair(c.id(), c.id(), Color{0, 0, 0}.id());
+						init_color(
+							c.id(),
+							levels[r],
+							levels[g],
+							levels[b]);
 					}
 				}
 			}

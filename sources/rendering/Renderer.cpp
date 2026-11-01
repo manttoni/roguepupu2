@@ -31,26 +31,28 @@ Ncurses::Color Renderer::get_cell_color(const Game::World::Cell& cell)
 	switch (cell.material)
 	{
 		case Material::Stone:
-			return Ncurses::Color{1,1,1};
+			if (cell.form == Game::Enum::Form::Floor)
+				return Ncurses::Color{2,2,2};
+			return Ncurses::Color{4,4,4};
 		case Material::Soil:
-			return Ncurses::Color{1,1,0};
+			return Ncurses::Color{2,2,0};
 		default:
 			Log::warning()
 				<< "Unmapped cell material: "
 				<< Game::Enum::to_string<Material>(cell.material);
-			return Ncurses::Color{1, 0, 0};
+			return Ncurses::Color{2, 0, 0};
 	}
 }
 
 entt::entity Renderer::get_entity(
-		const Game::Simulation& simulation,
-		const Game::World::GlobalPosition& position)
+	const Game::Simulation& simulation,
+	const Game::World::GlobalPosition& position)
 {
 	const auto& registry = simulation.get_registry();
 	const auto entities = Game::Entity::find_all(
-			registry,
-			Game::Component::Value::Position{position},
-			Game::Component::Tag::Renderable{});
+		registry,
+		Game::Component::Value::Position{position},
+		Game::Component::Tag::Renderable{});
 	if (entities.empty())
 		return entt::null;
 
@@ -58,9 +60,31 @@ entt::entity Renderer::get_entity(
 	return entity;
 }
 
+Ncurses::Color Renderer::get_bgcolor(
+	const Game::Simulation& simulation,
+	const Game::World::GlobalPosition& position)
+{
+	Ncurses::Color bgcolor{0,0,0};
+
+	const auto& lightmap = simulation.get_lightmap();
+	if (!lightmap.contains(position))
+		return bgcolor;
+	const auto& position_lights = lightmap.at(position);
+
+	for (const auto& [color_id, unused] : position_lights)
+	{
+		const Ncurses::Color color{color_id};
+		bgcolor.r = std::max(bgcolor.r, color.r);
+		bgcolor.g = std::max(bgcolor.g, color.g);
+		bgcolor.b = std::max(bgcolor.b, color.b);
+	}
+
+	return bgcolor;
+}
+
 Ncurses::Pixel Renderer::get_pixel(
-		const Game::Simulation& simulation,
-		const Game::World::GlobalPosition& position)
+	const Game::Simulation& simulation,
+	const Game::World::GlobalPosition& position)
 {
 	Ncurses::Pixel pixel;
 
@@ -76,7 +100,8 @@ Ncurses::Pixel Renderer::get_pixel(
 			registry.get<Game::Component::Value::Glyph>(entity).value;
 		pixel.fgcolor =
 			registry.get<Game::Component::Value::Color>(entity).value;
-		// Give some attribute based on some Tag for example, TODO
+		if (registry.all_of<Game::Component::Tag::Item>(entity))
+			pixel.attribute = Ncurses::Attribute{A_ITALIC};
 	}
 
 	const auto* const cell = simulation.get_grid().find_cell(position);
@@ -86,14 +111,16 @@ Ncurses::Pixel Renderer::get_pixel(
 		pixel.glyph = get_cell_glyph(*cell);
 	if (pixel.fgcolor == Ncurses::Color{})
 		pixel.fgcolor = get_cell_color(*cell);
-	// pixel.bgcolor = lightmap
+	pixel.bgcolor = get_bgcolor(simulation, position);
+
+	pixel.fgcolor += pixel.bgcolor;
 
 	return pixel;
 }
 
 void Renderer::render_player_perspective(
-		const Game::Simulation& simulation,
-		const std::optional<Game::World::GlobalPosition> cursor)
+	const Game::Simulation& simulation,
+	const std::optional<Game::World::GlobalPosition> cursor)
 {
 	const auto&
 		registry =
@@ -129,9 +156,9 @@ void Renderer::render_player_perspective(
 
 			const bool visible = render_all ? true :
 				std::find(
-						visible_positions.begin(),
-						visible_positions.end(),
-						position) != visible_positions.end();
+					visible_positions.begin(),
+					visible_positions.end(),
+					position) != visible_positions.end();
 
 			if (!visible && !seen_positions.contains(position))
 				continue;

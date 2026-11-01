@@ -21,6 +21,8 @@ namespace Game::World
 			const GlobalPosition& position,
 			const double weight)
 	{
+		if (weight <= 0.0)
+			return;
 		const auto& layers = conf.at("layers");
 		const auto& layer = layers.at(id);
 		if (layer.contains("terrain"))
@@ -121,7 +123,7 @@ namespace Game::World
 			if (total_weight > 0.0)
 			{
 				for (auto& [id, weight] : weights)
-					weight = 100.0 * weight / total_weight;
+					weight /= total_weight;
 			}
 
 			for (const auto& region : noise.at("regions"))

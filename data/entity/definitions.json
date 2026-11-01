@@ -1,11 +1,39 @@
 {
+    "light_mushroom_blue": {
+        "Color": 17,
+        "Radius": 4.000000000000001,
+        "Tags": [
+            "Light"
+        ]
+    },
+    "mushroom_glowing": {
+        "CollisionMovement": false,
+        "CollisionVision": false,
+        "Color": 20,
+        "Glyph": "*",
+        "Lights": [
+            "light_mushroom_blue"
+        ],
+        "Name": "Glowing Mushroom",
+        "OnDamage": [],
+        "OnDestroy": [],
+        "OnSpawn": [],
+        "Tags": [
+            "Destructible",
+            "LightSource",
+            "Mushroom",
+            "Renderable",
+            "WorldObject"
+        ],
+        "Weight": 0.0
+    },
     "player_default": {
         "ActionPoints": 1,
         "BonusActionPoints": 1,
         "Charisma": 8,
         "CollisionMovement": true,
         "CollisionVision": false,
-        "Color": 66,
+        "Color": 110,
         "Constitution": 8,
         "CreatureType": "Humanoid",
         "Dexterity": 8,
@@ -21,12 +49,12 @@
         "OnSpawn": [],
         "Strength": 8,
         "Tags": [
+            "Actor",
             "Creature",
             "Destructible",
             "Player",
             "Renderable",
-            "WorldObject",
-            "Actor"
+            "WorldObject"
         ],
         "VisionRange": 10,
         "Weight": 0.0,
@@ -36,7 +64,7 @@
         "Ammo": "Bullet",
         "CollisionMovement": false,
         "CollisionVision": false,
-        "Color": 102,
+        "Color": 188,
         "Glyph": ".",
         "GoldValue": 0,
         "Name": "Stone",
@@ -54,7 +82,7 @@
     "tree": {
         "CollisionMovement": true,
         "CollisionVision": true,
-        "Color": 64,
+        "Color": 112,
         "Glyph": "T",
         "Name": "Tree",
         "OnSpawn": [],

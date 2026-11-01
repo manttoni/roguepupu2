@@ -20,11 +20,15 @@ class Renderer
 		void set_render_all(bool value) { render_all = value; }
 		bool& get_render_all() { return render_all; }
 		bool get_render_all() const { return render_all; }
+
 	private:
 		Ncurses::Window& surface;
 		size_t frame = 0;
 		bool render_all = false;
 
+		Ncurses::Color get_bgcolor(
+			const Game::Simulation& simulation,
+			const Game::World::GlobalPosition& position);
 		Ncurses::Pixel get_pixel(
 			const Game::Simulation& simulation,
 			const Game::World::GlobalPosition& position);

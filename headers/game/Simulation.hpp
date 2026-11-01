@@ -12,6 +12,7 @@
 #include "game/event/Event.hpp"
 #include "game/world/Generator.hpp"
 #include "game/world/Grid.hpp"
+#include "ncurses/Color.hpp"
 
 namespace Game
 {
@@ -35,11 +36,21 @@ namespace Game
 
 			void simulate_node(Event::Node& node);
 
+			using PositionLights =
+				std::unordered_map<
+				Ncurses::Color::ID,
+				std::size_t>;
+			using Lightmap =
+				std::unordered_map<
+				Game::World::GlobalPosition,
+				PositionLights>;
+			Lightmap lightmap;
+
 		public:
 			Simulation(
-					const std::string& seed,
-					const EntityDatabase& entity_database,
-					const Entity::Definition::ID& player_definition_id);
+				const std::string& seed,
+				const EntityDatabase& entity_database,
+				const Entity::Definition::ID& player_definition_id);
 			Simulation(const Simulation&) = delete;
 			Simulation& operator=(const Simulation&) = delete;
 
@@ -71,5 +82,8 @@ namespace Game
 			Event::Node simulate(Event::Any initial_event);
 			void load_chunks(const World::ChunkPosition& center);
 			void load_chunks();
+
+			Lightmap& get_lightmap() { return lightmap; }
+			const Lightmap& get_lightmap() const { return lightmap; }
 	};
 }
