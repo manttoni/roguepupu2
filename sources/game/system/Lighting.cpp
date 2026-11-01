@@ -11,7 +11,8 @@ namespace Game::System::Lighting
 	void update_light(
 		Simulation& simulation,
 		const entt::entity light,
-		const World::GlobalPosition& position)
+		const World::GlobalPosition& position,
+		const int multiplier)
 	{
 		const auto& registry = simulation.get_registry();
 
@@ -37,15 +38,20 @@ namespace Game::System::Lighting
 			const auto& distance = World::distance(position, np);
 			const double t = std::clamp(1.0 - distance / radius, 0.0, 1.0);
 			const double falloff = t * t;
-			const double strength = intensity * falloff;
+			const double strength = multiplier * intensity * falloff;
 			light_color.r += color.r * strength;
 			light_color.g += color.g * strength;
 			light_color.b += color.b * strength;
 		}
 	}
 
-	void update(Simulation& simulation, const entt::entity entity)
+	void update(
+		Simulation& simulation,
+		const entt::entity entity,
+		const Operation operation)
 	{
+		const auto multiplier = operation == Operation::Add ? 1 : -1;
+
 		auto& registry = simulation.get_registry();
 
 		if (!registry.all_of<Component::Value::Position>(entity))
@@ -54,7 +60,7 @@ namespace Game::System::Lighting
 			registry.get<Component::Value::Position>(entity).value;
 		if (registry.all_of<Component::Tag::Light>(entity))
 		{
-			update_light(simulation, entity, position);
+			update_light(simulation, entity, position, multiplier);
 			return;
 		}
 		if (!registry.all_of<Component::Tag::LightSource>(entity))
@@ -75,9 +81,24 @@ namespace Game::System::Lighting
 			{
 				const auto light_entity =
 					Entity::create(registry, definitions, light_id);
-				update_light(simulation, light_entity, position);
+				update_light(simulation, light_entity, position, multiplier);
 				registry.destroy(light_entity);
 			}
+		}
+	}
+
+	void reset(Simulation& simulation)
+	{
+		const auto& registry = simulation.get_registry();
+		auto& lightmap = simulation.get_lightmap();
+		lightmap.clear();
+
+		for (const auto& light_source :
+			Entity::find_all(
+				registry,
+				Component::Tag::LightSource{}))
+		{
+			update(simulation, light_source, Operation::Add);
 		}
 	}
 }

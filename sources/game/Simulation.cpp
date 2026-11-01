@@ -47,6 +47,7 @@ namespace Game
 
 	void Simulation::load_chunks(const World::ChunkPosition& center)
 	{
+		bool chunks_loaded = false;
 		const auto viewport = Ncurses::Screen::size();
 		const auto dimensions = World::Chunk::dimensions();
 
@@ -64,6 +65,7 @@ namespace Game
 					continue;
 
 				grid.add(cp, generator.generate_chunk(cp));
+				chunks_loaded = true;
 
 				/* Spawn entities
 				 * Spawner checks if it can spawn there and if the cell exists
@@ -74,11 +76,16 @@ namespace Game
 					const auto entity = spawner.spawn(request);
 
 					if (entity != entt::null)
-						System::Lighting::update(*this, entity);
+						System::Lighting::update(
+							*this,
+							entity,
+							System::Lighting::Operation::Add);
 				}
 				spawn_requests.clear();
 			}
 		}
+		if (chunks_loaded)
+			System::Lighting::reset(*this);
 	}
 
 	void Simulation::load_chunks()

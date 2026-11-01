@@ -5,7 +5,16 @@
 
 namespace Game::System::Lighting
 {
-	// Update lighting that comes from 'entity'
-	void update(Simulation& simulation, entt::entity entity);
+	enum class Operation
+	{
+		Add,
+		Remove
+	};
+	void update(
+		Simulation& simulation,
+		entt::entity entity,
+		Operation operation);
+
+	void reset(Simulation& simulation);
 }
 
