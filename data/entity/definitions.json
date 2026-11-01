@@ -10,7 +10,7 @@
     "mushroom_glowing": {
         "CollisionMovement": false,
         "CollisionVision": false,
-        "Color": 19,
+        "Color": 18,
         "Glyph": "*",
         "Lights": [
             "light_mushroom_blue"
@@ -34,7 +34,7 @@
         "Charisma": 8,
         "CollisionMovement": true,
         "CollisionVision": false,
-        "Color": 116,
+        "Color": 67,
         "Constitution": 8,
         "CreatureType": "Humanoid",
         "Dexterity": 8,
@@ -65,7 +65,7 @@
         "Ammo": "Bullet",
         "CollisionMovement": false,
         "CollisionVision": false,
-        "Color": 188,
+        "Color": 145,
         "Glyph": ".",
         "GoldValue": 0,
         "Name": "Stone",
@@ -83,7 +83,7 @@
     "tree": {
         "CollisionMovement": true,
         "CollisionVision": true,
-        "Color": 112,
+        "Color": 70,
         "Glyph": "T",
         "Name": "Tree",
         "OnSpawn": [],
