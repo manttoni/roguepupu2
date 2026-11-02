@@ -66,8 +66,8 @@ namespace UI::Element
 	}
 	template<typename T>
 		Selection::State handle_input(
-				ValueSelector<T>& element,
-				const Ncurses::Input::Event& event)
+			ValueSelector<T>& element,
+			const Ncurses::Input::Event& event)
 		{
 			using Key = Ncurses::Input::Key;
 
@@ -83,7 +83,7 @@ namespace UI::Element
 			if (event.key == Key::Left)
 			{
 				if (current <= element.range.min ||
-						amount >= current - element.range.min)
+					amount >= current - element.range.min)
 				{
 					next = element.range.min;
 				}
@@ -95,7 +95,7 @@ namespace UI::Element
 			else
 			{
 				if (current >= element.range.max ||
-						amount >= element.range.max - current)
+					amount >= element.range.max - current)
 				{
 					next = element.range.max;
 				}
@@ -140,8 +140,8 @@ namespace UI::Element
 	}
 	template<typename T>
 		Selection::State handle_input(
-				SingleChoice<T>& element,
-				const Ncurses::Input::Event& event)
+			SingleChoice<T>& element,
+			const Ncurses::Input::Event& event)
 		{
 			using Key = Ncurses::Input::Key;
 
@@ -149,10 +149,10 @@ namespace UI::Element
 				return Selection::State::Error;
 
 			const auto it = std::find(
-					element.choices.begin(),
-					element.choices.end(),
-					*element.chosen
-					);
+				element.choices.begin(),
+				element.choices.end(),
+				*element.chosen
+				);
 
 			if (it == element.choices.end())
 				return Selection::State::Error;

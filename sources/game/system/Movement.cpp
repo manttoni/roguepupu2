@@ -7,9 +7,9 @@ namespace
 {
 	// TODO: Extract shared spatial queries when needed.
 	bool blocks_movement(
-			const entt::registry& registry,
-			const Game::World::Grid& grid,
-			const Game::World::GlobalPosition& position)
+		const entt::registry& registry,
+		const Game::World::Grid& grid,
+		const Game::World::GlobalPosition& position)
 	{
 		const auto* cell = grid.find_cell(position);
 
@@ -17,17 +17,17 @@ namespace
 			return true;
 
 		const auto entities = Game::Entity::find_all(
-				registry,
-				Game::Component::Value::Position{position},
-				Game::Component::Value::CollisionMovement{true}
-				);
+			registry,
+			Game::Component::Value::Position{position},
+			Game::Component::Value::CollisionMovement{true}
+			);
 
 		return !entities.empty();
 	}
 
 	double distance(
-			const Game::World::GlobalPosition& from,
-			const Game::World::GlobalPosition& to)
+		const Game::World::GlobalPosition& from,
+		const Game::World::GlobalPosition& to)
 	{
 		const auto& diff = from.vec2() - to.vec2();
 		return diff.length();
@@ -39,16 +39,16 @@ namespace Game::System::Movement
 	/* This is different from a potential 'can_change_position' or something which has a teleport event
 	 * */
 	bool can_move(
-			const entt::registry& registry,
-			const World::Grid& grid,
-			const entt::entity entity,
-			const World::GlobalPosition& to)
+		const entt::registry& registry,
+		const World::Grid& grid,
+		const entt::entity entity,
+		const World::GlobalPosition& to)
 	{
 		if (!registry.all_of<
-				Game::Component::Value::Position,
-				Game::Component::Resource::MovementPoints,
-				Game::Component::Value::CollisionMovement
-				>(entity))
+			Game::Component::Value::Position,
+			Game::Component::Resource::MovementPoints,
+			Game::Component::Value::CollisionMovement
+			>(entity))
 			return false;
 
 		const auto& current =
@@ -57,12 +57,12 @@ namespace Game::System::Movement
 		const auto move_distance = distance(current, to);
 
 		if (blocks_movement(registry, grid, to) &&
-				registry.get<Component::Value::CollisionMovement>(entity).value == true)
+			registry.get<Component::Value::CollisionMovement>(entity).value == true)
 			return false;
 
 		// TODO: invent movement cost
 		if (move_distance >
-				registry.get<Game::Component::Resource::MovementPoints>(entity).current)
+			registry.get<Game::Component::Resource::MovementPoints>(entity).current)
 			return false;
 
 		// Can always move just one step at a time. Diagonal distance is ~1.4
@@ -76,7 +76,7 @@ namespace Game::System::Movement
 			const auto corner1 = World::GlobalPosition{current.y, to.x};
 			const auto corner2 = World::GlobalPosition{to.y, current.x};
 			if (!can_move(registry, grid, entity, corner1)
-					|| !can_move(registry, grid, entity, corner2))
+				|| !can_move(registry, grid, entity, corner2))
 				return false;
 		}
 

@@ -24,11 +24,11 @@ struct Range
 	}
 
 	template<typename U>
-	bool contains(const U value) const
-	{
-		static_assert(std::is_arithmetic_v<T>, "Value has to be numeric type");
-		return min <= static_cast<T>(value) && max >= static_cast<T>(value);
-	}
+		bool contains(const U value) const
+		{
+			static_assert(std::is_arithmetic_v<T>, "Value has to be numeric type");
+			return min <= static_cast<T>(value) && max >= static_cast<T>(value);
+		}
 
 	friend std::ostream& operator<<(std::ostream& os, const Range& range)
 	{

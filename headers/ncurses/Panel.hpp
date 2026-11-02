@@ -17,10 +17,10 @@ namespace Ncurses
 
 		public:
 			Panel(
-					int height,
-					int width,
-					int y,
-					int x);
+				int height,
+				int width,
+				int y,
+				int x);
 
 			Panel();
 			~Panel();

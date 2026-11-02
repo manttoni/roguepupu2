@@ -33,12 +33,12 @@ namespace UI
 	{
 		const auto formatted = Format::elements(elements);
 		const auto longest = std::max_element(
-				formatted.begin(),
-				formatted.end(),
-				[](const auto& a, const auto& b)
-				{
-					return a.size() < b.size();
-				});
+			formatted.begin(),
+			formatted.end(),
+			[](const auto& a, const auto& b)
+			{
+			return a.size() < b.size();
+			});
 		const auto longest_length =
 			longest == formatted.end() ? 0 : longest->size();
 
@@ -93,27 +93,27 @@ namespace UI
 			return "";
 
 		return std::visit(
-				[](const auto& element) -> std::string
-				{
-					if constexpr (requires { element.label; })
-						return element.label;
-					else
-						return "";
-				},
-				elements[index]
-				);
+			[](const auto& element) -> std::string
+			{
+			if constexpr (requires { element.label; })
+			return element.label;
+			else
+			return "";
+			},
+			elements[index]
+			);
 	}
 
 	Selection Menu::handle_input(const std::size_t selected, const Ncurses::Input::Event& event)
 	{
 		const auto state = std::visit([&event](auto& element) {
 			return Element::handle_input(element, event);
-		}, elements.at(selected));
+			}, elements.at(selected));
 
 		return Selection{
 			.state = state,
-			.index = selected,
-			.label = get_label(selected)
+				.index = selected,
+				.label = get_label(selected)
 		};
 	}
 
@@ -133,7 +133,7 @@ namespace UI
 				case Key::None: // getting input timed out -> no key was pressed
 					return Selection{
 						.state = Selection::State::TimedOut,
-						.index = selected
+							.index = selected
 					};
 				case Key::Up:
 					selected = (selected == 0) ? 0 : selected - 1;

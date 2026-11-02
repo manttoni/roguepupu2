@@ -24,21 +24,21 @@ namespace Ncurses
 			const auto number = data.get<int>();
 			if (number < 16 || number > 231)
 				throw std::invalid_argument(
-						"Color id must be [16,231]");
+					"Color id must be [16,231]");
 			color = Color{number};
 			return;
 		}
 		else if (!data.is_array() || data.size() != 3)
 			throw std::invalid_argument(
-					"Color must be an array of exactly 3 integers");
+				"Color must be an array of exactly 3 integers");
 
 		for (const auto& channel : data)
 		{
 			if (!channel.is_number_integer()
-					|| channel < 0 || channel > 5)
+				|| channel < 0 || channel > 5)
 			{
 				throw std::invalid_argument(
-						"Color channels must be integers from 0 to 5");
+					"Color channels must be integers from 0 to 5");
 			}
 		}
 

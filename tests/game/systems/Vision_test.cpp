@@ -17,10 +17,10 @@ namespace
 	using Form = Game::Enum::Form;
 
 	template <typename T>
-	bool contains(const std::vector<T>& values, const T& value)
-	{
-		return std::find(values.begin(), values.end(), value) != values.end();
-	}
+		bool contains(const std::vector<T>& values, const T& value)
+		{
+			return std::find(values.begin(), values.end(), value) != values.end();
+		}
 
 	class VisionTest : public WorldTest
 	{
@@ -78,9 +78,9 @@ namespace
 	{
 		const std::vector<Vec2<int>> offsets{
 			{-6, 0}, {6, 0}, {0, -6}, {0, 6},
-			{-6, -6}, {-6, 6}, {6, -6}, {6, 6},
-			{-2, -5}, {-2, 5}, {2, -5}, {2, 5},
-			{-5, -2}, {-5, 2}, {5, -2}, {5, 2}
+				{-6, -6}, {-6, 6}, {6, -6}, {6, 6},
+				{-2, -5}, {-2, 5}, {2, -5}, {2, 5},
+				{-5, -2}, {-5, 2}, {5, -2}, {5, 2}
 		};
 
 		for (const auto& offset : offsets)
@@ -174,9 +174,9 @@ namespace
 			const auto target = center + Vec2<int>{
 				direction.y * 3, direction.x * 3};
 			const auto side_x = make_entity(
-					center + Vec2<int>{0, direction.x}, true);
+				center + Vec2<int>{0, direction.x}, true);
 			const auto side_y = make_entity(
-					center + Vec2<int>{direction.y, 0}, false);
+				center + Vec2<int>{direction.y, 0}, false);
 
 			expect_los(center, target, false);
 
@@ -225,7 +225,7 @@ namespace
 		ASSERT_TRUE(grid.add(far_chunk, Game::World::Chunk{
 				Game::Enum::Material::Stone, Form::Floor}));
 		const auto target = Game::World::to_global(
-				far_chunk, Game::World::LocalPosition{center.y, center.x});
+			far_chunk, Game::World::LocalPosition{center.y, center.x});
 		ASSERT_NE(grid.find_cell(target), nullptr);
 
 		expect_los(center, target, false);
@@ -301,9 +301,9 @@ namespace
 			EXPECT_EQ(cache().visible_positions.size(), expected_count);
 			EXPECT_TRUE(contains(cache().visible_positions, center));
 			EXPECT_TRUE(contains(
-						cache().visible_positions, center + Vec2<int>{0, range}));
+					cache().visible_positions, center + Vec2<int>{0, range}));
 			EXPECT_FALSE(contains(
-						cache().visible_positions, center + Vec2<int>{0, range + 1}));
+					cache().visible_positions, center + Vec2<int>{0, range + 1}));
 		}
 	}
 

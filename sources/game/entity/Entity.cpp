@@ -13,7 +13,7 @@ namespace Game::Entity
 
 #define X(component, dependency) \
 		if (registry.all_of<component>(entity) \
-				&& !registry.all_of<dependency>(entity)) \
+			&& !registry.all_of<dependency>(entity)) \
 		{ \
 			return false; \
 		}
@@ -40,9 +40,9 @@ namespace Game::Entity
 
 		const auto& tags = *tags_iterator;
 		if (!std::ranges::all_of(tags, [](const Json& tag)
-					{
-					return tag.is_string();
-					}))
+				{
+				return tag.is_string();
+				}))
 		{
 			Log::error() << "tags must be strings";
 			return false;
@@ -51,7 +51,7 @@ namespace Game::Entity
 		std::string missing_dependencies;
 #define X(component, dependency) \
 		if (definition_has_component<component>(definition, tags) \
-				&& !definition_has_component<dependency>(definition, tags)) \
+			&& !definition_has_component<dependency>(definition, tags)) \
 		{ \
 			missing_dependencies += "\n[" + std::string(#dependency) + "]"; \
 		}
@@ -68,10 +68,10 @@ namespace Game::Entity
 	 * uses macro expansions from game/component/ .def files
 	 * */
 	bool emplace_component(
-			entt::registry& registry,
-			const entt::entity entity,
-			const std::string& component_str,
-			const Json& data)
+		entt::registry& registry,
+		const entt::entity entity,
+		const std::string& component_str,
+		const Json& data)
 	{
 		if (component_str.empty())
 			return false;
@@ -79,7 +79,7 @@ namespace Game::Entity
 		else if (component_str == #name) \
 		{ \
 			registry.emplace<Game::Component::Value::name>( \
-					entity, parse_value<type>(data)); \
+				entity, parse_value<type>(data)); \
 		}
 #include "game/component/Value.def"
 #undef X
@@ -87,7 +87,7 @@ namespace Game::Entity
 		else if (component_str == #name) \
 		{ \
 			registry.emplace<Game::Component::List::name>( \
-					entity, parse_value<std::vector<type>>(data)); \
+				entity, parse_value<std::vector<type>>(data)); \
 		}
 #include "game/component/List.def"
 #undef X
@@ -95,7 +95,7 @@ namespace Game::Entity
 		else if (component_str == #name) \
 		{ \
 			registry.emplace<Game::Component::Resource::name>( \
-					entity, parse_value<type>(data)); \
+				entity, parse_value<type>(data)); \
 		}
 #include "game/component/Resource.def"
 #undef X
@@ -110,10 +110,10 @@ namespace Game::Entity
 		return true;
 	}
 	bool emplace_tags(
-			entt::registry& registry,
-			const entt::entity entity,
-			const std::vector<std::string>& tags
-			)
+		entt::registry& registry,
+		const entt::entity entity,
+		const std::vector<std::string>& tags
+		)
 	{
 		for (const auto& tag : tags)
 		{
@@ -134,14 +134,14 @@ namespace Game::Entity
 	}
 
 	void emplace_runtime_components(
-			entt::registry& registry,
-			const entt::entity entity)
+		entt::registry& registry,
+		const entt::entity entity)
 	{
 		if (registry.all_of<Component::Tag::Creature>(entity))
 		{
 			registry.emplace<Component::Runtime::Vision>(entity);
 			if (registry.get<Component::Value::CreatureType>(entity).value
-					== Enum::CreatureType::Humanoid)
+				== Enum::CreatureType::Humanoid)
 			{
 				registry.emplace<Component::Runtime::EquippedItems>(entity);
 			}
@@ -149,17 +149,17 @@ namespace Game::Entity
 	}
 
 	entt::entity create(
-			entt::registry& registry,
-			const Definition& definition)
+		entt::registry& registry,
+		const Definition& definition)
 	{
 		const auto entity = registry.create();
 		for (const auto& [component_str, data] : definition.data.items())
 		{
 			if (component_str == "Tags")
 				emplace_tags(
-						registry,
-						entity,
-						data.get<std::vector<std::string>>());
+					registry,
+					entity,
+					data.get<std::vector<std::string>>());
 			else
 				emplace_component(registry, entity, component_str, data);
 		}
@@ -170,16 +170,16 @@ namespace Game::Entity
 	}
 
 	entt::entity create(
-			entt::registry& registry,
-			const EntityDatabase& entity_database,
-			const Definition::ID& id)
+		entt::registry& registry,
+		const EntityDatabase& entity_database,
+		const Definition::ID& id)
 	{
 		if (!entity_database.definitions.contains(id))
 		{
 			throw std::runtime_error(
-					"Entity Definition ID \'"
-					+ id
-					+ "\' not found");
+				"Entity Definition ID \'"
+				+ id
+				+ "\' not found");
 			return entt::null;
 		}
 		const Definition definition{id, entity_database.definitions.at(id)};
@@ -188,8 +188,8 @@ namespace Game::Entity
 
 	// Checks only direct requirements and not requirement chains
 	bool requires_component(
-			const Definition& definition,
-			const std::string& component_name)
+		const Definition& definition,
+		const std::string& component_name)
 	{
 		const auto tags =
 			definition.data["Tags"].get<std::vector<std::string>>();
@@ -199,16 +199,16 @@ namespace Game::Entity
 			const auto required_tags =
 				Component::Dependency::get_required_tag_ids(tag);
 			if (std::find(
-						required_tags.begin(),
-						required_tags.end(),
-						component_name) != required_tags.end())
+					required_tags.begin(),
+					required_tags.end(),
+					component_name) != required_tags.end())
 				return true;
 			const auto required_non_tags =
 				Component::Dependency::get_required_non_tag_ids(tag);
 			if (std::find(
-						required_non_tags.begin(),
-						required_non_tags.end(),
-						component_name) != required_tags.end())
+					required_non_tags.begin(),
+					required_non_tags.end(),
+					component_name) != required_tags.end())
 				return true;
 		}
 		return false;

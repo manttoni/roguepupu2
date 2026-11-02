@@ -38,8 +38,8 @@ namespace UI::Subset
 		}
 		else
 			throw std::runtime_error(
-					std::string("Unexpected selection state: ")
-					+ std::string(to_string(selection.state)));
+				std::string("Unexpected selection state: ")
+				+ std::string(to_string(selection.state)));
 
 		return selection;
 	}

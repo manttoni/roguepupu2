@@ -58,16 +58,16 @@ namespace Ncurses
 				"A_BLINK"
 			};
 			auto it = std::find(
-					handled_attrs.begin(),
-					handled_attrs.end(),
-					match[1]);
+				handled_attrs.begin(),
+				handled_attrs.end(),
+				match[1]);
 			return it != handled_attrs.end();
 		}
 
 		inline static Attribute from_markup(
-				const std::string& str,
-				const std::size_t idx
-				)
+			const std::string& str,
+			const std::size_t idx
+			)
 		{
 			if (!is_markup(str, idx))
 			{

@@ -9,10 +9,10 @@
 namespace Ncurses
 {
 	Panel::Panel(
-			const int height,
-			const int width,
-			const int y,
-			const int x)
+		const int height,
+		const int width,
+		const int y,
+		const int x)
 		: window(height, width, y, x),
 		ptr(new_panel(window.get_ptr()))
 	{
@@ -120,8 +120,8 @@ namespace Ncurses
 	}
 
 	void Panel::resize(
-			const std::size_t height,
-			const std::size_t width)
+		const std::size_t height,
+		const std::size_t width)
 	{
 		window.resize(height, width);
 

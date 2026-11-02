@@ -26,8 +26,8 @@ namespace Game::World
 	}
 
 	GlobalPosition to_global(
-			const ChunkPosition& chunk,
-			const LocalPosition& local)
+		const ChunkPosition& chunk,
+		const LocalPosition& local)
 	{
 		return {
 			chunk.y * chunk_height + local.y,
@@ -36,8 +36,8 @@ namespace Game::World
 	}
 
 	LocalPosition to_local(
-			const ChunkPosition& chunk,
-			const GlobalPosition& global)
+		const ChunkPosition& chunk,
+		const GlobalPosition& global)
 	{
 		return {
 			global.y - chunk.y * chunk_height,

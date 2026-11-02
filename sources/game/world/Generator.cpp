@@ -9,17 +9,17 @@
 namespace Game::World
 {
 	Generator::Generator(
-			const std::string& seed,
-			const std::filesystem::path& path) :
+		const std::string& seed,
+		const std::filesystem::path& path) :
 		seed(seed),
 		conf(IO::read_json(path))
 	{}
 
 	void Generator::apply_layer(
-			const std::string& id,
-			Cell& cell,
-			const GlobalPosition& position,
-			const double weight)
+		const std::string& id,
+		Cell& cell,
+		const GlobalPosition& position,
+		const double weight)
 	{
 		if (weight <= 0.0)
 			return;
@@ -109,8 +109,8 @@ namespace Game::World
 				const auto half_width = (max - min) / 2.0;
 
 				const auto weight = std::max(
-						0.0,
-						1.0 - std::abs(noise_value - midpoint) / half_width);
+					0.0,
+					1.0 - std::abs(noise_value - midpoint) / half_width);
 
 				if (weight > 0.0)
 					weights[id] = weight;
@@ -130,10 +130,10 @@ namespace Game::World
 			{
 				const auto id = region.at("id").get<std::string>();
 				apply_layer(
-						id,
-						cell,
-						position,
-						weights[id]);
+					id,
+					cell,
+					position,
+					weights[id]);
 			}
 		}
 	}
@@ -154,11 +154,11 @@ namespace Game::World
 		}
 
 		if (cell.material == Enum::Material::None
-				|| cell.form == Enum::Form::None)
+			|| cell.form == Enum::Form::None)
 		{
 			throw std::runtime_error(
-					std::string("Generated invalid cell: ")
-					+ Cell::to_string(cell));
+				std::string("Generated invalid cell: ")
+				+ Cell::to_string(cell));
 		}
 		return cell;
 	}

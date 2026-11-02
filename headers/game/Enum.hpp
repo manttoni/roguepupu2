@@ -247,8 +247,8 @@ namespace Game::Enum
 
 	template<GameEnum E>
 		std::ostream& operator<<(
-				std::ostream& output,
-				const E value)
+			std::ostream& output,
+			const E value)
 		{
 			return output << to_string(value);
 		}

@@ -8,10 +8,10 @@
 namespace Game::System::Vision
 {
 	bool los(
-			const entt::registry& registry,
-			const World::Grid& grid,
-			World::GlobalPosition a,
-			World::GlobalPosition b)
+		const entt::registry& registry,
+		const World::Grid& grid,
+		World::GlobalPosition a,
+		World::GlobalPosition b)
 	{
 		// Both endpoints must exist, but may be opaque.
 		if (!grid.find_cell(a) || !grid.find_cell(b))
@@ -25,10 +25,10 @@ namespace Game::System::Vision
 				return true;
 
 			return !Entity::find_all(
-					registry,
-					Component::Value::Position{position},
-					Component::Value::CollisionVision{true}
-					).empty();
+				registry,
+				Component::Value::Position{position},
+				Component::Value::CollisionVision{true}
+				).empty();
 		};
 
 		const int step_x = (b.x > a.x) - (b.x < a.x);
@@ -47,7 +47,7 @@ namespace Game::System::Vision
 			{
 				// Crossing a corner: check both neighboring cells.
 				if (blocked({position.y, position.x + step_x})
-						|| blocked({position.y + step_y, position.x}))
+					|| blocked({position.y + step_y, position.x}))
 					return false;
 
 				position.x += step_x;
@@ -74,9 +74,9 @@ namespace Game::System::Vision
 	}
 
 	void update_vision(
-			entt::registry& registry,
-			const World::Grid& grid,
-			entt::entity entity)
+		entt::registry& registry,
+		const World::Grid& grid,
+		entt::entity entity)
 	{
 		const auto& position =
 			registry.get<Component::Value::Position>(entity).value;
@@ -107,8 +107,8 @@ namespace Game::System::Vision
 			visible_positions.push_back(np);
 
 			const auto entities = Entity::find_all(
-					registry,
-					Component::Value::Position{np});
+				registry,
+				Component::Value::Position{np});
 
 			for (const auto e : entities)
 			{
@@ -118,7 +118,7 @@ namespace Game::System::Vision
 		}
 
 		vision_cache.seen_positions.insert(
-				visible_positions.begin(),
-				visible_positions.end());
+			visible_positions.begin(),
+			visible_positions.end());
 	}
 }

@@ -19,7 +19,7 @@ struct Vec2
 		{
 			return {
 				static_cast<U>(y),
-				static_cast<U>(x)
+					static_cast<U>(x)
 			};
 		}
 	double length() const
@@ -76,7 +76,7 @@ struct Vec2
 	{
 		return {
 			static_cast<T>(std::round(y)),
-			static_cast<T>(std::round(x))
+				static_cast<T>(std::round(x))
 		};
 	}
 
@@ -84,8 +84,8 @@ struct Vec2
 	size_t to_idx(const size_t area_size) const
 	{
 		assert(y >= 0 && x >= 0 &&
-				static_cast<size_t>(y) < area_size &&
-				static_cast<size_t>(x) < area_size);
+			static_cast<size_t>(y) < area_size &&
+			static_cast<size_t>(x) < area_size);
 		return static_cast<size_t>(y) * area_size + static_cast<size_t>(x);
 	}
 
@@ -109,12 +109,12 @@ struct Vec2
 
 
 };
-template<typename T>
+	template<typename T>
 void from_json(const nlohmann::json& data, Vec2<T>& position)
 {
 	if (!data.is_array() || data.size() != 2)
 		throw std::invalid_argument(
-				"Vec2 must be an array of exactly 2 numbers: [y, x]");
+			"Vec2 must be an array of exactly 2 numbers: [y, x]");
 
 	if constexpr (std::is_integral_v<T>)
 	{
@@ -122,7 +122,7 @@ void from_json(const nlohmann::json& data, Vec2<T>& position)
 			|| !data.at(1).is_number_integer())
 		{
 			throw std::invalid_argument(
-					"Integer Vec2 coordinates must be integers");
+				"Integer Vec2 coordinates must be integers");
 		}
 	}
 

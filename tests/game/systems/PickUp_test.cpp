@@ -17,7 +17,7 @@ namespace
 		const auto result = simulation->simulate(Event::PickUp{
 			.entity = actor,
 			.item = item
-		});
+			});
 
 		ASSERT_EQ(result.outcome, Event::Outcome::Accepted);
 		expect_carried(item);
@@ -35,7 +35,7 @@ namespace
 		const auto result = simulation->simulate(Event::PickUp{
 			.entity = actor,
 			.item = item
-		});
+			});
 
 		expect_rejected(result);
 		ASSERT_TRUE(registry().valid(item));
@@ -71,7 +71,7 @@ namespace
 		const auto drop = simulation->simulate(Event::Drop{
 			.entity = actor,
 			.item = item
-		});
+			});
 		ASSERT_EQ(drop.outcome, Event::Outcome::Accepted);
 		expect_on_ground(item, center);
 		EXPECT_TRUE(inventory().empty());
@@ -91,14 +91,14 @@ namespace
 			.entity = actor,
 			.item = item,
 			.target = destination
-		});
+			});
 		ASSERT_EQ(thrown.outcome, Event::Outcome::Accepted);
 		expect_on_ground(item, destination);
 
 		const auto pickup = simulation->simulate(Event::PickUp{
 			.entity = actor,
 			.item = item
-		});
+			});
 
 		ASSERT_EQ(pickup.outcome, Event::Outcome::Accepted);
 		expect_carried(item);

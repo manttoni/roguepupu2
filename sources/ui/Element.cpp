@@ -127,24 +127,24 @@ namespace UI::Element
 	std::string to_string(const Any& element)
 	{
 		return std::visit(
-				[](const auto& value)
-				{
-				return to_string(value);
-				},
-				element
-				);
+			[](const auto& value)
+			{
+			return to_string(value);
+			},
+			element
+			);
 	}
 	std::string get_label(const Any& element)
 	{
 		return std::visit(
-				[](const auto& value) -> std::string
-				{
-				if constexpr (requires { value.label; })
-				return value.label;
-				else
-				return "";
-				},
-				element
-				);
+			[](const auto& value) -> std::string
+			{
+			if constexpr (requires { value.label; })
+			return value.label;
+			else
+			return "";
+			},
+			element
+			);
 	}
 }

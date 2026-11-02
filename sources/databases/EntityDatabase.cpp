@@ -11,8 +11,8 @@ EntityDatabase::EntityDatabase(const std::filesystem::path& path)
 {
 	if (path.extension() != ".json")
 		throw std::invalid_argument(
-				"Entity database must be a JSON file: " +
-				path.string());
+			"Entity database must be a JSON file: " +
+			path.string());
 
 	const auto root = IO::read_json(path);
 

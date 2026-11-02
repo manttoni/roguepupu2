@@ -39,7 +39,7 @@ namespace Game::Component
 	std::vector<std::string> get_tag_ids();
 
 	inline std::vector<std::string> get_enum_value_strings(
-			std::string_view component_id)
+		std::string_view component_id)
 	{
 #define X(name, type) \
 		if (component_id == #name) \

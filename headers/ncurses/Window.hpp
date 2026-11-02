@@ -21,10 +21,10 @@ namespace Ncurses
 		public:
 			Window() = default;
 			Window(
-					std::size_t height,
-					std::size_t width,
-					std::size_t y,
-					std::size_t x);
+				std::size_t height,
+				std::size_t width,
+				std::size_t y,
+				std::size_t x);
 
 			~Window();
 
@@ -58,11 +58,11 @@ namespace Ncurses
 			void disable(const Ncurses::Attribute& attribute);
 
 			void enable(
-					const Ncurses::Color& fg,
-					const Ncurses::Color& bg = Ncurses::Color{0,0,0});
+				const Ncurses::Color& fg,
+				const Ncurses::Color& bg = Ncurses::Color{0,0,0});
 			void disable(
-					const Ncurses::Color& fg,
-					const Ncurses::Color& bg = Ncurses::Color{0,0,0});
+				const Ncurses::Color& fg,
+				const Ncurses::Color& bg = Ncurses::Color{0,0,0});
 
 			Vec2<int> dimensions() const;
 			Vec2<int> position() const;

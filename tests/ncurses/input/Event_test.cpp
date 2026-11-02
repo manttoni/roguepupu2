@@ -89,8 +89,8 @@ namespace
 			SCOPED_TRACE(raw);
 
 			EXPECT_EQ(
-					Input::translate_character(raw),
-					static_cast<char>(raw));
+				Input::translate_character(raw),
+				static_cast<char>(raw));
 		}
 	}
 
@@ -109,8 +109,8 @@ namespace
 		EXPECT_EQ(Input::translate_character(0), '\0');
 
 		EXPECT_EQ(
-				Input::translate_character(UCHAR_MAX),
-				static_cast<char>(UCHAR_MAX));
+			Input::translate_character(UCHAR_MAX),
+			static_cast<char>(UCHAR_MAX));
 
 		EXPECT_EQ(Input::translate_character(UCHAR_MAX + 1), '\0');
 		EXPECT_EQ(Input::translate_character(INT_MAX), '\0');
@@ -119,8 +119,8 @@ namespace
 	TEST(InputCharacter, DoesNotTurnSpecialKeysIntoCharacters)
 	{
 		for (const int raw : {
-				KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT,
-				KEY_ENTER, KEY_BACKSPACE, KEY_RESIZE
+			KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT,
+			KEY_ENTER, KEY_BACKSPACE, KEY_RESIZE
 			})
 		{
 			SCOPED_TRACE(raw);
@@ -145,11 +145,11 @@ namespace
 	TEST(InputModifiers, DoesNotMarkOrdinaryKeysAsShiftModified)
 	{
 		for (const int raw : {
-				ERR, KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN,
-				static_cast<int>('a'),
-				static_cast<int>('A'),
-				static_cast<int>('!'),
-				static_cast<int>(' ')
+			ERR, KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN,
+			static_cast<int>('a'),
+			static_cast<int>('A'),
+			static_cast<int>('!'),
+			static_cast<int>(' ')
 			})
 		{
 			SCOPED_TRACE(raw);
@@ -193,15 +193,15 @@ namespace
 	TEST(InputEvent, RejectsNonDirectionalKeysAsDirections)
 	{
 		for (const Key key : {
-				Key::None,
-				Key::Alphabetic,
-				Key::Number,
-				Key::Symbol,
-				Key::Space,
-				Key::Enter,
-				Key::Backspace,
-				Key::Escape,
-				Key::Resize
+			Key::None,
+			Key::Alphabetic,
+			Key::Number,
+			Key::Symbol,
+			Key::Space,
+			Key::Enter,
+			Key::Backspace,
+			Key::Escape,
+			Key::Resize
 			})
 		{
 			SCOPED_TRACE(static_cast<int>(key));

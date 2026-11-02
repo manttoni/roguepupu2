@@ -17,9 +17,9 @@ namespace Game::Turn
 	struct Actor
 	{
 		Actor(
-				entt::entity entity,
-				Controller controller,
-				int initiative) :
+			entt::entity entity,
+			Controller controller,
+			int initiative) :
 			entity(entity),
 			controller(controller),
 			initiative(initiative)

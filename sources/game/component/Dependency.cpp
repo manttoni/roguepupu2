@@ -3,7 +3,7 @@
 namespace Game::Component::Dependency
 {
 	std::vector<std::string> get_required_tag_ids(
-			const std::string_view tag_id)
+		const std::string_view tag_id)
 	{
 		std::vector<std::string> ids;
 
@@ -20,7 +20,7 @@ namespace Game::Component::Dependency
 	}
 
 	std::vector<std::string> get_required_non_tag_ids(
-			const std::string_view tag_id)
+		const std::string_view tag_id)
 	{
 		std::vector<std::string> ids;
 

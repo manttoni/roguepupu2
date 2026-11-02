@@ -49,8 +49,8 @@ namespace
 			const auto target_position = center + direction;
 
 			EXPECT_TRUE(
-					Game::System::Movement::can_move(
-						registry, grid, actor, target_position));
+				Game::System::Movement::can_move(
+					registry, grid, actor, target_position));
 		}
 	}
 
@@ -63,8 +63,8 @@ namespace
 			const auto target_position = center + direction;
 
 			EXPECT_TRUE(
-					Game::System::Movement::can_move(
-						registry, grid, actor, target_position));
+				Game::System::Movement::can_move(
+					registry, grid, actor, target_position));
 		}
 	}
 
@@ -79,8 +79,8 @@ namespace
 			add_obstacle(target_position);
 
 			EXPECT_FALSE(
-					Game::System::Movement::can_move(
-						registry, grid, actor, target_position));
+				Game::System::Movement::can_move(
+					registry, grid, actor, target_position));
 
 			reset_grid();
 		}
@@ -96,8 +96,8 @@ namespace
 			SCOPED_TRACE(direction.to_string());
 
 			EXPECT_TRUE(
-					Game::System::Movement::can_move(
-						registry, grid, actor, center + direction));
+				Game::System::Movement::can_move(
+					registry, grid, actor, center + direction));
 		}
 	}
 
@@ -112,8 +112,8 @@ namespace
 			add_obstacle(target_position);
 
 			EXPECT_FALSE(
-					Game::System::Movement::can_move(
-						registry, grid, actor, target_position));
+				Game::System::Movement::can_move(
+					registry, grid, actor, target_position));
 
 			reset_grid();
 		}
@@ -136,24 +136,24 @@ namespace
 			add_obstacle(corner1);
 
 			EXPECT_FALSE(
-					Game::System::Movement::can_move(
-						registry, grid, actor, target_position));
+				Game::System::Movement::can_move(
+					registry, grid, actor, target_position));
 
 			reset_grid();
 
 			add_obstacle(corner2);
 
 			EXPECT_FALSE(
-					Game::System::Movement::can_move(
-						registry, grid, actor, target_position));
+				Game::System::Movement::can_move(
+					registry, grid, actor, target_position));
 
 			reset_grid();
 
 			add_obstacle(corner1);
 			add_obstacle(corner2);
 			EXPECT_FALSE(
-					Game::System::Movement::can_move(
-						registry, grid, actor, target_position));
+				Game::System::Movement::can_move(
+					registry, grid, actor, target_position));
 
 			reset_grid();
 		}

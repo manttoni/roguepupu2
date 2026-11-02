@@ -26,7 +26,7 @@ namespace
 
 		int value{};
 		const auto [end, error] = std::from_chars(
-				text.data(), text.data() + text.size(), value);
+			text.data(), text.data() + text.size(), value);
 
 		if (error != std::errc{} || end != text.data() + text.size())
 			throw std::invalid_argument("Invalid integer in dice expression");
@@ -37,7 +37,7 @@ namespace
 	int checked_result(const std::int64_t value)
 	{
 		if (value < std::numeric_limits<int>::min()
-				|| value > std::numeric_limits<int>::max())
+			|| value > std::numeric_limits<int>::max())
 		{
 			throw std::overflow_error("Dice result does not fit in int");
 		}
@@ -85,7 +85,7 @@ namespace Game
 		if (amount <= 0 || sides <= 0)
 		{
 			throw std::invalid_argument(
-					"Dice amount and sides must be positive");
+				"Dice amount and sides must be positive");
 		}
 	}
 

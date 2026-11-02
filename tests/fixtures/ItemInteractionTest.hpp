@@ -22,16 +22,16 @@ class ItemInteractionTest : public ::testing::Test
 		entt::entity actor = entt::null;
 		const Position center{
 			Game::World::Chunk::height / 2,
-			Game::World::Chunk::width / 2};
+				Game::World::Chunk::width / 2};
 
 		void SetUp() override
 		{
 			simulation = std::make_unique<Game::Simulation>(
-					"item-interactions-test", EntityDatabase{}, "player_default");
+				"item-interactions-test", EntityDatabase{}, "player_default");
 			actor = simulation->get_player();
 
 			auto* chunk = simulation->get_grid().find_chunk(
-					Game::World::to_chunk(center));
+				Game::World::to_chunk(center));
 			ASSERT_NE(chunk, nullptr);
 			*chunk = Game::World::Chunk{
 				Game::Enum::Material::Stone, Game::Enum::Form::Floor};
@@ -58,7 +58,7 @@ class ItemInteractionTest : public ::testing::Test
 		entt::entity make_carried_item()
 		{
 			const auto item = Game::Entity::create(
-					registry(), simulation->get_entity_database(), "stone");
+				registry(), simulation->get_entity_database(), "stone");
 			registry().get<Inventory>(actor).values.push_back(item);
 			return item;
 		}
@@ -66,7 +66,7 @@ class ItemInteractionTest : public ::testing::Test
 		entt::entity make_ground_item(Position position)
 		{
 			const auto item = Game::Entity::create(
-					registry(), simulation->get_entity_database(), "stone");
+				registry(), simulation->get_entity_database(), "stone");
 			registry().emplace<Game::Component::Value::Position>(item, position);
 			return item;
 		}

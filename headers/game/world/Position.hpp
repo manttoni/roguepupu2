@@ -75,11 +75,11 @@ namespace Game::World
 
 	ChunkPosition to_chunk(const GlobalPosition& global);
 	GlobalPosition to_global(
-			const ChunkPosition& chunk,
-			const LocalPosition& local);
+		const ChunkPosition& chunk,
+		const LocalPosition& local);
 	LocalPosition to_local(
-			const ChunkPosition& chunk,
-			const GlobalPosition& global);
+		const ChunkPosition& chunk,
+		const GlobalPosition& global);
 
 	template <typename T>
 		std::ostream& operator<<(std::ostream& out, const Position<T>& position)
@@ -106,14 +106,14 @@ namespace Game::World
 		double distance(const Position<T>& a, const Position<T>& b)
 		{
 			return std::hypot(
-					static_cast<double>(a.y) - static_cast<double>(b.y),
-					static_cast<double>(a.x) - static_cast<double>(b.x));
+				static_cast<double>(a.y) - static_cast<double>(b.y),
+				static_cast<double>(a.x) - static_cast<double>(b.x));
 		}
 
 	template <typename T>
 		std::vector<Position<T>> nearby(
-				const Position<T>& position,
-				const double radius)
+			const Position<T>& position,
+			const double radius)
 		{
 			std::vector<Position<T>> positions;
 
@@ -124,9 +124,9 @@ namespace Game::World
 			const auto bounded = [](double coordinate)
 			{
 				return static_cast<std::int64_t>(std::clamp(
-							coordinate,
-							static_cast<double>(std::numeric_limits<int>::min()),
-							static_cast<double>(std::numeric_limits<int>::max())));
+						coordinate,
+						static_cast<double>(std::numeric_limits<int>::min()),
+						static_cast<double>(std::numeric_limits<int>::max())));
 			};
 
 			const auto min_y = bounded(std::ceil(position.y - radius));
@@ -146,8 +146,8 @@ namespace Game::World
 					if (dx * dx + dy * dy <= radius_squared)
 					{
 						positions.push_back({
-								static_cast<int>(y),
-								static_cast<int>(x)});
+							static_cast<int>(y),
+							static_cast<int>(x)});
 					}
 				}
 			}
@@ -184,13 +184,13 @@ namespace std
 		struct hash<Game::World::Position<Space>>
 		{
 			std::size_t operator()(
-					const Game::World::Position<Space>& position) const noexcept
+				const Game::World::Position<Space>& position) const noexcept
 			{
 				const auto hy = std::hash<int>{}(position.y);
 				const auto hx = std::hash<int>{}(position.x);
 
 				return hy ^ (hx + std::size_t{0x9e3779b9}
-						+ (hy << 6) + (hy >> 2));
+					+ (hy << 6) + (hy >> 2));
 			}
 		};
 }

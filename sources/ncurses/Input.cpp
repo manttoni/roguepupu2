@@ -69,7 +69,7 @@ namespace Ncurses::Input
 					return Key::Number;
 
 				if ((raw_key >= 'A' && raw_key <= 'Z')
-						|| (raw_key >= 'a' && raw_key <= 'z'))
+					|| (raw_key >= 'a' && raw_key <= 'z'))
 					return Key::Alphabetic;
 
 				if (raw_key >= 33 && raw_key <= 126)

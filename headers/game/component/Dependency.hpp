@@ -14,20 +14,20 @@ namespace Game::Component::Dependency
 	/*
 	// Does C directly require D?
 	template<typename C, typename D>
-		constexpr bool directly_requires()
-		{
+	constexpr bool directly_requires()
+	{
 #define X(component, dependency) \
-			if constexpr (std::same_as<C, component> && std::same_as<D, dependency>) \
-			return true;
+if constexpr (std::same_as<C, component> && std::same_as<D, dependency>) \
+return true;
 #include "Dependency.def"
 #undef X
 
-			return false;
-		}
+return false;
+}
 */
 	bool is_directly_required(
-			const Game::Entity::Definition& definition,
-			const std::string& component_id);
+		const Game::Entity::Definition& definition,
+		const std::string& component_id);
 
 
 }

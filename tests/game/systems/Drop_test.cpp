@@ -15,7 +15,7 @@ namespace
 		const auto result = simulation->simulate(Event::Drop{
 			.entity = actor,
 			.item = item
-		});
+			});
 
 		ASSERT_EQ(result.outcome, Event::Outcome::Accepted);
 		expect_on_ground(item, center);
@@ -34,7 +34,7 @@ namespace
 		const auto result = simulation->simulate(Event::Drop{
 			.entity = actor,
 			.item = item
-		});
+			});
 
 		expect_rejected(result);
 		expect_on_ground(item, ground_position);
@@ -48,19 +48,19 @@ namespace
 		const auto item = make_carried_item();
 		registry().get<Inventory>(actor).values.clear();
 		registry().emplace<Inventory>(
-				other_owner, std::vector<entt::entity>{item});
+			other_owner, std::vector<entt::entity>{item});
 
 		const auto result = simulation->simulate(Event::Drop{
 			.entity = actor,
 			.item = item
-		});
+			});
 
 		expect_rejected(result);
 		EXPECT_TRUE(registry().valid(item));
 		EXPECT_FALSE(registry().all_of<Value::Position>(item));
 		EXPECT_TRUE(inventory().empty());
 		EXPECT_EQ(registry().get<Inventory>(other_owner).values,
-				std::vector<entt::entity>{item});
+			std::vector<entt::entity>{item});
 	}
 
 	TEST_F(DropTest, RejectsDroppingSameItemAgainWithoutMovingIt)
@@ -69,7 +69,7 @@ namespace
 		const auto first = simulation->simulate(Event::Drop{
 			.entity = actor,
 			.item = item
-		});
+			});
 		ASSERT_EQ(first.outcome, Event::Outcome::Accepted);
 		expect_on_ground(item, center);
 		registry().replace<Value::Position>(actor, center + Vec2<int>{0, 1});
@@ -77,7 +77,7 @@ namespace
 		const auto second = simulation->simulate(Event::Drop{
 			.entity = actor,
 			.item = item
-		});
+			});
 
 		expect_rejected(second);
 		expect_on_ground(item, center);

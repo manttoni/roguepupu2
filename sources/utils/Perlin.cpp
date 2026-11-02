@@ -3,8 +3,8 @@
 namespace Random::Perlin
 {
 	Generator::Generator(
-			std::string_view seed,
-			Settings settings) :
+		std::string_view seed,
+		Settings settings) :
 		perlin(seed_from_string(seed)),
 		settings(settings)
 	{
@@ -13,11 +13,11 @@ namespace Random::Perlin
 	double Generator::noise2(const Vec2<int>& position) const
 	{
 		return perlin.normalizedOctave2D_01(
-				position.y * settings.frequency,
-				position.x * settings.frequency,
-				settings.octaves,
-				settings.persistence
-				);
+			position.y * settings.frequency,
+			position.x * settings.frequency,
+			settings.octaves,
+			settings.persistence
+			);
 	}
 
 	siv::PerlinNoise::seed_type seed_from_string(std::string_view text)

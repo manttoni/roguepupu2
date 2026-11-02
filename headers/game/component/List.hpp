@@ -20,10 +20,10 @@ namespace Game::Component::List
 		[[nodiscard]] bool contains(const T& element) const
 		{
 			return std::find(
-					values.begin(),
-					values.end(),
-					element
-					) != values.end();
+				values.begin(),
+				values.end(),
+				element
+				) != values.end();
 		}
 
 		void remove(const T& element)

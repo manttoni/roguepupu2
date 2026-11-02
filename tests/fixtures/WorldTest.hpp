@@ -17,18 +17,18 @@ class WorldTest : public ::testing::Test
 		const Game::World::ChunkPosition chunk_position{};
 		const Game::World::GlobalPosition center =
 			Game::World::to_global(
-					chunk_position,
-					Game::World::LocalPosition{
-					Game::World::Chunk::height / 2,
-					Game::World::Chunk::width / 2});
+				chunk_position,
+				Game::World::LocalPosition{
+				Game::World::Chunk::height / 2,
+				Game::World::Chunk::width / 2});
 
 		void SetUp() override
 		{
 			using namespace Game;
 
 			grid.add(
-					chunk_position,
-					World::Chunk{Enum::Material::Stone, Enum::Form::Floor});
+				chunk_position,
+				World::Chunk{Enum::Material::Stone, Enum::Form::Floor});
 
 			actor = registry.create();
 			registry.emplace<Component::Value::Position>(actor, center);

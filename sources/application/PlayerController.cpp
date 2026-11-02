@@ -109,7 +109,7 @@ PlayerController::Interaction PlayerController::get_interaction(
 			Game::World::distance(
 				registry.get<Game::Component::Value::Position>(entity).value,
 				player_position)} :
-		std::nullopt;
+			std::nullopt;
 
 	switch (location)
 	{

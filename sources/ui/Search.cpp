@@ -24,13 +24,13 @@ namespace UI::Search
 					const bool has_special_role =
 						std::visit([](const auto& c)
 							{
-								if constexpr (requires {c.role;})
-									return c.role != Element::Role::Normal;
-								return false;
+							if constexpr (requires {c.role;})
+							return c.role != Element::Role::Normal;
+							return false;
 							}
 							, e);
 					if (get_label(e).find(needle) != std::string::npos
-							|| has_special_role)
+						|| has_special_role)
 						search_menu.add(e);
 				}
 			}

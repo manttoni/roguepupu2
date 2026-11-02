@@ -44,15 +44,15 @@ TEST(DiceParsing, ParsesConstants)
 TEST(DiceParsing, RejectsInvalidExpressions)
 {
 	for (const char* expression : {
-			"", "abc", "d", "2d", "0d6", "-1d6",
-			"1d0", "1d-6", "2d6+", "2d6+-3", "2d6junk",
-			"999999999999999999999d6"
+		"", "abc", "d", "2d", "0d6", "-1d6",
+		"1d0", "1d-6", "2d6+", "2d6+-3", "2d6junk",
+		"999999999999999999999d6"
 		})
 	{
 		SCOPED_TRACE(expression);
 		EXPECT_THROW(
-				(void)Game::Dice(expression),
-				std::invalid_argument);
+			(void)Game::Dice(expression),
+			std::invalid_argument);
 	}
 }
 
@@ -104,8 +104,8 @@ TEST(DiceRoll, RejectsInvalidMutatedState)
 TEST(DiceRoll, DetectsResultOverflow)
 {
 	EXPECT_THROW(
-			Game::Dice("1d1+2147483647").roll(),
-			std::overflow_error);
+		Game::Dice("1d1+2147483647").roll(),
+		std::overflow_error);
 }
 
 TEST(DiceFormatting, ProducesCanonicalExpressions)

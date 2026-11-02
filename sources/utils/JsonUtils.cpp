@@ -76,15 +76,15 @@ namespace JsonUtils
 	}
 
 	/*Json merge(const Json& a, const Json& b, const bool replace)
-	{
-		if (a.type() != b.type())
-			return Json{};
+	  {
+	  if (a.type() != b.type())
+	  return Json{};
 
-		if (a.is_object())
-			return merge_objects(a, b, replace);
-		else if (a.is_array())
-			return merge_arrays(a, b, replace);
-		else
-			return Json{};
-	}*/
+	  if (a.is_object())
+	  return merge_objects(a, b, replace);
+	  else if (a.is_array())
+	  return merge_arrays(a, b, replace);
+	  else
+	  return Json{};
+	  }*/
 };

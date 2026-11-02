@@ -11,10 +11,10 @@
 namespace UI::Dialog
 {
 	Selection get_selection(
-			const std::string& title,
-			const std::vector<std::string>& buttons,
-			const Vec2<int>& position,
-			const std::size_t default_selected)
+		const std::string& title,
+		const std::vector<std::string>& buttons,
+		const Vec2<int>& position,
+		const std::size_t default_selected)
 	{
 		Menu dialog_box(position, title);
 
@@ -25,10 +25,10 @@ namespace UI::Dialog
 			if (label == "Back" || label == "Cancel")
 				button.role = UI::Element::Role::Cancel;
 			else if (
-					label == "Confirm" ||
-					label == "OK" ||
-					label == "Ok" ||
-					label == "Continue")
+				label == "Confirm" ||
+				label == "OK" ||
+				label == "Ok" ||
+				label == "Continue")
 			{
 				button.role = UI::Element::Role::Confirm;
 			}
@@ -44,10 +44,10 @@ namespace UI::Dialog
 			selection = dialog_box.get_selection(selection.index);
 		}
 		while (
-				selection.state != Selection::State::Selected &&
-				selection.state != Selection::State::Confirmed &&
-				selection.state != Selection::State::Cancelled
-			  );
+			selection.state != Selection::State::Selected &&
+			selection.state != Selection::State::Confirmed &&
+			selection.state != Selection::State::Cancelled
+			);
 
 		return selection;
 	}

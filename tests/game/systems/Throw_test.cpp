@@ -17,7 +17,7 @@ namespace
 			.entity = actor,
 			.item = item,
 			.target = destination
-		});
+			});
 
 		ASSERT_EQ(result.outcome, Event::Outcome::Accepted);
 		expect_on_ground(item, destination);
@@ -32,8 +32,8 @@ namespace
 		const auto target = make_ground_item(center + Vec2<int>{0, 2});
 		const Event::Throw event{
 			.entity = actor,
-			.item = item,
-			.target = target
+				.item = item,
+				.target = target
 		};
 		const auto destination = center + Vec2<int>{0, 4};
 		registry().replace<Value::Position>(target, destination);
@@ -56,7 +56,7 @@ namespace
 			.entity = actor,
 			.item = item,
 			.target = center + Vec2<int>{0, 3}
-		});
+			});
 
 		expect_rejected(result);
 		expect_on_ground(item, center);
@@ -73,7 +73,7 @@ namespace
 			.entity = actor,
 			.item = item,
 			.target = static_cast<entt::entity>(entt::null)
-		});
+			});
 
 		expect_rejected(result);
 		expect_carried(item);
@@ -94,7 +94,7 @@ namespace
 			.entity = actor,
 			.item = item,
 			.target = target
-		});
+			});
 
 		expect_rejected(result);
 		expect_carried(item);
@@ -111,7 +111,7 @@ namespace
 			.entity = actor,
 			.item = item,
 			.target = target
-		});
+			});
 
 		expect_rejected(result);
 		expect_carried(item);
@@ -141,7 +141,7 @@ namespace
 			.entity = actor,
 			.item = item,
 			.target = destination
-		});
+			});
 		ASSERT_EQ(first.outcome, Event::Outcome::Accepted);
 		expect_on_ground(item, destination);
 
@@ -149,7 +149,7 @@ namespace
 			.entity = actor,
 			.item = item,
 			.target = center + Vec2<int>{0, 4}
-		});
+			});
 
 		expect_rejected(second);
 		expect_on_ground(item, destination);

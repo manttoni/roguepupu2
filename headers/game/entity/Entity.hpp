@@ -43,95 +43,95 @@ namespace Game::Entity
 	bool valid_definition(const Json& definition);
 
 	template<typename C>
-	bool definition_has_component(const Json& definition, const Json& tags)
-	{
-		if constexpr (std::derived_from<C, Game::Component::Tag::Base>)
+		bool definition_has_component(const Json& definition, const Json& tags)
 		{
-			return std::ranges::any_of(tags, [](const Json& tag)
+			if constexpr (std::derived_from<C, Game::Component::Tag::Base>)
+			{
+				return std::ranges::any_of(tags, [](const Json& tag)
 					{
-						return tag.is_string()
-						&& tag.get_ref<const std::string&>() == C::string;
+					return tag.is_string()
+					&& tag.get_ref<const std::string&>() == C::string;
 					});
+			}
+			else
+			{
+				return definition.contains(C::string);
+			}
 		}
-		else
-		{
-			return definition.contains(C::string);
-		}
-	}
 
 	namespace Detail
 	{
 		template<typename Component>
-		bool matches(
+			bool matches(
 				const entt::registry& registry,
 				const entt::entity entity,
 				const Component& expected)
-		{
-			if constexpr (std::is_empty_v<Component>)
 			{
-				// The calling view has already checked tag presence.
-				return true;
+				if constexpr (std::is_empty_v<Component>)
+				{
+					// The calling view has already checked tag presence.
+					return true;
+				}
+				else
+				{
+					return registry.get<Component>(entity) == expected;
+				}
 			}
-			else
-			{
-				return registry.get<Component>(entity) == expected;
-			}
-		}
 	}
 
 	template<typename... Components>
-	std::vector<entt::entity> find_all(
+		std::vector<entt::entity> find_all(
 			const entt::registry& registry,
 			const Components&... expected)
-	{
-		static_assert(sizeof...(Components) > 0);
-
-		std::vector<entt::entity> result;
-		const auto view = registry.view<const Components...>();
-
-		for (const entt::entity entity : view)
 		{
-			if ((Detail::matches(registry, entity, expected) && ...))
-				result.push_back(entity);
-		}
+			static_assert(sizeof...(Components) > 0);
 
-		return result;
-	}
+			std::vector<entt::entity> result;
+			const auto view = registry.view<const Components...>();
+
+			for (const entt::entity entity : view)
+			{
+				if ((Detail::matches(registry, entity, expected) && ...))
+					result.push_back(entity);
+			}
+
+			return result;
+		}
 	template<typename T>
-	struct is_vector : std::false_type {};
+		struct is_vector : std::false_type {};
 
 	template<typename T, typename Allocator>
-	struct is_vector<std::vector<T, Allocator>> : std::true_type {};
+		struct is_vector<std::vector<T, Allocator>> : std::true_type {};
 
 	template<typename T>
-	inline constexpr bool is_vector_v = is_vector<T>::value;
+		inline constexpr bool is_vector_v = is_vector<T>::value;
 
 	template<typename T>
-	T parse_value(const Json& data)
-	{
-		if constexpr (Game::Enum::GameEnum<T>)
+		T parse_value(const Json& data)
 		{
-			return Game::Enum::from_string<T>(data.get<std::string>());
-		}
-		else if constexpr (is_vector_v<T>)
-		{
-			T values;
-			values.reserve(data.size());
+			if constexpr (Game::Enum::GameEnum<T>)
+			{
+				return Game::Enum::from_string<T>(data.get<std::string>());
+			}
+			else if constexpr (is_vector_v<T>)
+			{
+				T values;
+				values.reserve(data.size());
 
-			for (const auto& element : data)
-				values.push_back(parse_value<typename T::value_type>(element));
+				for (const auto& element : data)
+					values.push_back(parse_value<typename T::value_type>(element));
 
-			return values;
+				return values;
+			}
+			else if constexpr (std::same_as<T, char>)
+			{
+				return data.get<std::string>()[0];
+			}
+			else
+			{
+				return data.get<T>();
+			}
 		}
-		else if constexpr (std::same_as<T, char>)
-		{
-			return data.get<std::string>()[0];
-		}
-		else
-		{
-			return data.get<T>();
-		}
-	}
 
 	entt::entity create(entt::registry& registry, const Definition& definition);
 	entt::entity create(entt::registry& registry, const EntityDatabase& entity_database, const Definition::ID& id);

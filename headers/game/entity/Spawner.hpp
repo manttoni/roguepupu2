@@ -13,22 +13,22 @@ namespace Game::Entity
 	{
 		public:
 			Spawner(entt::registry& registry,
-					const EntityDatabase& database,
-					const World::Grid& grid);
+				const EntityDatabase& database,
+				const World::Grid& grid);
 
 			entt::entity spawn(
-					const Definition::ID& id,
-					const World::GlobalPosition& position);
+				const Definition::ID& id,
+				const World::GlobalPosition& position);
 			entt::entity spawn(const Entity::SpawnRequest& request);
 
 			bool can_spawn(
-					const Definition::ID& id,
-					const World::GlobalPosition& position
-					) const;
+				const Definition::ID& id,
+				const World::GlobalPosition& position
+				) const;
 			bool can_spawn(const Entity::SpawnRequest& request);
 
 			std::optional<World::GlobalPosition> find_spawn_position_near(
-					const Entity::SpawnRequest& request);
+				const Entity::SpawnRequest& request);
 
 		private:
 			entt::registry& registry;

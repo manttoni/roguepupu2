@@ -16,7 +16,7 @@ namespace Game::System::Lighting
 		const World::GlobalPosition& position,
 		Operation operation);
 
-void update(
+	void update(
 		Simulation& simulation,
 		entt::entity entity,
 		Operation operation);

@@ -41,8 +41,8 @@ namespace UI::Format
 		// Center lines without a colon within the total width.
 		for (auto& line : lines)
 		{
-			if (line.find(separator) == std::string::npos)
-				line.insert(0, (width - line.size()) / 2, ' ');
+		if (line.find(separator) == std::string::npos)
+		line.insert(0, (width - line.size()) / 2, ' ');
 		}
 		*/
 

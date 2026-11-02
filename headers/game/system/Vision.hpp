@@ -7,12 +7,12 @@
 namespace Game::System::Vision
 {
 	bool los(
-			const entt::registry& registry,
-			const World::Grid& grid,
-			World::GlobalPosition a,
-			World::GlobalPosition b);
+		const entt::registry& registry,
+		const World::Grid& grid,
+		World::GlobalPosition a,
+		World::GlobalPosition b);
 	void update_vision(
-			entt::registry& registry,
-			const World::Grid& grid,
-			entt::entity entity);
+		entt::registry& registry,
+		const World::Grid& grid,
+		entt::entity entity);
 }

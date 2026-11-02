@@ -22,7 +22,7 @@ namespace Game::World
 
 			Chunk() = default;
 			Chunk(	Game::Enum::Material material,
-					Game::Enum::Form form);
+				Game::Enum::Form form);
 
 			using CellsArray = std::array<Cell, width * height>;
 
