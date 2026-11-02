@@ -2,6 +2,7 @@
 #include "game/world/Position.hpp"
 #include "game/entity/Entity.hpp"
 #include "external/entt/entt.hpp"
+#include "game/Query.hpp"
 
 namespace Game::Entity
 {
@@ -80,13 +81,13 @@ namespace Game::Entity
 		if (cell->form != Enum::Form::Floor)
 			return false;
 
-		const auto blocking_entities = find_all(
+		const auto blocking_entities = Query::find_all(
 			registry,
 			Component::Value::Position{position},
 			Component::Value::CollisionMovement{true}
 			);
 
-		const auto all_entities = find_all(
+		const auto all_entities = Query::find_all(
 			registry,
 			Component::Value::Position{position}
 			);
