@@ -1,4 +1,5 @@
 #include "game/system/Vision.hpp"
+#include "game/Query.hpp"
 #include "game/component/Runtime.hpp"
 #include "game/entity/Entity.hpp"
 
@@ -24,7 +25,7 @@ namespace Game::System::Vision
 			if (cell == nullptr || cell->form == Enum::Form::Wall)
 				return true;
 
-			return !Entity::find_all(
+			return !Query::find_all(
 				registry,
 				Component::Value::Position{position},
 				Component::Value::CollisionVision{true}
@@ -106,7 +107,7 @@ namespace Game::System::Vision
 
 			visible_positions.push_back(np);
 
-			const auto entities = Entity::find_all(
+			const auto entities = Query::find_all(
 				registry,
 				Component::Value::Position{np});
 

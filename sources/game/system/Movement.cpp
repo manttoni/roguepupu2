@@ -1,4 +1,5 @@
 #include "game/system/Movement.hpp"
+#include "game/Query.hpp"
 #include "game/entity/Entity.hpp"
 #include "utils/Vec2.hpp"
 #include "game/world/Position.hpp"
@@ -16,7 +17,7 @@ namespace
 		if (!cell || cell->form != Game::Enum::Form::Floor)
 			return true;
 
-		const auto entities = Game::Entity::find_all(
+		const auto entities = Game::Query::find_all(
 			registry,
 			Game::Component::Value::Position{position},
 			Game::Component::Value::CollisionMovement{true}

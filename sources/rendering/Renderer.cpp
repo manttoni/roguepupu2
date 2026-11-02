@@ -1,4 +1,5 @@
 #include "rendering/Renderer.hpp"
+#include "game/Query.hpp"
 #include "ncurses/Screen.hpp"
 #include "game/component/Runtime.hpp"
 #include "game/entity/Entity.hpp"
@@ -49,7 +50,7 @@ entt::entity Renderer::get_entity(
 	const Game::World::GlobalPosition& position)
 {
 	const auto& registry = simulation.get_registry();
-	const auto entities = Game::Entity::find_all(
+	const auto entities = Game::Query::find_all(
 		registry,
 		Game::Component::Value::Position{position},
 		Game::Component::Tag::Renderable{});

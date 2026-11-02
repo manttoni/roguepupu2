@@ -59,44 +59,6 @@ namespace Game::Entity
 			}
 		}
 
-	namespace Detail
-	{
-		template<typename Component>
-			bool matches(
-				const entt::registry& registry,
-				const entt::entity entity,
-				const Component& expected)
-			{
-				if constexpr (std::is_empty_v<Component>)
-				{
-					// The calling view has already checked tag presence.
-					return true;
-				}
-				else
-				{
-					return registry.get<Component>(entity) == expected;
-				}
-			}
-	}
-
-	template<typename... Components>
-		std::vector<entt::entity> find_all(
-			const entt::registry& registry,
-			const Components&... expected)
-		{
-			static_assert(sizeof...(Components) > 0);
-
-			std::vector<entt::entity> result;
-			const auto view = registry.view<const Components...>();
-
-			for (const entt::entity entity : view)
-			{
-				if ((Detail::matches(registry, entity, expected) && ...))
-					result.push_back(entity);
-			}
-
-			return result;
-		}
 	template<typename T>
 		struct is_vector : std::false_type {};
 

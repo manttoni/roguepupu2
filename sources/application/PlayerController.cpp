@@ -1,4 +1,5 @@
 #include "application/PlayerController.hpp"
+#include "game/Query.hpp"
 #include "game/component/List.hpp"
 #include "game/component/Runtime.hpp"
 #include "ui/Search.hpp"
@@ -67,7 +68,7 @@ entt::entity PlayerController::select_entity(const Game::Simulation& simulation)
 		return entt::null;
 
 	const auto entities =
-		Game::Entity::find_all(
+		Game::Query::find_all(
 			registry,
 			Game::Component::Value::Position{*position});
 	if (entities.empty())
@@ -159,7 +160,7 @@ std::optional<Game::Event::Target> PlayerController::select_target(
 		return Game::Event::Target{*position};
 
 	const auto& registry = simulation.get_registry();
-	const auto entities = Game::Entity::find_all(
+	const auto entities = Game::Query::find_all(
 		registry,
 		Game::Component::Value::Position{*position});
 

@@ -1,4 +1,5 @@
 #include "game/system/Lighting.hpp"
+#include "game/Query.hpp"
 #include "game/entity/Entity.hpp"
 #include "game/system/Vision.hpp"
 #include "external/entt/entt.hpp"
@@ -100,7 +101,7 @@ namespace Game::System::Lighting
 		lightmap.clear();
 
 		for (const auto& light_source :
-			Entity::find_all(
+			Query::find_all(
 				registry,
 				Component::Tag::LightSource{}))
 		{
