@@ -18,6 +18,7 @@
         "OnDamage": [],
         "OnDestroy": [],
         "OnSpawn": [],
+        "Size": "Small",
         "Tags": [
             "Destructible",
             "LightSource",
@@ -25,10 +26,11 @@
             "Renderable",
             "WorldObject"
         ],
-        "Weight": 0.0
+        "Weight": 1.0
     },
     "player_default": {
         "ActionPoints": 1,
+        "ArmorClass": 10,
         "BonusActionPoints": 1,
         "Charisma": 8,
         "CollisionMovement": true,
@@ -39,14 +41,16 @@
         "Dexterity": 8,
         "Faction": "Player",
         "Glyph": "@",
+        "HitPoints": 0,
         "Intelligence": 8,
         "Inventory": [],
-        "MovementPoints": 10000,
+        "MovementPoints": 6,
         "Name": "Rabdin",
         "OnDamage": [],
         "OnDeath": [],
         "OnDestroy": [],
         "OnSpawn": [],
+        "Size": "Medium",
         "Strength": 8,
         "Tags": [
             "Actor",
@@ -56,8 +60,44 @@
             "Renderable",
             "WorldObject"
         ],
-        "VisionRange": 10,
-        "Weight": 0.0,
+        "VisionRange": 12,
+        "Weight": 42.0,
+        "Wisdom": 8
+    },
+    "skeleton": {
+        "ActionPoints": 1,
+        "ArmorClass": 13,
+        "BonusActionPoints": 1,
+        "Charisma": 5,
+        "CollisionMovement": false,
+        "CollisionVision": false,
+        "Color": 145,
+        "Constitution": 15,
+        "CreatureType": "Undead",
+        "Dexterity": 16,
+        "Faction": "None",
+        "Glyph": "s",
+        "HitPoints": 13,
+        "Intelligence": 6,
+        "Inventory": [],
+        "MovementPoints": 6.0,
+        "Name": "Skeleton",
+        "OnDamage": [],
+        "OnDeath": [],
+        "OnDestroy": [],
+        "OnSpawn": [],
+        "Size": "Medium",
+        "Strength": 10,
+        "Tags": [
+            "Actor",
+            "Creature",
+            "Dead",
+            "Destructible",
+            "Renderable",
+            "WorldObject"
+        ],
+        "VisionRange": 12.0,
+        "Weight": 24.0,
         "Wisdom": 8
     },
     "stone": {
@@ -70,6 +110,7 @@
         "Name": "Stone",
         "OnSpawn": [],
         "Rarity": "Common",
+        "Size": "Tiny",
         "Tags": [
             "Ammo",
             "Item",
@@ -77,7 +118,7 @@
             "WorldObject",
             "Equipment"
         ],
-        "Weight": 0.0
+        "Weight": 0.10000000000000003
     },
     "tree": {
         "CollisionMovement": true,
@@ -86,11 +127,12 @@
         "Glyph": "T",
         "Name": "Tree",
         "OnSpawn": [],
+        "Size": "Medium",
         "Tags": [
             "Plant",
             "WorldObject",
             "Renderable"
         ],
-        "Weight": 0.0
+        "Weight": 100.0
     }
 }
