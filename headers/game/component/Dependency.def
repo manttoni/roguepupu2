@@ -1,4 +1,7 @@
 X(Component::Tag::Abstract,			Component::Value::Name)
+X(Component::Tag::Creature,			Component::Value::ArmorClass)
+X(Component::Tag::Creature,			Component::Resource::HitPoints)
+X(Component::Tag::WorldObject,		Component::Value::Size)
 X(Component::Tag::Light,			Component::Value::Color)
 X(Component::Tag::Light,			Component::Value::Radius)
 X(Component::Tag::Mushroom,			Component::Tag::WorldObject)
