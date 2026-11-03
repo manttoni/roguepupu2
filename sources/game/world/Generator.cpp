@@ -28,13 +28,15 @@ namespace Game::World
 		if (layer.contains("terrain"))
 		{
 			const auto& terrain = layer.at("terrain");
-			if (terrain.contains("material") && roll(weight))
+			if (terrain.contains("material") &&
+				(cell.material == Enum::Material::None || roll(weight)))
 			{
 				const auto& material =
 					terrain.at("material").get<std::string>();
 				cell.material = Enum::from_string<Enum::Material>(material);
 			}
-			if (terrain.contains("form") && roll(weight))
+			if (terrain.contains("form") &&
+				(cell.form == Enum::Form::None || roll(weight)))
 			{
 				const auto& form = terrain.at("form").get<std::string>();
 				cell.form = Enum::from_string<Enum::Form>(form);
