@@ -30,6 +30,7 @@ namespace Game::World
 
 		private:
 		std::string seed;
+		std::uint64_t seed_hash;
 		Json conf;
 
 		void apply_layer(
