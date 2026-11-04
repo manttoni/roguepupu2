@@ -116,11 +116,14 @@ void Application::run_game()
 		auto root = simulation->simulate(initial_event);
 		assert(root.outcome.has_value());
 
+		Log::debug() << "simulated event node outcome: " <<
+			std::string(magic_enum::enum_name(*(root.outcome)));
+
 		// Auto End Turn - if not in combat, end turn when player runs out of
 		// necessary resources
 		// If 'root' was rejected, then nothing happened in the simulation
 		if (actor.controller == Game::Turn::Controller::Player &&
-			*(root.outcome) == Game::Event::Outcome::Rejected)
+			*(root.outcome) == Game::Event::Outcome::InsufficientResources)
 		{
 			root = simulation->simulate(
 				Game::Event::EndTurn{.entity = actor.entity});
