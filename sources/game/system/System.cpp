@@ -205,15 +205,12 @@ namespace Game::System
 
 		auto* movement_points =
 			registry.try_get<Resource::MovementPoints>(event.entity);
-		if (!movement_points || movement_points->current < event.amount)
+		if (!movement_points)
 			return Event::Result::rejected();
 
 		movement_points->current -= event.amount;
 
-		return Event::Result{
-			.outcome = Event::Outcome::Accepted,
-				.consequences = {}
-		};
+		return Event::Result::accepted();
 	}
 
 	Event::Result process(
@@ -255,17 +252,28 @@ namespace Game::System
 
 		const auto* position = registry.try_get<Value::Position>(event.entity);
 		if (!position || position->value != event.from)
-			return Event::Result::rejected();
+			throw std::runtime_error("Entity without position cannot move");
 
-		if (!Movement::can_move(registry, grid, event.entity, event.to))
-			return Event::Result::rejected();
+		if (!Movement::has_path(registry, grid, position->value, event.to))
+			return Event::Result::rejected(Event::Outcome::MovementBlocked);
+
+		const auto movement_cost =
+			Movement::cost(simulation, position->value, event.to);
+
+		if (movement_cost >
+			registry.get<Component::Resource::MovementPoints>(event.entity)
+			.current)
+		{
+			return Event::Result::rejected(
+				Event::Outcome::InsufficientResources);
+		}
 
 		Event::List consequences;
 
 		consequences.push_back(
 			Event::LoseMovementPoints{
 			.entity = event.entity,
-			.amount = Vec2{event.from.vec2() - event.to.vec2()}.length()
+			.amount = movement_cost
 			});
 
 		consequences.push_back(
@@ -280,10 +288,7 @@ namespace Game::System
 			.position = event.to
 			});
 
-		return Event::Result{
-			.outcome = Event::Outcome::Accepted,
-				.consequences = consequences
-		};
+		return Event::Result::accepted(std::move(consequences));
 	}
 
 	Event::Result process(
@@ -296,15 +301,20 @@ namespace Game::System
 		auto* entity_position =
 			registry.try_get<Value::Position>(event.entity);
 		if (!entity_position)
-			return Event::Result::rejected();
+			throw std::runtime_error("Entity has no position but is Bumping");
 
 		const auto target_position = entity_position->value + event.direction;
 
 		Event::List consequences;
 
-		if (Movement::can_move(registry, grid, event.entity, target_position))
+		if (Movement::has_path(
+				registry,
+				grid,
+				entity_position->value,
+				target_position))
 		{
-			consequences.push_back(
+			return process(
+				simulation,
 				Event::Move{
 				.entity = event.entity,
 				.from = entity_position->value,

@@ -7,6 +7,7 @@
 #include "external/entt/entt.hpp"
 #include "game/Enum.hpp"
 #include "game/Dice.hpp"
+#include "external/magic_enum/magic_enum.hpp"
 
 namespace Game::Event
 {
@@ -178,29 +179,33 @@ namespace Game::Event
 		Throw
 			>;
 	using List = std::vector<Any>;
-	enum class Outcome // was it accepted into the game simulation?
+	enum class Outcome
 	{
+		None,
 		Accepted,
-		Rejected
+		Rejected,
+		MovementBlocked,
+		InsufficientResources
 	};
 	struct Result
 	{
-		Outcome outcome;
-		List consequences;
+		Outcome outcome = Outcome::None;
+		List consequences = {};
 
-		static inline Result rejected()
+		static inline Result rejected(const Outcome outcome = Outcome::Rejected)
 		{
+			assert(outcome != Outcome::Accepted);
 			return Result{
-				.outcome = Outcome::Rejected,
+				.outcome = outcome,
 					.consequences = {}
 			};
 		}
 
-		static inline Result accepted()
+		static inline Result accepted(List consequences = {})
 		{
 			return Result{
 				.outcome = Outcome::Accepted,
-					.consequences = {}
+					.consequences = consequences
 			};
 		}
 	};

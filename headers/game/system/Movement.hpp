@@ -6,9 +6,13 @@
 
 namespace Game::System::Movement
 {
-	bool can_move(
+	double cost(
+		const Game::Simulation& simulation,
+		const World::GlobalPosition& from,
+		const World::GlobalPosition& to);
+	bool has_path(
 		const entt::registry& registry,
 		const World::Grid& grid,
-		const entt::entity entity,
+		const World::GlobalPosition& from,
 		const World::GlobalPosition& to);
 }

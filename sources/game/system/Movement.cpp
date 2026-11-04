@@ -37,50 +37,37 @@ namespace
 
 namespace Game::System::Movement
 {
-	/* This is different from a potential 'can_change_position' or something which has a teleport event
-	 * */
-	bool can_move(
-		const entt::registry& registry,
-		const World::Grid& grid,
-		const entt::entity entity,
+	double cost(
+		const Game::Simulation& simulation,
+		const World::GlobalPosition& from,
 		const World::GlobalPosition& to)
 	{
-		if (!registry.all_of<
-			Game::Component::Value::Position,
-			Game::Component::Resource::MovementPoints,
-			Game::Component::Value::CollisionMovement
-			>(entity))
+		(void) simulation;
+		return distance(from, to);
+	}
+
+	bool has_path(
+		const entt::registry& registry,
+		const World::Grid& grid,
+		const World::GlobalPosition& from,
+		const World::GlobalPosition& to)
+	{
+		const auto dx = std::abs(static_cast<double>(to.x) - from.x);
+		const auto dy = std::abs(static_cast<double>(to.y) - from.y);
+
+		if (dx > 1.0 || dy > 1.0)
 			return false;
 
-		const auto& current =
-			registry.get<Game::Component::Value::Position>(entity).value;
-
-		const auto move_distance = distance(current, to);
-
-		if (blocks_movement(registry, grid, to) &&
-			registry.get<Component::Value::CollisionMovement>(entity).value == true)
+		if (blocks_movement(registry, grid, to))
 			return false;
 
-		// TODO: invent movement cost
-		if (move_distance >
-			registry.get<Game::Component::Resource::MovementPoints>(entity).current)
-			return false;
+		if (dx == 0.0 || dy == 0.0)
+			return true;
 
-		// Can always move just one step at a time. Diagonal distance is ~1.4
-		// Jumping is a different thing
-		if (move_distance > 1.5)
-			return false;
-
-		// when moving diagonally, both corners have to be non-blocking
-		if (move_distance > 1.1)
-		{
-			const auto corner1 = World::GlobalPosition{current.y, to.x};
-			const auto corner2 = World::GlobalPosition{to.y, current.x};
-			if (!can_move(registry, grid, entity, corner1)
-				|| !can_move(registry, grid, entity, corner2))
-				return false;
-		}
-
-		return true;
+		const auto corner1 = World::GlobalPosition{from.y, to.x};
+		const auto corner2 = World::GlobalPosition{to.y, from.x};
+		return !blocks_movement(registry, grid, corner1)
+			&& !blocks_movement(registry, grid, corner2);
 	}
 }
+
