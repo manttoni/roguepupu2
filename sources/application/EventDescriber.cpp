@@ -10,16 +10,6 @@ namespace EventDescriber
 
 	std::string describe(
 		const Game::Simulation& simulation,
-		const Event::BeginTurn& event)
-	{
-		EntityDescriber ed(simulation.get_registry());
-
-		auto desc = ed.describe(event.entity) + "'s turn";
-		return desc;
-	}
-
-	std::string describe(
-		const Game::Simulation& simulation,
 		const Event::Throw& event)
 	{
 		EntityDescriber ed(simulation.get_registry());
