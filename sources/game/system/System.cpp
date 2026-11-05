@@ -339,7 +339,8 @@ namespace Game::System
 		auto& registry = simulation.get_registry();
 		auto& scheduler = simulation.get_scheduler();
 
-		if (registry.all_of<Tag::Actor>(event.entity))
+		if (registry.all_of<Tag::Actor>(event.entity) &&
+			!registry.all_of<Tag::Dead>(event.entity))
 		{
 			scheduler.add(
 				Turn::Actor{

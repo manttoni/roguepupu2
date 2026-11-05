@@ -1,4 +1,5 @@
 #include "game/Dice.hpp"
+#include "utils/Random.hpp"
 
 #include <algorithm>
 #include <charconv>
@@ -104,7 +105,7 @@ namespace Game
 			std::int64_t total = 0;
 
 			for (int i = 0; i < amount; ++i)
-				total += Random::rand<int>(1, sides);
+				total += Random::integer(1, sides);
 
 			return total;
 		};
