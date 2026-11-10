@@ -28,26 +28,70 @@ namespace Game
 		if (player == entt::null)
 			throw std::runtime_error("Player is entt::null");
 
-		load_chunks(World::ChunkPosition{0,0});
+		for (const auto& event : initialize())
+			simulate(event);
+	}
+
+	Event::List Simulation::initialize()
+	{
+		auto events = load_chunks(World::ChunkPosition{0,0});
 		const auto spawn_position =
 			spawner.find_spawn_position_near(
 				Entity::SpawnRequest{
-				player_definition_id,
+				"player_default",
 				World::GlobalPosition{0, 0},
 				10.0
 				});
 		if (!spawn_position)
 			throw std::runtime_error("Cannot find suitable player spawn");
-		simulate(
+		events.insert(
+			events.begin(),
 			Event::Spawn{
 			player,
 			*spawn_position
 			});
+		initialized = true;
+		return events;
 	}
 
-	void Simulation::load_chunks(const World::ChunkPosition& center)
+	Event::List Simulation::spawn_entities()
 	{
-		bool chunks_loaded = false;
+		Event::List spawn_events;
+		auto& spawn_requests = generator.get_spawn_requests();
+		for (const auto& request : spawn_requests)
+		{
+			const auto entity = Entity::create(
+				registry,
+				entity_database,
+				request.id);
+			if (!registry.valid(entity))
+			{
+				Log::debug() << "Invalid entity " << request.id;
+				continue;
+			}
+			const auto position =
+				spawner.find_spawn_position_near(request);
+			if (!position)
+			{
+				Log::debug() << "Did not find spawn position for "
+					<< request.id;
+				continue;
+			}
+			spawn_events.push_back(
+				Event::Spawn{
+				.entity = entity,
+				.position = *position
+				});
+
+		}
+		spawn_requests.clear();
+
+		return spawn_events;
+	}
+
+	Event::List Simulation::load_chunks(const World::ChunkPosition& center)
+	{
+		std::size_t chunks_loaded = 0;
 		const auto viewport = Ncurses::Screen::size();
 		const auto dimensions = World::Chunk::dimensions();
 
@@ -55,6 +99,8 @@ namespace Game
 			(viewport.y + 2 * dimensions.y - 1) / (2 * dimensions.y);
 		const int radius_x =
 			(viewport.x + 2 * dimensions.x - 1) / (2 * dimensions.x);
+
+		Event::List events;
 
 		for (int y = center.y - radius_y; y <= center.y + radius_y; ++y)
 		{
@@ -65,34 +111,27 @@ namespace Game
 					continue;
 
 				grid.add(cp, generator.generate_chunk(cp));
-				chunks_loaded = true;
+				chunks_loaded++;
 
-				/* Spawn entities
-				 * Spawner checks if it can spawn there and if the cell exists
-				 * */
-				auto& spawn_requests = generator.get_spawn_requests();
-				for (const auto& request : spawn_requests)
-				{
-					const auto entity = spawner.spawn(request);
+				const auto spawn_events = spawn_entities();
 
-					if (entity != entt::null)
-						System::Lighting::update(
-							*this,
-							entity,
-							System::Lighting::Operation::Add);
-				}
-				spawn_requests.clear();
+				events.insert(
+					events.end(),
+					std::make_move_iterator(spawn_events.begin()),
+					std::make_move_iterator(spawn_events.end()));
 			}
 		}
-		if (chunks_loaded)
+		if (chunks_loaded > 0)
 			System::Lighting::reset(*this);
+
+		return events;
 	}
 
-	void Simulation::load_chunks()
+	Event::List Simulation::load_chunks()
 	{
 		const auto& player_position =
 			registry.get<Component::Value::Position>(player);
-		load_chunks(World::to_chunk(player_position.value));
+		return load_chunks(World::to_chunk(player_position.value));
 	}
 
 	void Simulation::simulate_node(Event::Node& node)
@@ -102,6 +141,9 @@ namespace Game
 		assert(node.consequences.empty() &&
 			"Event shouldn't have consequences yet");
 
+		Event::Result result = System::dispatch(*this, node.event);
+		node.outcome = result.outcome;
+
 		/* Preload grid around player
 		 * */
 		if (
@@ -110,13 +152,12 @@ namespace Game
 			event && event->entity == player
 		   )
 		{
-			load_chunks(World::to_chunk(event->position));
+			const auto load_events =
+				load_chunks(World::to_chunk(event->position));
+			result.consequences = load_events;
 		}
 		/* ~Preload
 		 * */
-
-		Event::Result result = System::dispatch(*this, node.event);
-		node.outcome = result.outcome;
 
 		node.consequences.reserve(result.consequences.size());
 		for (auto& consequence : result.consequences)
@@ -127,16 +168,6 @@ namespace Game
 			child.consequences = {};
 			simulate_node(child);
 			node.consequences.push_back(std::move(child));
-		}
-
-		/* TODO: create something so this doesnt get called too often
-		 * */
-		if (registry.all_of<Component::Value::Position>(scheduler.current_actor().entity))
-		{
-			System::Vision::update_vision(
-				registry,
-				grid,
-				scheduler.current_actor().entity);
 		}
 	}
 
