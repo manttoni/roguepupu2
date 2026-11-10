@@ -1,4 +1,5 @@
 #include "game/system/System.hpp"
+#include "game/system/Loot.hpp"
 #include "game/system/Lighting.hpp"
 #include "game/Simulation.hpp"
 #include "game/system/Movement.hpp"
@@ -16,7 +17,7 @@ namespace Game::System
 			assert(false
 				&& "Event has no process() implementation. Implement it!");
 
-			return {
+			return Event::Result{
 				.outcome = Event::Outcome::Rejected,
 					.consequences = {}
 			};
@@ -69,7 +70,7 @@ namespace Game::System
 			.position = position->value
 			});
 
-		return Event::Result{
+		return {
 			.outcome = Event::Outcome::Accepted,
 				.consequences = consequences
 		};
@@ -236,7 +237,6 @@ namespace Game::System
 
 		registry.emplace<Value::Position>(event.entity, event.position);
 		Lighting::update(simulation, event.entity, Lighting::Operation::Add);
-
 		return Event::Result{
 			.outcome = Event::Outcome::Accepted,
 				.consequences = {}
@@ -328,7 +328,7 @@ namespace Game::System
 
 		return Event::Result{
 			.outcome = Event::Outcome::Accepted,
-				.consequences = consequences
+			.consequences = consequences
 		};
 	}
 
@@ -359,6 +359,18 @@ namespace Game::System
 			.entity = event.entity,
 			.position = event.position
 			});
+
+		const auto& database = simulation.get_entity_database();
+		const auto spawn_loot_consequences = Loot::generate(
+			registry,
+			database,
+			event.entity,
+			registry.try_get<Component::List::SpawnLoot>(event.entity));
+
+		consequences.insert(
+			consequences.end(),
+			std::make_move_iterator(spawn_loot_consequences.begin()),
+			std::make_move_iterator(spawn_loot_consequences.end()));
 
 		return Event::Result{
 			.outcome = Event::Outcome::Accepted,

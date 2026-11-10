@@ -58,7 +58,7 @@ class ItemInteractionTest : public ::testing::Test
 		entt::entity make_carried_item()
 		{
 			const auto item = Game::Entity::create(
-				registry(), simulation->get_entity_database(), "stone");
+				registry(), simulation->get_entity_database(), "item_stone");
 			registry().get<Inventory>(actor).values.push_back(item);
 			return item;
 		}
@@ -66,7 +66,7 @@ class ItemInteractionTest : public ::testing::Test
 		entt::entity make_ground_item(Position position)
 		{
 			const auto item = Game::Entity::create(
-				registry(), simulation->get_entity_database(), "stone");
+				registry(), simulation->get_entity_database(), "item_stone");
 			registry().emplace<Game::Component::Value::Position>(item, position);
 			return item;
 		}
