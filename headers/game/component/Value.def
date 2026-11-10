@@ -1,4 +1,5 @@
 X(AIBehavior, Game::Enum::AIBehaviorType)
+X(ContainedIn, entt::entity)
 X(AllowDuplicates, bool)
 X(Ammo, Game::Enum::AmmoType)
 X(Amount, std::size_t)

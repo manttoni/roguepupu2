@@ -44,6 +44,43 @@ namespace Game::System
 
 	Event::Result process(
 		Simulation& simulation,
+		const Event::Take& event)
+	{
+		auto& registry = simulation.get_registry();
+		using namespace Component;
+
+		const auto* actor_inventory =
+			registry.try_get<List::Inventory>(event.entity);
+		if (!actor_inventory)
+			return Event::Result::rejected();
+
+		const auto* container =
+			registry.try_get<Component::Value::ContainedIn>(event.item);
+		if (!container)
+			return Event::Result::rejected();
+
+		const auto* container_inventory =
+			registry.try_get<List::Inventory>(container->value);
+		if (!container_inventory ||
+			!container_inventory->contains(event.item))
+			return Event::Result::rejected();
+
+		return {
+			.outcome = Event::Outcome::Accepted,
+				.consequences = {
+					Event::LoseItem{
+						.entity = container->value,
+						.item = event.item
+					},
+					Event::ReceiveItem{
+						.entity = event.entity,
+						.item = event.item
+					}
+				}
+		};
+	}
+	Event::Result process(
+		Simulation& simulation,
 		const Event::Drop& event)
 	{
 		auto& registry = simulation.get_registry();
@@ -87,6 +124,7 @@ namespace Game::System
 			return Event::Result::rejected();
 
 		inventory->remove(event.item);
+		registry.remove<Component::Value::ContainedIn>(event.item);
 
 		// TODO: add unequip consequence if its equipped
 
@@ -159,6 +197,9 @@ namespace Game::System
 			return Event::Result::rejected();
 
 		inventory->values.push_back(event.item);
+		registry.emplace<Component::Value::ContainedIn>(
+			event.item,
+			event.entity);
 
 		return Event::Result::accepted();
 	}
