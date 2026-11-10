@@ -133,8 +133,7 @@ namespace EventDescriber
 
 		Log::debug()
 			<< "Take: entity=" << ed.describe(event.entity)
-			<< ", item=" << ed.describe(event.item)
-			<< ", position=" << event.position;
+			<< ", item=" << ed.describe(event.item);
 
 		return ed.describe(event.entity) + " takes " +
 			ed.describe(event.item);

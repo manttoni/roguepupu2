@@ -101,7 +101,6 @@ namespace Game::Event
 	{
 		entt::entity entity = entt::null;
 		entt::entity item = entt::null;
-		Game::World::GlobalPosition position{};
 	};
 	struct Equip
 	{
