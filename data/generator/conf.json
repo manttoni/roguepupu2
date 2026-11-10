@@ -24,7 +24,7 @@
 				"form": "Floor"
 			},
 			"entities": [
-				{ "id": "stone", "chance": 0.025 }
+				{ "id": "item_stone", "chance": 0.025 }
 			],
 			"noise": {
 				"frequency": 0.01,
@@ -40,7 +40,7 @@
 				"material": "Soil"
 			},
 			"entities": [
-				{ "id": "tree", "chance": 0.075 }
+				{ "id": "plant_tree", "chance": 0.075 }
 			]
 		},
 
@@ -82,7 +82,7 @@
 				"material": "Stone"
 			},
 			"entities": [
-				{ "id": "skeleton", "chance": 0.02 }
+				{ "id": "creature_skeleton", "chance": 0.02 }
 			]
 		}
 	}
