@@ -50,7 +50,6 @@ namespace Game
 			player,
 			*spawn_position
 			});
-		initialized = true;
 		return events;
 	}
 
