@@ -46,6 +46,10 @@ namespace Game
 				PositionLights>;
 			Lightmap lightmap;
 
+			Event::List spawn_entities();
+			Event::List load_chunks(const World::ChunkPosition& center);
+			Event::List load_chunks();
+
 		public:
 			Simulation(
 				const std::string& seed,
@@ -80,8 +84,7 @@ namespace Game
 			{ return scheduler.current_actor(); }
 
 			Event::Node simulate(Event::Any initial_event);
-			void load_chunks(const World::ChunkPosition& center);
-			void load_chunks();
+			Event::List initialize();
 
 			Lightmap& get_lightmap() { return lightmap; }
 			const Lightmap& get_lightmap() const { return lightmap; }
