@@ -1,4 +1,7 @@
 X(ActionPoints, int)
 X(BonusActionPoints, int)
+X(CountBudget, std::size_t)
+X(GoldBudget, std::size_t)
 X(HitPoints, int)
 X(MovementPoints, double)
+X(WeightBudget, double)
