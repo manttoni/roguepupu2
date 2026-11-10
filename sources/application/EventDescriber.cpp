@@ -100,23 +100,6 @@ namespace EventDescriber
 
 	std::string describe(
 		const Game::Simulation& simulation,
-		const Event::Spawn& event)
-	{
-		EntityDescriber ed(simulation.get_registry());
-
-		Log::debug()
-			<< "Spawn: entity=" << ed.describe(event.entity)
-			<< ", position=" << event.position;
-
-		std::ostringstream desc;
-		desc << ed.describe(event.entity)
-			<< " appears at " << event.position << ".";
-
-		return desc.str();
-	}
-
-	std::string describe(
-		const Game::Simulation& simulation,
 		const Event::Destroy& event)
 	{
 		EntityDescriber ed(simulation.get_registry());
