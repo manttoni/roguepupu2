@@ -1,4 +1,5 @@
 #include "application/Application.hpp"
+#include "game/system/Vision.hpp"
 #include "application/EventDescriber.hpp"
 #include "application/Layout.hpp"
 #include "editor/EntityEditor.hpp"
@@ -23,8 +24,6 @@ bool Application::handle_input(const Ncurses::Input::Event& event)
 	else if (event.key == Key::Resize)
 	{
 		layout.reset();
-		if (simulation.has_value())
-			simulation->load_chunks();
 	}
 	else if (event.is_ascii())
 	{
@@ -98,6 +97,10 @@ void Application::run_game()
 
 	while (game_running)
 	{
+		Game::System::Vision::update_vision(
+			simulation->get_registry(),
+			simulation->get_grid(),
+			simulation->get_player());
 		renderer.render_player_perspective(*simulation);
 		renderer.write(messages.get_last(20));
 		update_panels();
@@ -115,9 +118,6 @@ void Application::run_game()
 			;
 		auto root = simulation->simulate(initial_event);
 		assert(root.outcome.has_value());
-
-		Log::debug() << "simulated event node outcome: " <<
-			std::string(magic_enum::enum_name(*(root.outcome)));
 
 		// Auto End Turn - if not in combat, end turn when player runs out of
 		// necessary resources
