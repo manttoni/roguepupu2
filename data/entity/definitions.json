@@ -1,10 +1,81 @@
 {
+    "creature_skeleton": {
+        "ActionPoints": 1,
+        "ArmorClass": 13,
+        "BonusActionPoints": 1,
+        "Charisma": 5,
+        "CollisionMovement": false,
+        "CollisionVision": false,
+        "Color": 145,
+        "Constitution": 15,
+        "CreatureType": "Humanoid",
+        "Dexterity": 16,
+        "Faction": "None",
+        "Glyph": "s",
+        "HitPoints": 13,
+        "Intelligence": 6,
+        "Inventory": [],
+        "MovementPoints": 6.0,
+        "Name": "Skeleton",
+        "OnDamage": [],
+        "OnDeath": [],
+        "OnDestroy": [],
+        "OnSpawn": [],
+        "Size": "Medium",
+        "SpawnLoot": [
+            "loot_table_stones"
+        ],
+        "Strength": 10,
+        "Tags": [
+            "Actor",
+            "Creature",
+            "Dead",
+            "Destructible",
+            "Renderable",
+            "WorldObject"
+        ],
+        "VisionRange": 12.0,
+        "Weight": 24.0,
+        "Wisdom": 8
+    },
+    "item_stone": {
+        "Ammo": "Bullet",
+        "CollisionMovement": false,
+        "CollisionVision": false,
+        "Color": 188,
+        "Glyph": ".",
+        "GoldValue": 0,
+        "Name": "Stone",
+        "OnSpawn": [],
+        "Rarity": "Common",
+        "Size": "Tiny",
+        "Tags": [
+            "Ammo",
+            "Item",
+            "Renderable",
+            "WorldObject",
+            "Equipment"
+        ],
+        "Weight": 0.10000000000000003
+    },
     "light_mushroom_blue": {
         "Color": 17,
         "Radius": 4.000000000000001,
         "Tags": [
             "Light"
         ]
+    },
+    "loot_table_stones": {
+        "AllowDuplicates": true,
+        "CountBudget": 3,
+        "EntityIDs": [
+            "item_stone"
+        ],
+        "GoldBudget": 0,
+        "Tags": [
+            "LootTable"
+        ],
+        "WeightBudget": 1.0
     },
     "mushroom_glowing": {
         "CollisionMovement": false,
@@ -27,6 +98,21 @@
             "WorldObject"
         ],
         "Weight": 1.0
+    },
+    "plant_tree": {
+        "CollisionMovement": true,
+        "CollisionVision": true,
+        "Color": 112,
+        "Glyph": "T",
+        "Name": "Tree",
+        "OnSpawn": [],
+        "Size": "Medium",
+        "Tags": [
+            "Plant",
+            "WorldObject",
+            "Renderable"
+        ],
+        "Weight": 100.0
     },
     "player_default": {
         "ActionPoints": 1,
@@ -51,6 +137,9 @@
         "OnDestroy": [],
         "OnSpawn": [],
         "Size": "Medium",
+        "SpawnLoot": [
+            "loot_table_stones"
+        ],
         "Strength": 8,
         "Tags": [
             "Actor",
@@ -63,76 +152,5 @@
         "VisionRange": 12,
         "Weight": 42.0,
         "Wisdom": 8
-    },
-    "skeleton": {
-        "ActionPoints": 1,
-        "ArmorClass": 13,
-        "BonusActionPoints": 1,
-        "Charisma": 5,
-        "CollisionMovement": false,
-        "CollisionVision": false,
-        "Color": 145,
-        "Constitution": 15,
-        "CreatureType": "Undead",
-        "Dexterity": 16,
-        "Faction": "None",
-        "Glyph": "s",
-        "HitPoints": 13,
-        "Intelligence": 6,
-        "Inventory": [],
-        "MovementPoints": 6.0,
-        "Name": "Skeleton",
-        "OnDamage": [],
-        "OnDeath": [],
-        "OnDestroy": [],
-        "OnSpawn": [],
-        "Size": "Medium",
-        "Strength": 10,
-        "Tags": [
-            "Actor",
-            "Creature",
-            "Dead",
-            "Destructible",
-            "Renderable",
-            "WorldObject"
-        ],
-        "VisionRange": 12.0,
-        "Weight": 24.0,
-        "Wisdom": 8
-    },
-    "stone": {
-        "Ammo": "Bullet",
-        "CollisionMovement": false,
-        "CollisionVision": false,
-        "Color": 188,
-        "Glyph": ".",
-        "GoldValue": 0,
-        "Name": "Stone",
-        "OnSpawn": [],
-        "Rarity": "Common",
-        "Size": "Tiny",
-        "Tags": [
-            "Ammo",
-            "Item",
-            "Renderable",
-            "WorldObject",
-            "Equipment"
-        ],
-        "Weight": 0.10000000000000003
-    },
-    "tree": {
-        "CollisionMovement": true,
-        "CollisionVision": true,
-        "Color": 112,
-        "Glyph": "T",
-        "Name": "Tree",
-        "OnSpawn": [],
-        "Size": "Medium",
-        "Tags": [
-            "Plant",
-            "WorldObject",
-            "Renderable"
-        ],
-        "Weight": 100.0
     }
 }
