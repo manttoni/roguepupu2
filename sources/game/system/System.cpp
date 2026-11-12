@@ -302,6 +302,7 @@ namespace Game::System
 					if (!registry.valid(entity))
 					{
 						Log::debug() << "Invalid entity " << request.id;
+						registry.destroy(entity);
 						continue;
 					}
 					spawn_events.push_back(
@@ -443,7 +444,10 @@ namespace Game::System
 		const auto position =
 			simulation.get_spawner().find_spawn_position_near(event.entity, event.position);
 		if (!position)
+		{
+			registry.destroy(event.entity);
 			return Event::Node{.outcome = Event::Outcome::Rejected};
+		}
 
 		if (registry.all_of<Tag::Actor>(event.entity) &&
 			!registry.all_of<Tag::Dead>(event.entity))
@@ -462,22 +466,12 @@ namespace Game::System
 		 * Event::EnterPosition. This will prevent spawning multiple entities
 		 * in same cell
 		 * */
-		const auto simulated_enter_position =
+		std::vector<Event::Node> consequences = {
 			simulation.simulate(
 				Event::EnterPosition{
 					.entity = event.entity,
 					.position = *position
-			});
-
-		std::vector<Event::Node> consequences = {
-			Event::Node{
-				.event = Event::EnterPosition{
-					.entity = event.entity,
-					.position = *position
-				},
-				.outcome = simulated_enter_position.outcome,
-				.consequences = simulated_enter_position.consequences
-			}
+			})
 		};
 
 		Log::debug() << "Spawning " << registry.get<Component::Value::Name>(
@@ -494,9 +488,7 @@ namespace Game::System
 
 		for (const auto& c : spawn_loot_consequences)
 		{
-			consequences.push_back(Event::Node{
-				.event = c
-				});
+			consequences.push_back(Event::Node{.event = c});
 		}
 		/* ~Spawn Loot */
 
