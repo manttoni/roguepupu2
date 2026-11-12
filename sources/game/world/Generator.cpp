@@ -89,6 +89,8 @@ namespace Game::World
 				request.id = entity.at("id").get<std::string>();
 				request.position = position;
 				spawn_requests.push_back(request);
+				Log::debug() << "Requesting " << request.id << " at " <<
+					request.position;
 			}
 		}
 
