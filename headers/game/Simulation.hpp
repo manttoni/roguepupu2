@@ -66,8 +66,14 @@ namespace Game
 			const entt::registry& get_registry() const { return registry; }
 			entt::registry& get_registry() { return registry; }
 
+			const Entity::Spawner& get_spawner() const { return spawner; }
+			Entity::Spawner& get_spawner() { return spawner; }
+
 			const World::Grid& get_grid() const { return grid; }
 			World::Grid& get_grid() { return grid; }
+
+			const World::Generator& get_generator() const { return generator; }
+			World::Generator& get_generator() { return generator; }
 
 			const Turn::Scheduler& get_scheduler() const { return scheduler; }
 			Turn::Scheduler& get_scheduler() { return scheduler; }
