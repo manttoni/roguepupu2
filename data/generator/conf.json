@@ -1,6 +1,10 @@
 {
 	"bases": [ "world" ],
 	"layers": {
+		"terrain": {
+			"material": "Stone",
+			"form": "Floor"
+		},
 		"world": {
 			"noise": {
 				"frequency": 0.0075,
@@ -8,7 +12,8 @@
 				"persistence": 1.0,
 				"regions": [
 					{ "range": [ 0.0, 0.5 ], "id": "land" },
-					{ "range": [ 0.5, 1.0 ], "id": "mountain" }
+					{ "range": [ 0.5, 1.0 ], "id": "mountain" },
+					{ "range": [ 0.49, 0.51 ], "id": "ruins" }
 				]
 			}
 		},
@@ -19,7 +24,7 @@
 				"form": "Floor"
 			},
 			"entities": [
-				{ "id": "stone", "chance": 0.025 }
+				{ "id": "item_stone", "chance": 0.025 }
 			],
 			"noise": {
 				"frequency": 0.01,
@@ -35,7 +40,7 @@
 				"material": "Soil"
 			},
 			"entities": [
-				{ "id": "tree", "chance": 0.075 }
+				{ "id": "plant_tree", "chance": 0.075 }
 			]
 		},
 
@@ -68,6 +73,16 @@
 		"fungal": {
 			"entities": [
 				{ "id": "mushroom_glowing", "chance": 0.02 }
+			]
+		},
+
+		"ruins": {
+			"terrain": {
+				"form": "Floor",
+				"material": "Stone"
+			},
+			"entities": [
+				{ "id": "creature_skeleton", "chance": 0.02 }
 			]
 		}
 	}

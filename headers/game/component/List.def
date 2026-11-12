@@ -1,13 +1,8 @@
-// Needs editor, entity defining
 X(AIBehaviors, Game::Enum::AIBehavior)
-X(WeaponProperties, Game::Enum::WeaponProperty)
-
-// Dicerolls
-// Stores ids of damageroll tagged entities
 X(DamageRolls, Game::Entity::Definition::ID)
-
-// Effects, ids of entities with tag Effect
-X(OnSpawn, Game::Entity::Definition::ID)
+X(EntityIDs, Game::Entity::Definition::ID)
+X(Inventory, entt::entity)
+X(Lights, Game::Entity::Definition::ID)
 X(OnCast, Game::Entity::Definition::ID)
 X(OnDamage, Game::Entity::Definition::ID)
 X(OnDeath, Game::Entity::Definition::ID)
@@ -17,12 +12,9 @@ X(OnGather, Game::Entity::Definition::ID)
 X(OnHit, Game::Entity::Definition::ID)
 X(OnMove, Game::Entity::Definition::ID)
 X(OnOpen, Game::Entity::Definition::ID)
+X(OnSpawn, Game::Entity::Definition::ID)
 X(OnUpcast, Game::Entity::Definition::ID)
 X(OnUse, Game::Entity::Definition::ID)
-X(Lights, Game::Entity::Definition::ID)
-
-// Visual/effects
 X(Projectiles, entt::entity)
-
-// Used during runtime
-X(Inventory, entt::entity)
+X(SpawnLoot, Game::Entity::Definition::ID)
+X(WeaponProperties, Game::Enum::WeaponProperty)

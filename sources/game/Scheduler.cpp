@@ -33,6 +33,8 @@ namespace Game::Turn
 			!actors.empty() && index <= current;
 
 		actors.insert(insertion, actor);
+		Log::debug() << "Actor added to Scheduler: " <<
+			static_cast<size_t>(actor.entity);
 
 		if (shifts_current)
 			++current;

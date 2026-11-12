@@ -5,6 +5,6 @@
 
 namespace Game::System
 {
-	Game::Event::Result dispatch(Simulation& simulation, const Game::Event::Any& event);
+	Game::Event::Node dispatch(Simulation& simulation, const Game::Event::Any& event);
 }
 

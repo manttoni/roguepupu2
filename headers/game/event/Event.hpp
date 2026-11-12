@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ostream>
 #include <cstddef>
 #include <variant>
 #include <optional>
@@ -18,6 +19,10 @@ namespace Game::Event
 
 	struct Null
 	{
+	};
+	struct LoadChunks
+	{
+		World::ChunkPosition position{};
 	};
 	struct Throw
 	{
@@ -101,7 +106,6 @@ namespace Game::Event
 	{
 		entt::entity entity = entt::null;
 		entt::entity item = entt::null;
-		Game::World::GlobalPosition position{};
 	};
 	struct Equip
 	{
@@ -153,6 +157,7 @@ namespace Game::Event
 	};
 	using Any = std::variant<
 		Null,
+		LoadChunks,
 		LoseItem,
 		PickUp,
 		Move,
@@ -181,39 +186,40 @@ namespace Game::Event
 	using List = std::vector<Any>;
 	enum class Outcome
 	{
-		None,
 		Accepted,
 		Rejected,
 		MovementBlocked,
 		InsufficientResources
 	};
-	struct Result
-	{
-		Outcome outcome = Outcome::None;
-		List consequences = {};
-
-		static inline Result rejected(const Outcome outcome = Outcome::Rejected)
-		{
-			assert(outcome != Outcome::Accepted);
-			return Result{
-				.outcome = outcome,
-					.consequences = {}
-			};
-		}
-
-		static inline Result accepted(List consequences = {})
-		{
-			return Result{
-				.outcome = Outcome::Accepted,
-					.consequences = consequences
-			};
-		}
-	};
 
 	struct Node
 	{
-		Any event;
+		Any event{};
 		std::optional<Outcome> outcome = std::nullopt;
-		std::vector<Node> consequences;
+		std::vector<Node> consequences{};
+
+		static Node accepted(List events = {})
+		{
+			Node node;
+			node.outcome = Outcome::Accepted;
+			node.consequences.reserve(events.size());
+
+			for (auto& event : events)
+				node.consequences.push_back(Node{.event = std::move(event)});
+
+			return node;
+		}
 	};
+
+	inline std::ostream& operator<<(std::ostream& os, const Node& node)
+	{
+		os << "Node{outcome=";
+
+		if (node.outcome)
+			os << magic_enum::enum_name<Outcome>(*node.outcome);
+		else
+			os << "Pending";
+
+		return os << ", consequences=" << node.consequences.size() << '}';
+	}
 } // namespace Game::Event

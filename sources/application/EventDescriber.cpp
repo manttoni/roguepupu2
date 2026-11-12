@@ -100,23 +100,6 @@ namespace EventDescriber
 
 	std::string describe(
 		const Game::Simulation& simulation,
-		const Event::Spawn& event)
-	{
-		EntityDescriber ed(simulation.get_registry());
-
-		Log::debug()
-			<< "Spawn: entity=" << ed.describe(event.entity)
-			<< ", position=" << event.position;
-
-		std::ostringstream desc;
-		desc << ed.describe(event.entity)
-			<< " appears at " << event.position << ".";
-
-		return desc.str();
-	}
-
-	std::string describe(
-		const Game::Simulation& simulation,
 		const Event::Destroy& event)
 	{
 		EntityDescriber ed(simulation.get_registry());
@@ -150,8 +133,7 @@ namespace EventDescriber
 
 		Log::debug()
 			<< "Take: entity=" << ed.describe(event.entity)
-			<< ", item=" << ed.describe(event.item)
-			<< ", position=" << event.position;
+			<< ", item=" << ed.describe(event.item);
 
 		return ed.describe(event.entity) + " takes " +
 			ed.describe(event.item);
@@ -233,6 +215,9 @@ namespace EventDescriber
 		const Game::Simulation& simulation,
 		const Event::ReceiveItem& event)
 	{
+		if (event.entity != simulation.get_player())
+			return "";
+
 		EntityDescriber ed(simulation.get_registry());
 
 		Log::debug()
@@ -265,7 +250,11 @@ namespace EventDescriber
 			[&](const auto& event)
 			{
 			if constexpr (requires { describe(simulation, event); })
-			descriptions.push_back(describe(simulation, event));
+			{
+			const auto d = describe(simulation, event);
+			if (!d.empty())
+			descriptions.push_back(d);
+			}
 			},
 			root.event);
 
