@@ -56,7 +56,7 @@ namespace EntityEditor
 	std::optional<Definition> new_definition(const Json& all_definitions)
 	{
 		std::string id;
-		const auto selection = UI::Dialog::get_input("Entity ID", id);
+		const auto selection = UI::Dialog::get_input("Entity ID", id, 27);
 		if (selection.cancelled())
 			return std::nullopt;
 		assert(selection.confirmed());
