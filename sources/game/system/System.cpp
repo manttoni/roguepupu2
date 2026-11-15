@@ -477,25 +477,27 @@ namespace Game::System
 		std::vector<Event::Node> consequences = {
 			simulation.simulate(
 				Event::EnterPosition{
-					.entity = event.entity,
-					.position = *position
-			})
+				.entity = event.entity,
+				.position = *position
+				})
 		};
 
-		/* Spawn loot
-		 * */
-		const auto& database = simulation.get_entity_database();
-		const auto spawn_loot_consequences = Loot::generate(
-			registry,
-			database,
-			event.entity,
-			registry.try_get<Component::List::SpawnLoot>(event.entity));
-
-		for (const auto& c : spawn_loot_consequences)
+		if (const auto* spawn_loot =
+			registry.try_get<Component::List::SpawnLoot>(event.entity);
+			spawn_loot && !spawn_loot->values.empty())
 		{
-			consequences.push_back(Event::Node{.event = c});
+			const auto& database = simulation.get_entity_database();
+			const auto spawn_loot_consequences = Loot::generate(
+				registry,
+				database,
+				event.entity,
+				spawn_loot);
+
+			for (const auto& c : spawn_loot_consequences)
+			{
+				consequences.push_back(Event::Node{.event = c});
+			}
 		}
-		/* ~Spawn Loot */
 
 		return Event::Node{
 			.event = event,

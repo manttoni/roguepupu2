@@ -109,6 +109,12 @@ namespace Game::System::Loot
 			const auto loot_table = Entity::create(registry, database, id);
 			if (!registry.valid(loot_table))
 				continue;
+			if (!registry.all_of<Component::Tag::LootTable>(loot_table))
+			{
+				Log::warning() << id << " has no tag 'LootTable'";
+				registry.destroy(loot_table);
+				continue;
+			}
 
 			auto loot_table_events = generate(
 				registry,
