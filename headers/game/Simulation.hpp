@@ -46,10 +46,6 @@ namespace Game
 				PositionLights>;
 			Lightmap lightmap;
 
-			Event::List spawn_entities();
-			Event::List load_chunks(const World::ChunkPosition& center);
-			Event::List load_chunks();
-
 		public:
 			Simulation(
 				const std::string& seed,
