@@ -23,7 +23,7 @@
         "OnSpawn": [],
         "Size": "Medium",
         "SpawnLoot": [
-            "loot_table_stones"
+            "loottable_skeleton"
         ],
         "Strength": 10,
         "Tags": [
@@ -37,6 +37,42 @@
         "VisionRange": 12.0,
         "Weight": 24.0,
         "Wisdom": 8
+    },
+    "damageroll_1d4_bludgeoning": {
+        "DamageType": "Bludgeoning",
+        "Dice": "1d4",
+        "Tags": [
+            "DamageRoll"
+        ]
+    },
+    "item_rusty_pan": {
+        "CollisionMovement": false,
+        "CollisionVision": false,
+        "Color": 138,
+        "DamageRolls": [
+            "damageroll_1d4_bludgeoning"
+        ],
+        "Glyph": "p",
+        "GoldValue": 1,
+        "Name": "Rusty Pan",
+        "OnSpawn": [],
+        "Rarity": "Common",
+        "Size": "Tiny",
+        "Tags": [
+            "Equipment",
+            "Item",
+            "Renderable",
+            "Weapon",
+            "WorldObject"
+        ],
+        "WeaponProperties": [
+            "Heavy",
+            "Improvised",
+            "Melee",
+            "Versatile"
+        ],
+        "WeaponType": "Club",
+        "Weight": 5.0
     },
     "item_stone": {
         "Ammo": "Bullet",
@@ -65,17 +101,17 @@
             "Light"
         ]
     },
-    "loot_table_stones": {
-        "AllowDuplicates": true,
-        "CountBudget": 3,
+    "loottable_skeleton": {
+        "AllowDuplicates": false,
+        "CountBudget": 1,
         "EntityIDs": [
-            "item_stone"
+            "item_rusty_pan"
         ],
-        "GoldBudget": 0,
+        "GoldBudget": 1,
         "Tags": [
             "LootTable"
         ],
-        "WeightBudget": 1.0
+        "WeightBudget": 5.0
     },
     "mushroom_glowing": {
         "CollisionMovement": false,
@@ -137,9 +173,7 @@
         "OnDestroy": [],
         "OnSpawn": [],
         "Size": "Medium",
-        "SpawnLoot": [
-            "loot_table_stones"
-        ],
+        "SpawnLoot": [],
         "Strength": 8,
         "Tags": [
             "Actor",
