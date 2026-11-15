@@ -31,8 +31,6 @@ namespace Game
 		simulate(Event::LoadChunks(World::to_chunk({25,25})));
 
 		const auto& node = simulate(Event::Spawn{player, {25, 25}});
-		Log::debug() << "Player spawn simulated";
-		Log::debug() << node;
 		if (grid.get_chunks().empty())
 			throw std::runtime_error("Chunks did not get generated");
 	}

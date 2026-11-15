@@ -474,9 +474,6 @@ namespace Game::System
 			})
 		};
 
-		Log::debug() << "Spawning " << registry.get<Component::Value::Name>(
-			event.entity).value << " at " << *position;
-
 		/* Spawn loot
 		 * */
 		const auto& database = simulation.get_entity_database();
