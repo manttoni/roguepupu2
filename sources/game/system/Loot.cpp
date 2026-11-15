@@ -57,6 +57,16 @@ namespace Game::System::Loot
 				Entity::create(registry, database, entry.id);
 			if (!registry.valid(prototype))
 				continue;
+			if (!registry.all_of<
+					Component::Tag::Item,
+					Component::Value::GoldValue,
+					Component::Value::Weight>(prototype))
+			{
+				Log::warning() << "Loot entry '" << entry.id
+					<< "' must be an Item with GoldValue and Weight";
+				registry.destroy(prototype);
+				continue;
+			}
 
 			const auto prototype_gold =
 				registry.get<Component::Value::GoldValue>(prototype).value;
