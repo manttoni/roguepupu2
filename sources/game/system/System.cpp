@@ -351,6 +351,8 @@ namespace Game::System
 		Simulation& simulation,
 		const Event::Move& event)
 	{
+		using CollisionMovement = Component::Value::CollisionMovement;
+
 		auto& registry = simulation.get_registry();
 		const auto& grid = simulation.get_grid();
 
@@ -358,9 +360,12 @@ namespace Game::System
 		if (!position || position->value != event.from)
 			throw std::runtime_error("Entity without position cannot move");
 
-		if (!Movement::has_path(registry, grid, position->value, event.to))
+		if (!Movement::has_path(registry, grid, position->value, event.to) &&
+			registry.get<CollisionMovement>(event.entity).value == true)
+		{
 			return Event::Node{
 				.outcome = Event::Outcome::MovementBlocked};
+		}
 
 		const auto movement_cost =
 			Movement::cost(simulation, position->value, event.to);
@@ -400,6 +405,8 @@ namespace Game::System
 		Simulation& simulation,
 		const Event::Bump& event)
 	{
+		using CollisionMovement = Component::Value::CollisionMovement;
+
 		auto& registry = simulation.get_registry();
 		auto& grid = simulation.get_grid();
 
@@ -416,7 +423,8 @@ namespace Game::System
 				registry,
 				grid,
 				entity_position->value,
-				target_position))
+				target_position) ||
+			registry.get<CollisionMovement>(event.entity).value == false)
 		{
 			return process(
 				simulation,
