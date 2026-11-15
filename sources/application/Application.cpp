@@ -6,6 +6,7 @@
 #include "game/AI.hpp"
 #include "game/Simulation.hpp"
 #include "game/component/Component.hpp"
+#include "game/world/Position.hpp"
 #include "ncurses/Input.hpp"
 #include "ui/Dialog.hpp"
 #include "utils/Log.hpp"
@@ -24,6 +25,15 @@ bool Application::handle_input(const Ncurses::Input::Event& event)
 	else if (event.key == Key::Resize)
 	{
 		layout.reset();
+		if (simulation.has_value())
+		{
+			const auto position = simulation->get_registry()
+				.get<Game::Component::Value::Position>(simulation->get_player())
+				.value;
+			simulation->simulate(Game::Event::LoadChunks{
+				.position = Game::World::to_chunk(position)
+			});
+		}
 	}
 	else if (event.is_ascii())
 	{
