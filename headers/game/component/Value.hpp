@@ -9,6 +9,7 @@
 #include "ncurses/Color.hpp"
 #include "game/world/Position.hpp"
 #include "game/component/Base.hpp"
+#include "game/Dice.hpp"
 
 namespace Game::Component::Value
 {

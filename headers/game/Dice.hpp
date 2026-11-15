@@ -2,6 +2,7 @@
 
 #include <ostream>
 #include <string>
+#include <nlohmann/json_fwd.hpp>
 #include <vector>
 #include "utils/Random.hpp"
 
@@ -26,5 +27,6 @@ namespace Game
 	{
 		return os << dice.to_string();
 	}
-
+	void to_json(nlohmann::json& data, const Dice& dice);
+	void from_json(const nlohmann::json& data, Dice& dice);
 } // namespace Game

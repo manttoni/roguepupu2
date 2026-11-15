@@ -8,6 +8,7 @@
 #include <limits>
 #include <stdexcept>
 #include <string_view>
+#include <nlohmann/json.hpp>
 
 namespace
 {
@@ -144,5 +145,14 @@ namespace Game
 			result += std::to_string(bonus);
 
 		return result;
+	}
+	void to_json(nlohmann::json& data, const Dice& dice)
+	{
+		data = dice.to_string();
+	}
+
+	void from_json(const nlohmann::json& data, Dice& dice)
+	{
+		dice = Dice{data.get<std::string>()};
 	}
 }
