@@ -300,15 +300,12 @@ namespace Game::System
 						entity_database,
 						request.id);
 					if (!registry.valid(entity))
-					{
-						Log::debug() << "Invalid entity " << request.id;
-						registry.destroy(entity);
 						continue;
-					}
 					spawn_events.push_back(
 						Event::Spawn{
-						.entity = entity, // id: request.id
-						.position = request.position
+						.entity = entity,
+						.position = request.position,
+						.search_radius = request.search_radius
 						});
 				}
 				spawn_requests.clear();
@@ -449,8 +446,12 @@ namespace Game::System
 		auto& registry = simulation.get_registry();
 		auto& scheduler = simulation.get_scheduler();
 
+		if (!registry.valid(event.entity))
+			return Event::Node{.outcome = Event::Outcome::Rejected};
+
 		const auto position =
-			simulation.get_spawner().find_spawn_position_near(event.entity, event.position);
+			simulation.get_spawner().find_spawn_position_near(
+				event.entity, event.position, event.search_radius);
 		if (!position)
 		{
 			registry.destroy(event.entity);

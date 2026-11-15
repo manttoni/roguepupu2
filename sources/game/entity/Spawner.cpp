@@ -58,22 +58,29 @@ namespace Game::Entity
 
 	std::optional<World::GlobalPosition> Spawner::find_spawn_position_near(
 		const entt::entity entity,
-		const World::GlobalPosition& position) const
+		const World::GlobalPosition& position,
+		const std::optional<double> search_radius) const
 	{
 		if (can_spawn(entity, position))
 			return position;
+		if (search_radius && *search_radius < 1.0)
+			return std::nullopt;
 
-		auto potential_positions =
-			World::Chunk::get_positions(World::to_chunk(position));
-		std::sort(potential_positions.begin(), potential_positions.end(),
-			[&position](const auto& a, const auto& b)
-			{
-			return World::distance(a, position) <
-			World::distance(b, position);
-			});
-		for (const auto& potpos : potential_positions)
-			if (can_spawn(entity, potpos))
-				return potpos;
+		auto potential_positions = search_radius
+			? World::nearby(position, *search_radius)
+			: World::Chunk::get_positions(World::to_chunk(position));
+		if (!search_radius)
+		{
+			std::sort(potential_positions.begin(), potential_positions.end(),
+				[&position](const auto& a, const auto& b)
+				{
+					return World::distance(a, position) <
+						World::distance(b, position);
+				});
+		}
+		for (const auto& candidate : potential_positions)
+			if (can_spawn(entity, candidate))
+				return candidate;
 		return std::nullopt;
 	}
 

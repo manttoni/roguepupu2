@@ -91,6 +91,8 @@ namespace Game::Event
 	{
 		entt::entity entity = entt::null;
 		Game::World::GlobalPosition position{};
+		// An omitted radius searches the target chunk.
+		std::optional<double> search_radius = std::nullopt;
 	};
 	struct Destroy
 	{
