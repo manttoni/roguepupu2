@@ -125,6 +125,7 @@ namespace EventDescriber
 			ed.describe(event.item);
 	}
 
+	/*
 	std::string describe(
 		const Game::Simulation& simulation,
 		const Event::Take& event)
@@ -138,6 +139,7 @@ namespace EventDescriber
 		return ed.describe(event.entity) + " takes " +
 			ed.describe(event.item);
 	}
+	*/
 
 	std::string describe(
 		const Game::Simulation& simulation,
