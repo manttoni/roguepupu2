@@ -1,4 +1,5 @@
 #include "game/Dice.hpp"
+#include "utils/Random.hpp"
 
 #include <algorithm>
 #include <charconv>
@@ -7,6 +8,7 @@
 #include <limits>
 #include <stdexcept>
 #include <string_view>
+#include <nlohmann/json.hpp>
 
 namespace
 {
@@ -104,7 +106,7 @@ namespace Game
 			std::int64_t total = 0;
 
 			for (int i = 0; i < amount; ++i)
-				total += Random::rand<int>(1, sides);
+				total += Random::integer(1, sides);
 
 			return total;
 		};
@@ -143,5 +145,14 @@ namespace Game
 			result += std::to_string(bonus);
 
 		return result;
+	}
+	void to_json(nlohmann::json& data, const Dice& dice)
+	{
+		data = dice.to_string();
+	}
+
+	void from_json(const nlohmann::json& data, Dice& dice)
+	{
+		dice = Dice{data.get<std::string>()};
 	}
 }

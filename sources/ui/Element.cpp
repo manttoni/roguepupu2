@@ -26,7 +26,7 @@ namespace UI::Element
 			element.label +
 			(element.label.empty() ? "" : " : ") +
 			(text ? *text : "nullptr") +
-			(text->size() < element.length.max ? "_" + std::string(element.length.max - (text->size() + 1), ' ') : "");
+			(text->size() < element.length.max ? "[A_BLINK]|[reset]" + std::string(element.length.max - (text->size() + 1), ' ') : "");
 	}
 
 	std::string to_string(const Button& element)

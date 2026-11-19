@@ -11,7 +11,15 @@
 char Renderer::get_cell_glyph(const Game::World::Cell& cell)
 {
 	using Form = Game::Enum::Form;
+	using Material = Game::Enum::Material;
 
+	switch (cell.material)
+	{
+		case Material::Gravel:
+			return ';';
+		default:
+			break;
+	}
 	switch (cell.form)
 	{
 		case Form::Wall:
@@ -37,6 +45,8 @@ Ncurses::Color Renderer::get_cell_color(const Game::World::Cell& cell)
 			return Ncurses::Color{4,4,4};
 		case Material::Soil:
 			return Ncurses::Color{2,2,0};
+		case Material::Gravel:
+			return Ncurses::Color{4,3,3};
 		default:
 			Log::warning()
 				<< "Unmapped cell material: "

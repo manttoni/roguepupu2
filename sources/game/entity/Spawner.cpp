@@ -56,6 +56,74 @@ namespace Game::Entity
 		return std::nullopt;
 	}
 
+	std::optional<World::GlobalPosition> Spawner::find_spawn_position_near(
+		const entt::entity entity,
+		const World::GlobalPosition& position,
+		const std::optional<double> search_radius) const
+	{
+		if (can_spawn(entity, position))
+			return position;
+		if (search_radius && *search_radius < 1.0)
+			return std::nullopt;
+
+		auto potential_positions = search_radius
+			? World::nearby(position, *search_radius)
+			: World::Chunk::get_positions(World::to_chunk(position));
+		if (!search_radius)
+		{
+			std::sort(potential_positions.begin(), potential_positions.end(),
+				[&position](const auto& a, const auto& b)
+				{
+					return World::distance(a, position) <
+						World::distance(b, position);
+				});
+		}
+		for (const auto& candidate : potential_positions)
+			if (can_spawn(entity, candidate))
+				return candidate;
+		return std::nullopt;
+	}
+
+	bool Spawner::can_spawn(
+		const entt::entity entity,
+		const World::GlobalPosition& position) const
+	{
+		const auto* const cell = grid.find_cell(position);
+		if (cell == nullptr)
+		{
+			return false;
+		}
+
+		if (registry.all_of<Component::Tag::Plant>(entity))
+		{
+			// entity is a plant, it needs soil to grow
+			if (cell->material != Enum::Material::Soil)
+				return false;
+		}
+
+		if (cell->form != Enum::Form::Floor)
+			return false;
+
+		const auto blocking_entities = Query::find_all(
+			registry,
+			Component::Value::Position{position},
+			Component::Value::CollisionMovement{true}
+			);
+		if (!blocking_entities.empty())
+			return false;
+
+		const auto all_entities = Query::find_all(
+			registry,
+			Component::Value::Position{position}
+			);
+		using CollisionMovement = Component::Value::CollisionMovement;
+		if (!all_entities.empty() &&
+			registry.get<CollisionMovement>(entity).value == true)
+			return false;
+
+		return true;
+	}
+
 	bool Spawner::can_spawn(
 		const Definition::ID& id,
 		const World::GlobalPosition& position

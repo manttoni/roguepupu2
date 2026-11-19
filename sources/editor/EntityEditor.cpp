@@ -32,7 +32,15 @@ namespace EntityEditor
 	{
 		UI::Menu menu("Search Definition");
 		for (const auto& [id, data] : all_definitions.items())
+		{
 			menu.add(UI::Element::Button(id));
+			if (!Game::Entity::valid_definition(all_definitions.at(id)) &&
+				UI::Dialog::confirm(std::string("Load invalid entity: ") + id
+					+ "?"))
+			{
+				return Definition{.id = id, .data = data};
+			}
+		}
 		menu.add(UI::Element::cancel());
 		const auto selection = UI::Search::select(menu);
 		if (selection.cancelled())
@@ -48,7 +56,7 @@ namespace EntityEditor
 	std::optional<Definition> new_definition(const Json& all_definitions)
 	{
 		std::string id;
-		const auto selection = UI::Dialog::get_input("Entity ID", id);
+		const auto selection = UI::Dialog::get_input("Entity ID", id, 27);
 		if (selection.cancelled())
 			return std::nullopt;
 		assert(selection.confirmed());

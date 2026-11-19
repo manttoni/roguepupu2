@@ -23,27 +23,30 @@
 
 namespace UI
 {
-	Menu::Menu(const Vec2<int>& position, const std::string& title) : position(position), title(title)
+	Menu::Menu(
+		const Vec2<int>& position,
+		const std::string& title) :
+		position(position),
+		title(title)
 	{}
 
-	Menu::Menu(const std::string& title) : position(Ncurses::Screen::middle()), title(title)
+	Menu::Menu(const std::string& title) :
+		position(Ncurses::Screen::middle()), title(title)
 	{}
 
 	void Menu::reset_panel()
 	{
 		const auto formatted = Format::elements(elements);
-		const auto longest = std::max_element(
-			formatted.begin(),
-			formatted.end(),
-			[](const auto& a, const auto& b)
-			{
-			return a.size() < b.size();
-			});
-		const auto longest_length =
-			longest == formatted.end() ? 0 : longest->size();
+		std::size_t longest_length = 0;
+
+		for (const auto& line : formatted)
+			longest_length =
+				std::max(longest_length, Format::visible_width(line));
 
 		const int height = 2 + elements.size();
-		const int width  = 4 + std::max(longest_length, title.size() + 2);
+		const int width = 4 + std::max(
+			longest_length,
+			Format::visible_width(title) + 2);
 		const int start_y = std::max(0, position.y - height / 2);
 		const int start_x = std::max(0, position.x - width / 2);
 
@@ -104,7 +107,9 @@ namespace UI
 			);
 	}
 
-	Selection Menu::handle_input(const std::size_t selected, const Ncurses::Input::Event& event)
+	Selection Menu::handle_input(
+		const std::size_t selected,
+		const Ncurses::Input::Event& event)
 	{
 		const auto state = std::visit([&event](auto& element) {
 			return Element::handle_input(element, event);
@@ -139,7 +144,8 @@ namespace UI
 					selected = (selected == 0) ? 0 : selected - 1;
 					break;
 				case Key::Down:
-					selected = (selected == elements.size() - 1) ? selected : selected + 1;
+					selected = (selected == elements.size() - 1) ?
+						selected : selected + 1;
 					break;
 				case Key::Escape:
 					return Selection{
@@ -147,13 +153,18 @@ namespace UI
 					};
 				default:
 					{
-						const Selection selection = handle_input(selected, event);
+						const Selection selection =
+							handle_input(selected, event);
 						if (selection.state == Selection::State::Changed)
 						{
 							changed_ = true;
-							Log::debug() << "\'" << selection.label << "\' changed";
+							Log::debug() << "\'" << selection.label <<
+								"\' changed";
 						}
-						if (selection.selected() || selection.confirmed() || selection.cancelled() || selection.state == Selection::State::MultiChoice)
+						if (selection.selected() ||
+							selection.confirmed() ||
+							selection.cancelled() ||
+							selection.state == Selection::State::MultiChoice)
 							return selection;
 					}
 					break;

@@ -22,4 +22,20 @@ namespace Game::World
 	{
 		return cells[to_index(position)];
 	}
+
+	std::vector<GlobalPosition> Chunk::get_positions(
+		const ChunkPosition& chunk_position)
+	{
+		const auto dimensions = Chunk::dimensions();
+		std::vector<GlobalPosition> positions;
+		positions.reserve(dimensions.y * dimensions.x);
+
+		for (int y = 0; y < dimensions.y; ++y)
+		{
+			for (int x = 0; x < dimensions.x; ++x)
+				positions.push_back(to_global(chunk_position, LocalPosition{y, x}));
+		}
+
+		return positions;
+	}
 }

@@ -65,7 +65,10 @@ namespace UI::Dialog
 		get_selection(message, {"Ok"});
 	}
 
-	Selection get_input(const std::string& label, std::string& input)
+	Selection get_input(
+		const std::string& label,
+		std::string& input,
+		const size_t len)
 	{
 		auto copy = input;
 
@@ -73,7 +76,7 @@ namespace UI::Dialog
 		UI::Element::TextIn text_in{
 			.label = "",
 				.text = &copy,
-				.length = {0, std::max<size_t>(copy.size(), 23)}};
+				.length = {0, std::max<size_t>(copy.size(), len)}};
 		text_in.confirm = true;
 		menu.add(text_in);
 		menu.add(UI::Element::confirm());

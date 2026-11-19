@@ -31,6 +31,9 @@ namespace Game::World
 
 			const CellsArray& get_cells() const { return cells; }
 
+			static std::vector<GlobalPosition> get_positions(
+				const ChunkPosition& chunk_position);
+
 		private:
 			CellsArray cells;
 

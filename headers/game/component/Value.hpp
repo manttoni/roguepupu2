@@ -1,12 +1,15 @@
 #pragma once
 #include <ostream>
 #include <string_view>
+#include <type_traits>
 
+#include "external/entt/fwd.hpp"
 #include "game/component/Base.hpp"
 #include "game/Enum.hpp"
 #include "ncurses/Color.hpp"
 #include "game/world/Position.hpp"
 #include "game/component/Base.hpp"
+#include "game/Dice.hpp"
 
 namespace Game::Component::Value
 {
@@ -18,7 +21,11 @@ namespace Game::Component::Value
 		Base() = default;
 		explicit Base(const T& value) : value(value) {}
 	};
-
+	inline std::ostream& operator<<(std::ostream& os, entt::entity entity)
+	{
+		using Underlying = std::underlying_type_t<entt::entity>;
+		return os << static_cast<Underlying>(entity);
+	}
 #define X(name, type) \
 	struct name : Game::Component::Value::Base<type> \
 	{ \

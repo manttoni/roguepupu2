@@ -176,10 +176,10 @@ namespace Game::Entity
 	{
 		if (!entity_database.definitions.contains(id))
 		{
-			throw std::runtime_error(
+			Log::warning() <<
 				"Entity Definition ID \'"
-				+ id
-				+ "\' not found");
+				<< id
+				<< "\' not found";
 			return entt::null;
 		}
 		const Definition definition{id, entity_database.definitions.at(id)};

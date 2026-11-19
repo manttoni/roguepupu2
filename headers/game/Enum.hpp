@@ -10,6 +10,14 @@
 
 namespace Game::Enum
 {
+	enum class Size
+	{
+		None,
+		Tiny,
+		Small,
+		Medium
+	};
+
 	enum class AIBehavior
 	{
 		Idle,
@@ -20,7 +28,8 @@ namespace Game::Enum
 	{
 		None,
 		Stone,
-		Soil
+		Soil,
+		Gravel
 	};
 
 	enum class Form
@@ -125,15 +134,7 @@ namespace Game::Enum
 	{
 		None,
 		Humanoid,
-	};
-
-	enum class Race
-	{
-		None,
-		Human,
-		Elf,
-		Dwarf,
-		Goblin,
+		Undead
 	};
 
 	enum class WeaponType

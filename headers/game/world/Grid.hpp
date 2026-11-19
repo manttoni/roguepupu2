@@ -35,6 +35,7 @@ namespace Game::World
 			Chunk* find_chunk(const ChunkPosition& position);
 			bool contains(const ChunkPosition& position) const;
 			bool add(const ChunkPosition& position, Chunk chunk);
+			const ChunkMap& get_chunks() const { return chunks; }
 
 		private:
 			ChunkMap chunks;

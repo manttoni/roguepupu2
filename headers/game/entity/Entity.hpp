@@ -81,7 +81,8 @@ namespace Game::Entity
 				values.reserve(data.size());
 
 				for (const auto& element : data)
-					values.push_back(parse_value<typename T::value_type>(element));
+					values.push_back(
+						parse_value<typename T::value_type>(element));
 
 				return values;
 			}
@@ -95,10 +96,17 @@ namespace Game::Entity
 			}
 		}
 
-	entt::entity create(entt::registry& registry, const Definition& definition);
-	entt::entity create(entt::registry& registry, const EntityDatabase& entity_database, const Definition::ID& id);
+	entt::entity create(
+		entt::registry& registry,
+		const Definition& definition);
+	entt::entity create(
+		entt::registry& registry,
+		const EntityDatabase& entity_database,
+		const Definition::ID& id);
 
-	bool requires_component(const Definition& definition, const std::string& component);
+	bool requires_component(
+		const Definition& definition,
+		const std::string& component);
 	std::vector<Definition::ID> get_ids();
 
 } // namespace Game::Entity
