@@ -107,14 +107,21 @@ void Application::run_game()
 
 	while (game_running)
 	{
+		// This is here until more 'Actors' appear
 		Game::System::Vision::update_vision(
 			simulation->get_registry(),
 			simulation->get_grid(),
 			simulation->get_player());
+
+		/* Rendering
+		 * Order: 1. clear screen buffer, 2. make changes 3. update screen
+		 * Flickering? Wrong order?
+		 * */
 		renderer.render_player_perspective(*simulation);
 		renderer.write(messages.get_last(20));
 		update_panels();
 		doupdate();
+		/* ~Rendering */
 
 		const auto input = Ncurses::Input::get_event(1000 / fps);
 		if (handle_input(input))

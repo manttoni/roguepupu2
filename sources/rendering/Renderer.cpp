@@ -55,6 +55,9 @@ Ncurses::Color Renderer::get_cell_color(const Game::World::Cell& cell)
 	}
 }
 
+/* Helper to more easily get an entity at a position so that if there are
+ * multiple, it chooses one based on rendering frame number.
+ * */
 entt::entity Renderer::get_entity(
 	const Game::Simulation& simulation,
 	const Game::World::GlobalPosition& position)
@@ -186,7 +189,7 @@ void Renderer::render_player_perspective(
 		}
 	}
 
-	surface.refresh();
+	// surface.refresh();
 	frame++;
 }
 
