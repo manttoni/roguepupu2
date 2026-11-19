@@ -203,5 +203,5 @@ void Renderer::write(const std::vector<std::string>& messages)
 	{
 		surface.write(height - i - 1, 0, messages[messages_size - 1 - i]);
 	}
-	surface.refresh();
+	//surface.refresh();
 }
