@@ -47,6 +47,7 @@ Choose **New Game** and enter a seed to start. Use the arrow keys and Enter in m
 | Enter | Open the interaction menu |
 | Space | End the turn |
 | Esc | Cancel or return to the main menu |
+| ` | Cheats
 
 There is no save/load system yet.
 
