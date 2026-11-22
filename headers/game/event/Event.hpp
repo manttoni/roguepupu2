@@ -211,6 +211,11 @@ namespace Game::Event
 
 			return node;
 		}
+
+		static Node rejected()
+		{
+			return Node{.outcome = Outcome::Rejected};
+		}
 	};
 
 	inline std::ostream& operator<<(std::ostream& os, const Node& node)
