@@ -41,14 +41,14 @@ namespace Game::System::Equipment
 		const auto* inventory =
 			registry.try_get<Component::List::Inventory>(entity);
 		if (!inventory)
-			throw std::runtime_error("Entity has no inventory");
+			return false;
 		if (!inventory->contains(item))
-			throw std::runtime_error("Can only equip items in inventory");
+			return false;
 
 		auto* equipped_items =
 			registry.try_get<Component::List::EquippedItems>(entity);
 		if (!equipped_items)
-			throw std::runtime_error("Entity cannot equip items");
+			return false;
 
 		if (is_equipped(registry, entity, item))
 			return false;
