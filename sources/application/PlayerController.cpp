@@ -1,19 +1,22 @@
 #include "application/PlayerController.hpp"
+#include "game/system/Equipment.hpp"
 #include "game/Query.hpp"
 #include "game/component/List.hpp"
 #include "game/component/Runtime.hpp"
 #include "ui/Search.hpp"
 #include "ui/Menu.hpp"
 
+using namespace Game;
+
 PlayerController::PlayerController(Renderer& renderer) : renderer(renderer) {}
 
-std::optional<Game::World::GlobalPosition> PlayerController::select_position(
-	const Game::Simulation& simulation)
+std::optional<World::GlobalPosition> PlayerController::select_position(
+	const Simulation& simulation)
 {
 	const auto& registry = simulation.get_registry();
 	const auto player = simulation.get_player();
 	const auto player_position =
-		registry.get<Game::Component::Value::Position>(player).value;
+		registry.get<Component::Value::Position>(player).value;
 	auto cursor = player_position;
 	while (true)
 	{
@@ -43,15 +46,17 @@ std::optional<Game::World::GlobalPosition> PlayerController::select_position(
 }
 
 entt::entity PlayerController::select_entity(
-	const Game::Simulation& simulation,
+	const Simulation& simulation,
 	const std::vector<entt::entity>& entities)
 {
 	const auto& registry = simulation.get_registry();
 	UI::Menu menu("Select Entity");
 	for (const auto entity : entities)
 	{
-		const auto& color = registry.get<Game::Component::Value::Color>(entity).value;
-		const auto& name = registry.get<Game::Component::Value::Name>(entity).value;
+		const auto& color =
+			registry.get<Component::Value::Color>(entity).value;
+		const auto& name =
+			registry.get<Component::Value::Name>(entity).value;
 		menu.add(UI::Element::Button(color.markup() + name + "{reset}"));
 	}
 	menu.add(UI::Element::cancel());
@@ -62,7 +67,7 @@ entt::entity PlayerController::select_entity(
 	return entities[selection.index];
 }
 
-entt::entity PlayerController::select_entity(const Game::Simulation& simulation)
+entt::entity PlayerController::select_entity(const Simulation& simulation)
 {
 	const auto& registry = simulation.get_registry();
 	const auto position = select_position(simulation);
@@ -70,9 +75,9 @@ entt::entity PlayerController::select_entity(const Game::Simulation& simulation)
 		return entt::null;
 
 	const auto entities =
-		Game::Query::find_all(
+		Query::find_all(
 			registry,
-			Game::Component::Value::Position{*position});
+			Component::Value::Position{*position});
 	if (entities.empty())
 		return entt::null;
 
@@ -80,7 +85,7 @@ entt::entity PlayerController::select_entity(const Game::Simulation& simulation)
 }
 
 PlayerController::Interaction PlayerController::get_interaction(
-	const Game::Simulation& simulation,
+	const Simulation& simulation,
 	const entt::entity entity)
 {
 	if (entity == entt::null)
@@ -90,27 +95,26 @@ PlayerController::Interaction PlayerController::get_interaction(
 	const auto player = simulation.get_player();
 
 	const auto& player_position =
-		registry.get<Game::Component::Value::Position>(player).value;
+		registry.get<Component::Value::Position>(player).value;
 
 	const auto location =
-		registry.all_of<Game::Component::Value::Position>(entity) ?
+		registry.all_of<Component::Value::Position>(entity) ?
 		Location::Ground :
 		Location::Inventory;
 
-	const auto container =
-		registry.get<Game::Component::List::Inventory>(player).contains(entity) ?
-		player : entt::null; // TODO: figure out whose inventory the entity is in
+	const auto* contained_in =
+		registry.try_get<Component::Value::ContainedIn>(entity);
 
 	std::vector<Interaction> interactions;
 
-	if (registry.all_of<Game::Component::List::Inventory>(entity))
+	if (registry.all_of<Component::List::Inventory>(entity))
 		interactions.push_back(Interaction::OpenInventory);
 
 	std::optional<double> distance =
 		location == Location::Ground ?
 		std::optional{
-			Game::World::distance(
-				registry.get<Game::Component::Value::Position>(entity).value,
+			World::distance(
+				registry.get<Component::Value::Position>(entity).value,
 				player_position)} :
 			std::nullopt;
 
@@ -119,17 +123,25 @@ PlayerController::Interaction PlayerController::get_interaction(
 		case Location::Ground:
 			if (*distance < 1.5)
 			{
-				if (registry.all_of<Game::Component::Tag::Item>(entity))
+				if (registry.all_of<Component::Tag::Item>(entity))
 					interactions.push_back(Interaction::PickUp);
 			}
 			break;
 		case Location::Inventory:
-			if (container == player)
+			if (contained_in && contained_in->value == player)
 			{
 				interactions.push_back(Interaction::Drop);
 				interactions.push_back(Interaction::Throw);
+				if (registry.all_of<Component::Tag::Equipment>(entity))
+				{
+					if (System::Equipment::is_equipped(
+							registry, player, entity))
+						interactions.push_back(Interaction::Unequip);
+					else
+						interactions.push_back(Interaction::Equip);
+				}
 			}
-			else
+			else if (contained_in)
 			{
 				interactions.push_back(Interaction::Take);
 			}
@@ -150,8 +162,8 @@ PlayerController::Interaction PlayerController::get_interaction(
 	return interactions[selection.index];
 }
 
-std::optional<Game::Event::Target> PlayerController::select_target(
-	const Game::Simulation& simulation,
+std::optional<Event::Target> PlayerController::select_target(
+	const Simulation& simulation,
 	Targeting targeting)
 {
 	const auto position = select_position(simulation);
@@ -159,17 +171,17 @@ std::optional<Game::Event::Target> PlayerController::select_target(
 		return std::nullopt;
 
 	if (targeting == Targeting::Position)
-		return Game::Event::Target{*position};
+		return Event::Target{*position};
 
 	const auto& registry = simulation.get_registry();
-	const auto entities = Game::Query::find_all(
+	const auto entities = Query::find_all(
 		registry,
-		Game::Component::Value::Position{*position});
+		Component::Value::Position{*position});
 
 	if (entities.empty())
 	{
 		if (targeting == Targeting::Anything)
-			return Game::Event::Target{*position};
+			return Event::Target{*position};
 
 		return std::nullopt;
 	}
@@ -178,18 +190,18 @@ std::optional<Game::Event::Target> PlayerController::select_target(
 	if (entity == entt::null)
 		return std::nullopt;
 
-	return Game::Event::Target{entity};
+	return Event::Target{entity};
 }
 
-Game::Event::Any PlayerController::get_interaction_event(
-	const Game::Simulation& simulation)
+Event::Any PlayerController::get_interaction_event(
+	const Simulation& simulation)
 {
 	const auto selected_entity = select_entity(simulation);
 	return get_interaction_event(simulation, selected_entity);
 }
 
-Game::Event::Any PlayerController::get_interaction_event(
-	const Game::Simulation& simulation,
+Event::Any PlayerController::get_interaction_event(
+	const Simulation& simulation,
 	const entt::entity entity)
 {
 	const auto interaction = get_interaction(simulation, entity);
@@ -199,22 +211,22 @@ Game::Event::Any PlayerController::get_interaction_event(
 	switch (interaction)
 	{
 		case Interaction::Null:
-			return Game::Event::Null{};
+			return Event::Null{};
 
 		case Interaction::OpenInventory:
 			{
-				const auto& inventory = registry.get<Game::Component::List::Inventory>(entity).values;
+				const auto& inventory = registry.get<Component::List::Inventory>(entity).values;
 				return get_interaction_event(simulation, select_entity(simulation, inventory));
 			}
 
 		case Interaction::PickUp:
-			return Game::Event::PickUp{
+			return Event::PickUp{
 				.entity = player,
 					.item = entity
 			};
 
 		case Interaction::Take:
-			return Game::Event::Take{
+			return Event::Take{
 				.entity = player,
 					.item = entity
 			};
@@ -225,9 +237,9 @@ Game::Event::Any PlayerController::get_interaction_event(
 					simulation,
 					Targeting::Anything);
 				if (!target)
-					return Game::Event::Null{};
+					return Event::Null{};
 
-				return Game::Event::Throw{
+				return Event::Throw{
 					.entity = player,
 						.item = entity,
 						.target = *target
@@ -235,22 +247,34 @@ Game::Event::Any PlayerController::get_interaction_event(
 			}
 
 		case Interaction::Drop:
-			return Game::Event::Drop{
+			return Event::Drop{
+				.entity = player,
+					.item = entity
+			};
+
+		case Interaction::Equip:
+			return Event::Equip{
+				.entity = player,
+					.item = entity
+			};
+
+		case Interaction::Unequip:
+			return Event::Unequip{
 				.entity = player,
 					.item = entity
 			};
 	}
 
-	return Game::Event::Null{};
+	return Event::Null{};
 }
 
-Game::Event::Any PlayerController::get_event(
-	const Game::Simulation& simulation,
+Event::Any PlayerController::get_event(
+	const Simulation& simulation,
 	const Ncurses::Input::Event& event
 	)
 {
 	const auto current_actor = simulation.current_actor();
-	assert(current_actor.controller == Game::Turn::Controller::Player);
+	assert(current_actor.controller == Turn::Controller::Player);
 
 	const auto player = simulation.get_player();
 	assert(player != entt::null);
@@ -258,18 +282,18 @@ Game::Event::Any PlayerController::get_event(
 	(void) current_actor;
 
 	if (event.key == Ncurses::Input::Key::None)
-		return Game::Event::Null{};
+		return Event::Null{};
 
 	if (event.is_directional())
 	{
-		return Game::Event::Bump{
+		return Event::Bump{
 			.entity = player,
 				.direction = event.to_direction()
 		};
 	}
 	else if (event.key == Ncurses::Input::Key::Space)
 	{
-		return Game::Event::EndTurn{
+		return Event::EndTurn{
 			.entity = player
 		};
 	}
@@ -278,5 +302,5 @@ Game::Event::Any PlayerController::get_event(
 		return get_interaction_event(simulation);
 	}
 
-	return Game::Event::Null{};
+	return Event::Null{};
 }

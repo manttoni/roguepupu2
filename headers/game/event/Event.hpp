@@ -112,12 +112,12 @@ namespace Game::Event
 	struct Equip
 	{
 		entt::entity entity = entt::null;
-		entt::entity equipment = entt::null;
+		entt::entity item = entt::null;
 	};
 	struct Unequip
 	{
 		entt::entity entity = entt::null;
-		entt::entity equipment = entt::null;
+		entt::entity item = entt::null;
 	};
 	struct DiceRoll
 	{
@@ -210,6 +210,11 @@ namespace Game::Event
 				node.consequences.push_back(Node{.event = std::move(event)});
 
 			return node;
+		}
+
+		static Node rejected()
+		{
+			return Node{.outcome = Outcome::Rejected};
 		}
 	};
 

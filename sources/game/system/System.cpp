@@ -1,4 +1,5 @@
 #include "game/system/System.hpp"
+#include "game/system/Equipment.hpp"
 #include "ncurses/Screen.hpp"
 #include "game/system/Loot.hpp"
 #include "game/system/Lighting.hpp"
@@ -43,6 +44,32 @@ namespace Game::System
 	{
 		return Event::Node{.outcome = Event::Outcome::Rejected};
 		// this event has no effect on simulation
+	}
+
+	Event::Node process(Simulation& simulation, const Event::Equip& event)
+	{
+		assert(event.entity != entt::null);
+		assert(event.item != entt::null);
+
+		if (!Equipment::equip(
+				simulation.get_registry(),
+				event.entity,
+				event.item))
+			return Event::Node::rejected();
+		return Event::Node::accepted();
+	}
+
+	Event::Node process(Simulation& simulation, const Event::Unequip& event)
+	{
+		assert(event.entity != entt::null);
+		assert(event.item != entt::null);
+
+		if (!Equipment::unequip(
+				simulation.get_registry(),
+				event.entity,
+				event.item))
+			return Event::Node::rejected();
+		return Event::Node::accepted();
 	}
 
 	Event::Node process(
@@ -123,7 +150,12 @@ namespace Game::System
 		inventory->remove(event.item);
 		registry.remove<Component::Value::ContainedIn>(event.item);
 
-		// TODO: add unequip consequence if its equipped
+		auto* equipped_items =
+			registry.try_get<List::EquippedItems>(event.entity);
+		if (equipped_items && equipped_items->contains(event.item))
+		{
+			equipped_items->remove(event.item);
+		}
 
 		return Event::Node::accepted();
 	}

@@ -18,7 +18,9 @@ class PlayerController
 			PickUp,
 			Take,
 			Throw,
-			Drop
+			Drop,
+			Equip,
+			Unequip,
 		};
 
 		enum class Location
