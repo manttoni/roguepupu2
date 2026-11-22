@@ -150,7 +150,12 @@ namespace Game::System
 		inventory->remove(event.item);
 		registry.remove<Component::Value::ContainedIn>(event.item);
 
-		// TODO: add unequip consequence if its equipped
+		auto* equipped_items =
+			registry.try_get<List::EquippedItems>(event.entity);
+		if (equipped_items && equipped_items->contains(event.item))
+		{
+			equipped_items->remove(event.item);
+		}
 
 		return Event::Node::accepted();
 	}
