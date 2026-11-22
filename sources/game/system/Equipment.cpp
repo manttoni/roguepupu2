@@ -38,6 +38,13 @@ namespace Game::System::Equipment
 			Component::Tag::Equipment>(item))
 			throw std::runtime_error("Invalid item");
 
+		const auto* inventory =
+			registry.try_get<Component::List::Inventory>(entity);
+		if (!inventory)
+			throw std::runtime_error("Entity has no inventory");
+		if (!inventory->contains(item))
+			throw std::runtime_error("Can only equip items in inventory");
+
 		auto* equipped_items =
 			registry.try_get<Component::List::EquippedItems>(entity);
 		if (!equipped_items)
