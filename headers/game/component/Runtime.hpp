@@ -6,8 +6,6 @@
 #include "game/world/Position.hpp"
 #include "external/entt/fwd.hpp"
 
-/* This namespace describes components that are created during runtime.
- * */
 namespace Game::Component::Runtime
 {
 	struct Vision
@@ -15,9 +13,5 @@ namespace Game::Component::Runtime
 		std::vector<World::GlobalPosition> visible_positions;
 		std::unordered_set<World::GlobalPosition> seen_positions;
 		std::vector<entt::entity> visible_entities;
-	};
-
-	struct EquippedItems
-	{
 	};
 }
