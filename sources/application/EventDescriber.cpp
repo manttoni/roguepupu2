@@ -149,10 +149,10 @@ namespace EventDescriber
 
 		Log::debug()
 			<< "Equip: entity=" << ed.describe(event.entity)
-			<< ", equipment=" << ed.describe(event.equipment);
+			<< ", equipment=" << ed.describe(event.item);
 
 		return ed.describe(event.entity) + " equips " +
-			ed.describe(event.equipment);
+			ed.describe(event.item);
 	}
 
 	std::string describe(
@@ -163,10 +163,10 @@ namespace EventDescriber
 
 		Log::debug()
 			<< "Unequip: entity=" << ed.describe(event.entity)
-			<< ", equipment=" << ed.describe(event.equipment);
+			<< ", equipment=" << ed.describe(event.item);
 
 		return ed.describe(event.entity) + " unequips " +
-			ed.describe(event.equipment);
+			ed.describe(event.item);
 	}
 
 	std::string describe(

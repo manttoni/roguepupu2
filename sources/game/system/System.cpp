@@ -45,6 +45,32 @@ namespace Game::System
 		// this event has no effect on simulation
 	}
 
+	Event::Node process(Simulation& simulation, const Event::Equip& event)
+	{
+		assert(event.entity != entt::null);
+		assert(event.item != entt::null);
+
+		if (!Equipment::equip(
+				simulation.get_registry(),
+				event.entity,
+				event.item))
+			return Event::Node::rejected();
+		return Event::Node::accepted();
+	}
+
+	Event::Node process(Simulation& simulation, const Event::Unequip& event)
+	{
+		assert(event.entity != entt::null);
+		assert(event.item != entt::null);
+
+		if (!Equipment::unequip(
+				simulation.get_registry(),
+				event.entity,
+				event.item))
+			return Event::Node::rejected();
+		return Event::Node::accepted();
+	}
+
 	Event::Node process(
 		Simulation& simulation,
 		const Event::Take& event)

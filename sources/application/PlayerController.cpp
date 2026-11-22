@@ -119,17 +119,25 @@ PlayerController::Interaction PlayerController::get_interaction(
 		case Location::Ground:
 			if (*distance < 1.5)
 			{
-				if (registry.all_of<Game::Component::Tag::Item>(entity))
+				if (registry.all_of<Component::Tag::Item>(entity))
 					interactions.push_back(Interaction::PickUp);
 			}
 			break;
 		case Location::Inventory:
-			if (container == player)
+			if (contained_in && contained_in->value == player)
 			{
 				interactions.push_back(Interaction::Drop);
 				interactions.push_back(Interaction::Throw);
+				if (registry.all_of<Component::Tag::Equipment>(entity))
+				{
+					if (System::Equipment::is_equipped(
+							registry, player, entity))
+						interactions.push_back(Interaction::Unequip);
+					else
+						interactions.push_back(Interaction::Equip);
+				}
 			}
-			else
+			else if (contained_in)
 			{
 				interactions.push_back(Interaction::Take);
 			}
@@ -235,22 +243,34 @@ Game::Event::Any PlayerController::get_interaction_event(
 			}
 
 		case Interaction::Drop:
-			return Game::Event::Drop{
+			return Event::Drop{
+				.entity = player,
+					.item = entity
+			};
+
+		case Interaction::Equip:
+			return Event::Equip{
+				.entity = player,
+					.item = entity
+			};
+
+		case Interaction::Unequip:
+			return Event::Unequip{
 				.entity = player,
 					.item = entity
 			};
 	}
 
-	return Game::Event::Null{};
+	return Event::Null{};
 }
 
-Game::Event::Any PlayerController::get_event(
-	const Game::Simulation& simulation,
+Event::Any PlayerController::get_event(
+	const Simulation& simulation,
 	const Ncurses::Input::Event& event
 	)
 {
 	const auto current_actor = simulation.current_actor();
-	assert(current_actor.controller == Game::Turn::Controller::Player);
+	assert(current_actor.controller == Turn::Controller::Player);
 
 	const auto player = simulation.get_player();
 	assert(player != entt::null);
