@@ -1,4 +1,5 @@
 #include "game/system/System.hpp"
+#include "game/system/Equipment.hpp"
 #include "ncurses/Screen.hpp"
 #include "game/system/Loot.hpp"
 #include "game/system/Lighting.hpp"
