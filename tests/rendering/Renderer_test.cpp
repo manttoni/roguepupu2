@@ -6,6 +6,18 @@
 #include <gtest/gtest.h>
 #include <ncurses.h>
 
+#if defined(__SANITIZE_ADDRESS__)
+#define ROGUEPUPU_RENDERER_TEST_ASAN
+#elif defined(__has_feature)
+#if __has_feature(address_sanitizer)
+#define ROGUEPUPU_RENDERER_TEST_ASAN
+#endif
+#endif
+
+#ifdef ROGUEPUPU_RENDERER_TEST_ASAN
+#include <sanitizer/lsan_interface.h>
+#endif
+
 #include "application/Layout.hpp"
 #include "application/Messages.hpp"
 #include "game/component/Runtime.hpp"
@@ -37,6 +49,19 @@ namespace
 				ASSERT_NE(screen, nullptr);
 				ASSERT_NE(start_color(), ERR);
 				ASSERT_NE(resizeterm(40, 80), ERR);
+
+				// ncurses retains an internal stdscr pseudo-panel after delscreen().
+				// Exclude only its initialization; all application panels stay tracked.
+				PANEL* initialization_panel = nullptr;
+				{
+#ifdef ROGUEPUPU_RENDERER_TEST_ASAN
+					const __lsan::ScopedDisabler ignore_ncurses_root;
+#endif
+					initialization_panel = new_panel(stdscr);
+				}
+				ASSERT_NE(initialization_panel, nullptr);
+				ASSERT_EQ(del_panel(initialization_panel), OK);
+
 				layout = std::make_unique<Layout>(Layout::Settings{
 					.cross_position = {8, 40}});
 				renderer = std::make_unique<Renderer>(*layout, messages);
