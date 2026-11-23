@@ -73,6 +73,8 @@ namespace
 				layout.reset();
 				if (screen != nullptr)
 				{
+					// The ignored root must not keep application panels reachable.
+					EXPECT_EQ(panel_above(nullptr), nullptr);
 					endwin();
 					delscreen(screen);
 				}
