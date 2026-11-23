@@ -20,9 +20,7 @@ std::optional<World::GlobalPosition> PlayerController::select_position(
 	auto cursor = player_position;
 	while (true)
 	{
-		renderer.render_player_perspective(simulation, cursor);
-		update_panels();
-		doupdate();
+		renderer.redraw(&simulation, cursor);
 		const auto input_event = Ncurses::Input::get_event(500);
 
 		using enum Ncurses::Input::Key;

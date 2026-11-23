@@ -23,6 +23,7 @@ namespace UI
 			Selection handle_input(const std::size_t selected, const Ncurses::Input::Event& event);
 			UI::Theme theme = UI::load_theme();
 			bool changed_ = true;
+			std::function<void()> on_change;
 
 		public:
 			// Center the menu as close to position as possible.
@@ -53,5 +54,9 @@ namespace UI
 
 			inline void clear_elements() { elements.clear(); }
 			const std::vector<Element::Any>& get_elements() const { return elements; }
+			void set_on_change(std::function<void()> callback)
+			{
+				on_change = std::move(callback);
+			}
 	};
 }

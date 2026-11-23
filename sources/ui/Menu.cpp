@@ -160,6 +160,11 @@ namespace UI
 							changed_ = true;
 							Log::debug() << "\'" << selection.label <<
 								"\' changed";
+							if (on_change)
+							{
+								on_change();
+								panel.bring_to_top();
+							}
 						}
 						if (selection.selected() ||
 							selection.confirmed() ||

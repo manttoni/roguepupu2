@@ -12,7 +12,7 @@
 #include "utils/Log.hpp"
 
 Application::Application() :
-	renderer(layout.get_panel(Layout::Panel::Game).get_window()),
+	renderer(layout, messages),
 	player_controller(renderer)
 {}
 
@@ -91,7 +91,36 @@ void Application::editor_menu()
 
 void Application::settings_menu()
 {
-	UI::Dialog::alert("Not implemented");
+	const auto screen = Ncurses::Screen::size();
+	const auto original_position = layout.get_settings().cross_position;
+	UI::Menu settings("Settings");
+	settings.set_on_change([this]
+		{
+		layout.reset();
+		renderer.redraw(simulation ? &*simulation : nullptr);
+		});
+	settings.add(
+		UI::Element::ValueSelector<int>(
+			"Layout separator y",
+			&layout.get_settings().cross_position.y,
+			{0, screen.y - 1}
+			));
+	settings.add(
+		UI::Element::ValueSelector<int>(
+			"Layout separator x",
+			&layout.get_settings().cross_position.x,
+			{0, screen.x - 1}
+			));
+	settings.add(UI::Element::confirm());
+	settings.add(UI::Element::cancel());
+
+	const auto selection = settings.get_selection();
+	if (selection.cancelled())
+	{
+		layout.get_settings().cross_position = original_position;
+		layout.reset();
+		renderer.redraw(simulation ? &*simulation : nullptr);
+	}
 }
 
 void Application::controls_menu()
@@ -104,6 +133,7 @@ void Application::run_game()
 	layout.get_panel(Layout::Panel::Game).bring_to_top();
 	game_running = true;
 	assert(simulation.has_value());
+	layout.reset();
 
 	while (game_running)
 	{
@@ -113,15 +143,7 @@ void Application::run_game()
 			simulation->get_grid(),
 			simulation->get_player());
 
-		/* Rendering
-		 * Order: 1. clear screen buffer, 2. make changes 3. update screen
-		 * Flickering? Wrong order?
-		 * */
-		renderer.render_player_perspective(*simulation);
-		renderer.write(messages.get_last(20));
-		update_panels();
-		doupdate();
-		/* ~Rendering */
+		renderer.redraw(&*simulation);
 
 		const auto input = Ncurses::Input::get_event(1000 / fps);
 		if (handle_input(input))
@@ -234,6 +256,7 @@ void Application::main_menu()
 				selection.label
 				);
 		}
+		layout.reset();
 	}
 }
 

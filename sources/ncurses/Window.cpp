@@ -2,6 +2,7 @@
 #include "ncurses/Attribute.hpp"
 #include "ncurses/Color.hpp"
 
+#include <algorithm>
 #include <limits>
 #include <stdexcept>
 #include <utility>
@@ -34,7 +35,9 @@ namespace Ncurses
 	}
 
 	Window::Window(Window&& other) noexcept
-		: ptr(std::exchange(other.ptr, nullptr))
+		: ptr(std::exchange(other.ptr, nullptr)),
+		title(std::move(other.title)),
+		borders(other.borders)
 		{
 		}
 
@@ -47,6 +50,8 @@ namespace Ncurses
 			delwin(ptr);
 
 		ptr = std::exchange(other.ptr, nullptr);
+		title = std::move(other.title);
+		borders = other.borders;
 
 		return *this;
 	}
@@ -186,10 +191,48 @@ namespace Ncurses
 
 	void Window::draw_border()
 	{
-		box(ptr, 0, 0);
+		const auto size = dimensions();
+		if (borders.top && borders.bottom && borders.left && borders.right)
+			box(ptr, 0, 0);
+		else
+		{
+			if (borders.top)
+				mvwhline(ptr, 0, 0, ACS_HLINE, size.x);
+			if (borders.bottom)
+				mvwhline(ptr, size.y - 1, 0, ACS_HLINE, size.x);
+			if (borders.left)
+				mvwvline(ptr, 0, 0, ACS_VLINE, size.y);
+			if (borders.right)
+				mvwvline(ptr, 0, size.x - 1, ACS_VLINE, size.y);
+			if (borders.top && borders.left)
+				mvwaddch(ptr, 0, 0, ACS_ULCORNER);
+			if (borders.top && borders.right)
+				mvwaddch(ptr, 0, size.x - 1, ACS_URCORNER);
+			if (borders.bottom && borders.left)
+				mvwaddch(ptr, size.y - 1, 0, ACS_LLCORNER);
+			if (borders.bottom && borders.right)
+				mvwaddch(ptr, size.y - 1, size.x - 1, ACS_LRCORNER);
+		}
+		if (!borders.top || title.empty())
+			return;
+
 		enable(Attribute{A_ITALIC});
 		write(0, 2, " " + title + " ");
 		disable(Attribute{A_ITALIC});
+	}
+
+	Vec2<int> Window::content_offset() const
+	{
+		return {borders.top ? 1 : 0, borders.left ? 1 : 0};
+	}
+
+	Vec2<int> Window::content_dimensions() const
+	{
+		const auto size = dimensions();
+		return {
+			std::max(0, size.y - (borders.top ? 1 : 0) - (borders.bottom ? 1 : 0)),
+			std::max(0, size.x - (borders.left ? 1 : 0) - (borders.right ? 1 : 0))
+		};
 	}
 
 	void Window::refresh()
