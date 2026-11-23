@@ -12,7 +12,7 @@
 #include "utils/Log.hpp"
 
 Application::Application() :
-	renderer(layout.get_panel(Layout::Panel::Game).get_window()),
+	renderer(layout, messages),
 	player_controller(renderer)
 {}
 
@@ -97,9 +97,7 @@ void Application::settings_menu()
 	settings.set_on_change([this]
 		{
 		layout.reset();
-		renderer.render_player_perspective(*simulation);
-		update_panels();
-		doupdate();
+		renderer.redraw(simulation ? &*simulation : nullptr);
 		});
 	settings.add(
 		UI::Element::ValueSelector<int>(
@@ -118,7 +116,11 @@ void Application::settings_menu()
 
 	const auto selection = settings.get_selection();
 	if (selection.cancelled())
+	{
 		layout.get_settings().cross_position = original_position;
+		layout.reset();
+		renderer.redraw(simulation ? &*simulation : nullptr);
+	}
 }
 
 void Application::controls_menu()
@@ -129,8 +131,6 @@ void Application::controls_menu()
 void Application::run_game()
 {
 	layout.get_panel(Layout::Panel::Game).bring_to_top();
-	Renderer message_renderer(
-		layout.get_panel(Layout::Panel::MessageLog).get_window());
 	game_running = true;
 	assert(simulation.has_value());
 	layout.reset();
@@ -143,30 +143,7 @@ void Application::run_game()
 			simulation->get_grid(),
 			simulation->get_player());
 
-		/* Rendering
-		 * Order: 1. clear screen buffer, 2. make changes 3. update screen
-		 * Flickering? Wrong order?
-		 * */
-		renderer.render_player_perspective(*simulation);
-		if (!layout.get_panel(Layout::Panel::MessageLog).hidden())
-		{
-			layout.get_panel(Layout::Panel::MessageLog).get_window().clear();
-			message_renderer.write(messages.get_last(20));
-		}
-		if (!layout.get_panel(Layout::Panel::PlayerStatus).hidden())
-		{
-			auto& status = layout.get_panel(Layout::Panel::PlayerStatus).get_window();
-			status.clear();
-			status.draw_border();
-			if (!layout.get_panel(Layout::Panel::MessageLog).hidden())
-			{
-				const int junction_y = layout.get_panel(Layout::Panel::MessageLog).position().y;
-				mvwaddch(status.get_ptr(), junction_y, 0, ACS_RTEE);
-			}
-		}
-		update_panels();
-		doupdate();
-		/* ~Rendering */
+		renderer.redraw(&*simulation);
 
 		const auto input = Ncurses::Input::get_event(1000 / fps);
 		if (handle_input(input))

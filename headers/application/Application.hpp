@@ -12,6 +12,7 @@
 #include "ncurses/Input.hpp"
 #include "rendering/Renderer.hpp"
 #include "application/Layout.hpp"
+#include "application/Messages.hpp"
 
 struct Settings
 {
@@ -27,24 +28,6 @@ class History
 		void add(const Game::Event::Node& root) { turns.push_back(root); }
 };
 
-class Messages
-{
-	private:
-		std::vector<std::string> descriptions;
-
-	public:
-		void add(const std::vector<std::string>& desc)
-		{
-			descriptions.insert(descriptions.end(), desc.begin(), desc.end());
-		}
-		void add(const std::string& desc) { descriptions.push_back(desc); }
-		std::vector<std::string> get_last(std::size_t count) const
-		{
-			count = std::min(count, descriptions.size());
-			return {descriptions.end() - count, descriptions.end()};
-		}
-};
-
 class Application
 {
 	private:
@@ -54,9 +37,9 @@ class Application
 		Ncurses::Session session; // needs only to be created and destroyed
 
 		Layout layout; // has all the ncurses panels
-		Renderer renderer; // Renderer.hpp
 		History history;
 		Messages messages;
+		Renderer renderer; // Renderer.hpp
 
 		std::optional<Game::Simulation> simulation = std::nullopt;
 		PlayerController player_controller;
