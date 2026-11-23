@@ -1,4 +1,6 @@
 #include "rendering/Renderer.hpp"
+#include "application/Layout.hpp"
+#include "application/Messages.hpp"
 #include "game/Query.hpp"
 #include "ncurses/Screen.hpp"
 #include "game/component/Runtime.hpp"
@@ -7,6 +9,25 @@
 #include "ncurses/Color.hpp"
 #include "ncurses/Pixel.hpp"
 #include <stdexcept>
+
+void Renderer::redraw(
+	const Game::Simulation* simulation,
+	const std::optional<Game::World::GlobalPosition> cursor)
+{
+	auto& game = layout.get_panel(Layout::Panel::Game);
+	if (!game.hidden())
+	{
+		auto& surface = game.get_window();
+		surface.clear();
+		if (simulation != nullptr)
+			render_game(*simulation, cursor);
+		surface.draw_border();
+	}
+	render_messages();
+	render_player_status();
+	update_panels();
+	doupdate();
+}
 
 char Renderer::get_cell_glyph(const Game::World::Cell& cell)
 {
@@ -132,10 +153,11 @@ Ncurses::Pixel Renderer::get_pixel(
 	return pixel;
 }
 
-void Renderer::render_player_perspective(
+void Renderer::render_game(
 	const Game::Simulation& simulation,
 	const std::optional<Game::World::GlobalPosition> cursor)
 {
+	auto& surface = layout.get_panel(Layout::Panel::Game).get_window();
 	const auto&
 		registry =
 		simulation.get_registry();
@@ -158,8 +180,6 @@ void Renderer::render_player_perspective(
 		seen_positions =
 		registry.get<Game::Component::Runtime::Vision>(player)
 		.seen_positions;
-
-	surface.clear();
 
 	for (int y = 0; y < viewport_size.y; ++y)
 	{
@@ -188,22 +208,45 @@ void Renderer::render_player_perspective(
 		}
 	}
 
-	surface.draw_border();
 	frame++;
 }
 
-void Renderer::write(const std::vector<std::string>& messages)
+void Renderer::render_messages()
 {
+	auto& panel = layout.get_panel(Layout::Panel::MessageLog);
+	if (panel.hidden())
+		return;
+
+	auto& surface = panel.get_window();
+	surface.clear();
 	const auto size = surface.content_dimensions();
 	const auto offset = surface.content_offset();
 	const auto height = static_cast<std::size_t>(size.y);
-	const auto messages_size = messages.size();
+	const auto lines = messages.get_last(height);
 
-	for (std::size_t i = 0;
-		size.x > 0 && i < messages_size && i < height; ++i)
+	for (std::size_t i = 0; size.x > 0 && i < lines.size(); ++i)
 	{
 		surface.write(offset.y + static_cast<int>(height - i - 1), offset.x,
-			messages[messages_size - 1 - i]);
+			lines[lines.size() - 1 - i]);
 	}
 	surface.draw_border();
+}
+
+void Renderer::render_player_status()
+{
+	auto& panel = layout.get_panel(Layout::Panel::PlayerStatus);
+	if (panel.hidden())
+		return;
+
+	auto& surface = panel.get_window();
+	surface.clear();
+	// Player status contents can be drawn here when implemented.
+	surface.draw_border();
+
+	const auto& log = layout.get_panel(Layout::Panel::MessageLog);
+	if (!log.hidden())
+	{
+		const int junction_y = log.position().y - panel.position().y;
+		mvwaddch(surface.get_ptr(), junction_y, 0, ACS_RTEE);
+	}
 }

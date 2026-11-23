@@ -1,30 +1,41 @@
 #pragma once
 
-#include "ncurses/Window.hpp"
+#include <optional>
+
 #include "game/Simulation.hpp"
 #include "game/world/Position.hpp"
-#include "ui/Theme.hpp"
 #include "ncurses/Pixel.hpp"
+
+class Layout;
+class Messages;
 
 class Renderer
 {
 	public:
-		Renderer(Ncurses::Window& surface) : surface(surface) {}
+		Renderer(Layout& layout, const Messages& messages) :
+			layout(layout), messages(messages) {}
 
-		void render_player_perspective(
-			const Game::Simulation& simulation,
+		// Without a simulation, redraw the layout with an empty game panel.
+		void redraw(
+			const Game::Simulation* simulation = nullptr,
 			const std::optional<Game::World::GlobalPosition> cursor =
 			std::nullopt);
 
-		void write(const std::vector<std::string>& messages);
 		void set_render_all(bool value) { render_all = value; }
 		bool& get_render_all() { return render_all; }
 		bool get_render_all() const { return render_all; }
 
 	private:
-		Ncurses::Window& surface;
+		Layout& layout;
+		const Messages& messages;
 		size_t frame = 0;
 		bool render_all = false;
+
+		void render_game(
+			const Game::Simulation& simulation,
+			const std::optional<Game::World::GlobalPosition> cursor);
+		void render_messages();
+		void render_player_status();
 
 		Ncurses::Color get_bgcolor(
 			const Game::Simulation& simulation,
