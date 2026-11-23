@@ -14,9 +14,19 @@ namespace Ncurses
 {
 	class Window
 	{
+		public:
+			struct Borders
+			{
+				bool top = true;
+				bool bottom = true;
+				bool left = true;
+				bool right = true;
+			};
+
 		private:
 			WINDOW* ptr = nullptr;
 			std::string title = "";
+			Borders borders;
 
 		public:
 			Window() = default;
@@ -50,6 +60,9 @@ namespace Ncurses
 
 			void clear();
 			void draw_border();
+			void set_borders(Borders value) { borders = value; }
+			Vec2<int> content_offset() const;
+			Vec2<int> content_dimensions() const;
 
 			void refresh();
 			void stage_refresh();

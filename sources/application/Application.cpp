@@ -91,7 +91,34 @@ void Application::editor_menu()
 
 void Application::settings_menu()
 {
-	UI::Dialog::alert("Not implemented");
+	const auto screen = Ncurses::Screen::size();
+	const auto original_position = layout.get_settings().cross_position;
+	UI::Menu settings("Settings");
+	settings.set_on_change([this]
+		{
+		layout.reset();
+		renderer.render_player_perspective(*simulation);
+		update_panels();
+		doupdate();
+		});
+	settings.add(
+		UI::Element::ValueSelector<int>(
+			"Layout separator y",
+			&layout.get_settings().cross_position.y,
+			{0, screen.y - 1}
+			));
+	settings.add(
+		UI::Element::ValueSelector<int>(
+			"Layout separator x",
+			&layout.get_settings().cross_position.x,
+			{0, screen.x - 1}
+			));
+	settings.add(UI::Element::confirm());
+	settings.add(UI::Element::cancel());
+
+	const auto selection = settings.get_selection();
+	if (selection.cancelled())
+		layout.get_settings().cross_position = original_position;
 }
 
 void Application::controls_menu()
@@ -102,8 +129,11 @@ void Application::controls_menu()
 void Application::run_game()
 {
 	layout.get_panel(Layout::Panel::Game).bring_to_top();
+	Renderer message_renderer(
+		layout.get_panel(Layout::Panel::MessageLog).get_window());
 	game_running = true;
 	assert(simulation.has_value());
+	layout.reset();
 
 	while (game_running)
 	{
@@ -118,7 +148,22 @@ void Application::run_game()
 		 * Flickering? Wrong order?
 		 * */
 		renderer.render_player_perspective(*simulation);
-		renderer.write(messages.get_last(20));
+		if (!layout.get_panel(Layout::Panel::MessageLog).hidden())
+		{
+			layout.get_panel(Layout::Panel::MessageLog).get_window().clear();
+			message_renderer.write(messages.get_last(20));
+		}
+		if (!layout.get_panel(Layout::Panel::PlayerStatus).hidden())
+		{
+			auto& status = layout.get_panel(Layout::Panel::PlayerStatus).get_window();
+			status.clear();
+			status.draw_border();
+			if (!layout.get_panel(Layout::Panel::MessageLog).hidden())
+			{
+				const int junction_y = layout.get_panel(Layout::Panel::MessageLog).position().y;
+				mvwaddch(status.get_ptr(), junction_y, 0, ACS_RTEE);
+			}
+		}
 		update_panels();
 		doupdate();
 		/* ~Rendering */
@@ -234,6 +279,7 @@ void Application::main_menu()
 				selection.label
 				);
 		}
+		layout.reset();
 	}
 }
 

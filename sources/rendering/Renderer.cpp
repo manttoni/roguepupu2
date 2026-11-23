@@ -145,9 +145,8 @@ void Renderer::render_player_perspective(
 	const auto&
 		player_position =
 		registry.get<Game::Component::Value::Position>(player).value;
-	const auto
-		viewport_size =
-		surface.dimensions();
+	const auto viewport_size = surface.content_dimensions();
+	const auto offset = surface.content_offset();
 	const auto
 		top_left =
 		player_position - viewport_size / 2;
@@ -185,23 +184,26 @@ void Renderer::render_player_perspective(
 			if (cursor && position == *cursor)
 				pixel.attribute |= Ncurses::Attribute{A_REVERSE};
 
-			surface.put(y, x, pixel);
+			surface.put(y + offset.y, x + offset.x, pixel);
 		}
 	}
 
-	// surface.refresh();
+	surface.draw_border();
 	frame++;
 }
 
 void Renderer::write(const std::vector<std::string>& messages)
 {
-	const auto height =
-		static_cast<std::size_t>(Ncurses::Screen::size().y);
+	const auto size = surface.content_dimensions();
+	const auto offset = surface.content_offset();
+	const auto height = static_cast<std::size_t>(size.y);
 	const auto messages_size = messages.size();
 
-	for (std::size_t i = 0; i < messages_size && i < height; ++i)
+	for (std::size_t i = 0;
+		size.x > 0 && i < messages_size && i < height; ++i)
 	{
-		surface.write(height - i - 1, 0, messages[messages_size - 1 - i]);
+		surface.write(offset.y + static_cast<int>(height - i - 1), offset.x,
+			messages[messages_size - 1 - i]);
 	}
-	//surface.refresh();
+	surface.draw_border();
 }
